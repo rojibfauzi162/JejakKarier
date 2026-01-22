@@ -1,5 +1,6 @@
+
 import React, { useState } from 'react';
-// Modular imports for Firebase Auth functions.
+// Fixing modular imports for Firebase Auth named exports using the correct subpath.
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { auth } from '../services/firebase';
 

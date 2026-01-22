@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 
 interface SidebarProps {
   activeTab: string;
@@ -8,10 +8,12 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout }) => {
+  const [dailyDropdownOpen, setDailyDropdownOpen] = useState(activeTab === 'daily' || activeTab === 'reports');
+
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: '📊' },
     { id: 'profile', label: 'User Profile', icon: '👤' },
-    { id: 'daily', label: 'Daily Work', icon: '📝' },
+    { id: 'daily', label: 'Daily Work', icon: '📝', hasSub: true },
     { id: 'skills', label: 'Skills & Learning', icon: '🎓' },
     { id: 'loker', label: 'Loker Tracker', icon: '💼' },
     { id: 'projects', label: 'Personal Project', icon: '🛠️' },
@@ -34,18 +36,47 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout }) 
       {/* Menu List */}
       <div className="flex-1 overflow-y-auto px-6 space-y-2 no-scrollbar">
         {menuItems.map((item) => (
-          <button
-            key={item.id}
-            onClick={() => setActiveTab(item.id)}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
-              activeTab === item.id 
-                ? 'bg-blue-600 text-white shadow-xl shadow-blue-600/10 scale-[1.02]' 
-                : 'text-slate-400 hover:bg-white/5 hover:text-white'
-            }`}
-          >
-            <span className="text-lg">{item.icon}</span>
-            <span className="font-semibold text-sm tracking-tight">{item.label}</span>
-          </button>
+          <div key={item.id} className="space-y-1">
+            <button
+              onClick={() => {
+                if (item.hasSub) {
+                  setDailyDropdownOpen(!dailyDropdownOpen);
+                } else {
+                  setActiveTab(item.id);
+                }
+              }}
+              className={`w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
+                activeTab === item.id || (item.id === 'daily' && (activeTab === 'daily' || activeTab === 'reports'))
+                  ? 'bg-blue-600 text-white shadow-xl shadow-blue-600/10 scale-[1.02]' 
+                  : 'text-slate-400 hover:bg-white/5 hover:text-white'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-lg">{item.icon}</span>
+                <span className="font-semibold text-sm tracking-tight">{item.label}</span>
+              </div>
+              {item.hasSub && (
+                <span className={`text-[10px] transition-transform duration-300 ${dailyDropdownOpen ? 'rotate-180' : ''}`}>▼</span>
+              )}
+            </button>
+            
+            {item.hasSub && dailyDropdownOpen && (
+              <div className="pl-12 space-y-1 animate-in slide-in-from-top-1 duration-300">
+                <button 
+                  onClick={() => setActiveTab('daily')}
+                  className={`w-full text-left px-4 py-2 text-[11px] font-black uppercase tracking-widest transition-colors ${activeTab === 'daily' ? 'text-white' : 'text-slate-500 hover:text-white'}`}
+                >
+                  Log Aktivitas
+                </button>
+                <button 
+                  onClick={() => setActiveTab('reports')}
+                  className={`w-full text-left px-4 py-2 text-[11px] font-black uppercase tracking-widest transition-colors ${activeTab === 'reports' ? 'text-white' : 'text-slate-500 hover:text-white'}`}
+                >
+                  Laporan Performa
+                </button>
+              </div>
+            )}
+          </div>
         ))}
       </div>
       

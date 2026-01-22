@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect } from 'react';
-// Corrected modular imports for Firebase Auth functions and types.
+// Fixing modular imports for Firebase Auth functions and types
 import { onAuthStateChanged, signOut, User } from "firebase/auth";
 import { doc, onSnapshot } from "firebase/firestore";
 import { auth, db, saveUserData } from './services/firebase';
@@ -15,6 +16,8 @@ import AchievementTracker from './components/AchievementTracker';
 import Networking from './components/Networking';
 import Reviews from './components/Reviews';
 import PersonalProjectTracker from './components/PersonalProjectTracker';
+import PerformanceReports from './components/PerformanceReports';
+import PublicReportView from './components/PublicReportView';
 import Sidebar from './components/Sidebar';
 import MobileNav from './components/MobileNav';
 import Auth from './components/Auth';
@@ -30,19 +33,29 @@ const App: React.FC = () => {
   });
   const [activeTab, setActiveTab] = useState('dashboard');
 
+  // Logic: Detection for Shared Public Report View
+  const searchParams = new URLSearchParams(window.location.search);
+  const isPublicView = searchParams.get('view') === 'shared_report';
+  const publicContext = searchParams.get('context') || 'all';
+  const publicUserName = searchParams.get('name') || 'User';
+
   // Listen to Auth State
   useEffect(() => {
+    if (isPublicView) {
+      setAuthLoading(false);
+      return;
+    }
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser as User | null);
       setAuthLoading(false);
       if (!currentUser) setPermissionsBlocked(false);
     });
     return () => unsubscribe();
-  }, []);
+  }, [isPublicView]);
 
   // Listen to User Data in Firestore
   useEffect(() => {
-    if (!user) {
+    if (!user || isPublicView) {
       setDbError(null);
       return;
     }
@@ -73,11 +86,13 @@ const App: React.FC = () => {
 
     const unsubscribe = startSnapshot();
     return () => unsubscribe();
-  }, [user]);
+  }, [user, isPublicView]);
 
   useEffect(() => {
-    localStorage.setItem('jejakkarir_data', JSON.stringify(data));
-  }, [data]);
+    if (!isPublicView) {
+      localStorage.setItem('jejakkarir_data', JSON.stringify(data));
+    }
+  }, [data, isPublicView]);
 
   const syncData = (newData: AppData) => {
     setData(newData);
@@ -167,6 +182,9 @@ const App: React.FC = () => {
           affirmation={data.affirmations[Math.floor(Math.random() * data.affirmations.length)]}
         />
       );
+      case 'reports': return (
+        <PerformanceReports data={data} />
+      );
       case 'skills': return (
         <SkillTracker 
           skills={data.skills}
@@ -243,6 +261,11 @@ const App: React.FC = () => {
         <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
+  }
+
+  // Render Public View if detected
+  if (isPublicView) {
+    return <PublicReportView data={data} contextFilter={publicContext} userName={publicUserName} />;
   }
 
   if (!user) return <Auth />;

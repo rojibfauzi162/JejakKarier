@@ -20,6 +20,7 @@ const MobileNav: React.FC<MobileNavProps> = ({ activeTab, setActiveTab, onLogout
 
   const moreItems = [
     { id: 'profile', label: 'Profile', icon: '👤' },
+    { id: 'reports', label: 'Reports', icon: '📈' },
     { id: 'projects', label: 'Projects', icon: '🛠️' },
     { id: 'achievements', label: 'Awards', icon: '🏆' },
     { id: 'networking', label: 'Net', icon: '🤝' },
