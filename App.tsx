@@ -1,11 +1,12 @@
 
 import React, { useState, useEffect } from 'react';
-import { AppData, UserProfile, DailyReport, Skill, Training, Certification, CareerPath, Achievement, Contact, MonthlyReview, WorkExperience, Education } from './types';
+import { AppData, UserProfile, DailyReport, Skill, Training, Certification, CareerPath, Achievement, Contact, MonthlyReview, WorkExperience, Education, JobApplication } from './types';
 import { INITIAL_DATA } from './constants';
 import Dashboard from './components/Dashboard';
 import ProfileView from './components/ProfileView';
 import DailyLogs from './components/DailyLogs';
 import SkillTracker from './components/SkillTracker';
+import JobTracker from './components/JobTracker';
 import CareerPlanner from './components/CareerPlanner';
 import AchievementTracker from './components/AchievementTracker';
 import Networking from './components/Networking';
@@ -88,6 +89,14 @@ const App: React.FC = () => {
           onDeleteCert={(id) => deleteItem('certifications', id)}
         />
       );
+      case 'loker': return (
+        <JobTracker 
+          applications={data.jobApplications || []}
+          onAdd={(j) => addItem('jobApplications', j)}
+          onUpdate={(j) => updateItem('jobApplications', j)}
+          onDelete={(id) => deleteItem('jobApplications', id)}
+        />
+      );
       case 'career': return (
         <CareerPlanner 
           paths={data.careerPaths}
@@ -101,6 +110,7 @@ const App: React.FC = () => {
         <AchievementTracker 
           achievements={data.achievements}
           onAdd={(a) => addItem('achievements', a)}
+          onUpdate={(a) => updateItem('achievements', a)}
           onDelete={(id) => deleteItem('achievements', id)}
         />
       );

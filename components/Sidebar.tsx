@@ -12,6 +12,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => {
     { id: 'profile', label: 'User Profile', icon: '👤' },
     { id: 'daily', label: 'Daily Work', icon: '📝' },
     { id: 'skills', label: 'Skills & Learning', icon: '🎓' },
+    { id: 'loker', label: 'Loker Tracker', icon: '💼' },
     { id: 'career', label: 'Career Path', icon: '🚀' },
     { id: 'achievements', label: 'Achievements', icon: '🏆' },
     { id: 'networking', label: 'Networking', icon: '🤝' },

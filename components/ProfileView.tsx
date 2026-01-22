@@ -24,10 +24,22 @@ const ProfileView: React.FC<ProfileViewProps> = ({
   const [isEditingWork, setIsEditingWork] = useState<string | null>(null);
   const [isEditingEdu, setIsEditingEdu] = useState<string | null>(null);
 
+  const calculateAge = (birthDate: string) => {
+    if (!birthDate) return "-";
+    const today = new Date();
+    const birth = new Date(birthDate);
+    let age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+      age--;
+    }
+    return age;
+  };
+
   const handleProfileSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onUpdateProfile(formData);
-    alert('Basic professional info updated!');
+    alert('Informasi profil diperbarui!');
   };
 
   const createNewWork = () => {
@@ -46,28 +58,42 @@ const ProfileView: React.FC<ProfileViewProps> = ({
     <div className="space-y-12 animate-in fade-in slide-in-from-top-4 duration-700 pb-20">
       <header className="border-b border-slate-200 pb-6">
         <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">Professional Profile Builder</h2>
-        <p className="text-slate-500 mt-1">Construct your comprehensive digital CV to unlock tailored career growth insights.</p>
+        <p className="text-slate-500 mt-1">Lengkapi informasi diri untuk mendapatkan rekomendasi karir yang lebih akurat.</p>
       </header>
 
-      {/* 01: Personal & Bio */}
+      {/* 01: Identitas Diri */}
       <section className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100">
         <div className="flex items-center gap-3 mb-8">
           <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center font-bold">01</div>
-          <h3 className="text-xl font-bold text-slate-800">Personal & Bio</h3>
+          <h3 className="text-xl font-bold text-slate-800">Identitas Diri</h3>
         </div>
         <form onSubmit={handleProfileSubmit} className="space-y-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="md:col-span-2">
-              <InputGroup label="Full Name" value={formData.name} onChange={v => setFormData({ ...formData, name: v })} placeholder="e.g. Alex Johnson" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2">
+              <InputGroup label="Nama Lengkap" value={formData.name} onChange={v => setFormData({ ...formData, name: v })} placeholder="e.g. Alex Johnson" />
             </div>
-            <InputGroup label="Age" type="number" value={formData.age} onChange={v => setFormData({ ...formData, age: parseInt(v) || 0 })} />
-            <InputGroup label="Target Role" value={formData.mainCareer} onChange={v => setFormData({ ...formData, mainCareer: v })} placeholder="e.g. Senior Product Manager" />
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Usia (Otomatis)</label>
+              <div className="w-full px-5 py-3.5 rounded-2xl border border-slate-100 bg-slate-50 text-slate-800 font-bold">
+                {calculateAge(formData.birthDate)}
+              </div>
+            </div>
+            
+            <InputGroup label="Tempat Lahir" value={formData.birthPlace} onChange={v => setFormData({ ...formData, birthPlace: v })} placeholder="e.g. Jakarta" />
+            <InputGroup label="Tanggal Lahir" type="date" value={formData.birthDate} onChange={v => setFormData({ ...formData, birthDate: v })} />
+            <InputGroup label="Status" value={formData.maritalStatus} onChange={v => setFormData({ ...formData, maritalStatus: v })} placeholder="e.g. Lajang / Menikah" />
+            
+            <InputGroup label="Email" type="email" value={formData.email} onChange={v => setFormData({ ...formData, email: v })} placeholder="e.g. alex@mail.com" />
+            <InputGroup label="Nomor Handphone" value={formData.phone} onChange={v => setFormData({ ...formData, phone: v })} placeholder="e.g. 08123456789" />
+            <InputGroup label="Domisili" value={formData.domicile} onChange={v => setFormData({ ...formData, domicile: v })} placeholder="e.g. Jakarta Selatan" />
+            
+            <InputGroup label="Target Role Utama" value={formData.mainCareer} onChange={v => setFormData({ ...formData, mainCareer: v })} placeholder="e.g. Senior Product Manager" />
             <InputGroup label="Current Company" value={formData.currentCompany} onChange={v => setFormData({ ...formData, currentCompany: v })} placeholder="e.g. Tech Industries" />
             <InputGroup label="Current Title" value={formData.currentPosition} onChange={v => setFormData({ ...formData, currentPosition: v })} placeholder="e.g. Mid-level Engineer" />
           </div>
           <div className="pt-4 flex justify-end">
             <button className="px-8 py-3 bg-slate-900 text-white font-bold rounded-xl text-sm transition-all hover:bg-black active:scale-95">
-              Update Bio Info
+              Simpan Profil
             </button>
           </div>
         </form>
@@ -78,13 +104,13 @@ const ProfileView: React.FC<ProfileViewProps> = ({
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center font-bold">02</div>
-            <h3 className="text-xl font-bold text-slate-800">Work Experience</h3>
+            <h3 className="text-xl font-bold text-slate-800">Riwayat Pekerjaan</h3>
           </div>
           <button 
             onClick={createNewWork}
             className="px-5 py-2.5 bg-indigo-600 text-white font-bold rounded-xl text-sm transition-all hover:bg-indigo-700 shadow-md shadow-indigo-100"
           >
-            + Add Experience
+            + Tambah Pengalaman
           </button>
         </div>
 
@@ -95,39 +121,39 @@ const ProfileView: React.FC<ProfileViewProps> = ({
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <input 
-                      placeholder="Position Title" 
+                      placeholder="Posisi" 
                       className="w-full px-4 py-2 rounded-lg border border-slate-200 outline-none"
                       value={work.position} 
                       onChange={e => onUpdateWork({ ...work, position: e.target.value })}
                     />
                     <input 
-                      placeholder="Company" 
+                      placeholder="Perusahaan" 
                       className="w-full px-4 py-2 rounded-lg border border-slate-200 outline-none"
                       value={work.company} 
                       onChange={e => onUpdateWork({ ...work, company: e.target.value })}
                     />
                     <input 
-                      placeholder="Duration (e.g. 2020 - Present)" 
+                      placeholder="Durasi (e.g. 2020 - Sekarang)" 
                       className="w-full px-4 py-2 rounded-lg border border-slate-200 outline-none"
                       value={work.duration} 
                       onChange={e => onUpdateWork({ ...work, duration: e.target.value })}
                     />
                   </div>
                   <textarea 
-                    placeholder="Key achievements and responsibilities..." 
+                    placeholder="Deskripsi pekerjaan & pencapaian..." 
                     className="w-full px-4 py-2 rounded-lg border border-slate-200 outline-none min-h-[100px]"
                     value={work.description} 
                     onChange={e => onUpdateWork({ ...work, description: e.target.value })}
                   />
                   <div className="flex justify-end">
-                    <button onClick={() => setIsEditingWork(null)} className="px-6 py-2 bg-indigo-600 text-white font-bold rounded-lg text-xs">Done</button>
+                    <button onClick={() => setIsEditingWork(null)} className="px-6 py-2 bg-indigo-600 text-white font-bold rounded-lg text-xs">Selesai</button>
                   </div>
                 </div>
               ) : (
                 <div className="flex justify-between items-start">
                   <div>
-                    <h4 className="font-bold text-slate-800 text-lg">{work.position || 'Untitled Position'}</h4>
-                    <p className="text-indigo-600 font-semibold text-sm">{work.company || 'Unknown Company'}</p>
+                    <h4 className="font-bold text-slate-800 text-lg">{work.position || 'Judul Posisi'}</h4>
+                    <p className="text-indigo-600 font-semibold text-sm">{work.company || 'Nama Perusahaan'}</p>
                     <p className="text-xs text-slate-400 font-medium mt-1 uppercase">{work.duration}</p>
                     <p className="text-sm text-slate-600 mt-4 leading-relaxed line-clamp-3">{work.description}</p>
                   </div>
@@ -141,7 +167,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({
           ))}
           {workExperiences.length === 0 && (
             <div className="text-center py-10 bg-slate-50 border border-dashed border-slate-200 rounded-2xl">
-              <p className="text-slate-400 text-sm">No work experience added yet.</p>
+              <p className="text-slate-400 text-sm">Belum ada riwayat pekerjaan.</p>
             </div>
           )}
         </div>
@@ -152,13 +178,13 @@ const ProfileView: React.FC<ProfileViewProps> = ({
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center font-bold">03</div>
-            <h3 className="text-xl font-bold text-slate-800">Education</h3>
+            <h3 className="text-xl font-bold text-slate-800">Pendidikan</h3>
           </div>
           <button 
             onClick={createNewEdu}
             className="px-5 py-2.5 bg-amber-600 text-white font-bold rounded-xl text-sm transition-all hover:bg-amber-700 shadow-md shadow-amber-100"
           >
-            + Add Education
+            + Tambah Pendidikan
           </button>
         </div>
 
@@ -169,39 +195,39 @@ const ProfileView: React.FC<ProfileViewProps> = ({
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <input 
-                      placeholder="Degree / Program" 
+                      placeholder="Gelar / Program Studi" 
                       className="w-full px-4 py-2 rounded-lg border border-slate-200 outline-none"
                       value={edu.degree} 
                       onChange={e => onUpdateEducation({ ...edu, degree: e.target.value })}
                     />
                     <input 
-                      placeholder="Institution" 
+                      placeholder="Institusi" 
                       className="w-full px-4 py-2 rounded-lg border border-slate-200 outline-none"
                       value={edu.institution} 
                       onChange={e => onUpdateEducation({ ...edu, institution: e.target.value })}
                     />
                     <input 
-                      placeholder="Graduation Year" 
+                      placeholder="Tahun Kelulusan" 
                       className="w-full px-4 py-2 rounded-lg border border-slate-200 outline-none"
                       value={edu.year} 
                       onChange={e => onUpdateEducation({ ...edu, year: e.target.value })}
                     />
                   </div>
                   <textarea 
-                    placeholder="Brief details (Major, Honors, etc.)" 
+                    placeholder="Detail singkat (IPK, Fokus Studi, dll.)" 
                     className="w-full px-4 py-2 rounded-lg border border-slate-200 outline-none min-h-[80px]"
                     value={edu.description} 
                     onChange={e => onUpdateEducation({ ...edu, description: e.target.value })}
                   />
                   <div className="flex justify-end">
-                    <button onClick={() => setIsEditingEdu(null)} className="px-6 py-2 bg-amber-600 text-white font-bold rounded-lg text-xs">Done</button>
+                    <button onClick={() => setIsEditingEdu(null)} className="px-6 py-2 bg-amber-600 text-white font-bold rounded-lg text-xs">Selesai</button>
                   </div>
                 </div>
               ) : (
                 <div className="flex justify-between items-start">
                   <div>
-                    <h4 className="font-bold text-slate-800 text-lg">{edu.degree || 'Untitled Degree'}</h4>
-                    <p className="text-amber-600 font-semibold text-sm">{edu.institution || 'Unknown Institution'}</p>
+                    <h4 className="font-bold text-slate-800 text-lg">{edu.degree || 'Judul Gelar'}</h4>
+                    <p className="text-amber-600 font-semibold text-sm">{edu.institution || 'Nama Institusi'}</p>
                     <p className="text-xs text-slate-400 font-bold mt-1 uppercase">{edu.year}</p>
                     <p className="text-sm text-slate-500 mt-2">{edu.description}</p>
                   </div>
@@ -215,7 +241,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({
           ))}
           {educations.length === 0 && (
             <div className="text-center py-10 bg-slate-50 border border-dashed border-slate-200 rounded-2xl">
-              <p className="text-slate-400 text-sm">No education history added yet.</p>
+              <p className="text-slate-400 text-sm">Belum ada riwayat pendidikan.</p>
             </div>
           )}
         </div>
@@ -226,11 +252,11 @@ const ProfileView: React.FC<ProfileViewProps> = ({
         <div className="relative z-10">
           <div className="flex items-center gap-3 mb-8">
             <div className="w-10 h-10 bg-white/10 text-white rounded-xl flex items-center justify-center font-bold">04</div>
-            <h3 className="text-xl font-bold">Future Aspirations</h3>
+            <h3 className="text-xl font-bold">Visi Karir</h3>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="space-y-2">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block ml-1">Short-term Goal (1-2 yrs)</label>
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block ml-1">Target Jangka Pendek (1-2 thn)</label>
               <input 
                 className="w-full px-5 py-4 rounded-2xl border border-white/10 focus:ring-4 focus:ring-blue-500/20 outline-none bg-white/5 transition-all text-white font-medium"
                 value={formData.shortTermTarget}
@@ -238,7 +264,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({
               />
             </div>
             <div className="space-y-2">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block ml-1">Long-term Goal (5+ yrs)</label>
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block ml-1">Target Jangka Panjang (5+ thn)</label>
               <input 
                 className="w-full px-5 py-4 rounded-2xl border border-white/10 focus:ring-4 focus:ring-blue-500/20 outline-none bg-white/5 transition-all text-white font-medium"
                 value={formData.longTermTarget}
@@ -251,7 +277,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({
               onClick={() => onUpdateProfile(formData)}
               className="px-10 py-4 bg-white text-slate-900 font-extrabold rounded-2xl shadow-xl transition-all transform hover:-translate-y-1 active:scale-95"
             >
-              Save Vision Goals
+              Simpan Target Karir
             </button>
           </div>
         </div>
@@ -268,7 +294,7 @@ const InputGroup: React.FC<{ label: string; value: string | number; onChange: (v
       type={type}
       placeholder={placeholder}
       className="w-full px-5 py-3.5 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-blue-500/5 outline-none bg-slate-50/30 transition-all text-slate-800 font-medium placeholder:text-slate-300"
-      value={value}
+      value={value || ''}
       onChange={e => onChange(e.target.value)}
     />
   </div>

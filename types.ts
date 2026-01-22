@@ -24,9 +24,10 @@ export enum TrainingStatus {
 }
 
 export enum AchievementCategory {
-  CAREER = 'career',
-  FINANCIAL = 'financial',
-  PERSONAL = 'personal'
+  PROFESIONAL = 'Profesional',
+  PENGEMBANGAN_DIRI = 'Pengembangan Diri',
+  ORGANISASI = 'Organisasi',
+  FINANSIAL = 'Finansial'
 }
 
 export enum CareerStatus {
@@ -35,11 +36,24 @@ export enum CareerStatus {
   ACHIEVED = 'tercapai'
 }
 
+export enum CareerType {
+  UTAMA = 'Utama',
+  SAMPINGAN = 'Sampingan'
+}
+
+export enum JobStatus {
+  SUDAH_KIRIM = 'Sudah Kirim',
+  PERLU_FOLLOW_UP = 'Perlu Follow UP',
+  TIDAK_ADA_JAWABAN = 'Tidak ada jawaban',
+  DITOLAK = 'Ditolak',
+  WAWANCARA = 'Wawancara'
+}
+
 export interface WorkExperience {
   id: string;
   position: string;
   company: string;
-  duration: string; // e.g., "Jan 2020 - Present"
+  duration: string;
   description: string;
 }
 
@@ -53,8 +67,12 @@ export interface Education {
 
 export interface UserProfile {
   name: string;
-  age: number;
-  gapYear: number;
+  birthPlace: string;
+  birthDate: string; // ISO format: YYYY-MM-DD
+  maritalStatus: string;
+  email: string;
+  phone: string;
+  domicile: string;
   mainCareer: string;
   sideCareer: string;
   currentCompany: string;
@@ -78,8 +96,8 @@ export interface Skill {
   id: string;
   name: string;
   category: SkillCategory;
-  currentLevel: number; // 1-5
-  requiredLevel: number; // 1-5
+  currentLevel: number;
+  requiredLevel: number;
   status: SkillStatus;
   priority: SkillPriority;
   lastUsed: string;
@@ -88,47 +106,46 @@ export interface Skill {
 
 export interface Training {
   id: string;
-  name: string;      // Judul Course
-  provider: string;  // Platform
-  cost: number;      // Biaya
-  date: string;      // Tanggal
-  topic: string;     // Topik
+  name: string;
+  provider: string;
+  cost: number;
+  date: string;
+  topic: string;
   status: TrainingStatus;
-  link: string;      // Link/Materi
-  notes: string;     // Catatan
+  link: string;
+  notes: string;
 }
 
 export interface Certification {
   id: string;
   name: string;
   issuer: string;
-  year: string;
+  date: string;
   expiryDate: string;
   isActive: boolean;
-}
-
-export interface CareerStep {
-  id: string;
-  description: string;
-  deadline: string;
-  status: CareerStatus;
+  relatedSkill: string;
+  fileLink: string;
 }
 
 export interface CareerPath {
   id: string;
   targetPosition: string;
-  targetAge: number;
+  type: CareerType;
+  targetYear: number;
   requiredSkills: string[];
-  ownedSkills: string[];
-  steps: CareerStep[];
+  skillLevel: number;
+  developmentPlan: string;
+  actionDeadline: string; // Display: "MMM YYYY", stored as YYYY-MM
+  status: CareerStatus;
 }
 
 export interface Achievement {
   id: string;
   title: string;
-  date: string;
+  date: string; // Support flexible strings for ranges
   category: AchievementCategory;
   impact: string;
+  scope: 'Perusahaan' | 'Personal';
 }
 
 export interface Contact {
@@ -152,6 +169,18 @@ export interface MonthlyReview {
   aiSummary?: string;
 }
 
+export interface JobApplication {
+  id: string;
+  position: string;
+  company: string;
+  location: string;
+  appliedDate: string;
+  appliedVia: string;
+  status: JobStatus;
+  link: string;
+  notes: string;
+}
+
 export interface AppData {
   profile: UserProfile;
   workExperiences: WorkExperience[];
@@ -164,5 +193,6 @@ export interface AppData {
   achievements: Achievement[];
   contacts: Contact[];
   monthlyReviews: MonthlyReview[];
+  jobApplications: JobApplication[];
   affirmations: string[];
 }
