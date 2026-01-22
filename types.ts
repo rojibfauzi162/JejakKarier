@@ -49,6 +49,11 @@ export enum JobStatus {
   WAWANCARA = 'Wawancara'
 }
 
+export enum ProjectStatus {
+  SELESAI = 'Selesai',
+  PROSES = 'Proses'
+}
+
 export interface WorkExperience {
   id: string;
   position: string;
@@ -146,15 +151,19 @@ export interface Achievement {
   category: AchievementCategory;
   impact: string;
   scope: 'Perusahaan' | 'Personal';
+  companyName?: string;
 }
 
 export interface Contact {
   id: string;
   name: string;
+  phone: string;
+  email: string;
   company: string;
   position: string;
-  relation: 'mentor' | 'peer' | 'superior' | 'client';
+  relation: 'mentor' | 'peer' | 'superior' | 'client' | 'HR';
   lastInteractionNote: string;
+  followUpPlan: string;
   lastInteractionDate: string;
 }
 
@@ -181,6 +190,16 @@ export interface JobApplication {
   notes: string;
 }
 
+export interface PersonalProject {
+  id: string;
+  name: string;
+  date: string;
+  skills: string[];
+  link: string;
+  status: ProjectStatus;
+  description: string;
+}
+
 export interface AppData {
   profile: UserProfile;
   workExperiences: WorkExperience[];
@@ -194,5 +213,6 @@ export interface AppData {
   contacts: Contact[];
   monthlyReviews: MonthlyReview[];
   jobApplications: JobApplication[];
+  personalProjects: PersonalProject[];
   affirmations: string[];
 }

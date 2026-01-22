@@ -1,11 +1,12 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
-import { AppData, Skill, CareerPath } from "../types";
-
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+import { AppData } from "../types";
 
 export async function analyzeSkillGap(data: AppData) {
-  const model = 'gemini-3-flash-preview';
+  // Create a new GoogleGenAI instance right before making an API call to ensure it uses the most up-to-date API key.
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  // Use gemini-3-pro-preview for complex reasoning and career analysis tasks
+  const model = 'gemini-3-pro-preview';
   
   const prompt = `
     Analyze the career gap for the following user:
@@ -43,12 +44,15 @@ export async function analyzeSkillGap(data: AppData) {
               description: "A summary analysis"
             }
           },
-          required: ["trainings", "certifications", "summary"]
+          // propertyOrdering is recommended for structured JSON output as per SDK guidelines
+          propertyOrdering: ["trainings", "certifications", "summary"]
         }
       }
     });
 
-    return JSON.parse(response.text);
+    // Use .text property to access the response body directly
+    const jsonStr = response.text?.trim() || '{}';
+    return JSON.parse(jsonStr);
   } catch (error) {
     console.error("AI Analysis failed:", error);
     return null;
@@ -56,6 +60,9 @@ export async function analyzeSkillGap(data: AppData) {
 }
 
 export async function summarizeMonthlyReview(reviewText: string) {
+  // Create a new GoogleGenAI instance right before making an API call
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  // Use gemini-3-flash-preview for basic summarization tasks
   const model = 'gemini-3-flash-preview';
   const prompt = `Summarize this monthly career review and suggest 3 action items: ${reviewText}`;
 
@@ -64,7 +71,8 @@ export async function summarizeMonthlyReview(reviewText: string) {
       model,
       contents: prompt,
     });
-    return response.text;
+    // Use .text property to access the response body directly
+    return response.text || "Failed to generate summary.";
   } catch (error) {
     console.error("AI Summarization failed:", error);
     return "Failed to generate summary.";

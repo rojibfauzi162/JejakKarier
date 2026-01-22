@@ -1,5 +1,5 @@
 
-import { AppData, SkillStatus, SkillCategory, SkillPriority, TrainingStatus, AchievementCategory, CareerType, CareerStatus, JobStatus } from './types';
+import { AppData, SkillStatus, SkillCategory, SkillPriority, TrainingStatus, AchievementCategory, CareerType, CareerStatus, JobStatus, ProjectStatus } from './types';
 
 export const INITIAL_DATA: AppData = {
   profile: {
@@ -195,6 +195,35 @@ export const INITIAL_DATA: AppData = {
       status: JobStatus.WAWANCARA,
       link: 'bit.ly/taxwriter',
       notes: 'Bisa dikerjakan malam'
+    }
+  ],
+  personalProjects: [
+    {
+      id: 'pp1',
+      name: 'Mini Riset Pajak UMKM',
+      date: '2025-04-01',
+      skills: ['Analisis Data', 'Pemahaman UU Pajak', 'Excel'],
+      link: 'https://bit.ly/proyek-risetpajak',
+      status: ProjectStatus.SELESAI,
+      description: 'Membuat mini riset tentang kendala UMKM terhadap pajak dan potensi solusi digital'
+    },
+    {
+      id: 'pp2',
+      name: 'Instagram Branding Pajak',
+      date: '2025-06-15',
+      skills: ['Copywriting', 'Branding Personal', 'Komunikasi Klien'],
+      link: 'https://www.instagram.com/diary.pajak',
+      status: ProjectStatus.PROSES,
+      description: 'Membangun akun instagram untuk membagikan tips pajak dengan gaya personal branding'
+    },
+    {
+      id: 'pp3',
+      name: 'Template Laporan Pajak Pribadi',
+      date: '2025-07-20',
+      skills: ['Strategi Pajak', 'Excel', 'Brevet A'],
+      link: 'https://bit.ly/template-laporanpajak',
+      status: ProjectStatus.SELESAI,
+      description: 'Merancang Google Sheet template untuk laporan pajak pribadi dan freelance'
     }
   ],
   affirmations: ["I am capable of achieving my professional goals", "Every challenge is an opportunity to grow"]

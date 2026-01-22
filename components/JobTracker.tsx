@@ -227,6 +227,26 @@ const JobTracker: React.FC<JobTrackerProps> = ({ applications, onAdd, onUpdate, 
         </table>
         {filteredApplications.length === 0 && <div className="py-24 text-center text-slate-400 italic font-medium">Data tidak ditemukan dengan filter ini.</div>}
       </div>
+
+      {/* Modal Form */}
+      {isFormOpen && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[100] p-4">
+          <div className="bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl p-10 animate-in zoom-in duration-300 max-h-[90vh] overflow-y-auto">
+            <JobForm 
+              initialData={editingItem}
+              onSubmit={(data) => {
+                if (editingItem) {
+                  onUpdate({ ...editingItem, ...data } as JobApplication);
+                } else {
+                  onAdd({ ...data, id: Math.random().toString(36).substr(2, 9) } as JobApplication);
+                }
+                setIsFormOpen(false);
+              }}
+              onCancel={() => setIsFormOpen(false)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -262,15 +282,15 @@ const JobForm: React.FC<{ initialData: JobApplication | null; onSubmit: (data: P
         <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Lacak journey pencarian kerjamu</p>
       </div>
       <div className="space-y-5">
-         <div className="grid grid-cols-2 gap-5">
+         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <InputGroup label="Posisi" value={formData.position || ''} onChange={v => setFormData({...formData, position: v})} placeholder="Role Name" />
             <InputGroup label="Perusahaan" value={formData.company || ''} onChange={v => setFormData({...formData, company: v})} placeholder="Company Name" />
          </div>
-         <div className="grid grid-cols-2 gap-5">
+         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <InputGroup label="Lokasi" value={formData.location || ''} onChange={v => setFormData({...formData, location: v})} placeholder="e.g. Jakarta" />
             <InputGroup label="Tanggal Lamar" type="date" value={formData.appliedDate || ''} onChange={v => setFormData({...formData, appliedDate: v})} />
          </div>
-         <div className="grid grid-cols-2 gap-5">
+         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <SelectGroup label="Via" value={formData.appliedVia} onChange={v => setFormData({...formData, appliedVia: v})} options={['Email', 'Website', 'Orang Dalam', 'Kita Lulus', 'Job Street', 'Linked In']} />
             <SelectGroup label="Status" value={formData.status} onChange={v => setFormData({...formData, status: v as JobStatus})} options={Object.values(JobStatus)} />
          </div>
