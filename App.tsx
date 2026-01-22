@@ -1,8 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
-// Correct modular imports for standard Firebase Auth functions and types from firebase/auth
-import { onAuthStateChanged, signOut } from "firebase/auth";
-import type { User } from "firebase/auth";
+// Corrected modular imports for Firebase Auth functions and types.
+import { onAuthStateChanged, signOut, User } from "firebase/auth";
 import { doc, onSnapshot } from "firebase/firestore";
 import { auth, db, saveUserData } from './services/firebase';
 import { AppData, UserProfile, DailyReport, Skill, Training, Certification, CareerPath, Achievement, Contact, MonthlyReview, WorkExperience, Education, JobApplication, PersonalProject } from './types';
@@ -18,6 +16,7 @@ import Networking from './components/Networking';
 import Reviews from './components/Reviews';
 import PersonalProjectTracker from './components/PersonalProjectTracker';
 import Sidebar from './components/Sidebar';
+import MobileNav from './components/MobileNav';
 import Auth from './components/Auth';
 
 const App: React.FC = () => {
@@ -33,9 +32,8 @@ const App: React.FC = () => {
 
   // Listen to Auth State
   useEffect(() => {
-    // onAuthStateChanged is the correct modular function to listen for authentication changes
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
+      setUser(currentUser as User | null);
       setAuthLoading(false);
       if (!currentUser) setPermissionsBlocked(false);
     });
@@ -56,18 +54,17 @@ const App: React.FC = () => {
         setPermissionsBlocked(false);
         if (docSnap.exists()) {
           const cloudData = docSnap.data() as AppData;
-          // Ensure personalProjects exists (for legacy users)
           if (!cloudData.personalProjects) cloudData.personalProjects = [];
+          if (!cloudData.workCategories) cloudData.workCategories = INITIAL_DATA.workCategories;
           setData(cloudData);
         } else {
-          // If no data in cloud, initialize with local/initial data
           saveUserData(user.uid, INITIAL_DATA);
         }
       }, (error) => {
         console.warn("Firestore access issues:", error);
         if (error.code === 'permission-denied') {
           setPermissionsBlocked(true);
-          setDbError("Izin Database Ditolak (Permission Denied). Harap pastikan Firebase Security Rules diatur untuk mengizinkan akses read/write pada /users/" + user.uid);
+          setDbError("Izin Database Ditolak. Periksa Security Rules Firebase Anda.");
         } else {
           setDbError("Terjadi kesalahan sinkronisasi database: " + error.message);
         }
@@ -84,7 +81,6 @@ const App: React.FC = () => {
 
   const syncData = (newData: AppData) => {
     setData(newData);
-    // Hanya simpan ke cloud jika izin tidak diblokir
     if (user && !permissionsBlocked) {
       saveUserData(user.uid, newData);
     }
@@ -93,9 +89,7 @@ const App: React.FC = () => {
   const handleRetrySync = () => {
     setPermissionsBlocked(false);
     setDbError(null);
-    if (user) {
-      saveUserData(user.uid, data);
-    }
+    if (user) saveUserData(user.uid, data);
   };
 
   const updateProfile = (profile: UserProfile) => {
@@ -126,8 +120,19 @@ const App: React.FC = () => {
     syncData(newData);
   };
 
+  const handleAddCategory = (cat: string) => {
+    if (!data.workCategories.includes(cat)) {
+      syncData({ ...data, workCategories: [...data.workCategories, cat] });
+    }
+  };
+
+  const handleDeleteCategory = (cat: string) => {
+    if (data.workCategories.length > 1) {
+      syncData({ ...data, workCategories: data.workCategories.filter(c => c !== cat) });
+    }
+  };
+
   const handleLogout = async () => {
-    // signOut is the modular function to handle sign out
     await signOut(auth);
     setActiveTab('dashboard');
   };
@@ -152,8 +157,13 @@ const App: React.FC = () => {
       case 'daily': return (
         <DailyLogs 
           logs={data.dailyReports} 
+          categories={data.workCategories}
+          currentCompany={data.profile.currentCompany}
           onAdd={(log) => addItem('dailyReports', log)} 
+          onUpdate={(log) => updateItem('dailyReports', log)} 
           onDelete={(id) => deleteItem('dailyReports', id)}
+          onAddCategory={handleAddCategory}
+          onDeleteCategory={handleDeleteCategory}
           affirmation={data.affirmations[Math.floor(Math.random() * data.affirmations.length)]}
         />
       );
@@ -187,15 +197,6 @@ const App: React.FC = () => {
           onAdd={(p) => addItem('personalProjects', p)}
           onUpdate={(p) => updateItem('personalProjects', p)}
           onDelete={(id) => deleteItem('personalProjects', id)}
-        />
-      );
-      case 'career': return (
-        <CareerPlanner 
-          paths={data.careerPaths}
-          appData={data}
-          onAddPath={(p) => addItem('careerPaths', p)}
-          onUpdatePath={(p) => updateItem('careerPaths', p)}
-          onDeletePath={(id) => deleteItem('careerPaths', id)}
         />
       );
       case 'career': return (
@@ -244,44 +245,22 @@ const App: React.FC = () => {
     );
   }
 
-  if (!user) {
-    return <Auth />;
-  }
+  if (!user) return <Auth />;
 
   return (
     <div className="flex min-h-screen bg-slate-50">
       <div className="hidden lg:block">
         <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} onLogout={handleLogout} />
       </div>
-      <main className="flex-1 lg:ml-64 p-4 lg:p-8">
-        <div className="max-w-6xl mx-auto">
-          {/* Dashboard Error Alert */}
+      
+      <MobileNav activeTab={activeTab} setActiveTab={setActiveTab} onLogout={handleLogout} />
+
+      <main className="flex-1 lg:ml-64 p-4 lg:p-8 pb-28 lg:pb-8 overflow-x-hidden">
+        <div className="w-full">
           {dbError && (
-            <div className="mb-6 p-6 bg-rose-50 border border-rose-200 text-rose-600 rounded-[2rem] text-xs font-bold animate-in slide-in-from-top-2 shadow-sm">
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-xl">⚠️</span>
-                    <span className="text-sm font-black uppercase tracking-tight">Koneksi Database Bermasalah</span>
-                  </div>
-                  <p className="font-medium opacity-80 leading-relaxed mb-4">
-                    {dbError}
-                  </p>
-                  <div className="bg-white/50 p-3 rounded-xl border border-rose-100 mb-4">
-                    <p className="text-[10px] uppercase text-rose-400 mb-1">Solusi: Update Firebase Rules Anda</p>
-                    <code className="font-mono text-[10px] text-slate-800 break-all">
-                      allow read, write: if request.auth != null && request.auth.uid == userId;
-                    </code>
-                  </div>
-                </div>
-                <button 
-                  onClick={handleRetrySync}
-                  className="px-4 py-2 bg-rose-600 text-white rounded-xl shadow-lg hover:bg-rose-700 transition-all whitespace-nowrap"
-                >
-                  🔄 Sinkronkan Sekarang
-                </button>
-              </div>
-              <p className="text-[9px] text-rose-400 mt-2 italic font-medium">Aplikasi tetap berjalan dalam Mode Lokal. Data Anda aman di browser ini.</p>
+            <div className="mb-6 p-4 bg-rose-50 border border-rose-100 text-rose-600 rounded-2xl text-xs flex justify-between items-center shadow-sm">
+              <p>⚠️ {dbError}</p>
+              <button onClick={handleRetrySync} className="px-3 py-1.5 bg-rose-600 text-white rounded-lg font-bold">Retry Sync</button>
             </div>
           )}
           {renderContent()}

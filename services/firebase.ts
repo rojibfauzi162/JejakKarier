@@ -1,6 +1,4 @@
-
 import { initializeApp } from "firebase/app";
-// Correct modular import for standard Firebase Auth functions from the primary entry point
 import { getAuth } from "firebase/auth";
 import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
 import { AppData } from "../types";
@@ -17,7 +15,6 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-// Correct initialization using getAuth from the modular SDK
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 

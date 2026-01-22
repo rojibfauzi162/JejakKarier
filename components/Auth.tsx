@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-// Correct modular imports for standard Firebase Auth functions from the modular SDK
+// Modular imports for Firebase Auth functions.
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { auth } from '../services/firebase';
 
@@ -19,12 +18,12 @@ const Auth: React.FC = () => {
 
     try {
       if (isLogin) {
-        // signInWithEmailAndPassword is the modular function to authenticate users
+        // Authenticating user with modular signInWithEmailAndPassword function
         await signInWithEmailAndPassword(auth, email, password);
       } else {
-        // createUserWithEmailAndPassword is the modular function to register new users
+        // Registering new user with modular createUserWithEmailAndPassword function
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        // updateProfile is the modular function to update user information
+        // Updating user profile with modular updateProfile function
         await updateProfile(userCredential.user, { displayName: name });
       }
     } catch (err: any) {

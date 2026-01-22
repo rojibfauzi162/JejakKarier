@@ -20,7 +20,46 @@ export const INITIAL_DATA: AppData = {
   },
   workExperiences: [],
   educations: [],
-  dailyReports: [],
+  dailyReports: [
+    {
+      id: 'd1',
+      date: '2025-01-20',
+      activity: 'Rekonsiliasi PPN Masa Desember',
+      category: 'Operasional',
+      // Added missing context and companyName properties
+      context: 'Perusahaan',
+      companyName: 'Tax Solutions Global',
+      output: 'Laporan Rekon Selesai',
+      metricValue: 1,
+      metricLabel: 'Laporan',
+      reflection: 'Proses lancar, data dari vendor sudah lengkap.'
+    },
+    {
+      id: 'd2',
+      date: '2025-01-21',
+      activity: 'Meeting Persiapan Audit Pajak Tahunan',
+      category: 'Meeting',
+      // Added missing context and companyName properties
+      context: 'Perusahaan',
+      companyName: 'Tax Solutions Global',
+      output: 'Checklist Dokumen Audit',
+      metricValue: 2,
+      metricLabel: 'Jam Meeting',
+      reflection: 'Perlu koordinasi lebih lanjut dengan tim finance.'
+    },
+    {
+      id: 'd3',
+      date: '2025-01-22',
+      activity: 'Update UU HPP Klaster Perpajakan',
+      category: 'Learning',
+      // Added missing context property
+      context: 'Personal',
+      output: 'Ringkasan Aturan Baru',
+      metricValue: 3,
+      metricLabel: 'Modul Dibaca',
+      reflection: 'Banyak perubahan di aturan teknis pemotongan PPh 21.'
+    }
+  ],
   skills: [
     { 
       id: 's1', 
@@ -123,7 +162,6 @@ export const INITIAL_DATA: AppData = {
       date: '2023-06-30',
       category: AchievementCategory.PROFESIONAL,
       impact: 'Menghindari denda administrasi dan meningkatkan kepercayaan pimpinan',
-      // Fix: Add missing scope property
       scope: 'Perusahaan'
     }
   ],
@@ -226,7 +264,8 @@ export const INITIAL_DATA: AppData = {
       description: 'Merancang Google Sheet template untuk laporan pajak pribadi dan freelance'
     }
   ],
-  affirmations: ["I am capable of achieving my professional goals", "Every challenge is an opportunity to grow"]
+  affirmations: ["I am capable of achieving my professional goals", "Every challenge is an opportunity to grow"],
+  workCategories: ['Operasional', 'Meeting', 'Learning', 'Administratif', 'Lainnya']
 };
 
 export const MONTHS = [

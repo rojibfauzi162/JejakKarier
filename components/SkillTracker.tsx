@@ -66,24 +66,30 @@ const SkillTracker: React.FC<SkillTrackerProps> = ({
   return (
     <div className="space-y-8 animate-in fade-in duration-700 pb-16">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div>
+        <div className="w-full">
           <h2 className="text-3xl font-black text-slate-900 tracking-tight">Growth & Intelligence</h2>
-          <div className="flex gap-2 mt-5 overflow-x-auto pb-1 no-scrollbar">
-            <SubTabButton active={activeSubTab === 'skills'} onClick={() => setActiveSubTab('skills')} label="Skill Matrix" icon="🎯" />
-            <SubTabButton active={activeSubTab === 'learning'} onClick={() => setActiveSubTab('learning')} label="Learning Hub" icon="📖" />
-            <SubTabButton active={activeSubTab === 'certs'} onClick={() => setActiveSubTab('certs')} label="Credentials" icon="📜" />
+          {/* Container Sub-Tab: Improved for mobile scroll visibility */}
+          <div className="relative mt-5">
+            <div className="flex gap-2 overflow-x-auto pb-4 -mx-4 px-4 no-scrollbar lg:mx-0 lg:px-0 snap-x">
+              <SubTabButton active={activeSubTab === 'skills'} onClick={() => setActiveSubTab('skills')} label="Skill Matrix" icon="🎯" />
+              <SubTabButton active={activeSubTab === 'learning'} onClick={() => setActiveSubTab('learning')} label="Learning Hub" icon="📖" />
+              <SubTabButton active={activeSubTab === 'certs'} onClick={() => setActiveSubTab('certs')} label="Credentials" icon="📜" />
+              <div className="w-8 shrink-0 lg:hidden"></div>
+            </div>
+            {/* Visual indicator that there's more to scroll on mobile */}
+            <div className="absolute right-0 top-0 bottom-4 w-12 bg-gradient-to-l from-slate-50 to-transparent pointer-events-none lg:hidden"></div>
           </div>
         </div>
         <button 
           onClick={openAddForm}
-          className="group flex items-center gap-2 px-6 py-3.5 bg-slate-900 text-white font-bold rounded-2xl shadow-xl transition-all hover:bg-black hover:scale-[1.02] active:scale-[0.98]"
+          className="group flex items-center justify-center gap-2 px-6 py-4 bg-slate-900 text-white font-bold rounded-2xl shadow-xl transition-all hover:bg-black hover:scale-[1.02] active:scale-[0.98] w-full md:w-auto"
         >
           <span className="text-xl">+</span>
-          <span>Log New {activeSubTab === 'skills' ? 'Skill' : activeSubTab === 'learning' ? 'Course' : 'Cert'}</span>
+          <span className="text-xs uppercase tracking-widest">Add {activeSubTab === 'skills' ? 'Skill' : activeSubTab === 'learning' ? 'Course' : 'Cert'}</span>
         </button>
       </header>
 
-      {/* Modern Dashboard Stats for Training */}
+      {/* Dashboard Stats for Training */}
       {activeSubTab === 'learning' && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-in slide-in-from-top duration-500">
           <StatWidget title="Total Course" value={totalCourses} icon="📚" color="blue" />
@@ -95,7 +101,7 @@ const SkillTracker: React.FC<SkillTrackerProps> = ({
 
       {/* Forms Overlay */}
       {isFormOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[100] p-4">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[110] p-4">
           <div className="bg-white w-full max-w-xl rounded-[2.5rem] shadow-2xl p-8 lg:p-12 animate-in zoom-in duration-300 overflow-y-auto max-h-[90vh]">
             {activeSubTab === 'skills' && <SkillForm initialData={editingItem} onSubmit={(d) => { editingItem ? onUpdateSkill(d as Skill) : onAddSkill({ ...d, id: Math.random().toString() } as Skill); setIsFormOpen(false); }} onCancel={() => setIsFormOpen(false)} />}
             {activeSubTab === 'learning' && <TrainingForm initialData={editingItem} onSubmit={(d) => { editingItem ? onUpdateTraining(d as Training) : onAddTraining({ ...d, id: Math.random().toString() } as Training); setIsFormOpen(false); }} onCancel={() => setIsFormOpen(false)} />}
@@ -164,18 +170,17 @@ const SkillTracker: React.FC<SkillTrackerProps> = ({
             {skills.length === 0 && <div className="py-24 text-center text-slate-400 italic font-medium">No skills defined in your matrix.</div>}
           </div>
 
-          {/* Mobile Grid View */}
           <div className="lg:hidden p-4 grid grid-cols-1 gap-4">
             {skills.map(skill => (
-              <div key={skill.id} className="p-6 bg-slate-50/50 rounded-3xl border border-slate-100">
+              <div key={skill.id} className="p-6 bg-slate-50/50 rounded-3xl border border-slate-100 snap-start">
                 <div className="flex justify-between items-start mb-4">
                   <div>
                     <h4 className="font-black text-slate-800 text-lg leading-tight">{skill.name}</h4>
                     <p className="text-[10px] font-black text-slate-400 uppercase mt-1 tracking-widest">{skill.category}</p>
                   </div>
                   <div className="flex gap-1">
-                    <button onClick={() => openEditForm(skill)} className="p-2 text-slate-400 hover:text-blue-500">✎</button>
-                    <button onClick={() => onDeleteSkill(skill.id)} className="p-2 text-slate-400 hover:text-red-500">✕</button>
+                    <button onClick={() => openEditForm(skill)} className="p-2 text-slate-500 hover:text-blue-600">✎</button>
+                    <button onClick={() => onDeleteSkill(skill.id)} className="p-2 text-slate-500 hover:text-red-500">✕</button>
                   </div>
                 </div>
                 <div className="w-full h-2 bg-slate-200 rounded-full mb-3 overflow-hidden">
@@ -240,35 +245,58 @@ const SkillTracker: React.FC<SkillTrackerProps> = ({
             {trainings.length === 0 && <div className="py-24 text-center text-slate-400 italic font-medium">No learning journey logged yet.</div>}
           </div>
 
-          {/* Mobile Training Cards */}
           <div className="lg:hidden p-4 grid grid-cols-1 gap-4">
              {trainings.map(t => (
-               <div key={t.id} className={`p-6 bg-slate-50/50 rounded-3xl border border-slate-100 ${t.status === TrainingStatus.COMPLETED ? 'opacity-60' : ''}`}>
+               <div key={t.id} className={`p-6 bg-slate-50/50 rounded-3xl border border-slate-100 transition-all snap-start ${t.status === TrainingStatus.COMPLETED ? 'opacity-80' : ''}`}>
                   <div className="flex justify-between items-start mb-4">
-                     <h4 className="font-black text-slate-800 leading-tight">{t.name}</h4>
-                     <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase border ${t.status === TrainingStatus.COMPLETED ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}>{t.status}</span>
+                     <div className="flex-1 mr-4">
+                        <h4 className={`font-black text-slate-800 leading-tight text-lg ${t.status === TrainingStatus.COMPLETED ? 'line-through decoration-slate-400' : ''}`}>{t.name}</h4>
+                        <span className={`mt-2 inline-block px-2 py-0.5 rounded text-[8px] font-black uppercase border ${t.status === TrainingStatus.COMPLETED ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}>{t.status}</span>
+                     </div>
+                     {/* Mobile Edit & Remove: Fixed visibility and contrast */}
+                     <div className="flex gap-1 shrink-0">
+                        <button 
+                          onClick={() => openEditForm(t)} 
+                          className="w-10 h-10 flex items-center justify-center text-slate-500 hover:text-blue-600 bg-white rounded-full shadow-sm border border-slate-100 transition-colors"
+                        >
+                          ✎
+                        </button>
+                        <button 
+                          onClick={() => onDeleteTraining(t.id)} 
+                          className="w-10 h-10 flex items-center justify-center text-slate-500 hover:text-rose-600 bg-white rounded-full shadow-sm border border-slate-100 transition-colors"
+                        >
+                          ✕
+                        </button>
+                     </div>
                   </div>
-                  <div className="flex justify-between text-xs text-slate-500 mb-2">
-                    <span>{t.provider}</span>
-                    <span className="font-black">Rp {t.cost?.toLocaleString()}</span>
+                  <div className="flex justify-between text-xs text-slate-500 mb-4 bg-white/50 p-3 rounded-2xl border border-slate-100">
+                    <div className="flex flex-col gap-1">
+                       <span className="text-[8px] uppercase font-black text-slate-400 tracking-widest">Platform</span>
+                       <span className="font-bold text-slate-700">{t.provider}</span>
+                    </div>
+                    <div className="flex flex-col gap-1 text-right">
+                       <span className="text-[8px] uppercase font-black text-slate-400 tracking-widest">Investment</span>
+                       <span className="font-black text-blue-600">Rp {t.cost?.toLocaleString()}</span>
+                    </div>
                   </div>
-                  <a href={t.link} target="_blank" rel="noreferrer" className="text-[10px] font-black text-blue-600 uppercase">Resource →</a>
+                  <a href={t.link} target="_blank" rel="noreferrer" className="block text-center w-full py-2.5 rounded-xl bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-slate-100 active:scale-95 transition-all">Visit Resource →</a>
                </div>
              ))}
+             {trainings.length === 0 && <div className="py-12 text-center text-slate-400 italic">No learning journey logged yet.</div>}
           </div>
         </div>
       )}
 
-      {/* Certificates Masonry/Grid */}
+      {/* Credentials Masonry/Grid */}
       {activeSubTab === 'certs' && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in zoom-in duration-500">
           {certs.map(c => (
-            <div key={c.id} className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 group hover:shadow-xl hover:-translate-y-1 transition-all">
+            <div key={c.id} className="bg-white p-6 lg:p-8 rounded-[2.5rem] shadow-sm border border-slate-100 group hover:shadow-xl hover:-translate-y-1 transition-all">
               <div className="flex justify-between items-start mb-6">
                 <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-3xl shadow-inner">📜</div>
-                <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button onClick={() => openEditForm(c)} className="p-2 text-slate-300 hover:text-blue-600 rounded-xl bg-slate-50">✎</button>
-                  <button onClick={() => onDeleteCert(c.id)} className="p-2 text-slate-300 hover:text-rose-600 rounded-xl bg-slate-50">✕</button>
+                <div className="flex gap-2 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
+                  <button onClick={() => openEditForm(c)} className="w-10 h-10 flex items-center justify-center text-slate-500 hover:text-blue-600 bg-slate-50 rounded-xl transition-all">✎</button>
+                  <button onClick={() => onDeleteCert(c.id)} className="w-10 h-10 flex items-center justify-center text-slate-500 hover:text-rose-600 bg-slate-50 rounded-xl transition-all">✕</button>
                 </div>
               </div>
               <h4 className="text-xl font-black text-slate-800 tracking-tight leading-tight mb-2">{c.name}</h4>
@@ -319,12 +347,12 @@ const StatWidget: React.FC<{ title: string; value: string | number; icon: string
 const SubTabButton: React.FC<{ active: boolean; onClick: () => void; label: string; icon: string }> = ({ active, onClick, label, icon }) => (
   <button 
     onClick={onClick} 
-    className={`flex items-center gap-2 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border shrink-0 ${ 
+    className={`flex items-center gap-2 px-4 md:px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border shrink-0 snap-center ${ 
       active ? 'bg-slate-900 text-white border-slate-900 shadow-xl' : 'text-slate-400 hover:bg-white bg-slate-50/50 border-slate-100 hover:border-slate-200' 
     }`}
   >
     <span className="text-base">{icon}</span>
-    <span>{label}</span>
+    <span className="whitespace-nowrap">{label}</span>
   </button>
 );
 
@@ -435,7 +463,7 @@ const SelectGroup: React.FC<{ label: string, value: any, onChange: (v: string) =
     <select 
       className="w-full px-5 py-4 rounded-2xl border border-slate-200 outline-none bg-white font-bold cursor-pointer hover:bg-slate-50 transition-colors text-slate-700" 
       value={value} 
-      onChange={e => onChange(e.target.value)}
+      onChange={e => onChange(e.target.value)} 
     >
       {options.map(o => <option key={o} value={o}>{o}</option>)}
     </select>

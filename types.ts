@@ -91,6 +91,9 @@ export interface DailyReport {
   id: string;
   date: string;
   activity: string;
+  category: string; 
+  context: 'Perusahaan' | 'Personal' | 'Sampingan'; // Field baru
+  companyName?: string; // Field baru
   output: string;
   metricValue: number;
   metricLabel: string;
@@ -215,4 +218,5 @@ export interface AppData {
   jobApplications: JobApplication[];
   personalProjects: PersonalProject[];
   affirmations: string[];
+  workCategories: string[]; // Properti baru untuk kustomisasi kategori kerja
 }

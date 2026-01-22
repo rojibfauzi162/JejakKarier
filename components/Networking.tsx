@@ -39,25 +39,25 @@ const Networking: React.FC<NetworkingProps> = ({ contacts, onAdd, onUpdate, onDe
   );
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700 pb-20">
+    <div className="space-y-8 animate-in fade-in duration-700 pb-24 lg:pb-20">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h2 className="text-3xl font-black text-slate-900 tracking-tight">Networking Tracker</h2>
-          <p className="text-slate-500 mt-1">Lacak relasi profesional, mentor, dan rekan industri Anda.</p>
+          <h2 className="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight">Networking Tracker</h2>
+          <p className="text-slate-500 mt-1 text-xs lg:text-sm">Lacak relasi profesional, mentor, dan rekan industri Anda.</p>
         </div>
-        <button onClick={openAddForm} className="px-6 py-3.5 bg-blue-600 text-white font-bold rounded-2xl shadow-xl hover:bg-blue-700 transition-all flex items-center gap-2">
+        <button onClick={openAddForm} className="w-full md:w-auto px-6 py-3.5 bg-blue-600 text-white font-black rounded-2xl shadow-xl hover:bg-blue-700 transition-all flex items-center justify-center gap-2 text-xs uppercase tracking-widest">
           <span className="text-xl">+</span>
-          Tambah Kontak Baru
+          Kontak Baru
         </button>
       </header>
 
       {/* Summary Box & Search */}
       <div className="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center">
-        <div className="flex w-full lg:w-[400px] border-2 border-slate-900 overflow-hidden rounded-md shadow-sm">
-          <div className="bg-blue-600 text-white px-6 py-2 flex-1 font-black text-xs uppercase tracking-widest flex items-center justify-center border-r-2 border-slate-900">
+        <div className="flex w-full lg:w-[400px] border-2 border-slate-900 overflow-hidden rounded-2xl shadow-sm">
+          <div className="bg-blue-600 text-white px-4 lg:px-6 py-2.5 flex-1 font-black text-[10px] lg:text-xs uppercase tracking-widest flex items-center justify-center border-r-2 border-slate-900">
             TOTAL KONTAK
           </div>
-          <div className="bg-slate-100 flex-1 flex items-center justify-center text-xl font-black text-slate-900">
+          <div className="bg-slate-100 flex-1 flex items-center justify-center text-lg lg:text-xl font-black text-slate-900">
             {contacts.length}
           </div>
         </div>
@@ -65,16 +65,16 @@ const Networking: React.FC<NetworkingProps> = ({ contacts, onAdd, onUpdate, onDe
           <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">🔍</span>
           <input 
             type="text"
-            placeholder="Cari nama, jabatan, atau perusahaan..."
-            className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-slate-200 bg-white shadow-sm outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-medium"
+            placeholder="Cari nama, jabatan..."
+            className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-slate-200 bg-white shadow-sm outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-bold text-xs"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
       </div>
 
-      {/* Modern Spreadsheet Table */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden overflow-x-auto">
+      {/* Responsive Content: Table for Desktop, Cards for Mobile */}
+      <div className="hidden lg:block bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden overflow-x-auto">
         <table className="w-full text-left border-collapse min-w-[1100px]">
           <thead>
             <tr className="bg-emerald-500 text-white text-[11px] font-black uppercase tracking-widest">
@@ -116,18 +116,66 @@ const Networking: React.FC<NetworkingProps> = ({ contacts, onAdd, onUpdate, onDe
                 </td>
               </tr>
             ))}
-            {filteredContacts.length === 0 && (
-              <tr><td colSpan={8} className="py-24 text-center text-slate-400 italic font-medium">Tidak ada kontak yang sesuai pencarian.</td></tr>
-            )}
           </tbody>
         </table>
+      </div>
+
+      {/* Mobile Contact Cards */}
+      <div className="lg:hidden space-y-4">
+        {filteredContacts.map((contact, index) => (
+          <div key={contact.id} className="bg-white rounded-[2rem] p-6 border border-slate-100 shadow-sm relative overflow-hidden group">
+            <div className="flex justify-between items-start mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center font-black text-xs">#{index + 1}</div>
+                <div>
+                  <h4 className="font-black text-slate-800 text-base leading-tight">{contact.name}</h4>
+                  <span className="px-2 py-0.5 bg-slate-100 text-slate-500 text-[8px] font-black uppercase tracking-widest rounded-md">{contact.relation}</span>
+                </div>
+              </div>
+              <div className="flex gap-1">
+                <button onClick={() => openEditForm(contact)} className="p-2 text-slate-300">✎</button>
+                <button onClick={() => onDelete(contact.id)} className="p-2 text-slate-300">✕</button>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-slate-50 p-3 rounded-2xl">
+                  <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Position</p>
+                  <p className="text-[11px] font-bold text-slate-700 truncate">{contact.position}</p>
+                </div>
+                <div className="bg-slate-50 p-3 rounded-2xl">
+                  <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Company</p>
+                  <p className="text-[11px] font-bold text-slate-700 truncate">{contact.company}</p>
+                </div>
+              </div>
+
+              <div className="bg-blue-50/30 p-4 rounded-2xl border border-blue-50/50">
+                <p className="text-[8px] font-black text-blue-400 uppercase tracking-widest mb-1">Last Interaction</p>
+                <p className="text-xs font-medium text-slate-600 leading-relaxed italic">" {contact.lastInteractionNote} "</p>
+              </div>
+
+              {contact.followUpPlan && (
+                <div className="bg-emerald-50/30 p-4 rounded-2xl border border-emerald-50/50">
+                  <p className="text-[8px] font-black text-emerald-500 uppercase tracking-widest mb-1">Next Plan</p>
+                  <p className="text-xs font-black text-emerald-600 italic">★ {contact.followUpPlan}</p>
+                </div>
+              )}
+
+              <div className="flex flex-wrap gap-2 pt-2">
+                {contact.phone && <span className="text-[10px] font-bold text-slate-400">📞 {contact.phone}</span>}
+                {contact.email && <span className="text-[10px] font-bold text-slate-400">✉️ {contact.email}</span>}
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* Form Modal */}
       {isFormOpen && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[100] p-4">
-          <div className="bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl p-10 animate-in zoom-in duration-300 max-h-[90vh] overflow-y-auto">
-            <h3 className="text-3xl font-black text-slate-900 tracking-tight mb-8">
+          <div className="bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl p-6 lg:p-10 animate-in zoom-in duration-300 max-h-[90vh] overflow-y-auto">
+            <h3 className="text-2xl font-black text-slate-900 tracking-tight mb-8">
               {editingItem ? 'Update Contact' : 'New Networking Contact'}
             </h3>
             <ContactForm 
@@ -158,35 +206,35 @@ const ContactForm: React.FC<{ initialData: Contact | null; onSubmit: (data: Part
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
         <div className="md:col-span-2">
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block ml-1">Nama Kontak</label>
-          <input className="w-full px-5 py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} placeholder="Alex Johnson" required />
+          <input className="w-full px-5 py-3 lg:py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold text-xs" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} placeholder="Alex Johnson" required />
         </div>
         
         <div>
-          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block ml-1">No HP / WhatsApp</label>
-          <input className="w-full px-5 py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} placeholder="0812xxxx" />
+          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block ml-1">No HP</label>
+          <input className="w-full px-5 py-3 lg:py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold text-xs" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} placeholder="0812xxxx" />
         </div>
 
         <div>
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block ml-1">Email</label>
-          <input type="email" className="w-full px-5 py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} placeholder="alex@company.com" />
+          <input type="email" className="w-full px-5 py-3 lg:py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold text-xs" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} placeholder="alex@company.com" />
         </div>
 
         <div>
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block ml-1">Jabatan</label>
-          <input className="w-full px-5 py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold" value={formData.position} onChange={e => setFormData({ ...formData, position: e.target.value })} placeholder="e.g. Senior Tax Manager" required />
+          <input className="w-full px-5 py-3 lg:py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold text-xs" value={formData.position} onChange={e => setFormData({ ...formData, position: e.target.value })} placeholder="Role" required />
         </div>
 
         <div>
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block ml-1">Perusahaan</label>
-          <input className="w-full px-5 py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold" value={formData.company} onChange={e => setFormData({ ...formData, company: e.target.value })} placeholder="e.g. PT Tax Solutions" required />
+          <input className="w-full px-5 py-3 lg:py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold text-xs" value={formData.company} onChange={e => setFormData({ ...formData, company: e.target.value })} placeholder="Company" required />
         </div>
 
         <div>
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block ml-1">Hubungan</label>
-          <select className="w-full px-5 py-4 rounded-2xl border border-slate-200 outline-none bg-white font-bold" value={formData.relation} onChange={e => setFormData({ ...formData, relation: e.target.value as any })}>
+          <select className="w-full px-5 py-3 lg:py-4 rounded-2xl border border-slate-200 outline-none bg-white font-bold text-xs cursor-pointer" value={formData.relation} onChange={e => setFormData({ ...formData, relation: e.target.value as any })}>
             <option value="peer">Rekan (Peer)</option>
             <option value="mentor">Mentor</option>
             <option value="superior">Atasan (Superior)</option>
@@ -196,23 +244,23 @@ const ContactForm: React.FC<{ initialData: Contact | null; onSubmit: (data: Part
         </div>
 
         <div>
-          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block ml-1">Tgl Interaksi Terakhir</label>
-          <input type="date" className="w-full px-5 py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold" value={formData.lastInteractionDate} onChange={e => setFormData({ ...formData, lastInteractionDate: e.target.value })} />
+          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block ml-1">Tgl Interaksi</label>
+          <input type="date" className="w-full px-5 py-3 lg:py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold text-xs" value={formData.lastInteractionDate} onChange={e => setFormData({ ...formData, lastInteractionDate: e.target.value })} />
         </div>
 
         <div className="md:col-span-2">
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block ml-1">Catatan Interaksi</label>
-          <textarea rows={2} className="w-full px-5 py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold resize-none" value={formData.lastInteractionNote} onChange={e => setFormData({ ...formData, lastInteractionNote: e.target.value })} placeholder="Bahas soal apa?" />
+          <textarea rows={2} className="w-full px-5 py-3 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold resize-none text-xs" value={formData.lastInteractionNote} onChange={e => setFormData({ ...formData, lastInteractionNote: e.target.value })} placeholder="Bahas soal apa?" />
         </div>
 
         <div className="md:col-span-2">
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block ml-1">Rencana Follow Up</label>
-          <textarea rows={2} className="w-full px-5 py-4 rounded-2xl border border-emerald-100 outline-none bg-emerald-50/30 font-bold resize-none text-emerald-700" value={formData.followUpPlan} onChange={e => setFormData({ ...formData, followUpPlan: e.target.value })} placeholder="Apa langkah selanjutnya?" />
+          <textarea rows={2} className="w-full px-5 py-3 rounded-2xl border border-emerald-100 outline-none bg-emerald-50/30 font-bold resize-none text-emerald-700 text-xs" value={formData.followUpPlan} onChange={e => setFormData({ ...formData, followUpPlan: e.target.value })} placeholder="Langkah selanjutnya?" />
         </div>
       </div>
-      <div className="flex gap-4 pt-6">
-        <button onClick={onCancel} className="flex-1 py-5 text-slate-400 font-black uppercase tracking-widest hover:bg-slate-50 rounded-2xl">Batal</button>
-        <button onClick={() => onSubmit(formData)} className="flex-1 py-5 bg-slate-900 text-white font-black uppercase tracking-widest rounded-2xl shadow-xl hover:bg-black">Simpan Kontak</button>
+      <div className="flex gap-4 pt-4 lg:pt-6">
+        <button onClick={onCancel} className="flex-1 py-4 lg:py-5 text-slate-400 font-black uppercase tracking-widest hover:bg-slate-50 rounded-2xl text-xs">Batal</button>
+        <button onClick={() => onSubmit(formData)} className="flex-1 py-4 lg:py-5 bg-slate-900 text-white font-black uppercase tracking-widest rounded-2xl shadow-xl hover:bg-black text-xs">Simpan</button>
       </div>
     </div>
   );
