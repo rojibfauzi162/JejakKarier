@@ -214,6 +214,7 @@ export interface OnlineCVConfig {
   selectedItemIds: Record<string, string[]>;
   customTitle?: string;
   customBio?: string;
+  customPosition?: string;
   socialLinks: {
     linkedin?: string;
     github?: string;
