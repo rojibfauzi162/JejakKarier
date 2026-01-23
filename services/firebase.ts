@@ -1,7 +1,7 @@
 
 import { initializeApp } from "firebase/app";
-// Fixing modular subpath import for getAuth to ensure correctly resolved named export.
-import { getAuth } from "firebase/auth";
+// Use single quotes for consistent module resolution and fix naming resolution issues
+import { getAuth } from 'firebase/auth';
 import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
 import { AppData } from "../types";
 

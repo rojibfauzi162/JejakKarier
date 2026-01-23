@@ -1,7 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
-// Fixing modular imports for Firebase Auth functions and types
-import { onAuthStateChanged, signOut, User } from "firebase/auth";
+// Fixing modular imports for Firebase Auth functions by using standard subpath and single quotes
+import { onAuthStateChanged, signOut } from 'firebase/auth';
+// Separate type import for User to avoid potential named export resolution issues
+import type { User } from 'firebase/auth';
 import { doc, onSnapshot } from "firebase/firestore";
 import { auth, db, saveUserData } from './services/firebase';
 import { AppData, UserProfile, DailyReport, Skill, Training, Certification, CareerPath, Achievement, Contact, MonthlyReview, WorkExperience, Education, JobApplication, PersonalProject } from './types';
