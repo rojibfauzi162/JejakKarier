@@ -126,10 +126,10 @@ const OnlineCVBuilder: React.FC<OnlineCVBuilderProps> = ({ data, onUpdateConfig 
               <h3 className="text-xs font-black uppercase text-slate-400 tracking-[0.2em] mb-4">2. Kurasi Konten Cerita</h3>
               <p className="text-[11px] text-slate-500 font-medium leading-relaxed">Pilih apa saja yang ingin Anda tampilkan pada landing page publik Anda.</p>
               <div className="space-y-4">
-                <ContentToggle title="Pengalaman Kerja" items={data.workExperiences.map(w => ({id: w.id, label: w.position}))} selectedIds={new Set(config.selectedItemIds.work || [])} onToggle={(id) => toggleItemId('work', id)} />
-                <ContentToggle title="Keahlian Utama" items={data.skills.map(s => ({id: s.id, label: s.name}))} selectedIds={new Set(config.selectedItemIds.skills || [])} onToggle={(id) => toggleItemId('skills', id)} />
-                <ContentToggle title="Proyek Pilihan" items={data.personalProjects.map(p => ({id: p.id, label: p.name}))} selectedIds={new Set(config.selectedItemIds.projects || [])} onToggle={(id) => toggleItemId('projects', id)} />
-                <ContentToggle title="Pencapaian" items={data.achievements.map(a => ({id: a.id, label: a.title}))} selectedIds={new Set(config.selectedItemIds.achievements || [])} onToggle={(id) => toggleItemId('achievements', id)} />
+                <ContentToggle title="Pengalaman Kerja" items={data.workExperiences.map(w => ({id: w.id, label: w.position}))} selectedIds={new Set(config.selectedItemIds.work || [])} onToggle={(id: string) => toggleItemId('work', id)} />
+                <ContentToggle title="Keahlian Utama" items={data.skills.map(s => ({id: s.id, label: s.name}))} selectedIds={new Set(config.selectedItemIds.skills || [])} onToggle={(id: string) => toggleItemId('skills', id)} />
+                <ContentToggle title="Proyek Pilihan" items={data.personalProjects.map(p => ({id: p.id, label: p.name}))} selectedIds={new Set(config.selectedItemIds.projects || [])} onToggle={(id: string) => toggleItemId('projects', id)} />
+                <ContentToggle title="Pencapaian" items={data.achievements.map(a => ({id: a.id, label: a.title}))} selectedIds={new Set(config.selectedItemIds.achievements || [])} onToggle={(id: string) => toggleItemId('achievements', id)} />
               </div>
             </div>
           )}
