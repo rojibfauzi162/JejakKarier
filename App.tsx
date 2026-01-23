@@ -45,8 +45,9 @@ const App: React.FC = () => {
   const publicContext = searchParams.get('context') || 'all';
   const publicUserName = searchParams.get('name') || 'User';
   
-  // Deteksi rute CV Online publik (misal ?u=username)
-  const onlineUserSlug = searchParams.get('u');
+  // Deteksi rute CV Online publik (Mendukung ?u= atau /profile/username)
+  const pathParts = window.location.pathname.split('/');
+  const onlineUserSlug = searchParams.get('u') || (pathParts[1] === 'profile' ? pathParts[2] : null);
   const isOnlineCVView = !!onlineUserSlug;
 
   useEffect(() => {

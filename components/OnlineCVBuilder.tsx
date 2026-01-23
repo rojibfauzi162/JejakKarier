@@ -27,8 +27,8 @@ const OnlineCVBuilder: React.FC<OnlineCVBuilderProps> = ({ data, onUpdateConfig 
   };
 
   const getPublicLink = () => {
-    const url = new URL(window.location.href);
-    url.searchParams.set('u', config.username || 'yourname');
+    const url = new URL(window.location.origin);
+    url.pathname = `/profile/${config.username || 'yourname'}`;
     return url.toString();
   };
 
@@ -195,7 +195,7 @@ const OnlineCVBuilder: React.FC<OnlineCVBuilderProps> = ({ data, onUpdateConfig 
 };
 
 // Sub-komponen Perender Tema (Real-time Render)
-const LiveThemeRenderer = ({ themeId, data, onUpdateText }: any) => {
+export const LiveThemeRenderer = ({ themeId, data, onUpdateText, isReadOnly = false }: any) => {
   const { profile, work, skills, achievements, projects } = data;
   
   const ProfileImg = () => (
@@ -212,21 +212,24 @@ const LiveThemeRenderer = ({ themeId, data, onUpdateText }: any) => {
     </div>
   );
 
-  const EditableText = ({ tag: Tag, className, field, initialValue }: any) => (
-    <Tag 
-      contentEditable 
-      suppressContentEditableWarning 
-      className={`${className} outline-none focus:ring-2 focus:ring-blue-500/20 rounded cursor-text border-b border-transparent hover:border-slate-200 transition-all`}
-      onBlur={(e: any) => onUpdateText(field, e.target.innerText)}
-    >
-      {initialValue}
-    </Tag>
-  );
+  const EditableText = ({ tag: Tag, className, field, initialValue }: any) => {
+    if (isReadOnly) return <Tag className={className}>{initialValue}</Tag>;
+    return (
+      <Tag 
+        contentEditable 
+        suppressContentEditableWarning 
+        className={`${className} outline-none focus:ring-2 focus:ring-blue-500/20 rounded cursor-text border-b border-transparent hover:border-slate-200 transition-all`}
+        onBlur={(e: any) => onUpdateText(field, e.target.innerText)}
+      >
+        {initialValue}
+      </Tag>
+    );
+  };
 
   switch(themeId) {
     case 't-terminal':
       return (
-        <div className="bg-black text-emerald-500 min-h-full p-10 font-mono text-sm leading-relaxed animate-in fade-in duration-500">
+        <div className="bg-black text-emerald-500 min-h-full p-10 font-mono text-sm leading-relaxed">
            <div className="space-y-10 border border-emerald-500/20 p-8 rounded-xl bg-emerald-950/5">
               <div>
                  <p className="opacity-40 mb-2">$ whoami</p>
@@ -266,7 +269,7 @@ const LiveThemeRenderer = ({ themeId, data, onUpdateText }: any) => {
 
     case 't-brutal':
       return (
-        <div className="bg-[#FFDE03] min-h-full p-10 font-sans animate-in zoom-in duration-500">
+        <div className="bg-[#FFDE03] min-h-full p-10 font-sans">
            <div className="bg-white border-[6px] border-black p-10 shadow-[15px_15px_0px_0px_rgba(0,0,0,1)] mb-12 transform -rotate-1">
               <EditableText tag="h1" className="text-7xl font-black uppercase italic tracking-tighter leading-[0.8] mb-4 block" field="customTitle" initialValue={profile.name} />
               <div className="inline-block px-4 py-1 bg-black text-white transform hover:scale-105 transition-transform">
@@ -275,7 +278,7 @@ const LiveThemeRenderer = ({ themeId, data, onUpdateText }: any) => {
               <EditableText tag="p" className="mt-6 font-bold text-slate-800 block" field="customBio" initialValue={profile.description} />
            </div>
            
-           <div className="grid grid-cols-2 gap-10">
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
               <div className="bg-[#0336FF] text-white border-[6px] border-black p-8 shadow-[10px_10px_0px_0px_rgba(0,0,0,1)]">
                  <h3 className="text-3xl font-black uppercase underline decoration-4 mb-6">Keahlian Utama</h3>
                  <div className="flex flex-wrap gap-3">
@@ -294,15 +297,15 @@ const LiveThemeRenderer = ({ themeId, data, onUpdateText }: any) => {
 
     case 't-bento':
       return (
-        <div className="bg-slate-50 min-h-full p-8 grid grid-cols-6 gap-6 animate-in fade-in duration-1000">
-           <div className="col-span-4 bg-white p-12 rounded-[3.5rem] shadow-sm border border-white">
+        <div className="bg-slate-50 min-h-full p-8 grid grid-cols-1 md:grid-cols-6 gap-6">
+           <div className="md:col-span-4 bg-white p-12 rounded-[3.5rem] shadow-sm border border-white">
               <ProfileImg />
               <EditableText tag="h1" className="text-6xl font-black tracking-tighter mt-8 leading-[0.9] text-slate-900 block" field="customTitle" initialValue={profile.name} />
               <EditableText tag="p" className="text-xl font-bold text-blue-600 mt-4 uppercase tracking-[0.2em] block" field="customPosition" initialValue={profile.currentPosition} />
               <EditableText tag="p" className="mt-8 text-lg text-slate-500 font-medium leading-relaxed italic block" field="customBio" initialValue={profile.description} />
            </div>
            
-           <div className="col-span-2 bg-slate-900 text-white p-10 rounded-[3.5rem] shadow-2xl flex flex-col justify-between">
+           <div className="md:col-span-2 bg-slate-900 text-white p-10 rounded-[3.5rem] shadow-2xl flex flex-col justify-between">
               <SectionTag dark>Pengalaman</SectionTag>
               <div className="space-y-6">
                  {work.slice(0, 3).map((w: any) => (
@@ -315,14 +318,14 @@ const LiveThemeRenderer = ({ themeId, data, onUpdateText }: any) => {
               <p className="text-5xl font-black tracking-tighter mt-10">{work.length}+ <span className="text-xs uppercase block text-white/30 tracking-widest">Global Reach</span></p>
            </div>
 
-           <div className="col-span-3 bg-blue-600 text-white p-10 rounded-[3.5rem] shadow-xl">
+           <div className="md:col-span-3 bg-blue-600 text-white p-10 rounded-[3.5rem] shadow-xl">
               <SectionTag dark>Keahlian Utama</SectionTag>
               <div className="flex flex-wrap gap-2">
                  {skills.map((s: any) => <span key={s.id} className="px-4 py-2 bg-white/10 rounded-2xl text-[10px] font-black uppercase border border-white/10">{s.name}</span>)}
               </div>
            </div>
 
-           <div className="col-span-3 bg-white p-10 rounded-[3.5rem] border border-white shadow-sm">
+           <div className="md:col-span-3 bg-white p-10 rounded-[3.5rem] border border-white shadow-sm">
               <SectionTag>Pencapaian</SectionTag>
               <div className="space-y-4">
                  {achievements.slice(0, 3).map((a: any) => <p key={a.id} className="font-black text-slate-700 text-base border-b border-slate-50 pb-2">🏆 {a.title}</p>)}
@@ -333,21 +336,21 @@ const LiveThemeRenderer = ({ themeId, data, onUpdateText }: any) => {
 
     case 't-startup':
       return (
-        <div className="bg-white min-h-full font-sans animate-in slide-in-from-bottom-10 duration-700">
+        <div className="bg-white min-h-full font-sans">
            <nav className="p-10 flex justify-between items-center border-b border-slate-50">
               <span className="font-black text-xl tracking-tighter text-blue-600">JEJAK.KARIR</span>
               <div className="px-6 py-2 bg-slate-900 text-white rounded-full text-[10px] font-black uppercase tracking-widest">Connect →</div>
            </nav>
-           <div className="p-20 text-center max-w-4xl mx-auto">
-              <EditableText tag="h1" className="text-8xl font-black tracking-tighter text-slate-900 mb-8 block" field="customTitle" initialValue={profile.name} />
-              <EditableText tag="p" className="text-2xl text-slate-500 font-medium leading-relaxed mb-12 block" field="customBio" initialValue={profile.description} />
+           <div className="p-10 lg:p-20 text-center max-w-4xl mx-auto">
+              <EditableText tag="h1" className="text-5xl lg:text-8xl font-black tracking-tighter text-slate-900 mb-8 block" field="customTitle" initialValue={profile.name} />
+              <EditableText tag="p" className="text-xl lg:text-2xl text-slate-500 font-medium leading-relaxed mb-12 block" field="customBio" initialValue={profile.description} />
               <div className="flex flex-col items-center justify-center gap-4">
                  <div className="w-20 h-1 bg-blue-600 rounded-full"></div>
                  <EditableText tag="span" className="text-xs font-black uppercase tracking-[0.5em] text-slate-300 block" field="customPosition" initialValue={profile.currentPosition} />
               </div>
            </div>
-           <div className="p-20 bg-slate-50">
-              <div className="grid grid-cols-2 gap-20">
+           <div className="p-10 lg:p-20 bg-slate-50">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-20">
                  <div>
                     <h4 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-10"># Perjalanan Karir</h4>
                     <div className="space-y-12">
@@ -361,7 +364,7 @@ const LiveThemeRenderer = ({ themeId, data, onUpdateText }: any) => {
                  </div>
                  <div>
                     <h4 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-10"># Keahlian Utama</h4>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                        {skills.map((s: any) => <div key={s.id} className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 font-black text-slate-800 text-sm">{s.name}</div>)}
                     </div>
                  </div>
@@ -370,21 +373,21 @@ const LiveThemeRenderer = ({ themeId, data, onUpdateText }: any) => {
         </div>
       );
 
-    default: // CINEMATIC DARK
+    default: // CINEMATIC DARK (t-dark)
       return (
-        <div className="bg-slate-950 text-white min-h-full p-20 font-sans animate-in fade-in duration-1000">
-           <div className="max-w-4xl mx-auto space-y-32">
+        <div className="bg-slate-950 text-white min-h-full p-10 lg:p-20 font-sans">
+           <div className="max-w-4xl mx-auto space-y-24 lg:space-y-32">
               <header className="space-y-12">
                  <p className="text-xs font-black text-blue-600 tracking-[0.6em] uppercase">Portfolio '25</p>
-                 <EditableText tag="h1" className="text-9xl font-black tracking-tighter leading-[0.8] block" field="customTitle" initialValue={profile.name} />
+                 <EditableText tag="h1" className="text-6xl lg:text-9xl font-black tracking-tighter leading-[0.8] block" field="customTitle" initialValue={profile.name} />
                  <EditableText tag="p" className="text-2xl font-bold text-slate-400 uppercase tracking-widest block" field="customPosition" initialValue={profile.currentPosition} />
-                 <EditableText tag="p" className="text-3xl text-slate-500 leading-tight max-w-2xl font-medium block" field="customBio" initialValue={profile.description} />
+                 <EditableText tag="p" className="text-2xl lg:text-3xl text-slate-500 leading-tight max-w-2xl font-medium block" field="customBio" initialValue={profile.description} />
               </header>
 
               <section className="space-y-20">
                  <h3 className="text-xs font-black uppercase tracking-[0.5em] text-slate-700">Keahlian Utama</h3>
                  <div className="flex flex-wrap gap-10">
-                    {skills.map((s: any) => <span key={s.id} className="text-4xl font-black text-white hover:text-blue-500 transition-colors">#{s.name}</span>)}
+                    {skills.map((s: any) => <span key={s.id} className="text-3xl lg:text-4xl font-black text-white hover:text-blue-500 transition-colors">#{s.name}</span>)}
                  </div>
               </section>
 
@@ -393,8 +396,8 @@ const LiveThemeRenderer = ({ themeId, data, onUpdateText }: any) => {
                  <div className="space-y-16">
                     {work.map((w: any) => (
                       <div key={w.id} className="group border-b border-white/5 pb-16 hover:border-blue-500 transition-colors duration-700">
-                         <div className="flex justify-between items-baseline mb-4">
-                            <h4 className="text-5xl font-black group-hover:text-blue-500 transition-colors">{w.position}</h4>
+                         <div className="flex flex-col md:flex-row justify-between items-baseline mb-4 gap-2">
+                            <h4 className="text-3xl lg:text-5xl font-black group-hover:text-blue-500 transition-colors">{w.position}</h4>
                             <span className="text-slate-600 font-black text-xs uppercase tracking-widest">{w.duration}</span>
                          </div>
                          <p className="text-slate-500 font-bold uppercase tracking-[0.2em]">{w.company}</p>
