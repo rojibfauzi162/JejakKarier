@@ -25,6 +25,8 @@ const MobileNav: React.FC<MobileNavProps> = ({ activeTab, setActiveTab, onLogout
     { id: 'achievements', label: 'Awards', icon: '🏆' },
     { id: 'networking', label: 'Net', icon: '🤝' },
     { id: 'reviews', label: 'Review', icon: '📅' },
+    { id: 'cv_generator', label: 'CV Download', icon: '📄' },
+    { id: 'online_cv', label: 'CV Online', icon: '🌐' },
   ];
 
   return (

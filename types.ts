@@ -85,6 +85,8 @@ export interface UserProfile {
   jobDesk: string;
   shortTermTarget: string;
   longTermTarget: string;
+  description: string; // Properti baru untuk deskripsi diri
+  photoUrl?: string; // Properti baru untuk foto profil
 }
 
 export interface DailyReport {
@@ -203,6 +205,23 @@ export interface PersonalProject {
   description: string;
 }
 
+// Konfigurasi khusus untuk CV Online / Landing Page
+export interface OnlineCVConfig {
+  username: string;
+  themeId: string;
+  isActive: boolean;
+  visibleSections: string[];
+  selectedItemIds: Record<string, string[]>;
+  customTitle?: string;
+  customBio?: string;
+  socialLinks: {
+    linkedin?: string;
+    github?: string;
+    instagram?: string;
+    website?: string;
+  };
+}
+
 export interface AppData {
   profile: UserProfile;
   workExperiences: WorkExperience[];
@@ -219,4 +238,5 @@ export interface AppData {
   personalProjects: PersonalProject[];
   affirmations: string[];
   workCategories: string[]; // Properti baru untuk kustomisasi kategori kerja
+  onlineCV: OnlineCVConfig; // Properti baru untuk CV Online
 }

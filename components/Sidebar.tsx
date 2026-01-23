@@ -9,11 +9,12 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout }) => {
   const [dailyDropdownOpen, setDailyDropdownOpen] = useState(activeTab === 'daily' || activeTab === 'reports');
+  const [cvDropdownOpen, setCvDropdownOpen] = useState(activeTab === 'cv_generator' || activeTab === 'online_cv');
 
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: '📊' },
     { id: 'profile', label: 'User Profile', icon: '👤' },
-    { id: 'daily', label: 'Daily Work', icon: '📝', hasSub: true },
+    { id: 'daily', label: 'Daily Work', icon: '📝', hasSub: true, type: 'daily' },
     { id: 'skills', label: 'Skills & Learning', icon: '🎓' },
     { id: 'loker', label: 'Loker Tracker', icon: '💼' },
     { id: 'projects', label: 'Personal Project', icon: '🛠️' },
@@ -21,6 +22,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout }) 
     { id: 'achievements', label: 'Achievements', icon: '🏆' },
     { id: 'networking', label: 'Networking', icon: '🤝' },
     { id: 'reviews', label: 'Monthly Review', icon: '📅' },
+    { id: 'cv_root', label: 'CV Generator', icon: '📄', hasSub: true, type: 'cv' },
   ];
 
   return (
@@ -40,13 +42,16 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout }) 
             <button
               onClick={() => {
                 if (item.hasSub) {
-                  setDailyDropdownOpen(!dailyDropdownOpen);
+                  if (item.type === 'daily') setDailyDropdownOpen(!dailyDropdownOpen);
+                  if (item.type === 'cv') setCvDropdownOpen(!cvDropdownOpen);
                 } else {
                   setActiveTab(item.id);
                 }
               }}
               className={`w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
-                activeTab === item.id || (item.id === 'daily' && (activeTab === 'daily' || activeTab === 'reports'))
+                activeTab === item.id || 
+                (item.type === 'daily' && (activeTab === 'daily' || activeTab === 'reports')) ||
+                (item.type === 'cv' && (activeTab === 'cv_generator' || activeTab === 'online_cv'))
                   ? 'bg-blue-600 text-white shadow-xl shadow-blue-600/10 scale-[1.02]' 
                   : 'text-slate-400 hover:bg-white/5 hover:text-white'
               }`}
@@ -56,11 +61,14 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout }) 
                 <span className="font-semibold text-sm tracking-tight">{item.label}</span>
               </div>
               {item.hasSub && (
-                <span className={`text-[10px] transition-transform duration-300 ${dailyDropdownOpen ? 'rotate-180' : ''}`}>▼</span>
+                <span className={`text-[10px] transition-transform duration-300 ${
+                  (item.type === 'daily' && dailyDropdownOpen) || (item.type === 'cv' && cvDropdownOpen) ? 'rotate-180' : ''
+                }`}>▼</span>
               )}
             </button>
             
-            {item.hasSub && dailyDropdownOpen && (
+            {/* Submenu Daily */}
+            {item.hasSub && item.type === 'daily' && dailyDropdownOpen && (
               <div className="pl-12 space-y-1 animate-in slide-in-from-top-1 duration-300">
                 <button 
                   onClick={() => setActiveTab('daily')}
@@ -73,6 +81,24 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout }) 
                   className={`w-full text-left px-4 py-2 text-[11px] font-black uppercase tracking-widest transition-colors ${activeTab === 'reports' ? 'text-white' : 'text-slate-500 hover:text-white'}`}
                 >
                   Laporan Performa
+                </button>
+              </div>
+            )}
+
+            {/* Submenu CV Generator sesuai request */}
+            {item.hasSub && item.type === 'cv' && cvDropdownOpen && (
+              <div className="pl-12 space-y-1 animate-in slide-in-from-top-1 duration-300">
+                <button 
+                  onClick={() => setActiveTab('cv_generator')}
+                  className={`w-full text-left px-4 py-2 text-[11px] font-black uppercase tracking-widest transition-colors ${activeTab === 'cv_generator' ? 'text-white' : 'text-slate-500 hover:text-white'}`}
+                >
+                  CV Download
+                </button>
+                <button 
+                  onClick={() => setActiveTab('online_cv')}
+                  className={`w-full text-left px-4 py-2 text-[11px] font-black uppercase tracking-widest transition-colors ${activeTab === 'online_cv' ? 'text-white' : 'text-slate-500 hover:text-white'}`}
+                >
+                  CV Online
                 </button>
               </div>
             )}

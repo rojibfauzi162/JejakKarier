@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { UserProfile, WorkExperience, Education } from '../types';
 
 interface ProfileViewProps {
@@ -23,6 +23,12 @@ const ProfileView: React.FC<ProfileViewProps> = ({
   const [formData, setFormData] = useState<UserProfile>(profile);
   const [isEditingWork, setIsEditingWork] = useState<string | null>(null);
   const [isEditingEdu, setIsEditingEdu] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // States for flexible education year range
+  const [isRangeEdu, setIsRangeEdu] = useState(false);
+  const [startYearEdu, setStartYearEdu] = useState('');
+  const [endYearEdu, setEndYearEdu] = useState('');
 
   const calculateAge = (birthDate: string) => {
     if (!birthDate) return "-";
@@ -42,6 +48,17 @@ const ProfileView: React.FC<ProfileViewProps> = ({
     alert('Informasi profil diperbarui!');
   };
 
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData(prev => ({ ...prev, photoUrl: reader.result as string }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const createNewWork = () => {
     const id = Math.random().toString(36).substr(2, 9);
     onAddWork({ id, position: '', company: '', duration: '', description: '' });
@@ -50,8 +67,32 @@ const ProfileView: React.FC<ProfileViewProps> = ({
 
   const createNewEdu = () => {
     const id = Math.random().toString(36).substr(2, 9);
+    setIsRangeEdu(false);
+    setStartYearEdu('');
+    setEndYearEdu('');
     onAddEducation({ id, degree: '', institution: '', year: '', description: '' });
     setIsEditingEdu(id);
+  };
+
+  const handleEditEdu = (edu: Education) => {
+    setIsEditingEdu(edu.id);
+    const range = edu.year.includes(' - ');
+    setIsRangeEdu(range);
+    if (range) {
+      const [start, end] = edu.year.split(' - ');
+      setStartYearEdu(start);
+      setEndYearEdu(end);
+    } else {
+      setStartYearEdu(edu.year);
+      setEndYearEdu('');
+    }
+  };
+
+  const handleEduYearChange = (edu: Education, start: string, end: string, range: boolean) => {
+    setStartYearEdu(start);
+    setEndYearEdu(end);
+    const finalYear = range && end ? `${start} - ${end}` : start;
+    onUpdateEducation({ ...edu, year: finalYear });
   };
 
   return (
@@ -68,28 +109,67 @@ const ProfileView: React.FC<ProfileViewProps> = ({
           <h3 className="text-xl font-bold text-slate-800">Identitas Diri</h3>
         </div>
         <form onSubmit={handleProfileSubmit} className="space-y-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
-              <InputGroup label="Nama Lengkap" value={formData.name} onChange={v => setFormData({ ...formData, name: v })} placeholder="e.g. Alex Johnson" />
+          <div className="flex flex-col md:flex-row gap-10">
+            {/* Photo Section */}
+            <div className="flex flex-col items-center gap-4">
+               <div 
+                onClick={() => fileInputRef.current?.click()}
+                className="w-40 h-40 bg-slate-50 rounded-full border-4 border-white shadow-xl overflow-hidden cursor-pointer group relative flex items-center justify-center"
+               >
+                 {formData.photoUrl ? (
+                   <img src={formData.photoUrl} alt="Profile" className="w-full h-full object-cover transition-transform group-hover:scale-110" />
+                 ) : (
+                   <span className="text-4xl">👤</span>
+                 )}
+                 <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                   <span className="text-white text-xs font-black uppercase tracking-widest">Ganti Foto</span>
+                 </div>
+               </div>
+               <input 
+                type="file" 
+                ref={fileInputRef} 
+                onChange={handlePhotoUpload} 
+                className="hidden" 
+                accept="image/*"
+               />
+               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Foto Formal 1:1</p>
             </div>
-            <div className="space-y-2">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Usia (Otomatis)</label>
-              <div className="w-full px-5 py-3.5 rounded-2xl border border-slate-100 bg-slate-50 text-slate-800 font-bold">
-                {calculateAge(formData.birthDate)}
+
+            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+              <div className="md:col-span-2">
+                <InputGroup label="Nama Lengkap" value={formData.name} onChange={v => setFormData({ ...formData, name: v })} placeholder="e.g. Alex Johnson" />
+              </div>
+              
+              <InputGroup label="Tempat Lahir" value={formData.birthPlace} onChange={v => setFormData({ ...formData, birthPlace: v })} placeholder="e.g. Jakarta" />
+              <InputGroup label="Tanggal Lahir" type="date" value={formData.birthDate} onChange={v => setFormData({ ...formData, birthDate: v })} />
+              
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Usia (Otomatis)</label>
+                <div className="w-full px-5 py-3.5 rounded-2xl border border-slate-100 bg-slate-50 text-slate-800 font-bold">
+                  {calculateAge(formData.birthDate)}
+                </div>
+              </div>
+              <InputGroup label="Status" value={formData.maritalStatus} onChange={v => setFormData({ ...formData, maritalStatus: v })} placeholder="e.g. Lajang / Menikah" />
+              
+              <InputGroup label="Email" type="email" value={formData.email} onChange={v => setFormData({ ...formData, email: v })} placeholder="e.g. alex@mail.com" />
+              <InputGroup label="Nomor Handphone" value={formData.phone} onChange={v => setFormData({ ...formData, phone: v })} placeholder="e.g. 08123456789" />
+              <InputGroup label="Domisili" value={formData.domicile} onChange={v => setFormData({ ...formData, domicile: v })} placeholder="e.g. Jakarta Selatan" />
+              
+              <InputGroup label="Target Role Utama" value={formData.mainCareer} onChange={v => setFormData({ ...formData, mainCareer: v })} placeholder="e.g. Senior Product Manager" />
+              <InputGroup label="Current Company" value={formData.currentCompany} onChange={v => setFormData({ ...formData, currentCompany: v })} placeholder="e.g. Tech Industries" />
+              <InputGroup label="Current Title" value={formData.currentPosition} onChange={v => setFormData({ ...formData, currentPosition: v })} placeholder="e.g. Mid-level Engineer" />
+              
+              {/* Kolom baru Deskripsi Diri */}
+              <div className="md:col-span-2 space-y-2">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Deskripsi Diri</label>
+                <textarea 
+                  className="w-full px-5 py-3.5 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-blue-500/5 outline-none bg-slate-50/30 transition-all text-slate-800 font-medium placeholder:text-slate-300 min-h-[120px] resize-none"
+                  placeholder="Ceritakan sedikit tentang latar belakang profesional dan keahlian utama Anda..."
+                  value={formData.description || ''}
+                  onChange={e => setFormData({ ...formData, description: e.target.value })}
+                />
               </div>
             </div>
-            
-            <InputGroup label="Tempat Lahir" value={formData.birthPlace} onChange={v => setFormData({ ...formData, birthPlace: v })} placeholder="e.g. Jakarta" />
-            <InputGroup label="Tanggal Lahir" type="date" value={formData.birthDate} onChange={v => setFormData({ ...formData, birthDate: v })} />
-            <InputGroup label="Status" value={formData.maritalStatus} onChange={v => setFormData({ ...formData, maritalStatus: v })} placeholder="e.g. Lajang / Menikah" />
-            
-            <InputGroup label="Email" type="email" value={formData.email} onChange={v => setFormData({ ...formData, email: v })} placeholder="e.g. alex@mail.com" />
-            <InputGroup label="Nomor Handphone" value={formData.phone} onChange={v => setFormData({ ...formData, phone: v })} placeholder="e.g. 08123456789" />
-            <InputGroup label="Domisili" value={formData.domicile} onChange={v => setFormData({ ...formData, domicile: v })} placeholder="e.g. Jakarta Selatan" />
-            
-            <InputGroup label="Target Role Utama" value={formData.mainCareer} onChange={v => setFormData({ ...formData, mainCareer: v })} placeholder="e.g. Senior Product Manager" />
-            <InputGroup label="Current Company" value={formData.currentCompany} onChange={v => setFormData({ ...formData, currentCompany: v })} placeholder="e.g. Tech Industries" />
-            <InputGroup label="Current Title" value={formData.currentPosition} onChange={v => setFormData({ ...formData, currentPosition: v })} placeholder="e.g. Mid-level Engineer" />
           </div>
           <div className="pt-4 flex justify-end">
             <button className="px-8 py-3 bg-slate-900 text-white font-bold rounded-xl text-sm transition-all hover:bg-black active:scale-95">
@@ -189,7 +269,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({
         </div>
 
         <div className="space-y-6">
-          {educations.map(edu => (
+          {educations.map((edu, idx) => (
             <div key={edu.id} className="p-6 rounded-2xl bg-slate-50 border border-slate-100 relative group">
               {isEditingEdu === edu.id ? (
                 <div className="space-y-4">
@@ -206,12 +286,32 @@ const ProfileView: React.FC<ProfileViewProps> = ({
                       value={edu.institution} 
                       onChange={e => onUpdateEducation({ ...edu, institution: e.target.value })}
                     />
-                    <input 
-                      placeholder="Tahun Kelulusan" 
-                      className="w-full px-4 py-2 rounded-lg border border-slate-200 outline-none"
-                      value={edu.year} 
-                      onChange={e => onUpdateEducation({ ...edu, year: e.target.value })}
-                    />
+                    
+                    <div className="md:col-span-2 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Waktu Pendidikan</label>
+                        <div className="flex bg-white p-1 rounded-lg border border-slate-100">
+                          <button type="button" onClick={() => { setIsRangeEdu(false); handleEduYearChange(edu, startYearEdu, '', false); }} className={`px-3 py-1 text-[9px] font-black rounded-md transition-all ${!isRangeEdu ? 'bg-amber-100 text-amber-700 shadow-sm' : 'text-slate-400'}`}>Single Year</button>
+                          <button type="button" onClick={() => setIsRangeEdu(true)} className={`px-3 py-1 text-[9px] font-black rounded-md transition-all ${isRangeEdu ? 'bg-amber-100 text-amber-700 shadow-sm' : 'text-slate-400'}`}>Range</button>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input 
+                          placeholder="Tahun Mulai/Lulus" 
+                          className="w-full px-4 py-2 rounded-lg border border-slate-200 outline-none"
+                          value={startYearEdu} 
+                          onChange={e => handleEduYearChange(edu, e.target.value, endYearEdu, isRangeEdu)}
+                        />
+                        {isRangeEdu && (
+                          <input 
+                            placeholder="Tahun Berakhir" 
+                            className="w-full px-4 py-2 rounded-lg border border-slate-200 outline-none animate-in slide-in-from-left-2"
+                            value={endYearEdu} 
+                            onChange={e => handleEduYearChange(edu, startYearEdu, e.target.value, true)}
+                          />
+                        )}
+                      </div>
+                    </div>
                   </div>
                   <textarea 
                     placeholder="Detail singkat (IPK, Fokus Studi, dll.)" 
@@ -225,14 +325,19 @@ const ProfileView: React.FC<ProfileViewProps> = ({
                 </div>
               ) : (
                 <div className="flex justify-between items-start">
-                  <div>
-                    <h4 className="font-bold text-slate-800 text-lg">{edu.degree || 'Judul Gelar'}</h4>
-                    <p className="text-amber-600 font-semibold text-sm">{edu.institution || 'Nama Institusi'}</p>
-                    <p className="text-xs text-slate-400 font-bold mt-1 uppercase">{edu.year}</p>
-                    <p className="text-sm text-slate-500 mt-2">{edu.description}</p>
+                  <div className="flex gap-4">
+                    <span className="text-slate-900 font-bold text-lg">{idx + 1}.</span>
+                    <div>
+                      <h4 className="font-bold text-slate-800 text-lg leading-snug">{edu.degree || edu.institution}</h4>
+                      {edu.degree && edu.institution && edu.degree !== edu.institution && (
+                        <p className="text-slate-700 font-medium text-sm mt-0.5">{edu.institution}</p>
+                      )}
+                      <p className="text-sm text-slate-500 italic mt-1 font-medium">{edu.year}</p>
+                      <p className="text-sm text-slate-600 mt-2 leading-relaxed">{edu.description}</p>
+                    </div>
                   </div>
                   <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button onClick={() => setIsEditingEdu(edu.id)} className="p-2 text-slate-400 hover:text-amber-600">✎</button>
+                    <button onClick={() => handleEditEdu(edu)} className="p-2 text-slate-400 hover:text-amber-600">✎</button>
                     <button onClick={() => onDeleteEducation(edu.id)} className="p-2 text-slate-400 hover:text-red-500">✕</button>
                   </div>
                 </div>

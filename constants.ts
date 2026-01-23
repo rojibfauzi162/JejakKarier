@@ -16,7 +16,9 @@ export const INITIAL_DATA: AppData = {
     currentPosition: "Tax Associate",
     jobDesk: "Managing corporate tax compliance",
     shortTermTarget: "Senior Tax Consultant",
-    longTermTarget: "Tax Manager"
+    longTermTarget: "Tax Manager",
+    description: "Seorang profesional perpajakan yang berdedikasi dengan fokus pada kepatuhan pajak korporat dan perencanaan strategis.",
+    photoUrl: ""
   },
   workExperiences: [],
   educations: [],
@@ -265,7 +267,21 @@ export const INITIAL_DATA: AppData = {
     }
   ],
   affirmations: ["I am capable of achieving my professional goals", "Every challenge is an opportunity to grow"],
-  workCategories: ['Operasional', 'Meeting', 'Learning', 'Administratif', 'Lainnya']
+  workCategories: ['Operasional', 'Meeting', 'Learning', 'Administratif', 'Lainnya'],
+  onlineCV: {
+    username: "",
+    themeId: "modern-dark",
+    isActive: false,
+    visibleSections: ['work', 'education', 'skills', 'achievements', 'projects'],
+    selectedItemIds: {
+      work: [],
+      education: [],
+      skills: [],
+      achievements: [],
+      projects: []
+    },
+    socialLinks: {}
+  }
 };
 
 export const MONTHS = [
