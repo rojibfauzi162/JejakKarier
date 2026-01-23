@@ -1,5 +1,5 @@
+
 import React, { useState, useEffect } from 'react';
-// Fixing modular imports for Firebase Auth functions by using @firebase/auth to resolve module resolution issues in some TypeScript environments
 import { onAuthStateChanged, signOut, type User } from '@firebase/auth';
 import { doc, onSnapshot } from "firebase/firestore";
 import { auth, db, saveUserData } from './services/firebase';
@@ -32,13 +32,11 @@ const App: React.FC = () => {
   });
   const [activeTab, setActiveTab] = useState('dashboard');
 
-  // Logic: Detection for Shared Public Report View
   const searchParams = new URLSearchParams(window.location.search);
   const isPublicView = searchParams.get('view') === 'shared_report';
   const publicContext = searchParams.get('context') || 'all';
   const publicUserName = searchParams.get('name') || 'User';
 
-  // Listen to Auth State
   useEffect(() => {
     if (isPublicView) {
       setAuthLoading(false);
@@ -52,7 +50,6 @@ const App: React.FC = () => {
     return () => unsubscribe();
   }, [isPublicView]);
 
-  // Listen to User Data in Firestore
   useEffect(() => {
     if (!user || isPublicView) {
       setDbError(null);
@@ -76,9 +73,9 @@ const App: React.FC = () => {
         console.warn("Firestore access issues:", error);
         if (error.code === 'permission-denied') {
           setPermissionsBlocked(true);
-          setDbError("Izin Database Ditolak. Periksa Security Rules Firebase Anda.");
+          setDbError("Izin Database Ditolak.");
         } else {
-          setDbError("Terjadi kesalahan sinkronisasi database: " + error.message);
+          setDbError("Terjadi kesalahan sinkronisasi database.");
         }
       });
     };
@@ -271,7 +268,6 @@ const App: React.FC = () => {
     );
   }
 
-  // Render Public View if detected
   if (isPublicView) {
     return <PublicReportView data={data} contextFilter={publicContext} userName={publicUserName} />;
   }
