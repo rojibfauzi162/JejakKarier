@@ -1,9 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
-// Fixing modular imports for Firebase Auth functions by using standard subpath and single quotes
-import { onAuthStateChanged, signOut } from 'firebase/auth';
-// Separate type import for User to avoid potential named export resolution issues
-import type { User } from 'firebase/auth';
+// Fixing modular imports for Firebase Auth functions by using @firebase/auth to resolve module resolution issues in some TypeScript environments
+import { onAuthStateChanged, signOut, type User } from '@firebase/auth';
 import { doc, onSnapshot } from "firebase/firestore";
 import { auth, db, saveUserData } from './services/firebase';
 import { AppData, UserProfile, DailyReport, Skill, Training, Certification, CareerPath, Achievement, Contact, MonthlyReview, WorkExperience, Education, JobApplication, PersonalProject } from './types';
@@ -113,28 +110,37 @@ const App: React.FC = () => {
     syncData({ ...data, profile });
   };
   
-  const addItem = <T,>(key: keyof AppData, item: T) => {
-    const newData = {
-      ...data,
-      [key]: [...((data[key] || []) as T[]), item]
-    };
-    syncData(newData);
+  const addItem = (key: keyof AppData, item: any) => {
+    const currentArray = data[key];
+    if (Array.isArray(currentArray)) {
+      const newData = {
+        ...data,
+        [key]: [...currentArray, item]
+      };
+      syncData(newData as AppData);
+    }
   };
 
   const deleteItem = (key: keyof AppData, id: string) => {
-    const newData = {
-      ...data,
-      [key]: ((data[key] || []) as any[]).filter(item => item.id !== id)
-    };
-    syncData(newData);
+    const currentArray = data[key];
+    if (Array.isArray(currentArray)) {
+      const newData = {
+        ...data,
+        [key]: currentArray.filter((item: any) => item.id !== id)
+      };
+      syncData(newData as AppData);
+    }
   };
 
-  const updateItem = <T extends { id: string }>(key: keyof AppData, updatedItem: T) => {
-    const newData = {
-      ...data,
-      [key]: ((data[key] || []) as T[]).map(item => item.id === updatedItem.id ? updatedItem : item)
-    };
-    syncData(newData);
+  const updateItem = (key: keyof AppData, updatedItem: any) => {
+    const currentArray = data[key];
+    if (Array.isArray(currentArray)) {
+      const newData = {
+        ...data,
+        [key]: currentArray.map((item: any) => item.id === updatedItem.id ? updatedItem : item)
+      };
+      syncData(newData as AppData);
+    }
   };
 
   const handleAddCategory = (cat: string) => {

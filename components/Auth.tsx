@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
-// Fixing modular imports for Firebase Auth named exports using single quotes for consistent module path resolution
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+// Fixing modular imports for Firebase Auth named exports using @firebase/auth for consistent path resolution in modular environments
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from '@firebase/auth';
 import { auth } from '../services/firebase';
 
 const Auth: React.FC = () => {

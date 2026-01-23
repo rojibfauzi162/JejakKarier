@@ -1,7 +1,6 @@
-
 import { initializeApp } from "firebase/app";
-// Use single quotes for consistent module resolution and fix naming resolution issues
-import { getAuth } from 'firebase/auth';
+// Use @firebase/auth to ensure named exports like getAuth are correctly resolved in modular Firebase v9+ environments
+import { getAuth } from '@firebase/auth';
 import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
 import { AppData } from "../types";
 
