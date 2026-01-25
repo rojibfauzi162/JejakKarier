@@ -1,7 +1,19 @@
 
-import { AppData, SkillStatus, SkillCategory, SkillPriority, TrainingStatus, AchievementCategory, CareerType, CareerStatus, JobStatus, ProjectStatus } from './types';
+import { AppData, SkillStatus, SkillCategory, SkillPriority, TrainingStatus, AchievementCategory, CareerType, CareerStatus, JobStatus, ProjectStatus, UserRole, SubscriptionPlan, AccountStatus } from './types';
 
+// Fix: Added missing properties (role, plan, status, joinedAt, lastLogin, aiUsage) required by AppData type
 export const INITIAL_DATA: AppData = {
+  role: UserRole.USER,
+  plan: SubscriptionPlan.FREE,
+  status: AccountStatus.ACTIVE,
+  joinedAt: new Date().toISOString(),
+  lastLogin: new Date().toISOString(),
+  aiUsage: {
+    cvGenerated: 0,
+    coverLetters: 0,
+    careerAnalysis: 0,
+    totalTokens: 0
+  },
   profile: {
     name: "Alex",
     birthPlace: "Jakarta",
@@ -107,7 +119,10 @@ export const INITIAL_DATA: AppData = {
       topic: 'Perpajakan',
       status: TrainingStatus.ON_PROCESS,
       link: 'https://klikpajak.id',
-      notes: 'Sedang ambil kelas weekend'
+      notes: 'Sedang ambil kelas weekend',
+      progress: 65,
+      deadline: '2025-03-30',
+      priority: SkillPriority.CRITICAL
     },
     {
       id: 't2',
@@ -118,7 +133,10 @@ export const INITIAL_DATA: AppData = {
       topic: 'Perpajakan',
       status: TrainingStatus.ON_PROCESS,
       link: 'https://academy.online-pajak.com',
-      notes: 'Selesai & dapat e-sertif'
+      notes: 'Selesai & dapat e-sertif',
+      progress: 100,
+      deadline: '2025-01-15',
+      priority: SkillPriority.HIGH
     },
     {
       id: 't3',
@@ -129,7 +147,10 @@ export const INITIAL_DATA: AppData = {
       topic: 'Finansial',
       status: TrainingStatus.COMPLETED,
       link: 'https://myskill.id',
-      notes: 'Bisa langsung praktik'
+      notes: 'Bisa langsung praktik',
+      progress: 100,
+      deadline: '2024-12-31',
+      priority: SkillPriority.MEDIUM
     }
   ],
   certifications: [

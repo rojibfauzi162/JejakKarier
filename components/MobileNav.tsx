@@ -5,9 +5,10 @@ interface MobileNavProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
   onLogout: () => void;
+  isAdmin?: boolean;
 }
 
-const MobileNav: React.FC<MobileNavProps> = ({ activeTab, setActiveTab, onLogout }) => {
+const MobileNav: React.FC<MobileNavProps> = ({ activeTab, setActiveTab, onLogout, isAdmin }) => {
   const [isMoreOpen, setIsMoreOpen] = useState(false);
 
   const mainItems = [
@@ -27,6 +28,7 @@ const MobileNav: React.FC<MobileNavProps> = ({ activeTab, setActiveTab, onLogout
     { id: 'reviews', label: 'Review', icon: '📅' },
     { id: 'cv_generator', label: 'CV Download', icon: '📄' },
     { id: 'online_cv', label: 'CV Online', icon: '🌐' },
+    { id: 'settings', label: 'Settings', icon: '⚙️' },
   ];
 
   return (
@@ -41,7 +43,21 @@ const MobileNav: React.FC<MobileNavProps> = ({ activeTab, setActiveTab, onLogout
 
       {/* More Menu Content */}
       <div className={`absolute bottom-full left-0 right-0 mb-4 px-4 transition-all duration-300 ${isMoreOpen ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0 pointer-events-none'}`}>
-        <div className="bg-white rounded-[2.5rem] p-6 shadow-2xl border border-slate-100 overflow-hidden">
+        <div className="bg-white rounded-[2.5rem] p-6 shadow-2xl border border-slate-100 overflow-hidden max-h-[70vh] overflow-y-auto">
+          {isAdmin && (
+            <button
+              onClick={() => {
+                setActiveTab('admin');
+                setIsMoreOpen(false);
+              }}
+              className={`w-full flex items-center justify-center gap-3 p-4 rounded-2xl mb-6 border-2 font-black uppercase text-xs tracking-widest ${
+                activeTab === 'admin' ? 'bg-rose-500 border-rose-500 text-white shadow-lg' : 'border-rose-100 text-rose-500 bg-rose-50/30'
+              }`}
+            >
+              <span>🛡️ Admin Panel</span>
+            </button>
+          )}
+
           <div className="grid grid-cols-3 gap-4">
             {moreItems.map(item => (
               <button

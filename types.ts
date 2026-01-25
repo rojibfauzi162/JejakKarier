@@ -54,6 +54,24 @@ export enum ProjectStatus {
   PROSES = 'Proses'
 }
 
+export enum UserRole {
+  USER = 'user',
+  SUPERADMIN = 'superadmin'
+}
+
+export enum SubscriptionPlan {
+  FREE = 'Free',
+  PRO = 'Pro',
+  ENTERPRISE = 'Enterprise'
+}
+
+export enum AccountStatus {
+  ACTIVE = 'Active',
+  TRIAL = 'Trial',
+  INACTIVE = 'Inactive',
+  BANNED = 'Banned'
+}
+
 export interface WorkExperience {
   id: string;
   position: string;
@@ -124,6 +142,9 @@ export interface Training {
   status: TrainingStatus;
   link: string;
   notes: string;
+  progress: number; // Properti baru 0-100
+  deadline: string; // Properti baru YYYY-MM-DD
+  priority: SkillPriority; // Properti baru
 }
 
 export interface Certification {
@@ -135,6 +156,9 @@ export interface Certification {
   isActive: boolean;
   relatedSkill: string;
   fileLink: string;
+  status?: TrainingStatus; // Properti baru
+  deadline?: string; // Properti baru YYYY-MM-DD
+  certNumber?: string; // Properti baru nomor sertifikat
 }
 
 export interface CareerPath {
@@ -223,7 +247,45 @@ export interface OnlineCVConfig {
   };
 }
 
+export interface AiConfig {
+  openRouterKey: string;
+  modelName: string;
+  maxTokens: number;
+  updatedAt?: string;
+}
+
+export interface AiStrategy {
+  version: number;
+  date: string;
+  language: 'id' | 'en';
+  targetGoal: string;
+  readinessScore: number;
+  scoreExplanation: string;
+  criticalGaps: { skill: string; why: string; priority: string }[];
+  immediateActions: { weekly: string; monthly: string; nextMonth: string };
+  roadmapSteps: { title: string; detail: string }[];
+  recommendations: { trainings: string[]; certifications: string[] };
+  motivation: string;
+  executiveSummary: string;
+}
+
 export interface AppData {
+  uid?: string; // Ditambahkan untuk identifikasi di admin
+  role: UserRole;
+  plan: SubscriptionPlan;
+  status: AccountStatus;
+  joinedAt: string;
+  lastLogin: string;
+  activeFrom?: string; // Tanggal mulai masa aktif
+  expiryDate?: string; // Tanggal akhir masa aktif
+  planPermissions?: string[]; // Modul yang diizinkan (e.g. 'daily', 'cv')
+  planLimits?: Record<string, number | 'unlimited'>; // Batas data per modul
+  aiUsage: {
+    cvGenerated: number;
+    coverLetters: number;
+    careerAnalysis: number;
+    totalTokens: number;
+  };
   profile: UserProfile;
   workExperiences: WorkExperience[];
   educations: Education[];
@@ -240,4 +302,7 @@ export interface AppData {
   affirmations: string[];
   workCategories: string[]; // Properti baru untuk kustomisasi kategori kerja
   onlineCV: OnlineCVConfig; // Properti baru untuk CV Online
+  aiStrategies?: AiStrategy[]; // Properti baru untuk riwayat strategi AI
+  isDeleted?: boolean; // Untuk fitur soft delete
+  deletedAt?: string;
 }

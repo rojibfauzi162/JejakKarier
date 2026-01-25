@@ -1,8 +1,9 @@
+
 import { initializeApp } from "firebase/app";
 // Use @firebase/auth to ensure named exports like getAuth are correctly resolved in modular Firebase v9+ environments
 import { getAuth } from '@firebase/auth';
-import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
-import { AppData } from "../types";
+import { getFirestore, doc, setDoc, getDoc, collection, getDocs, updateDoc } from "firebase/firestore";
+import { AppData, AiConfig } from "../types";
 
 // MASUKKAN CONFIG ANDA DI SINI
 const firebaseConfig = {
@@ -23,6 +24,7 @@ export const saveUserData = async (uid: string, data: AppData) => {
   try {
     await setDoc(doc(db, "users", uid), {
       ...data,
+      uid, // Pastikan UID tersimpan di doc
       updatedAt: new Date().toISOString()
     });
   } catch (error) {
@@ -37,4 +39,82 @@ export const getUserData = async (uid: string): Promise<AppData | null> => {
     return docSnap.data() as AppData;
   }
   return null;
+};
+
+// --- ADMIN FUNCTIONS ---
+
+export const getAllUsers = async (): Promise<AppData[]> => {
+  try {
+    const querySnapshot = await getDocs(collection(db, "users"));
+    return querySnapshot.docs.map(doc => ({
+      ...(doc.data() as AppData),
+      uid: doc.id
+    }));
+  } catch (error: any) {
+    console.error("Admin: Error fetching all users:", error);
+    throw error;
+  }
+};
+
+export const updateAdminMetadata = async (uid: string, fields: Partial<AppData>) => {
+  try {
+    if (!uid || typeof uid !== 'string') {
+      throw new Error("Valid UID is required for updating metadata");
+    }
+    const userRef = doc(db, "users", uid);
+    await updateDoc(userRef, {
+      ...fields,
+      updatedAt: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error("Admin: Error updating user metadata:", error);
+    throw error;
+  }
+};
+
+export const logAIUsage = async (uid: string, type: 'cvGenerated' | 'coverLetters' | 'careerAnalysis') => {
+  try {
+    const userRef = doc(db, "users", uid);
+    const userSnap = await getDoc(userRef);
+    if (userSnap.exists()) {
+      const data = userSnap.data() as AppData;
+      const currentUsage = data.aiUsage || { cvGenerated: 0, coverLetters: 0, careerAnalysis: 0, totalTokens: 0 };
+      await updateDoc(userRef, {
+        [`aiUsage.${type}`]: (currentUsage[type] || 0) + 1,
+        updatedAt: new Date().toISOString()
+      });
+    }
+  } catch (error) {
+    console.error("Error logging AI usage:", error);
+  }
+};
+
+export const getAiConfig = async (): Promise<AiConfig | null> => {
+  try {
+    // Menggunakan koleksi system_metadata agar tidak berbenturan dengan rules users
+    const docRef = doc(db, "system_metadata", "ai_configuration");
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      return docSnap.data() as AiConfig;
+    }
+  } catch (error: any) {
+    // Jika error permission, return null secara diam-diam untuk regular user
+    if (error.code !== 'permission-denied') {
+      console.error("Error fetching AI config:", error);
+    }
+  }
+  return null;
+};
+
+export const saveAiConfig = async (config: AiConfig) => {
+  try {
+    const docRef = doc(db, "system_metadata", "ai_configuration");
+    await setDoc(docRef, {
+      ...config,
+      updatedAt: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error("Error saving AI config:", error);
+    throw error;
+  }
 };
