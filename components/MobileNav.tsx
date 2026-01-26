@@ -14,14 +14,16 @@ const MobileNav: React.FC<MobileNavProps> = ({ activeTab, setActiveTab, onLogout
   const mainItems = [
     { id: 'dashboard', label: 'Home', icon: '📊' },
     { id: 'daily', label: 'Work', icon: '📝' },
+    { id: 'reminders', label: 'Alarm', icon: '🔔' },
     { id: 'skills', label: 'Skills', icon: '🎓' },
-    { id: 'loker', label: 'Jobs', icon: '💼' },
     { id: 'career', label: 'Career', icon: '🚀' },
   ];
 
   const moreItems = [
     { id: 'profile', label: 'Profile', icon: '👤' },
+    { id: 'loker', label: 'Jobs', icon: '💼' },
     { id: 'reports', label: 'Reports', icon: '📈' },
+    { id: 'ai_insights', label: 'AI Insight', icon: '🧠' },
     { id: 'projects', label: 'Projects', icon: '🛠️' },
     { id: 'achievements', label: 'Awards', icon: '🏆' },
     { id: 'networking', label: 'Net', icon: '🤝' },

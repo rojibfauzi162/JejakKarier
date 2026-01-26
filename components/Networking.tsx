@@ -108,7 +108,7 @@ const Networking: React.FC<NetworkingProps> = ({ contacts, onAdd, onUpdate, onDe
                 <td className="px-6 py-5">
                   <div className="flex justify-between items-center gap-4">
                     <p className="text-xs text-emerald-600 font-black leading-relaxed italic line-clamp-2">{contact.followUpPlan || 'Belum ada rencana'}</p>
-                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex gap-1 opacity-100 transition-opacity">
                       <button onClick={() => openEditForm(contact)} className="p-2 text-slate-400 hover:text-blue-600">✎</button>
                       <button onClick={() => onDelete(contact.id)} className="p-2 text-slate-400 hover:text-red-500">✕</button>
                     </div>

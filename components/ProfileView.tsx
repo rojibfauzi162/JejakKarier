@@ -237,7 +237,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({
                     <p className="text-xs text-slate-400 font-medium mt-1 uppercase">{work.duration}</p>
                     <p className="text-sm text-slate-600 mt-4 leading-relaxed line-clamp-3">{work.description}</p>
                   </div>
-                  <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="flex gap-2 opacity-100 transition-opacity">
                     <button onClick={() => setIsEditingWork(work.id)} className="p-2 text-slate-400 hover:text-indigo-600">✎</button>
                     <button onClick={() => onDeleteWork(work.id)} className="p-2 text-slate-400 hover:text-red-500">✕</button>
                   </div>
@@ -336,7 +336,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({
                       <p className="text-sm text-slate-600 mt-2 leading-relaxed">{edu.description}</p>
                     </div>
                   </div>
-                  <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="flex gap-2 opacity-100 transition-opacity">
                     <button onClick={() => handleEditEdu(edu)} className="p-2 text-slate-400 hover:text-amber-600">✎</button>
                     <button onClick={() => onDeleteEducation(edu.id)} className="p-2 text-slate-400 hover:text-red-500">✕</button>
                   </div>

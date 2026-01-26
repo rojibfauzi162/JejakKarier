@@ -9,13 +9,14 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout, isAdmin }) => {
-  const [dailyDropdownOpen, setDailyDropdownOpen] = useState(activeTab === 'daily' || activeTab === 'reports');
+  const [dailyDropdownOpen, setDailyDropdownOpen] = useState(activeTab === 'daily' || activeTab === 'reports' || activeTab === 'ai_insights');
   const [cvDropdownOpen, setCvDropdownOpen] = useState(activeTab === 'cv_generator' || activeTab === 'online_cv');
 
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg> },
     { id: 'profile', label: 'User Profile', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg> },
     { id: 'daily', label: 'Daily Work', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>, hasSub: true, type: 'daily' },
+    { id: 'reminders', label: 'Reminders', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg> },
     { id: 'skills', label: 'Skills & Learning', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12.5V16a6 6 0 0 0 12 0v-3.5"></path></svg> },
     { id: 'loker', label: 'Loker Tracker', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg> },
     { id: 'projects', label: 'Personal Project', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg> },
@@ -102,7 +103,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout, is
               }}
               className={`w-full flex items-center justify-between gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 group ${
                 activeTab === item.id || 
-                (item.type === 'daily' && (activeTab === 'daily' || activeTab === 'reports')) ||
+                (item.type === 'daily' && (activeTab === 'daily' || activeTab === 'reports' || activeTab === 'ai_insights')) ||
                 (item.type === 'cv' && (activeTab === 'cv_generator' || activeTab === 'online_cv'))
                   ? 'bg-indigo-600/10 text-indigo-400 border border-indigo-500/20' 
                   : 'text-slate-500 hover:bg-white/5 hover:text-white border border-transparent'
@@ -126,6 +127,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout, is
               <div className="pl-12 space-y-1.5 mt-1.5 animate-in slide-in-from-top-2 duration-300">
                 <SubMenuButton active={activeTab === 'daily'} onClick={() => setActiveTab('daily')} label="Log Aktivitas" />
                 <SubMenuButton active={activeTab === 'reports'} onClick={() => setActiveTab('reports')} label="Performa Data" />
+                <SubMenuButton active={activeTab === 'ai_insights'} onClick={() => setActiveTab('ai_insights')} label="AI Insight Activity" />
               </div>
             )}
 

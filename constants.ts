@@ -1,7 +1,7 @@
 
 import { AppData, SkillStatus, SkillCategory, SkillPriority, TrainingStatus, AchievementCategory, CareerType, CareerStatus, JobStatus, ProjectStatus, UserRole, SubscriptionPlan, AccountStatus } from './types';
 
-// Fix: Added missing properties (role, plan, status, joinedAt, lastLogin, aiUsage) required by AppData type
+// Fix: Added missing properties (role, plan, status, joinedAt, lastLogin, aiUsage, completedAiMilestones) required by AppData type
 export const INITIAL_DATA: AppData = {
   role: UserRole.USER,
   plan: SubscriptionPlan.FREE,
@@ -126,7 +126,7 @@ export const INITIAL_DATA: AppData = {
     },
     {
       id: 't2',
-      name: 'Dasar-Dasar Perpajakan Indonesia',
+      name: 'Dasar-Durasi Perpajakan Indonesia',
       provider: 'Online Pajak Academy',
       cost: 0,
       date: '2024-12-15',
@@ -302,7 +302,14 @@ export const INITIAL_DATA: AppData = {
       projects: []
     },
     socialLinks: {}
-  }
+  },
+  reminderConfig: {
+    weeklyProgress: true,
+    monthlyEvaluation: true,
+    dailyMotivation: true
+  },
+  // Fix: Added missing property required by AppData interface
+  completedAiMilestones: []
 };
 
 export const MONTHS = [

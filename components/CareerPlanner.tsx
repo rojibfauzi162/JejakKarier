@@ -161,7 +161,7 @@ const CareerPlanner: React.FC<CareerPlannerProps> = ({ paths, appData, onAddPath
                       <span className={`text-xs font-bold whitespace-nowrap ${shouldStrike ? 'text-slate-300' : 'text-amber-600'} ${contentClass}`}>
                         {formatDeadline(path.actionDeadline)}
                       </span>
-                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex gap-1 opacity-100 transition-opacity">
                         <button onClick={() => openForm(path)} className="p-2 text-slate-400 hover:text-blue-500">✎</button>
                         <button onClick={() => onDeletePath(path.id)} className="p-2 text-slate-400 hover:text-red-500">✕</button>
                       </div>

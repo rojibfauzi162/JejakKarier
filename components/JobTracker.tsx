@@ -206,7 +206,7 @@ const JobTracker: React.FC<JobTrackerProps> = ({ applications, onAdd, onUpdate, 
                 <td className="px-6 py-5">
                   <div className="flex justify-between items-center gap-2">
                     <p className="text-xs text-slate-500 italic truncate flex-1">{app.notes || '-'}</p>
-                    <div className="flex opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex opacity-100 transition-opacity">
                       <button onClick={() => openEditForm(app)} className="p-1.5 text-slate-400 hover:text-blue-600">✎</button>
                       <button onClick={() => onDelete(app.id)} className="p-1.5 text-slate-400 hover:text-rose-600">✕</button>
                     </div>

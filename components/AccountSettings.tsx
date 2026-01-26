@@ -2,8 +2,14 @@
 import React, { useState } from 'react';
 import { updateProfile, updatePassword, User } from '@firebase/auth';
 import { auth } from '../services/firebase';
+import { ReminderConfig } from '../types';
 
-const AccountSettings: React.FC = () => {
+interface AccountSettingsProps {
+  reminderConfig: ReminderConfig;
+  onUpdateReminders: (config: ReminderConfig) => void;
+}
+
+const AccountSettings: React.FC<AccountSettingsProps> = ({ reminderConfig, onUpdateReminders }) => {
   const user = auth.currentUser;
   const [name, setName] = useState(user?.displayName || '');
   const [newPassword, setNewPassword] = useState('');
@@ -45,6 +51,13 @@ const AccountSettings: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const toggleReminder = (key: keyof ReminderConfig) => {
+    onUpdateReminders({
+      ...reminderConfig,
+      [key]: !reminderConfig[key]
+    });
   };
 
   return (
@@ -104,6 +117,37 @@ const AccountSettings: React.FC = () => {
               Simpan Identitas
             </button>
           </form>
+        </section>
+
+        {/* Intelligence Reminders Protocol */}
+        <section className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 space-y-8">
+           <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center">
+                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+              </div>
+              <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight">Reminders Protocol</h3>
+           </div>
+
+           <div className="space-y-4">
+              <ReminderToggle 
+                label="Weekly Progress Signals" 
+                sub="Pengingat mingguan untuk Micro Actions & Gaps."
+                active={reminderConfig.weeklyProgress} 
+                onToggle={() => toggleReminder('weeklyProgress')} 
+              />
+              <ReminderToggle 
+                label="Monthly AI Evaluation" 
+                sub="Sinyal evaluasi bulanan untuk strategi karir."
+                active={reminderConfig.monthlyEvaluation} 
+                onToggle={() => toggleReminder('monthlyEvaluation')} 
+              />
+              <ReminderToggle 
+                label="Daily Pulse Motivation" 
+                sub="Motivasi harian berbasis profil profesional Anda."
+                active={reminderConfig.dailyMotivation} 
+                onToggle={() => toggleReminder('dailyMotivation')} 
+              />
+           </div>
         </section>
 
         {/* Keamanan Akun */}
@@ -166,5 +210,20 @@ const AccountSettings: React.FC = () => {
     </div>
   );
 };
+
+const ReminderToggle = ({ label, sub, active, onToggle }: any) => (
+  <button 
+    onClick={onToggle}
+    className={`w-full flex items-center justify-between p-5 rounded-2xl border transition-all ${active ? 'bg-indigo-50/50 border-indigo-100 shadow-sm' : 'bg-slate-50 border-slate-100 opacity-60'}`}
+  >
+     <div className="text-left">
+        <p className={`text-xs font-black uppercase tracking-tight ${active ? 'text-indigo-600' : 'text-slate-400'}`}>{label}</p>
+        <p className="text-[9px] font-bold text-slate-400 mt-1 uppercase tracking-widest">{sub}</p>
+     </div>
+     <div className={`w-12 h-6 rounded-full relative transition-colors ${active ? 'bg-indigo-600' : 'bg-slate-300'}`}>
+        <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${active ? 'left-7' : 'left-1'}`}></div>
+     </div>
+  </button>
+);
 
 export default AccountSettings;

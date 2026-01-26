@@ -145,6 +145,7 @@ export interface Training {
   progress: number; // Properti baru 0-100
   deadline: string; // Properti baru YYYY-MM-DD
   priority: SkillPriority; // Properti baru
+  certLink?: string; // Properti baru link/file sertifikat
 }
 
 export interface Certification {
@@ -254,6 +255,15 @@ export interface AiConfig {
   updatedAt?: string;
 }
 
+export interface AiRecommendation {
+  name: string;
+  provider: string;
+  detail: string;
+  schedule: string;
+  priceRange: string;
+  url?: string;
+}
+
 export interface AiStrategy {
   version: number;
   date: string;
@@ -264,9 +274,30 @@ export interface AiStrategy {
   criticalGaps: { skill: string; why: string; priority: string }[];
   immediateActions: { weekly: string; monthly: string; nextMonth: string };
   roadmapSteps: { title: string; detail: string }[];
-  recommendations: { trainings: string[]; certifications: string[] };
+  experienceRoadmap?: { position: string; duration: string; focus: string }[];
+  recommendations: { 
+    trainings: AiRecommendation[]; 
+    certifications: AiRecommendation[] 
+  };
   motivation: string;
   executiveSummary: string;
+  dataFingerprint?: string; // Properti baru untuk validasi perubahan data
+}
+
+export interface AiInsightRecord {
+  id: string;
+  date: string;
+  label: string; // e.g. "Januari 2026 Minggu ke-1"
+  period: 'weekly' | 'monthly';
+  audience: 'self' | 'supervisor';
+  contexts: string[];
+  result: any; // The JSON object returned by Gemini
+}
+
+export interface ReminderConfig {
+  weeklyProgress: boolean;
+  monthlyEvaluation: boolean;
+  dailyMotivation: boolean;
 }
 
 export interface AppData {
@@ -280,6 +311,7 @@ export interface AppData {
   expiryDate?: string; // Tanggal akhir masa aktif
   planPermissions?: string[]; // Modul yang diizinkan (e.g. 'daily', 'cv')
   planLimits?: Record<string, number | 'unlimited'>; // Batas data per modul
+  bypassAiLimits?: boolean; // Modul admin bypass kuota
   aiUsage: {
     cvGenerated: number;
     coverLetters: number;
@@ -299,10 +331,13 @@ export interface AppData {
   monthlyReviews: MonthlyReview[];
   jobApplications: JobApplication[];
   personalProjects: PersonalProject[];
+  aiInsights?: AiInsightRecord[]; // Riwayat AI Insight
   affirmations: string[];
   workCategories: string[]; // Properti baru untuk kustomisasi kategori kerja
   onlineCV: OnlineCVConfig; // Properti baru untuk CV Online
   aiStrategies?: AiStrategy[]; // Properti baru untuk riwayat strategi AI
+  reminderConfig: ReminderConfig; // Baru: Konfigurasi pengingat
+  completedAiMilestones: string[]; // Baru: Simpan ID mileston yang sudah tuntas
   isDeleted?: boolean; // Untuk fitur soft delete
   deletedAt?: string;
 }

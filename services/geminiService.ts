@@ -3,16 +3,38 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { AppData, AiConfig } from "../types";
 import { getAiConfig } from "./firebase";
 
+// Cache lokal untuk konfigurasi AI agar tidak redundant ke Firestore
+let cachedAiConfig: AiConfig | null = null;
+let lastConfigFetch = 0;
+
 async function callAI(prompt: string, schema?: any) {
-  // Check for OpenRouter configuration first
-  let config: AiConfig | null = null;
-  try {
-    config = await getAiConfig();
-  } catch (e) {
-    console.warn("AI Config inaccessible, using default SDK.");
+  // Check for OpenRouter configuration first with 10-second timeout on DB fetch
+  let config: AiConfig | null = cachedAiConfig;
+  const now = Date.now();
+
+  // Refresh config if older than 5 minutes or not cached
+  if (!config || (now - lastConfigFetch > 300000)) {
+    try {
+      const configPromise = getAiConfig();
+      const timeoutPromise = new Promise<null>((_, reject) => setTimeout(() => reject(new Error("DB Timeout")), 10000));
+      config = await Promise.race([configPromise, timeoutPromise]) as AiConfig | null;
+      if (config) {
+        cachedAiConfig = config;
+        lastConfigFetch = now;
+      }
+    } catch (e) {
+      console.warn("[AI SERVICE] Config fetch timed out or failed, using previous cache if available.");
+      config = cachedAiConfig;
+    }
   }
   
+  // LOGIKA PRIORITAS: Jika OpenRouter Key tersedia, gunakan OpenRouter
   if (config && config.openRouterKey && config.openRouterKey.trim() !== '') {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s timeout for complex reports
+
+    const targetModel = config.modelName || "google/gemini-2.0-flash-exp:free";
+
     try {
       const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
         method: "POST",
@@ -23,36 +45,53 @@ async function callAI(prompt: string, schema?: any) {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          model: config.modelName || "google/gemini-2.0-pro-exp-02-05:free",
+          model: targetModel,
           messages: [
-            { role: "system", content: schema ? "You are a specialized career qualification strategist. Return ONLY a valid JSON object matching the requested schema." : "You are a helpful career assistant." },
+            { role: "system", content: schema ? "You are a professional career qualification analyst. Return ONLY raw JSON. No markdown blocks. STRICT: Write normally. No extra spaces between letters. No ALL-CAPS paragraphs. Use standard sentence casing." : "You are a helpful career assistant." },
             { role: "user", content: prompt }
           ],
           max_tokens: config.maxTokens || 2000,
           response_format: schema ? { type: "json_object" } : undefined
-        })
+        }),
+        signal: controller.signal
       });
 
-      const json = await response.json();
-      const text = json.choices?.[0]?.message?.content || "";
-      
-      if (schema) {
-        try {
-          return JSON.parse(text);
-        } catch (e) {
-          console.error("Failed to parse OpenRouter JSON:", text);
-          return null;
+      clearTimeout(timeoutId);
+
+      if (response.ok) {
+        const json = await response.json();
+        let text = json.choices[0].message?.content || "";
+        
+        if (schema) {
+          try {
+            const jsonMatch = text.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+              return JSON.parse(jsonMatch[0]);
+            }
+            return JSON.parse(text);
+          } catch (e) {
+            console.error("[AI SERVICE] OpenRouter JSON Parse error. Attempting fallback...");
+            // Let it fall through to SDK
+          }
+        } else {
+          return text;
         }
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error("[AI SERVICE] OpenRouter error:", response.status, errorData);
+        // Do not return null here, let it fall through to Gemini SDK fallback
       }
-      return text;
-    } catch (error) {
-      console.error("OpenRouter call failed, falling back to Gemini SDK:", error);
+    } catch (error: any) {
+      clearTimeout(timeoutId);
+      console.error("[AI SERVICE] OpenRouter Request failed:", error.message);
+      // Biarkan lanjut ke fallback di bawah, jangan return null di sini
     }
   }
 
-  // Default to Gemini SDK via GenAI
+  // FALLBACK: Google SDK
+  console.log("[AI SERVICE] Using default Gemini SDK");
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  const model = 'gemini-3-pro-preview';
+  const model = 'gemini-3-flash-preview';
 
   try {
     const response = await ai.models.generateContent({
@@ -64,46 +103,58 @@ async function callAI(prompt: string, schema?: any) {
       } : undefined
     });
     
-    const text = response.text?.trim() || (schema ? '{}' : '');
-    return schema ? JSON.parse(text) : text;
+    let text = response.text?.trim() || (schema ? '{}' : '');
+    
+    if (schema) {
+      try {
+        // Robust extraction for SDK too
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          return JSON.parse(jsonMatch[0]);
+        }
+        return JSON.parse(text);
+      } catch (e) {
+        console.error("[AI SERVICE] SDK JSON Parse error:", e);
+        return null;
+      }
+    }
+    return text;
   } catch (error) {
-    console.error("Gemini SDK call failed:", error);
+    console.error("[AI SERVICE] Default SDK failure:", error);
     return null;
   }
 }
 
 export async function analyzeSkillGap(data: AppData, lang: 'id' | 'en' = 'id') {
   const currentTarget = data.profile.shortTermTarget || "Next Level Position";
+  const completedHistory = data.completedAiMilestones ? data.completedAiMilestones.join(", ") : "None";
+  
   const prompt = `
-    Analyze the career gap and provide a Detailed Qualification Strategy.
-    LANGUAGE: Use ${lang === 'id' ? 'Indonesian' : 'English'}.
+    PERFORM CAREER ANALYSIS FOR: ${data.profile.name}
+    CURRENT ROLE: ${data.profile.currentPosition}
+    TARGET GOAL: ${currentTarget}
+    SKILLS DATA: ${JSON.stringify(data.skills.map(s => ({ name: s.name, level: s.currentLevel })))}
+    WORK HISTORY: ${JSON.stringify(data.workExperiences.map(w => ({ pos: w.position, duration: w.duration })))}
+    ACHIEVEMENT CONTEXT: ${completedHistory}
     
-    USER PROFILE:
-    Name: ${data.profile.name}
-    Current Role: ${data.profile.currentPosition} at ${data.profile.currentCompany}
-    Target Goal: ${currentTarget}
-    Ultimate Goal: ${data.profile.longTermTarget}
-    Current Skills: ${JSON.stringify(data.skills.map(s => ({ name: s.name, level: s.currentLevel })))}
-    Trainings Done: ${JSON.stringify(data.trainings.map(t => t.name))}
-    Certifications Held: ${JSON.stringify(data.certifications.map(c => c.name))}
+    INSTRUCTIONS:
+    1. STRICT: Write normally. No spaced-out text (e.g. DO NOT write 'P L A N'). 
+    2. Use Sentence Case for all paragraphs.
+    3. LANGUAGE: ${lang === 'id' ? 'Bahasa Indonesia' : 'English'}.
     
-    OBJECTIVE: 
-    1. Calculate a "Readiness Score" (0-100) to reach the Target Goal based on skills, certs, and experience.
-    2. Explain the score (What is strong, what is missing).
-    3. Identify Crucial Skill Gaps.
-    4. Provide specific "Next Small Actions" for: This Week, This Month, Next Month.
-    5. List Recommended Training Names and Certification Names specifically relevant to the Target Goal.
-    6. Create a Motivation Quote for this version of the roadmap.
-    
-    Output strictly as JSON:
+    REQUIRED JSON STRUCTURE:
     {
-      "targetGoal": "${currentTarget}",
+      "targetGoal": "string",
       "readinessScore": number,
       "scoreExplanation": "string",
-      "criticalGaps": [{"skill": "string", "priority": "CRITICAL/HIGH", "why": "string"}],
+      "experienceRoadmap": [{"position": "string", "duration": "string", "focus": "string"}],
+      "criticalGaps": [{"skill": "string", "priority": "string", "why": "string"}],
       "immediateActions": { "weekly": "string", "monthly": "string", "nextMonth": "string" },
       "roadmapSteps": [{"title": "string", "detail": "string"}],
-      "recommendations": { "trainings": ["string"], "certifications": ["string"] },
+      "recommendations": { 
+         "trainings": [{"name": "string", "provider": "string", "detail": "string", "schedule": "string", "priceRange": "string", "url": ""}], 
+         "certifications": [{"name": "string", "provider": "string", "detail": "string", "schedule": "string", "priceRange": "string", "url": ""}] 
+      },
       "motivation": "string",
       "executiveSummary": "string"
     }
@@ -115,46 +166,43 @@ export async function analyzeSkillGap(data: AppData, lang: 'id' | 'en' = 'id') {
       targetGoal: { type: Type.STRING },
       readinessScore: { type: Type.NUMBER },
       scoreExplanation: { type: Type.STRING },
+      experienceRoadmap: {
+        type: Type.ARRAY,
+        items: {
+          type: Type.OBJECT,
+          properties: { position: { type: Type.STRING }, duration: { type: Type.STRING }, focus: { type: Type.STRING } },
+          required: ["position", "duration", "focus"]
+        }
+      },
       criticalGaps: {
         type: Type.ARRAY,
         items: {
           type: Type.OBJECT,
-          properties: {
-            skill: { type: Type.STRING },
-            priority: { type: Type.STRING },
-            why: { type: Type.STRING }
-          }
+          properties: { skill: { type: Type.STRING }, priority: { type: Type.STRING }, why: { type: Type.STRING } },
+          required: ["skill", "priority", "why"]
         }
       },
       immediateActions: {
         type: Type.OBJECT,
-        properties: {
-          weekly: { type: Type.STRING },
-          monthly: { type: Type.STRING },
-          nextMonth: { type: Type.STRING }
-        }
+        properties: { weekly: { type: Type.STRING }, monthly: { type: Type.STRING }, nextMonth: { type: Type.STRING } },
+        required: ["weekly", "monthly", "nextMonth"]
       },
       roadmapSteps: {
         type: Type.ARRAY,
-        items: {
-          type: Type.OBJECT,
-          properties: {
-            title: { type: Type.STRING },
-            detail: { type: Type.STRING }
-          }
-        }
+        items: { type: Type.OBJECT, properties: { title: { type: Type.STRING }, detail: { type: Type.STRING } }, required: ["title", "detail"] }
       },
       recommendations: {
         type: Type.OBJECT,
         properties: {
-          trainings: { type: Type.ARRAY, items: { type: Type.STRING } },
-          certifications: { type: Type.ARRAY, items: { type: Type.STRING } }
-        }
+          trainings: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { name: { type: Type.STRING }, provider: { type: Type.STRING }, detail: { type: Type.STRING }, schedule: { type: Type.STRING }, priceRange: { type: Type.STRING }, url: { type: Type.STRING } } } },
+          certifications: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { name: { type: Type.STRING }, provider: { type: Type.STRING }, detail: { type: Type.STRING }, schedule: { type: Type.STRING }, priceRange: { type: Type.STRING }, url: { type: Type.STRING } } } }
+        },
+        required: ["trainings", "certifications"]
       },
       motivation: { type: Type.STRING },
       executiveSummary: { type: Type.STRING }
     },
-    propertyOrdering: ["targetGoal", "readinessScore", "scoreExplanation", "criticalGaps", "immediateActions", "roadmapSteps", "recommendations", "motivation", "executiveSummary"]
+    required: ["targetGoal", "readinessScore", "scoreExplanation", "criticalGaps", "immediateActions", "roadmapSteps", "recommendations", "motivation", "executiveSummary"]
   };
 
   return await callAI(prompt, schema);
@@ -163,4 +211,85 @@ export async function analyzeSkillGap(data: AppData, lang: 'id' | 'en' = 'id') {
 export async function summarizeMonthlyReview(reviewText: string) {
   const prompt = `Summarize this monthly career review and suggest 3 action items: ${reviewText}`;
   return await callAI(prompt);
+}
+
+export async function generateCareerInsight(data: AppData, audience: 'self' | 'supervisor', period: 'weekly' | 'monthly', contexts: string[]) {
+  // If audience is supervisor, filter only 'Perusahaan' (Kantor)
+  const isSupervisor = audience === 'supervisor';
+  const targetContexts = isSupervisor ? ['Perusahaan'] : contexts;
+  
+  // OPTIMASI PAYLOAD: Hanya kirim data esensial untuk mencegah token overflow
+  const minimalLogs = data.dailyReports
+    .filter(l => targetContexts.includes(l.context))
+    .slice(-40)
+    .map(l => ({
+      d: l.date,
+      a: l.activity,
+      o: l.output,
+      m: `${l.metricValue} ${l.metricLabel}`
+    }));
+
+  const prompt = `
+    GENERATE PROFESSIONAL CAREER INSIGHT REPORT
+    FOR: ${data.profile.name}
+    AUDIENCE: ${isSupervisor ? 'SUPERVISOR (Focus ONLY on corporate tasks/Perusahaan)' : 'SELF REFLECTION.'}
+    PERIOD: ${period === 'weekly' ? 'Weekly' : 'Monthly'}
+    
+    DATA PROVIDED:
+    - Activity Logs: ${JSON.stringify(minimalLogs)}
+    - Current Performance: ${JSON.stringify(data.skills.map(s => ({n: s.name, l: s.currentLevel})))}
+    
+    INSTRUCTIONS (STRICT FORMATTING):
+    1. Write in normal professional Bahasa Indonesia. 
+    2. DILARANG KERAS menggunakan spasi tambahan di antara setiap huruf (Contoh gaya salah: 'P E N C A P A I A N'). Gunakan gaya normal: 'Pencapaian'.
+    3. DILARANG menggunakan huruf KAPITAL SEMUA (ALL-CAPS) untuk isi paragraf. Gunakan Sentence case (Huruf kapital di awal kalimat saja).
+    4. Identifikasi pencapaian (Achievements) yang valid dari data log di atas.
+    
+    SCHEMA:
+    {
+      "title": "string",
+      "summary": "string",
+      "startDate": "YYYY-MM-DD",
+      "endDate": "YYYY-MM-DD",
+      "sections": [{"label": "string", "content": "string"}],
+      "metrics": [{"label": "string", "value": "string"}],
+      "detectedAchievements": [
+         {
+           "title": "string",
+           "impact": "string",
+           "category": "Profesional",
+           "scope": "Perusahaan"
+         }
+      ],
+      "aiReflection": "string"
+    }
+  `;
+
+  const schema = {
+    type: Type.OBJECT,
+    properties: {
+      title: { type: Type.STRING },
+      summary: { type: Type.STRING },
+      startDate: { type: Type.STRING },
+      endDate: { type: Type.STRING },
+      sections: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { label: { type: Type.STRING }, content: { type: Type.STRING } } } },
+      metrics: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { label: { type: Type.STRING }, value: { type: Type.STRING } } } },
+      detectedAchievements: { 
+        type: Type.ARRAY, 
+        items: { 
+          type: Type.OBJECT, 
+          properties: { 
+            title: { type: Type.STRING }, 
+            impact: { type: Type.STRING }, 
+            category: { type: Type.STRING }, 
+            scope: { type: Type.STRING } 
+          } 
+        } 
+      },
+      aiReflection: { type: Type.STRING }
+    },
+    required: ["title", "summary", "startDate", "endDate", "sections", "metrics", "aiReflection"]
+  };
+
+  return await callAI(prompt, schema);
 }

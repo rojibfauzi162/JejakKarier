@@ -2,7 +2,7 @@
 import { initializeApp } from "firebase/app";
 // Use @firebase/auth to ensure named exports like getAuth are correctly resolved in modular Firebase v9+ environments
 import { getAuth } from '@firebase/auth';
-import { getFirestore, doc, setDoc, getDoc, collection, getDocs, updateDoc } from "firebase/firestore";
+import { getFirestore, doc, setDoc, getDoc, collection, getDocs, updateDoc, deleteDoc } from "firebase/firestore";
 import { AppData, AiConfig } from "../types";
 
 // MASUKKAN CONFIG ANDA DI SINI
@@ -109,12 +109,39 @@ export const getAiConfig = async (): Promise<AiConfig | null> => {
 export const saveAiConfig = async (config: AiConfig) => {
   try {
     const docRef = doc(db, "system_metadata", "ai_configuration");
-    await setDoc(docRef, {
-      ...config,
+    // Eksplisit mapping untuk menghindari error tipe data atau undefined di Firestore
+    const dataToSave = {
+      openRouterKey: config.openRouterKey || "",
+      modelName: config.modelName || "google/gemini-2.0-flash-exp:free",
+      maxTokens: Number(config.maxTokens) || 2000,
       updatedAt: new Date().toISOString()
-    });
+    };
+    await setDoc(docRef, dataToSave, { merge: true });
   } catch (error) {
     console.error("Error saving AI config:", error);
     throw error;
+  }
+};
+
+// --- PRODUCT CATALOG PERSISTENCE ---
+
+export const getProductsCatalog = async (): Promise<any[] | null> => {
+  try {
+    const docRef = doc(db, "system_metadata", "products_catalog");
+    const snap = await getDoc(docRef);
+    if (snap.exists()) return snap.data().list;
+  } catch (e) {
+    console.error("Error fetching products:", e);
+  }
+  return null;
+};
+
+export const saveProductsCatalog = async (products: any[]) => {
+  try {
+    const docRef = doc(db, "system_metadata", "products_catalog");
+    await setDoc(docRef, { list: products, updatedAt: new Date().toISOString() });
+  } catch (e) {
+    console.error("Error saving products:", e);
+    throw e;
   }
 };

@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { onAuthStateChanged, signOut, type User } from '@firebase/auth';
 import { doc, onSnapshot, setDoc } from "firebase/firestore";
 import { auth, db, saveUserData } from './services/firebase';
-import { AppData, UserProfile, DailyReport, Skill, Training, Certification, CareerPath, Achievement, Contact, MonthlyReview, WorkExperience, Education, JobApplication, PersonalProject, OnlineCVConfig, UserRole, SubscriptionPlan, AccountStatus, AiStrategy } from './types';
+import { AppData, UserProfile, DailyReport, Skill, Training, Certification, CareerPath, Achievement, Contact, MonthlyReview, WorkExperience, Education, JobApplication, PersonalProject, OnlineCVConfig, UserRole, SubscriptionPlan, AccountStatus, AiStrategy, ReminderConfig } from './types';
 import { INITIAL_DATA } from './constants';
 import Dashboard from './components/Dashboard';
 import ProfileView from './components/ProfileView';
@@ -25,6 +25,8 @@ import OnlineCVBuilder from './components/OnlineCVBuilder';
 import OnlineCVView from './components/OnlineCVView';
 import AccountSettings from './components/AccountSettings';
 import AdminPanel from './components/AdminPanel';
+import Reminders from './components/Reminders';
+import AiInsightActivity from './components/AiInsightActivity';
 
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -45,13 +47,14 @@ const App: React.FC = () => {
       status: AccountStatus.ACTIVE,
       joinedAt: new Date().toISOString(),
       lastLogin: new Date().toISOString(),
-      aiUsage: { cvGenerated: 0, coverLetters: 0, careerAnalysis: 0, totalTokens: 0 }
+      aiUsage: { cvGenerated: 0, coverLetters: 0, careerAnalysis: 0, totalTokens: 0 },
+      completedAiMilestones: []
     };
   });
   const [activeTab, setActiveTab] = useState('dashboard');
 
   const searchParams = new URLSearchParams(window.location.search);
-  const isPublicView = searchParams.get('view') === 'shared_report';
+  const isPublicView = searchParams.get('view') === 'shared_report' || searchParams.get('view') === 'shared_insight';
   const publicContext = searchParams.get('context') || 'all';
   const publicUserName = searchParams.get('name') || 'User';
   
@@ -86,16 +89,52 @@ const App: React.FC = () => {
         setPermissionsBlocked(false);
         if (docSnap.exists()) {
           const cloudData = docSnap.data() as AppData;
-          const isHardcodedAdmin = user.email === 'admin@jejakkarir.com';
+          const authEmail = (user.email || '').toLowerCase();
+          const isHardcodedAdmin = authEmail === 'admin@jejakkarir.com';
           let needsUpdateToDB = false;
 
+          // Proteksi inisialisasi agar data lokal tidak tertimpa undefined saat sync
+          if (!cloudData.workExperiences) cloudData.workExperiences = [];
+          if (!cloudData.educations) cloudData.educations = [];
+          if (!cloudData.dailyReports) cloudData.dailyReports = [];
+          if (!cloudData.skills) cloudData.skills = [];
+          if (!cloudData.trainings) cloudData.trainings = [];
+          if (!cloudData.certifications) cloudData.certifications = [];
+          if (!cloudData.careerPaths) cloudData.careerPaths = [];
+          if (!cloudData.achievements) cloudData.achievements = [];
+          if (!cloudData.contacts) cloudData.contacts = [];
+          if (!cloudData.monthlyReviews) cloudData.monthlyReviews = [];
+          if (!cloudData.jobApplications) cloudData.jobApplications = [];
           if (!cloudData.personalProjects) cloudData.personalProjects = [];
           if (!cloudData.workCategories) cloudData.workCategories = INITIAL_DATA.workCategories;
           if (!cloudData.onlineCV) cloudData.onlineCV = INITIAL_DATA.onlineCV;
+          if (!cloudData.reminderConfig) cloudData.reminderConfig = INITIAL_DATA.reminderConfig;
+          if (!cloudData.affirmations) cloudData.affirmations = INITIAL_DATA.affirmations;
+          if (!cloudData.completedAiMilestones) cloudData.completedAiMilestones = [];
           
+          // SINKRONISASI IDENTITAS AGRESSIF (PERBAIKAN EMAIL & NAMA)
+          if (!cloudData.profile) cloudData.profile = { ...INITIAL_DATA.profile };
+          
+          const currentProfileEmail = (cloudData.profile.email || '').toLowerCase();
+          const isDefaultEmail = currentProfileEmail === 'alex@example.com' || !currentProfileEmail;
+          
+          if (isDefaultEmail || currentProfileEmail !== authEmail) {
+            cloudData.profile.email = user.email || '';
+            needsUpdateToDB = true;
+          }
+
+          if ((cloudData.profile.name === 'Alex' || !cloudData.profile.name) && user.displayName) {
+            cloudData.profile.name = user.displayName;
+            needsUpdateToDB = true;
+          }
+
           // PASTIKAN ROLE DISINKRONKAN KE DATABASE JIKA BERUBAH ATAU KOSONG
           if (isHardcodedAdmin && cloudData.role !== UserRole.SUPERADMIN) {
             cloudData.role = UserRole.SUPERADMIN;
+            needsUpdateToDB = true;
+          } else if (authEmail === 'rojibfauzi@gmail.com' && cloudData.role !== UserRole.USER) {
+            // FORCE DOWNGRADE UNTUK AKUN YANG SEBELUMNYA ADMIN
+            cloudData.role = UserRole.USER;
             needsUpdateToDB = true;
           } else if (!cloudData.role) {
             cloudData.role = UserRole.USER;
@@ -125,15 +164,23 @@ const App: React.FC = () => {
 
           setData(cloudData);
         } else {
+          // MEMBUAT DATA AWAL DENGAN IDENTITAS ASLI DARI AUTH
+          const authEmail = (user.email || '').toLowerCase();
           const newData = {
             ...INITIAL_DATA,
             uid: user.uid,
-            role: user.email === 'admin@jejakkarir.com' ? UserRole.SUPERADMIN : UserRole.USER,
+            profile: {
+              ...INITIAL_DATA.profile,
+              name: user.displayName || 'New User',
+              email: user.email || ''
+            },
+            role: (authEmail === 'admin@jejakkarir.com') ? UserRole.SUPERADMIN : UserRole.USER,
             plan: SubscriptionPlan.FREE,
             status: AccountStatus.ACTIVE,
             joinedAt: new Date().toISOString(),
             lastLogin: new Date().toISOString(),
-            aiUsage: { cvGenerated: 0, coverLetters: 0, careerAnalysis: 0, totalTokens: 0 }
+            aiUsage: { cvGenerated: 0, coverLetters: 0, careerAnalysis: 0, totalTokens: 0 },
+            completedAiMilestones: []
           };
           saveUserData(user.uid, newData as AppData);
         }
@@ -182,26 +229,39 @@ const App: React.FC = () => {
   };
   
   const addItem = (key: keyof AppData, item: any) => {
-    const currentArray = data[key];
-    if (Array.isArray(currentArray)) {
-      const newData = {
-        ...data,
-        [key]: [...currentArray, item]
-      };
-      syncData(newData as AppData);
-    }
+    setData(prev => {
+      const currentArray = prev[key];
+      if (Array.isArray(currentArray)) {
+        const newData = {
+          ...prev,
+          [key]: [...currentArray, item]
+        };
+        if (user && !permissionsBlocked) {
+          saveUserData(user.uid, newData);
+        }
+        return newData;
+      }
+      return prev;
+    });
+    triggerToast("Entry permanently recorded.");
   };
 
   const deleteItem = (key: keyof AppData, id: string) => {
-    const currentArray = data[key];
-    if (Array.isArray(currentArray)) {
-      const newData = {
-        ...data,
-        [key]: currentArray.filter((item: any) => item.id !== id)
-      };
-      syncData(newData as AppData);
-      triggerToast("Entry permanently purged.");
-    }
+    setData(prev => {
+      const currentArray = prev[key];
+      if (Array.isArray(currentArray)) {
+        const newData = {
+          ...prev,
+          [key]: currentArray.filter((item: any) => item.id !== id)
+        };
+        if (user && !permissionsBlocked) {
+          saveUserData(user.uid, newData);
+        }
+        return newData;
+      }
+      return prev;
+    });
+    triggerToast("Entry permanently purged.");
   };
 
   const requestDelete = (key: keyof AppData, id: string, label: string) => {
@@ -216,25 +276,37 @@ const App: React.FC = () => {
   };
 
   const updateItem = (key: keyof AppData, updatedItem: any) => {
-    const currentArray = data[key];
-    if (Array.isArray(currentArray)) {
-      const newData = {
-        ...data,
-        [key]: currentArray.map((item: any) => item.id === updatedItem.id ? updatedItem : item)
-      };
-      syncData(newData as AppData);
-    }
+    setData(prev => {
+      const currentArray = prev[key];
+      if (Array.isArray(currentArray)) {
+        const newData = {
+          ...prev,
+          [key]: currentArray.map((item: any) => item.id === updatedItem.id ? updatedItem : item)
+        };
+        if (user && !permissionsBlocked) {
+          saveUserData(user.uid, newData);
+        }
+        return newData;
+      }
+      return prev;
+    });
   };
 
   const handleAddCategory = (cat: string) => {
-    if (!data.workCategories.includes(cat)) {
-      syncData({ ...data, workCategories: [...data.workCategories, cat] });
-    }
+    syncData({ ...data, workCategories: [...data.workCategories, cat] });
   };
 
   const handleDeleteCategory = (cat: string) => {
     if (data.workCategories.length > 1) {
       syncData({ ...data, workCategories: data.workCategories.filter(c => c !== cat) });
+    }
+  };
+
+  const handleUpdateMilestone = (milestoneId: string) => {
+    const current = data.completedAiMilestones || [];
+    if (!current.includes(milestoneId)) {
+      syncData({ ...data, completedAiMilestones: [...current, milestoneId] });
+      triggerToast("Progres dikunci. AI akan menyesuaikan target berikutnya.");
     }
   };
 
@@ -265,7 +337,8 @@ const App: React.FC = () => {
     }
 
     // MENCEGAH FLASH: Langsung tampilkan Admin Panel jika user terdeteksi sebagai admin meskipun tab masih 'dashboard'
-    if (activeTab === 'dashboard' && (data.role === UserRole.SUPERADMIN || (user && user.email === 'admin@jejakkarir.com'))) {
+    const authEmail = (user?.email || '').toLowerCase();
+    if (activeTab === 'dashboard' && (data.role === UserRole.SUPERADMIN || (user && (authEmail === 'admin@jejakkarir.com')))) {
       return <AdminPanel initialMode="dashboard" />;
     }
 
@@ -273,7 +346,6 @@ const App: React.FC = () => {
       case 'dashboard': return <Dashboard data={data} />;
       case 'profile': return (
         <ProfileView 
-          // Fix: use data.profile instead of undefined profile variable
           profile={data.profile} 
           workExperiences={data.workExperiences}
           educations={data.educations}
@@ -302,6 +374,19 @@ const App: React.FC = () => {
       case 'reports': return (
         <PerformanceReports data={data} />
       );
+      case 'ai_insights': return (
+        <AiInsightActivity 
+          data={data} 
+          onUpdateInsights={(newInsights) => {
+            setData(prev => ({ ...prev, aiInsights: newInsights }));
+            if (user && !permissionsBlocked) saveUserData(user.uid, { ...data, aiInsights: newInsights });
+          }}
+          onAddAchievement={(ach) => addItem('achievements', ach)}
+        />
+      );
+      case 'reminders': return (
+        <Reminders data={data} onUpdateMilestone={handleUpdateMilestone} />
+      );
       case 'skills': return (
         <SkillTracker 
           data={data}
@@ -317,7 +402,10 @@ const App: React.FC = () => {
           onAddCert={(c) => addItem('certifications', c)}
           onUpdateCert={(c) => updateItem('certifications', c)}
           onDeleteCert={(id) => requestDelete('certifications', id, 'Credential Record')}
-          onSaveStrategy={(strategy) => syncData({ ...data, aiStrategies: [strategy, ...(data.aiStrategies || [])] })}
+          onSaveStrategy={(strategy) => {
+            setData(prev => ({ ...prev, aiStrategies: [strategy, ...(prev.aiStrategies || [])] }));
+            if (user && !permissionsBlocked) saveUserData(user.uid, { ...data, aiStrategies: [strategy, ...(data.aiStrategies || [])] });
+          }}
         />
       );
       case 'loker': return (
@@ -380,7 +468,10 @@ const App: React.FC = () => {
         />
       );
       case 'settings': return (
-        <AccountSettings />
+        <AccountSettings 
+          reminderConfig={data.reminderConfig} 
+          onUpdateReminders={(config) => syncData({ ...data, reminderConfig: config })} 
+        />
       );
       case 'admin_dashboard': return (
         <AdminPanel initialMode="dashboard" />

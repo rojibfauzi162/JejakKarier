@@ -179,7 +179,7 @@ const AchievementTracker: React.FC<AchievementTrackerProps> = ({ achievements, p
                 <td className="px-6 py-5">
                   <div className="flex justify-between items-center gap-4">
                     <p className="text-xs text-slate-500 font-medium leading-relaxed">{ach.impact}</p>
-                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex gap-1 opacity-100 transition-opacity">
                       <button onClick={() => openEditForm(ach)} className="p-2 text-slate-400 hover:text-blue-600">✎</button>
                       <button onClick={() => onDelete(ach.id)} className="p-2 text-slate-400 hover:text-red-500">✕</button>
                     </div>

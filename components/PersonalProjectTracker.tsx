@@ -87,7 +87,7 @@ const PersonalProjectTracker: React.FC<PersonalProjectTrackerProps> = ({ project
                 <td className="px-6 py-5">
                   <div className="flex justify-between items-center gap-4">
                     <p className="text-xs text-slate-500 font-medium leading-relaxed italic line-clamp-2">"{proj.description}"</p>
-                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex gap-1 opacity-100 transition-opacity">
                       <button onClick={() => openEditForm(proj)} className="p-2 text-slate-400 hover:text-blue-600">✎</button>
                       <button onClick={() => onDelete(proj.id)} className="p-2 text-slate-400 hover:text-red-500">✕</button>
                     </div>

@@ -1,7 +1,8 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { AppData, UserRole, AccountStatus, SubscriptionPlan, AiConfig } from '../types';
-import { getAllUsers, updateAdminMetadata, saveUserData, getAiConfig, saveAiConfig } from '../services/firebase';
+// Add auth to imports
+import { getAllUsers, updateAdminMetadata, saveUserData, getAiConfig, saveAiConfig, auth, getProductsCatalog, saveProductsCatalog } from '../services/firebase';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Legend } from 'recharts';
 
 interface SubscriptionProduct {
@@ -52,7 +53,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
     email: '', 
     planId: '', 
     status: '' as AccountStatus,
-    duration: 30 // Default 1 Bulan
+    duration: 30,
+    bypassAiLimits: false
   });
 
   // State untuk AI Config
@@ -96,14 +98,14 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
   // Sinkronkan draft saat user dipilih
   useEffect(() => {
     if (selectedUser) {
-      // Cari produk berdasarkan tier yang tercatat di user, atau cari berdasarkan nama jika tidak ketemu
-      const userProduct = products.find(p => p.name === selectedUser.plan) || products[0];
+      const userProduct = products.find(p => p.tier === selectedUser.plan) || products[0];
       setUserEditDraft({
-        name: selectedUser.profile.name,
-        email: selectedUser.profile.email,
+        name: selectedUser.profile?.name || '',
+        email: selectedUser.profile?.email || '',
         planId: userProduct.id,
         status: selectedUser.status,
-        duration: 30 // Default reset ke 1 bulan saat mulai mengedit
+        duration: 30,
+        bypassAiLimits: !!selectedUser.bypassAiLimits
       });
     }
   }, [selectedUser, products]);
@@ -125,7 +127,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
     users.forEach(u => {
       const d = u.joinedAt ? new Date(u.joinedAt).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' }) : '?';
       if (!regMap[d]) regMap[d] = { date: d, paid: 0, free: 0 };
-      // Check if user has a paid tier
       const isPaid = u.plan === SubscriptionPlan.PRO || u.plan === SubscriptionPlan.ENTERPRISE;
       if (isPaid) regMap[d].paid += 1;
       else regMap[d].free += 1;
@@ -148,15 +149,52 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
     setLoading(true);
     setError(null);
     try {
-      const [userData, configData] = await Promise.all([
+      // Menjalankan fetch secara paralel dan menangkap error masing-masing
+      // Fix: Destructure results for better narrowing and to avoid property access issues on union types
+      const [usersResult, aiResult, productsResult] = await Promise.allSettled([
         getAllUsers(),
-        getAiConfig()
+        getAiConfig(),
+        getProductsCatalog()
       ]);
-      setUsers(userData);
-      if (configData) setAiConfigState(configData);
+
+      // Modul User
+      // Fix: Use the destructured result variable to correctly narrow PromiseSettledResult
+      if (usersResult.status === 'fulfilled') {
+        setUsers(usersResult.value);
+      } else {
+        const err = usersResult.reason;
+        console.error("User fetch failed:", err);
+        // Jika mode aktif adalah 'users' atau 'dashboard' dan gagal izin, tampilkan error view
+        if (err.code === 'permission-denied' || (err.message && err.message.toLowerCase().includes('permission'))) {
+           if (initialMode === 'users' || initialMode === 'dashboard') {
+             setError("DATABASE_PERMISSION_DENIED");
+           }
+        } else {
+          setError(err.message || "Gagal mengambil data user.");
+        }
+      }
+
+      // Modul AI
+      // Fix: Properly handle narrowing for aiResult. Check status first before value to ensure .reason is available in the else block.
+      if (aiResult.status === 'fulfilled') {
+        if (aiResult.value) {
+          setAiConfigState(aiResult.value);
+        }
+      } else {
+        const err = aiResult.reason;
+        if (err && err.code === 'permission-denied' && initialMode === 'ai') {
+          setError("DATABASE_PERMISSION_DENIED");
+        }
+      }
+
+      // Modul Produk
+      // Fix: Use the destructured result variable for consistency and correct narrowing
+      if (productsResult.status === 'fulfilled' && productsResult.value) {
+        setProducts(productsResult.value);
+      }
     } catch (err: any) {
-      console.error("Fetch error details:", err);
-      setError(err.message || "Gagal mengambil data.");
+      console.error("General Fetch Error:", err);
+      setError(err.message || "Gagal menghubungi server database.");
     } finally {
       setLoading(false);
     }
@@ -164,7 +202,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
 
   useEffect(() => {
     fetchUsersAndConfig();
-  }, []);
+  }, [initialMode]);
 
   // Fetch OpenRouter Models
   useEffect(() => {
@@ -187,8 +225,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
 
   const filteredUsers = useMemo(() => {
     return users.filter(u => {
-      const matchesSearch = u.profile.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                            u.profile.email.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesSearch = (u.profile?.name || '').toLowerCase().includes(searchQuery.toLowerCase()) || 
+                            (u.profile?.email || '').toLowerCase().includes(searchQuery.toLowerCase());
       const matchesDeleted = showSoftDeleted ? u.isDeleted : !u.isDeleted;
       return matchesSearch && matchesDeleted;
     });
@@ -196,12 +234,11 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
 
   const filteredModels = useMemo(() => {
     return availableModels.filter(m => 
-      m.id.toLowerCase().includes(modelSearchQuery.toLowerCase()) || 
-      m.name.toLowerCase().includes(modelSearchQuery.toLowerCase())
+      (m.id || '').toLowerCase().includes(modelSearchQuery.toLowerCase()) || 
+      (m.name || '').toLowerCase().includes(modelSearchQuery.toLowerCase())
     );
   }, [availableModels, modelSearchQuery]);
 
-  // Handle User Edit & Create
   const handleAddUser = async (e: React.FormEvent) => {
     e.preventDefault();
     const form = e.currentTarget as HTMLFormElement;
@@ -225,12 +262,13 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
         jobDesk: '', shortTermTarget: '', longTermTarget: '', description: ''
       },
       role: formData.get('role') as UserRole,
-      plan: product.tier, // Gunakan tier dari produk
+      plan: product.tier,
       status: AccountStatus.ACTIVE,
       activeFrom: activeFrom.toISOString(),
       expiryDate: expiryDate.toISOString(),
       planPermissions: product.allowedModules,
       planLimits: product.limits,
+      bypassAiLimits: false,
       joinedAt: new Date().toISOString(),
       lastLogin: new Date().toISOString(),
       dailyReports: [], skills: [], trainings: [], certifications: [], careerPaths: [], achievements: [], contacts: [], monthlyReviews: [], jobApplications: [], personalProjects: [], affirmations: [], workCategories: [], onlineCV: { username: '', themeId: 't-bento', isActive: false, visibleSections: [], selectedItemIds: {}, socialLinks: {} }
@@ -241,8 +279,12 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
       triggerToast("User provisioned successfully.");
       fetchUsersAndConfig();
       setIsUserAddModalOpen(false);
-    } catch (err) {
-      triggerToast("Provisioning process failed.", "error");
+    } catch (err: any) {
+      if (err.code === 'permission-denied') {
+        triggerToast("Access Denied: Missing write permissions for citizen collection.", "error");
+      } else {
+        triggerToast("Provisioning process failed.", "error");
+      }
     }
   };
 
@@ -252,9 +294,14 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
       await updateAdminMetadata(uid, fields);
       setUsers(prev => prev.map(u => u.uid === uid ? { ...u, ...fields } : u));
       if (selectedUser?.uid === uid) setSelectedUser({ ...selectedUser, ...fields });
-    } catch (err) {
+      triggerToast("Metadata synchronized.");
+    } catch (err: any) {
       console.error("User detail update error:", err);
-      triggerToast("Failed to update record.", "error");
+      if (err.code === 'permission-denied') {
+        triggerToast("Permission Denied: Unable to update remote document.", "error");
+      } else {
+        triggerToast("Failed to update record.", "error");
+      }
     }
   };
 
@@ -264,28 +311,26 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
     const product = products.find(p => p.id === userEditDraft.planId);
     if (!product) return;
 
-    // Hitung ulang masa aktif berdasarkan durasi yang dipilih saat ini
     const activeFrom = new Date();
     const expiryDate = new Date();
     expiryDate.setDate(activeFrom.getDate() + userEditDraft.duration);
 
-    // Persiapkan data update menyeluruh
     let updateData: Partial<AppData> = {
       profile: {
-        ...selectedUser.profile,
+        ...(selectedUser.profile || {}),
         name: userEditDraft.name,
         email: userEditDraft.email
-      },
+      } as any,
       status: userEditDraft.status,
-      plan: product.tier, // Gunakan tier dari produk template
+      plan: product.tier,
       activeFrom: activeFrom.toISOString(),
       expiryDate: expiryDate.toISOString(),
       planPermissions: product.allowedModules,
-      planLimits: product.limits
+      planLimits: product.limits,
+      bypassAiLimits: userEditDraft.bypassAiLimits
     };
     
     await handleUpdateUserDetails(selectedUser.uid, updateData);
-    triggerToast("Identity and permissions updated.");
   };
 
   const handlePurgeUser = async (uid: string) => {
@@ -298,21 +343,24 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
           setUsers(prev => prev.filter(u => u.uid !== uid));
           setSelectedUser(null);
           triggerToast("Citizen purged from active nexus.");
-        } catch (err) {
-          triggerToast("Purge protocol failed.", "error");
+        } catch (err: any) {
+          if (err.code === 'permission-denied') {
+            triggerToast("Security Rejection: Insufficient purge privileges.", "error");
+          } else {
+            triggerToast("Purge protocol failed.", "error");
+          }
         }
         setAdminConfirm(null);
       }
     });
   };
 
-  // Handle Product CRUD
-  const handleSaveProduct = (e: React.FormEvent) => {
+  const handleSaveProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     const form = e.currentTarget as HTMLFormElement;
     const formData = new FormData(form);
     const modules = Array.from(formData.getAll('modules')) as string[];
-    const durations = Array.from(formData.getAll('durations')).map(Number); // Ambil seluruh durasi yang dicentang
+    const durations = Array.from(formData.getAll('durations')).map(Number);
     
     const prodData: SubscriptionProduct = {
       id: editingProduct?.id || 'prod-' + Math.random().toString(36).substr(2, 9),
@@ -320,7 +368,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
       tier: (formData.get('tier') as SubscriptionPlan) || editingProduct?.tier || SubscriptionPlan.PRO,
       price: parseInt(formData.get('price') as string),
       enabledDurations: durations,
-      durationDays: durations[0] || 30, // Gunakan pilihan pertama sebagai default basis
+      durationDays: durations[0] || 30,
       allowedModules: modules,
       limits: {
         dailyLogs: formData.get('unlimited_daily') ? 'unlimited' : parseInt(formData.get('limit_daily') as string),
@@ -335,24 +383,45 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
       return;
     }
 
-    if (editingProduct) {
-      setProducts(prev => prev.map(p => p.id === prodData.id ? prodData : p));
-      triggerToast("Product architecture updated.");
-    } else {
-      setProducts(prev => [...prev, prodData]);
-      triggerToast("New product published.");
+    try {
+      let updatedProducts;
+      if (editingProduct) {
+        updatedProducts = products.map(p => p.id === prodData.id ? prodData : p);
+      } else {
+        updatedProducts = [...products, prodData];
+      }
+      
+      await saveProductsCatalog(updatedProducts);
+      setProducts(updatedProducts);
+      triggerToast(editingProduct ? "Product architecture updated." : "New product published.");
+      setIsProductModalOpen(false);
+      setEditingProduct(null);
+    } catch (e: any) {
+      if (e.code === 'permission-denied') {
+        triggerToast("Forbidden: system_metadata is write-protected.", "error");
+      } else {
+        triggerToast("Failed to save product catalog.", "error");
+      }
     }
-    setIsProductModalOpen(false);
-    setEditingProduct(null);
   };
 
   const deleteProduct = (id: string) => {
     setAdminConfirm({
       title: "Decommission Product?",
       desc: "Removing this offering will prevent future provisioning. Active users with this plan will remain unaffected until expiry.",
-      onConfirm: () => {
-        setProducts(prev => prev.filter(p => p.id !== id));
-        triggerToast("Product decommissioned.");
+      onConfirm: async () => {
+        try {
+          const updatedProducts = products.filter(p => p.id !== id);
+          await saveProductsCatalog(updatedProducts);
+          setProducts(updatedProducts);
+          triggerToast("Product decommissioned.");
+        } catch (e: any) {
+          if (e.code === 'permission-denied') {
+            triggerToast("Operation Blocked: Missing delete permissions.", "error");
+          } else {
+            triggerToast("Failed to decommission product.", "error");
+          }
+        }
         setAdminConfirm(null);
       }
     });
@@ -362,10 +431,26 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
     e.preventDefault();
     setIsSavingAi(true);
     try {
+      // Validasi input token sebelum kirim
+      if (!aiConfig.maxTokens || aiConfig.maxTokens < 1) {
+        throw new Error("Token capacity must be at least 1.");
+      }
+
       await saveAiConfig(aiConfig);
       triggerToast("AI Architecture redeployed successfully.");
-    } catch (err) {
-      triggerToast("Deployment failed.", "error");
+      
+      // Re-fetch untuk memastikan status bar sinkron dengan DB (termasuk metadata timestamp)
+      const freshConfig = await getAiConfig();
+      if (freshConfig) {
+        setAiConfigState(freshConfig);
+      }
+    } catch (err: any) {
+      console.error("Save AI Config failed:", err);
+      // Tampilkan error yang lebih deskriptif (seperti permission denied)
+      const errorMsg = err.code === 'permission-denied' 
+        ? "SECURITY ERROR: Missing write permissions for system_metadata." 
+        : (err.message || "Deployment failed.");
+      triggerToast(errorMsg, "error");
     } finally {
       setIsSavingAi(false);
     }
@@ -378,19 +463,39 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
     </div>
   );
 
+  // Error State UI for Permissions
+  if (error === "DATABASE_PERMISSION_DENIED") return (
+    <div className="h-[80vh] flex flex-col items-center justify-center p-8 animate-in zoom-in duration-500">
+       <div className="max-w-xl w-full bg-white p-12 lg:p-16 rounded-[4rem] border-2 border-rose-100 shadow-2xl text-center">
+          <div className="w-24 h-24 bg-rose-50 text-rose-500 rounded-[2.5rem] flex items-center justify-center mx-auto mb-10 shadow-inner">
+             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="m9 12 2 2 4-4"></path></svg>
+          </div>
+          <h2 className="text-3xl font-black text-slate-900 mb-6 uppercase tracking-tighter">Database Locked</h2>
+          <p className="text-slate-400 font-bold text-xs uppercase tracking-widest leading-relaxed mb-8">
+            Akun Anda (<span className="text-rose-600">{auth.currentUser?.email}</span>) telah disetel sebagai admin di aplikasi, 
+            namun <span className="text-slate-900">Firestore Security Rules</span> di Firebase Console menolak permintaan baca koleksi global.
+          </p>
+          <div className="bg-slate-900 p-6 rounded-3xl text-left mb-10 overflow-hidden">
+             <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-3">🛠️ Solusi Perbaikan Manual:</p>
+             <ol className="text-[10px] text-slate-400 space-y-2 font-medium">
+                <li>1. Buka <span className="text-white">Firebase Console</span>.</li>
+                <li>2. Pilih <span className="text-white">Firestore Database > Rules</span>.</li>
+                <li>3. Pastikan izin <span className="text-emerald-400">read & write</span> diizinkan bagi user dengan <code className="text-indigo-300">resource.data.role == 'superadmin'</code> atau ubah ke <code className="text-emerald-300">allow read, write: if true;</code> untuk mode pengembangan.</li>
+                <li>4. Publish Rules dan <span className="text-white">Refresh Halaman Ini</span>.</li>
+             </ol>
+          </div>
+          <button onClick={() => window.location.reload()} className="w-full py-5 bg-blue-600 text-white font-black rounded-3xl uppercase tracking-[0.3em] text-[10px] shadow-2xl shadow-blue-500/20 hover:bg-blue-700 transition-all">Refresh Connection</button>
+       </div>
+    </div>
+  );
+
   return (
     <div className="space-y-8 animate-in fade-in duration-700 pb-20">
       {/* SUCCESS TOAST OVERLAY */}
       {adminToast && (
         <div className="fixed top-10 right-10 z-[1000] animate-in slide-in-from-right-4 duration-500">
            <div className={`px-8 py-4 rounded-2xl shadow-2xl border flex items-center gap-4 ${adminToast.type === 'success' ? 'bg-emerald-600 border-emerald-500 text-white' : 'bg-rose-600 border-rose-500 text-white'}`}>
-             <span className="text-xl">
-               {adminToast.type === 'success' ? (
-                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-               ) : (
-                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
-               )}
-             </span>
+             <span className="text-xl">{adminToast.type === 'success' ? '✓' : '⚠️'}</span>
              <span className="font-black text-[10px] uppercase tracking-widest">{adminToast.message}</span>
            </div>
         </div>
@@ -415,13 +520,12 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
         </div>
       )}
 
-      {/* 1. RESTORED DASHBOARD ROW - ONLY ON DASHBOARD MODE */}
       {initialMode === 'dashboard' && (
         <>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <AdminStatCard title="Global Citizens" value={adminStats.total} sub="Total Terdaftar" icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>} color="blue" />
-            <AdminStatCard title="Daily Traffic" value={adminStats.activeToday} sub="Login Hari Ini" icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>} color="amber" />
-            <AdminStatCard title="AI Operations" value={adminStats.totalAI} sub="Total AI Generation" icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 8V4H8"></path><rect x="8" y="8" width="8" height="8" rx="2"></rect><path d="M16 4h4v4"></path><path d="M20 16v4h-4"></path><path d="M8 20H4v-4"></path></svg>} color="emerald" />
+            <AdminStatCard title="Global Citizens" value={adminStats.total} sub="Total Terdaftar" icon="👤" color="blue" />
+            <AdminStatCard title="Daily Traffic" value={adminStats.activeToday} sub="Login Hari Ini" icon="⚡" color="amber" />
+            <AdminStatCard title="AI Operations" value={adminStats.totalAI} sub="Total AI Generation" icon="🤖" color="emerald" />
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -499,30 +603,36 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-50">
-                    {filteredUsers.map(user => (
-                      <tr key={user.uid} className={`group hover:bg-slate-50/50 transition-colors ${selectedUser?.uid === user.uid ? 'bg-blue-50/30' : ''}`}>
-                        <td className="px-8 py-6">
-                          <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center font-black">
-                              {user.profile.name.charAt(0)}
+                    {filteredUsers.map(u => {
+                      const displayName = u.profile?.name && u.profile.name !== 'Alex' ? u.profile.name : u.profile?.email || u.uid;
+                      const displayEmail = u.profile?.email || 'No email';
+                      const initial = displayName.charAt(0).toUpperCase();
+
+                      return (
+                        <tr key={u.uid} className={`group hover:bg-slate-50/50 transition-colors ${selectedUser?.uid === u.uid ? 'bg-blue-50/30' : ''}`}>
+                          <td className="px-8 py-6">
+                            <div className="flex items-center gap-4">
+                              <div className="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center font-black text-xs uppercase shadow-lg">
+                                {initial}
+                              </div>
+                              <div>
+                                <p className="font-black text-slate-800 text-sm truncate max-w-[200px]">{displayName}</p>
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">{displayEmail}</p>
+                              </div>
                             </div>
-                            <div>
-                              <p className="font-black text-slate-800 text-sm">{user.profile.name}</p>
-                              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">{user.profile.email}</p>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-6 text-center">
-                          <span className="px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest bg-slate-100 text-slate-600 border border-slate-200">{user.plan}</span>
-                        </td>
-                        <td className="px-6 py-6 text-center">
-                          <span className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border ${user.status === 'Active' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-rose-50 text-rose-600 border-rose-100'}`}>{user.status}</span>
-                        </td>
-                        <td className="px-8 py-6 text-right">
-                          <button onClick={() => setSelectedUser(user)} className="px-4 py-2 bg-slate-900 text-white rounded-xl text-[9px] font-black uppercase tracking-widest">Manage</button>
-                        </td>
-                      </tr>
-                    ))}
+                          </td>
+                          <td className="px-6 py-6 text-center">
+                            <span className="px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest bg-slate-100 text-slate-600 border border-slate-200">{u.plan}</span>
+                          </td>
+                          <td className="px-6 py-6 text-center">
+                            <span className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border ${u.status === 'Active' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-rose-50 text-rose-600 border-rose-100'}`}>{u.status}</span>
+                          </td>
+                          <td className="px-8 py-6 text-right">
+                            <button onClick={() => setSelectedUser(u)} className="px-4 py-2 bg-slate-900 text-white rounded-xl text-[9px] font-black uppercase tracking-widest">Manage</button>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -537,7 +647,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
                   <button onClick={() => setSelectedUser(null)} className="text-slate-300 hover:text-slate-900">✕</button>
                 </div>
                 <div className="space-y-6">
-                  {/* Editable Fields with Draft State */}
                   <div className="space-y-4">
                     <div className="space-y-1">
                        <label className="text-[9px] font-black text-slate-400 uppercase ml-1">Nama Lengkap</label>
@@ -555,6 +664,20 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
                         onChange={e => setUserEditDraft({ ...userEditDraft, email: e.target.value })}
                        />
                     </div>
+                  </div>
+
+                  {/* AI BYPASS TOGGLE */}
+                  <div className="bg-indigo-50 p-6 rounded-3xl border border-indigo-100">
+                     <div className="flex items-center justify-between mb-2">
+                        <label className="text-10px font-black text-indigo-600 uppercase tracking-widest">Bypass AI Limits</label>
+                        <button 
+                          onClick={() => setUserEditDraft({ ...userEditDraft, bypassAiLimits: !userEditDraft.bypassAiLimits })}
+                          className={`w-12 h-6 rounded-full relative transition-colors ${userEditDraft.bypassAiLimits ? 'bg-indigo-600' : 'bg-slate-300'}`}
+                        >
+                          <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${userEditDraft.bypassAiLimits ? 'left-7' : 'left-1'}`}></div>
+                        </button>
+                     </div>
+                     <p className="text-[9px] text-indigo-400 leading-tight italic">Mengizinkan user generate laporan AI kapanpun (abaikan 1x seminggu/sebulan).</p>
                   </div>
 
                   <div className="bg-slate-900 p-6 rounded-3xl text-white shadow-xl">
@@ -706,6 +829,24 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
                  </div>
               </div>
 
+              {/* ACTIVE CONFIGURATION STATUS BAR */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-50 p-6 rounded-[2rem] border border-slate-100 animate-in fade-in duration-1000">
+                <div className="space-y-1">
+                   <p className="text-[8px] font-black text-slate-400 uppercase tracking-[0.3em]">Active Model</p>
+                   <p className="text-xs font-black text-blue-600 truncate">{aiConfig.modelName || 'DEFAULT_GEMINI'}</p>
+                </div>
+                <div className="space-y-1 border-y md:border-y-0 md:border-x border-slate-200 py-3 md:py-0 md:px-6">
+                   <p className="text-[8px] font-black text-slate-400 uppercase tracking-[0.3em]">Key Integrity</p>
+                   <p className="text-xs font-black text-emerald-600">
+                     {aiConfig.openRouterKey ? `OR_KEY: ••••${aiConfig.openRouterKey.slice(-4)}` : 'KEY_MISSING (FALLBACK)'}
+                   </p>
+                </div>
+                <div className="space-y-1 md:pl-2">
+                   <p className="text-[8px] font-black text-slate-400 uppercase tracking-[0.3em]">Token Capacity</p>
+                   <p className="text-xs font-black text-slate-700">{aiConfig.maxTokens?.toLocaleString()} Max Tokens</p>
+                </div>
+              </div>
+
               <form onSubmit={handleSaveAiConfig} className="space-y-8">
                  <div className="space-y-4">
                     <div className="space-y-1.5">
@@ -753,7 +894,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
                                        setModelSearchQuery('');
                                      }}
                                    >
-                                      <p className="font-black text-xs text-slate-800 group-hover:text-blue-600 transition-colors">{model.name}</p>
+                                      <p className="font-black text-xs text-slate-800 group-hover:text-blue-600 transition-colors">{model.name || 'Model Unnamed'}</p>
                                       <p className="text-[9px] font-bold text-slate-400 mt-0.5">{model.id}</p>
                                    </button>
                                  ))
@@ -803,148 +944,162 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
         </div>
       )}
 
-      {/* HEALTH MODULE */}
+      {/* SYSTEM PULSE MODULE */}
       {initialMode === 'health' && (
-        <div className="grid grid-cols-1 xl:grid-cols-12 gap-10 animate-in slide-in-from-bottom-4">
-           <div className="xl:col-span-8 bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm">
-              <h3 className="text-2xl font-black text-slate-900 mb-8 uppercase flex items-center gap-3">
-                <span className="w-10 h-10 bg-rose-50 text-rose-500 rounded-xl flex items-center justify-center">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-                </span>
-                Error Matrix
-              </h3>
-              <div className="space-y-4">
-                <HealthLog type="AI_FAILURE" msg="Gemini API Quota Exceeded" user="User_442" time="10m ago" />
-                <HealthLog type="DB_ERROR" msg="Firestore Permission Denied" user="admin@jejakkarir.com" time="1h ago" />
-                <HealthLog type="AUTH_DENIED" msg="Unauthorized Login Attempt" user="IP: 192.168.1.1" time="3h ago" />
-              </div>
+        <div className="space-y-8 animate-in slide-in-from-bottom-4">
+           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <AdminStatCard title="DB Latency" value="124ms" sub="Optimal Performance" icon="⚡" color="emerald" />
+              <AdminStatCard title="API Success" value="99.8%" sub="Uptime Verified" icon="🟢" color="blue" />
+              <AdminStatCard title="Auth Tokens" value="1.2k" sub="Active Sessions" icon="🔑" color="amber" />
+              <AdminStatCard title="Storage" value="4.2GB" sub="Cloud Resource" icon="☁️" color="indigo" />
            </div>
-           <div className="xl:col-span-4 space-y-6">
-              <div className="bg-slate-900 p-10 rounded-[3rem] text-white shadow-2xl">
-                 <h4 className="text-xs font-black text-blue-400 uppercase tracking-widest mb-10">Uptime Reliability</h4>
-                 <div className="space-y-10">
-                    <HealthMetric label="Gemini AI Gateway" val={98.2} color="emerald" />
-                    <HealthMetric label="Cloud Firestore" val={100} color="emerald" />
-                    <HealthMetric label="Media Storage" val={94.5} color="amber" />
-                 </div>
+           <div className="bg-slate-900 p-10 rounded-[3rem] text-emerald-400 font-mono text-xs overflow-hidden shadow-2xl border border-white/5">
+              <p className="text-white font-black mb-4 uppercase tracking-[0.2em] font-sans">System Real-time Logs</p>
+              <div className="space-y-1 opacity-80">
+                 <p>[{new Date().toISOString()}] NODE_BOOT: Citizens Nexus Protocol Established.</p>
+                 <p>[{new Date().toISOString()}] DB_SYNC: Global Firestore handshake successful.</p>
+                 <p>[{new Date().toISOString()}] AI_GATEWAY: OpenRouter heartbeat detected.</p>
+                 <p className="animate-pulse">_</p>
               </div>
            </div>
         </div>
       )}
 
-      {/* PRODUCT MODAL WITH LIMITS, MODULES & CHECKLIST DURATIONS */}
-      {isProductModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[500] flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-4xl rounded-[3rem] p-10 shadow-2xl animate-in zoom-in max-h-[90vh] overflow-y-auto no-scrollbar">
-            <h3 className="text-2xl font-black text-slate-900 uppercase mb-8">{editingProduct ? 'Update Product Architecture' : 'Draft New Offering'}</h3>
-            <form onSubmit={handleSaveProduct} className="space-y-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <input type="hidden" name="tier" value={editingProduct?.tier || SubscriptionPlan.PRO} />
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Product Name</label>
-                  <input name="name" required defaultValue={editingProduct?.name} className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-200 font-bold text-xs" placeholder="e.g. Master Elite" />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Base Price (Monthly Ref)</label>
-                  <input name="price" type="number" required defaultValue={editingProduct?.price} className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-200 font-bold text-xs" />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Activate Durations (Checklist)</label>
-                  <div className="flex flex-wrap gap-2 p-3 bg-slate-50 rounded-2xl border border-slate-200">
-                    {[30, 90, 365].map(d => (
-                      <label key={d} className="flex items-center gap-2 cursor-pointer group px-2 py-1 rounded-lg hover:bg-white transition-colors">
-                        <input 
-                          type="checkbox" 
-                          name="durations" 
-                          value={d} 
-                          defaultChecked={editingProduct?.enabledDurations?.includes(d)} 
-                          className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" 
-                        />
-                        <span className="text-[10px] font-black uppercase text-slate-600 group-hover:text-indigo-600 transition-colors">
-                          {d === 30 ? '1 Bulan' : d === 90 ? '3 Bulan' : '1 Tahun'}
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-                <div className="space-y-4">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Active Modules</p>
-                  <div className="grid grid-cols-2 gap-3">
-                    {['dashboard', 'profile', 'daily', 'reports', 'skills', 'loker', 'projects', 'career', 'achievements', 'networking', 'reviews', 'cv_generator', 'online_cv'].map(mod => (
-                      <label key={mod} className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100 cursor-pointer hover:bg-slate-100 transition-all">
-                        <input type="checkbox" name="modules" value={mod} defaultChecked={editingProduct?.allowedModules.includes(mod)} className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" />
-                        <span className="text-[10px] font-black uppercase tracking-tight text-slate-600">{mod.replace('_', ' ')}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Capacity Limits</p>
-                  <div className="space-y-4">
-                    <LimitInput name="daily" label="Daily Logs" initial={editingProduct?.limits.dailyLogs} />
-                    <LimitInput name="skills" label="Skill Matrix" initial={editingProduct?.limits.skills} />
-                    <LimitInput name="projects" label="Personal Projects" initial={editingProduct?.limits.projects} />
-                    <LimitInput name="cv" label="CV Generation" initial={editingProduct?.limits.cvExports} />
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex gap-4 pt-6">
-                <button type="button" onClick={() => setIsProductModalOpen(false)} className="flex-1 py-5 font-black uppercase text-[10px] text-slate-400">Abort Draft</button>
-                <button type="submit" className="flex-1 py-5 bg-indigo-600 text-white font-black rounded-2xl uppercase text-[10px] shadow-lg shadow-indigo-100">Publish Offering</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* USER PROVISIONING MODAL */}
+      {/* MODAL: PROVISION USER */}
       {isUserAddModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[500] flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-md rounded-[3rem] p-10 shadow-2xl animate-in zoom-in">
-            <h3 className="text-2xl font-black text-slate-900 uppercase mb-8">Provision Citizen</h3>
-            <form onSubmit={handleAddUser} className="space-y-5">
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Full Name</label>
-                <input name="name" required className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-200 font-bold text-xs" />
+        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md z-[3000] flex items-center justify-center p-4">
+           <div className="bg-white w-full max-w-xl rounded-[3rem] shadow-2xl p-10 lg:p-14 animate-in zoom-in duration-300 max-h-[90vh] overflow-y-auto">
+              <div className="flex justify-between items-start mb-10">
+                 <div>
+                    <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Provision Citizen</h3>
+                    <p className="text-slate-400 font-bold text-[10px] uppercase tracking-widest mt-1">Manual account override protocol</p>
+                 </div>
+                 <button onClick={() => setIsUserAddModalOpen(false)} className="text-slate-300 hover:text-slate-900 font-black text-xl">✕</button>
               </div>
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Email Address</label>
-                <input name="email" required type="email" className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-200 font-bold text-xs" />
+              <form onSubmit={handleAddUser} className="space-y-6">
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-1.5">
+                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Full Name</label>
+                       <input name="name" required className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs" />
+                    </div>
+                    <div className="space-y-1.5">
+                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Email Address</label>
+                       <input name="email" type="email" required className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs" />
+                    </div>
+                 </div>
+                 <div className="space-y-1.5">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">System Role</label>
+                    <select name="role" className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs">
+                       <option value={UserRole.USER}>Standard User</option>
+                       <option value={UserRole.SUPERADMIN}>Superadmin Access</option>
+                    </select>
+                 </div>
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-1.5">
+                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Initial Plan</label>
+                       <select name="plan" className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs">
+                          {products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                       </select>
+                    </div>
+                    <div className="space-y-1.5">
+                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Duration Paket</label>
+                       <select name="duration" className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs cursor-pointer">
+                          <option value="30">1 Bulan (30 Hari)</option>
+                          <option value="90">3 Bulan (90 Hari)</option>
+                          <option value="365">1 Tahun (365 Hari)</option>
+                       </select>
+                    </div>
+                 </div>
+                 <button type="submit" className="w-full py-5 bg-rose-600 text-white font-black rounded-[1.5rem] uppercase text-[10px] tracking-widest shadow-xl hover:bg-rose-700 transition-all mt-4">Initiate Account Provision</button>
+              </form>
+           </div>
+        </div>
+      )}
+
+      {/* MODAL: DEFINE PRODUCT */}
+      {isProductModalOpen && (
+        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md z-[3000] flex items-center justify-center p-4">
+           <div className="bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl p-10 lg:p-14 animate-in zoom-in duration-300 max-h-[90vh] overflow-y-auto">
+              <div className="flex justify-between items-start mb-10">
+                 <div>
+                    <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">{editingProduct ? 'Redefine Product' : 'Architect New Product'}</h3>
+                    <p className="text-slate-400 font-bold text-[10px] uppercase tracking-widest mt-1">Configure offering parameters & limits</p>
+                 </div>
+                 <button onClick={() => setIsProductModalOpen(false)} className="text-slate-300 hover:text-slate-900 font-black text-xl">✕</button>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Role</label>
-                  <select name="role" className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-200 font-bold text-xs">
-                    <option value={UserRole.USER}>Citizen</option>
-                    <option value={UserRole.SUPERADMIN}>Overlord</option>
-                  </select>
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Subscription Plan</label>
-                  <select name="plan" className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-200 font-bold text-xs">
-                    {products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                  </select>
-                </div>
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Duration Choice</label>
-                <select name="duration" className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-200 font-bold text-xs">
-                  <option value="30">1 Bulan</option>
-                  <option value="90">3 Bulan</option>
-                  <option value="365">1 Tahun</option>
-                </select>
-              </div>
-              <div className="flex gap-4 pt-6">
-                <button type="button" onClick={() => setIsUserAddModalOpen(false)} className="flex-1 py-4 font-black uppercase text-[10px] text-slate-400">Cancel</button>
-                <button type="submit" className="flex-1 py-4 bg-rose-600 text-white font-black rounded-2xl uppercase text-[10px] shadow-lg shadow-rose-100">Execute Provision</button>
-              </div>
-            </form>
-          </div>
+              <form onSubmit={handleSaveProduct} className="space-y-8">
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-1.5">
+                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Label Name</label>
+                       <input name="name" defaultValue={editingProduct?.name} required className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs" />
+                    </div>
+                    <div className="space-y-1.5">
+                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tier Category</label>
+                       <select name="tier" defaultValue={editingProduct?.tier || SubscriptionPlan.PRO} className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs">
+                          {Object.values(SubscriptionPlan).map(t => <option key={t} value={t}>{t}</option>)}
+                       </select>
+                    </div>
+                 </div>
+
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-1.5">
+                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Price (Base IDR)</label>
+                       <input name="price" type="number" defaultValue={editingProduct?.price || 0} required className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs" />
+                    </div>
+                    <div className="space-y-1.5">
+                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Variants (Days - Multiple)</label>
+                       <div className="grid grid-cols-3 gap-2">
+                          {[30, 90, 365, 3650].map(d => (
+                            <label key={d} className="flex items-center gap-2 p-3 rounded-xl bg-slate-50 border border-slate-100 cursor-pointer">
+                               <input type="checkbox" name="durations" value={d} defaultChecked={editingProduct?.enabledDurations.includes(d)} className="w-4 h-4 rounded" />
+                               <span className="text-[9px] font-black uppercase text-slate-500">{d === 3650 ? 'Life' : d}</span>
+                            </label>
+                          ))}
+                       </div>
+                    </div>
+                 </div>
+
+                 <div className="space-y-4">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Module Access Protocol</label>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                       {['dashboard', 'daily', 'skills', 'cv_generator', 'online_cv', 'projects', 'networking', 'reports', 'career'].map(m => (
+                         <label key={m} className="flex items-center gap-2 p-3 rounded-xl bg-slate-50 border border-slate-100 cursor-pointer">
+                            <input type="checkbox" name="modules" value={m} defaultChecked={editingProduct?.allowedModules.includes(m)} className="w-4 h-4 rounded" />
+                            <span className="text-[8px] font-black uppercase text-slate-500 truncate">{m}</span>
+                         </label>
+                       ))}
+                    </div>
+                 </div>
+
+                 <div className="space-y-4 border-t border-slate-50 pt-6">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Resource Hard Limits</label>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                       <div className="space-y-2">
+                          <label className="text-[9px] font-bold text-slate-400 uppercase">Daily Logs Limit</label>
+                          <div className="flex gap-2">
+                             <input name="limit_daily" type="number" defaultValue={typeof editingProduct?.limits.dailyLogs === 'number' ? editingProduct.limits.dailyLogs : 10} className="flex-1 px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 outline-none text-xs font-bold" />
+                             <label className="flex items-center gap-1.5 px-3 bg-slate-900 text-white rounded-xl cursor-pointer">
+                               <input type="checkbox" name="unlimited_daily" defaultChecked={editingProduct?.limits.dailyLogs === 'unlimited'} className="w-3 h-3" />
+                               <span className="text-[8px] font-black uppercase">Inf</span>
+                             </label>
+                          </div>
+                       </div>
+                       <div className="space-y-2">
+                          <label className="text-[9px] font-bold text-slate-400 uppercase">Skills Matrix Limit</label>
+                          <div className="flex gap-2">
+                             <input name="limit_skills" type="number" defaultValue={typeof editingProduct?.limits.skills === 'number' ? editingProduct.limits.skills : 5} className="flex-1 px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 outline-none text-xs font-bold" />
+                             <label className="flex items-center gap-1.5 px-3 bg-slate-900 text-white rounded-xl cursor-pointer">
+                               <input type="checkbox" name="unlimited_skills" defaultChecked={editingProduct?.limits.skills === 'unlimited'} className="w-3 h-3" />
+                               <span className="text-[8px] font-black uppercase">Inf</span>
+                             </label>
+                          </div>
+                       </div>
+                    </div>
+                 </div>
+
+                 <button type="submit" className="w-full py-5 bg-indigo-600 text-white font-black rounded-[1.5rem] uppercase text-[10px] tracking-widest shadow-xl hover:bg-indigo-700 transition-all">Publish Product Architecture</button>
+              </form>
+           </div>
         </div>
       )}
     </div>
@@ -959,49 +1114,6 @@ const LimitLabel = ({ label, val }: any) => (
   </div>
 );
 
-const LimitInput = ({ name, label, initial }: any) => {
-  const [unlimited, setUnlimited] = useState(initial === 'unlimited');
-  return (
-    <div className="space-y-2">
-      <div className="flex justify-between items-center px-1">
-        <label className="text-[10px] font-black text-slate-500 uppercase tracking-tight">{label}</label>
-        <label className="flex items-center gap-2 cursor-pointer">
-          <input type="checkbox" name={`unlimited_${name}`} checked={unlimited} onChange={e => setUnlimited(e.target.checked)} className="w-3 h-3 rounded" />
-          <span className="text-[9px] font-bold text-slate-400 uppercase">Unlimited</span>
-        </label>
-      </div>
-      {!unlimited && (
-        <input name={`limit_${name}`} type="number" defaultValue={initial === 'unlimited' ? 10 : initial} className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 font-bold text-xs" />
-      )}
-    </div>
-  );
-};
-
-const HealthLog = ({ type, msg, user, time }: any) => (
-  <div className="p-5 bg-slate-50 rounded-[1.5rem] border border-slate-100 flex justify-between items-center group hover:bg-rose-50 transition-colors">
-    <div className="flex items-center gap-4">
-      <div className="px-3 py-1 bg-rose-100 text-rose-600 text-[8px] font-black rounded uppercase tracking-widest">{type}</div>
-      <div>
-        <p className="text-xs font-black text-slate-800">{msg}</p>
-        <p className="text-[10px] font-bold text-slate-400 mt-0.5">{user} • {time}</p>
-      </div>
-    </div>
-    <button className="text-[10px] font-black uppercase text-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity">Resolve →</button>
-  </div>
-);
-
-const HealthMetric = ({ label, val, color }: any) => (
-  <div className="space-y-3">
-    <div className="flex justify-between items-center">
-      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{label}</p>
-      <p className="text-[10px] font-black uppercase text-emerald-400">{val}%</p>
-    </div>
-    <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
-      <div className={`h-full ${color === 'emerald' ? 'bg-emerald-500' : 'bg-amber-500'}`} style={{ width: `${val}%` }}></div>
-    </div>
-  </div>
-);
-
 const AdminStatCard = ({ title, value, sub, icon, color }: any) => {
   const colorMap: any = {
     blue: 'bg-blue-50 text-blue-600 border-blue-100',
@@ -1010,7 +1122,7 @@ const AdminStatCard = ({ title, value, sub, icon, color }: any) => {
   };
   return (
     <div className={`bg-white p-8 rounded-[2.5rem] border flex items-center gap-6 shadow-sm hover:shadow-xl transition-all ${colorMap[color]}`}>
-      <div className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-inner bg-white/50">{icon}</div>
+      <div className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-inner bg-white/50 text-xl">{icon}</div>
       <div>
         <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-1">{title}</p>
         <p className="text-3xl font-black">{value}</p>
