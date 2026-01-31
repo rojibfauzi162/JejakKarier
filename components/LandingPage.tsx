@@ -139,8 +139,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin }) => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 relative items-center">
           {/* Paket Bulanan - 20% Discount */}
           <PricingCard 
-            title="Paket Perjalanan" 
-            duration="Bulanan" 
+            title="Bulanan" 
+            duration="1 Bulan" 
             originalPrice="49.000"
             price="39.000" 
             discount="Hemat 20%"
@@ -151,25 +151,26 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin }) => {
           
           {/* Paket 3 Bulanan (Growth) - 40% Discount */}
           <PricingCard 
-            title="Paket Pertumbuhan" 
-            duration="3 Bulan" 
+            title="3 Bulan" 
+            duration="90 Hari" 
             originalPrice="165.000"
             price="99.000" 
             discount="Hemat 40%"
             features={["Semua fitur Bulanan", "AI Career Insight", "Strategy Roadmap v2.0", "Priority Support"]}
-            highlight={true}
             cta="Akselerasi Sekarang"
             onStart={onStart}
           />
 
-          {/* Paket Tahunan - 70% Discount */}
+          {/* Paket Tahunan - 70% Discount - HIGHLIGHTED */}
           <PricingCard 
-            title="Paket Pencapaian" 
+            title="Tahunan" 
             duration="1 Tahun" 
             originalPrice="499.000"
             price="149.000" 
-            discount="Hemat 70%"
+            discount="Paling Hemat"
+            breakdown="Hanya Rp 12rb-an / bulan"
             features={["Akses Unlimited 1 Tahun", "Personal Landing Page Link", "E-Book Roadmap Karir", "Annual Performance Report"]}
+            highlight={true}
             cta="Investasi Jangka Panjang"
             onStart={onStart}
           />
@@ -237,7 +238,7 @@ const FeatureCard = ({ icon, title, desc, highlight }: any) => (
   </div>
 );
 
-const PricingCard = ({ title, duration, originalPrice, price, discount, features, highlight, cta, onStart }: any) => (
+const PricingCard = ({ title, duration, originalPrice, price, discount, features, highlight, cta, onStart, breakdown }: any) => (
   <div className={`p-8 lg:p-10 rounded-[3.5rem] border-2 flex flex-col h-full transition-all duration-700 ${highlight ? 'bg-slate-900 text-white border-slate-900 shadow-[0_40px_100px_-20px_rgba(79,70,229,0.3)] scale-105 z-10' : 'bg-white text-slate-900 border-slate-100 hover:border-indigo-100 shadow-sm'}`}>
     <div className="flex-1">
       <div className="flex justify-between items-start mb-4">
@@ -248,6 +249,7 @@ const PricingCard = ({ title, duration, originalPrice, price, discount, features
       <div className="mb-10">
         <p className={`text-[10px] font-bold line-through opacity-40 mb-1 ${highlight ? 'text-slate-300' : 'text-slate-400'}`}>Rp {originalPrice}</p>
         <span className="text-3xl font-black tracking-tighter">Rp {price}</span>
+        {breakdown && <p className={`text-[10px] font-black mt-1 ${highlight ? 'text-indigo-400' : 'text-indigo-600'}`}>{breakdown}</p>}
         <p className={`text-[8px] font-bold uppercase mt-2 ${highlight ? 'opacity-40' : 'text-slate-400'}`}>Akses Penuh Selama {duration}</p>
       </div>
       <ul className="space-y-3.5 mb-10">
