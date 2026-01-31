@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { onAuthStateChanged, signOut, type User } from '@firebase/auth';
 import { doc, onSnapshot, setDoc } from "firebase/firestore";
@@ -20,6 +19,7 @@ import PublicReportView from './components/PublicReportView';
 import Sidebar from './components/Sidebar';
 import MobileNav from './components/MobileNav';
 import Auth from './components/Auth';
+import LandingPage from './components/LandingPage';
 import CVGenerator from './components/CVGenerator';
 import OnlineCVBuilder from './components/OnlineCVBuilder';
 import OnlineCVView from './components/OnlineCVView';
@@ -205,6 +205,9 @@ const App: React.FC = () => {
   const [dbError, setDbError] = useState<string | null>(null);
   const [permissionsBlocked, setPermissionsBlocked] = useState(false);
   
+  // State untuk alur pendaratan (Landing vs Auth)
+  const [guestMode, setGuestMode] = useState<'landing' | 'auth'>('landing');
+
   // New State for Notification Overlay
   const [showNotif, setShowNotif] = useState(false);
 
@@ -554,6 +557,7 @@ const App: React.FC = () => {
 
   const handleLogout = async () => {
     await signOut(auth);
+    setGuestMode('landing');
     setActiveTab('dashboard');
   };
 
@@ -564,7 +568,7 @@ const App: React.FC = () => {
         <div className="h-full flex items-center justify-center p-8 animate-in fade-in zoom-in duration-700">
            <div className="max-w-xl w-full bg-white p-16 rounded-[4rem] shadow-[0_40px_100px_-20px_rgba(0,0,0,0.1)] text-center border border-rose-100">
               <div className="w-24 h-24 bg-rose-50 text-rose-500 rounded-[2.5rem] flex items-center justify-center mx-auto mb-10 shadow-inner">
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" cy="8" x2="12" y2="12"></line><line x1="12" cy="16" x2="12.01" y2="16"></line></svg>
               </div>
               <h2 className="text-4xl font-black text-slate-900 mb-6 tracking-tighter">{data.isDeleted ? 'Akun Dinonaktifkan' : 'Akses Terbatas'}</h2>
               <p className="text-slate-400 leading-relaxed font-bold mb-12 text-sm uppercase tracking-widest">
@@ -970,7 +974,22 @@ const App: React.FC = () => {
     return <OnlineCVView slug={onlineUserSlug} initialData={data} />;
   }
 
-  if (!user) return <Auth />;
+  if (!user) {
+    if (guestMode === 'landing') {
+      return <LandingPage onStart={() => setGuestMode('auth')} onLogin={() => setGuestMode('auth')} />;
+    }
+    return (
+      <div className="relative">
+        <Auth />
+        <button 
+          onClick={() => setGuestMode('landing')} 
+          className="fixed top-8 left-8 z-[100] px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-white/20 transition-all"
+        >
+          ← Beranda
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-slate-50 relative font-sans text-slate-900">
