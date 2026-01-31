@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { AppData, Skill, Training, Certification, SkillStatus, SkillCategory, SkillPriority, TrainingStatus, AiStrategy, AiRecommendation } from '../types';
+import { AppData, Skill, Training, Certification, SkillStatus, SkillCategory, SkillPriority, TrainingStatus, AiStrategy, AiRecommendation, ToDoTask } from '../types';
 import { analyzeSkillGap } from '../services/geminiService';
 
 interface SkillTrackerProps {
@@ -17,6 +17,7 @@ interface SkillTrackerProps {
   onAddCert: (c: Certification) => void;
   onUpdateCert: (c: Certification) => void;
   onDeleteCert: (id: string) => void;
+  onAddTodo?: (t: ToDoTask) => void;
   onSaveStrategy?: (strategy: AiStrategy) => void;
 }
 
@@ -25,6 +26,7 @@ const SkillTracker: React.FC<SkillTrackerProps> = ({
   onAddSkill, onUpdateSkill, onDeleteSkill,
   onAddTraining, onUpdateTraining, onDeleteTraining,
   onAddCert, onUpdateCert, onDeleteCert,
+  onAddTodo,
   onSaveStrategy
 }) => {
   const [activeSubTab, setActiveSubTab] = useState<'skills' | 'learning' | 'certs' | 'ai'>('skills');
@@ -219,6 +221,53 @@ const SkillTracker: React.FC<SkillTrackerProps> = ({
     alert(`${item.name} telah ditambahkan ke tab ${type === 'training' ? 'Training History' : 'Certification'} dengan status Planned.`);
   };
 
+  // Logic to add Micro Action to To-Do List
+  const handleAddActionToTodo = (actionText: string, timeframe: string) => {
+    if (!onAddTodo) return;
+    
+    const now = new Date();
+    
+    if (timeframe.includes('WEEK') || timeframe.includes('MINGGU')) {
+      // Logic: Tambahkan ke tiap hari dalam minggu ini (sampai hari Minggu)
+      const currentDay = now.getDay(); // 0 is Sunday, 1 is Monday
+      const daysUntilSunday = (7 - currentDay) % 7;
+      
+      for (let i = 0; i <= daysUntilSunday; i++) {
+        const targetDate = new Date();
+        targetDate.setDate(now.getDate() + i);
+        
+        const newTask: ToDoTask = {
+          id: Math.random().toString(36).substr(2, 9),
+          task: actionText,
+          category: 'Pengembangan Diri',
+          status: 'Pending',
+          createdAt: targetDate.toISOString(),
+          source: 'AI'
+        };
+        onAddTodo(newTask);
+      }
+      alert(`Langkah mikro mingguan telah didistribusikan ke agenda harian Anda sampai hari Minggu! 🚀`);
+    } else {
+      // Logic: Tambahkan sekali saja (hari ini atau bulan depan)
+      const targetDate = new Date();
+      if (timeframe.includes('NEXT') || timeframe.includes('DEPAN')) {
+        targetDate.setMonth(targetDate.getMonth() + 1);
+        targetDate.setDate(1);
+      }
+      
+      const newTask: ToDoTask = {
+        id: Math.random().toString(36).substr(2, 9),
+        task: actionText,
+        category: 'Pengembangan Diri',
+        status: 'Pending',
+        createdAt: targetDate.toISOString(),
+        source: 'AI'
+      };
+      onAddTodo(newTask);
+      alert(`Tugas "${actionText}" telah ditambahkan ke Langkah Pengembangan.`);
+    }
+  };
+
   const getPriorityStyle = (priority: string) => {
     const p = priority.toUpperCase();
     if (p.includes('CRITICAL')) return 'bg-rose-50 text-rose-600 border-rose-100';
@@ -339,14 +388,13 @@ const SkillTracker: React.FC<SkillTrackerProps> = ({
         <div className="w-full">
           <h2 className="text-3xl font-black text-slate-900 tracking-tight">Growth & Intelligence</h2>
           <div className="relative mt-5">
-            <div className="flex gap-2 overflow-x-auto pb-4 -mx-4 px-4 no-scrollbar lg:mx-0 lg:px-0 snap-x">
+            {/* Modified Tab Layout: Grid for mobile, Flex for Desktop */}
+            <div className="grid grid-cols-2 lg:flex gap-3 overflow-hidden lg:overflow-x-auto pb-4 -mx-4 px-4 no-scrollbar lg:mx-0 lg:px-0">
               <SubTabButton active={activeSubTab === 'skills'} onClick={() => setActiveSubTab('skills')} label="Skill Matrix" icon="🎯" />
               <SubTabButton active={activeSubTab === 'learning'} onClick={() => setActiveSubTab('learning')} label="Training History" icon="📖" />
               <SubTabButton active={activeSubTab === 'certs'} onClick={() => setActiveSubTab('certs')} label="Certification" icon="📜" />
               <SubTabButton active={activeSubTab === 'ai'} onClick={() => setActiveSubTab('ai')} label="AI Strategist" icon="🧠" />
-              <div className="w-8 shrink-0 lg:hidden"></div>
             </div>
-            <div className="absolute right-0 top-0 bottom-4 w-12 bg-gradient-to-l from-slate-50 to-transparent pointer-events-none lg:hidden"></div>
           </div>
         </div>
         {activeSubTab !== 'ai' && (
@@ -620,9 +668,9 @@ const SkillTracker: React.FC<SkillTrackerProps> = ({
                       {aiLang === 'id' ? 'LANGKAH MIKRO BERIKUTNYA (MICRO ACTIONS)' : 'NEXT SMALL ACTIONS'}
                     </h4>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                       <ActionCard timeframe={aiLang === 'id' ? 'MINGGU INI' : 'THIS WEEK'} action={aiResults.immediateActions?.weekly} color="rose" icon="🗓️" />
-                       <ActionCard timeframe={aiLang === 'id' ? 'BULAN INI' : 'THIS MONTH'} action={aiResults.immediateActions?.monthly} color="indigo" icon="🗓️" />
-                       <ActionCard timeframe={aiLang === 'id' ? 'BULAN DEPAN' : 'NEXT MONTH'} action={aiResults.immediateActions?.nextMonth} color="emerald" icon="🚀" />
+                       <ActionCard timeframe={aiLang === 'id' ? 'MINGGU INI' : 'THIS WEEK'} action={aiResults.immediateActions?.weekly} color="rose" icon="🗓️" onPlan={() => handleAddActionToTodo(aiResults.immediateActions?.weekly, 'WEEK')} />
+                       <ActionCard timeframe={aiLang === 'id' ? 'BULAN INI' : 'THIS MONTH'} action={aiResults.immediateActions?.monthly} color="indigo" icon="🗓️" onPlan={() => handleAddActionToTodo(aiResults.immediateActions?.monthly, 'MONTH')} />
+                       <ActionCard timeframe={aiLang === 'id' ? 'BULAN DEPAN' : 'NEXT MONTH'} action={aiResults.immediateActions?.nextMonth} color="emerald" icon="🚀" onPlan={() => handleAddActionToTodo(aiResults.immediateActions?.nextMonth, 'NEXT')} />
                     </div>
                   </div>
 
@@ -1009,7 +1057,7 @@ const SkillTracker: React.FC<SkillTrackerProps> = ({
                     <div className="flex gap-2 mt-4">
                        <a href={t.link} target="_blank" rel="noreferrer" className="flex-1 text-center py-2.5 rounded-xl bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-slate-100 active:scale-95 transition-all">Visit Resource →</a>
                        {t.certLink && (
-                         <button onClick={() => openDetail(t, 'training')} className="flex-1 text-center py-2.5 rounded-xl bg-indigo-600 text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-indigo-100 active:scale-95 transition-all">View Detail 👁️</button>
+                         <button onClick={() => setCertPreviewUrl(t.certLink || null)} className="flex-1 text-center py-2.5 rounded-xl bg-indigo-600 text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-indigo-100 active:scale-95 transition-all">View Detail 👁️</button>
                        )}
                     </div>
                  </div>
@@ -1043,7 +1091,7 @@ const SkillTracker: React.FC<SkillTrackerProps> = ({
               </select>
             </div>
             <div className="flex-1 min-w-[150px]">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Related Skill</label>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 block mb-2">Related Skill</label>
               <select className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-xs font-bold outline-none" value={fCertSkill} onChange={e => setFCertSkill(e.target.value)}>
                 {certRelatedSkills.map(s => <option key={s} value={s}>{s === 'All' ? 'All Skills' : s}</option>)}
               </select>
@@ -1221,19 +1269,30 @@ const SectionLabel: React.FC<{ label: string; color: string }> = ({ label, color
   );
 };
 
-const ActionCard: React.FC<{ timeframe: string; action: string; color: string; icon: string }> = ({ timeframe, action, color, icon }) => {
+const ActionCard: React.FC<{ timeframe: string; action: string; color: string; icon: string; onPlan: () => void }> = ({ timeframe, action, color, icon, onPlan }) => {
   const colorMap: any = {
     rose: 'bg-rose-50 text-rose-600 border-rose-100',
     indigo: 'bg-indigo-50 text-indigo-600 border-indigo-100',
     emerald: 'bg-emerald-50 text-emerald-600 border-emerald-100'
   };
+  const btnColorMap: any = {
+    rose: 'bg-rose-600 hover:bg-rose-700',
+    indigo: 'bg-indigo-600 hover:bg-indigo-700',
+    emerald: 'bg-emerald-600 hover:bg-emerald-700'
+  };
   return (
     <div className={`p-8 rounded-[3rem] border-2 group hover:shadow-2xl transition-all duration-700 hover:-translate-y-2 flex flex-col items-center text-center ${colorMap[color]}`}>
        <div className="w-14 h-14 rounded-2xl bg-white/50 flex items-center justify-center text-2xl shadow-inner mb-6 group-hover:scale-110 transition-transform">{icon}</div>
        <p className="text-[10px] font-black uppercase tracking-[0.3em] mb-4 opacity-70">{timeframe}</p>
-       <p className="text-xs font-bold leading-relaxed text-slate-800">
+       <p className="text-xs font-bold leading-relaxed text-slate-800 flex-1 mb-8">
          {action || "Langkah strategis sedang diproses..."}
        </p>
+       <button 
+        onClick={onPlan}
+        className={`w-full py-4 text-white text-[9px] font-black uppercase rounded-2xl transition-all shadow-xl active:scale-95 tracking-widest ${btnColorMap[color]}`}
+       >
+         + Add to Daily Plan 🚀
+       </button>
     </div>
   );
 };
@@ -1289,7 +1348,7 @@ const StatWidget: React.FC<{ title: string; value: string | number; icon: string
 const SubTabButton: React.FC<{ active: boolean; onClick: () => void; label: string; icon: string }> = ({ active, onClick, label, icon }) => (
   <button 
     onClick={onClick} 
-    className={`flex items-center gap-2 px-4 md:px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border shrink-0 snap-center ${ 
+    className={`flex items-center gap-2 px-4 md:px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border shrink-0 ${ 
       active ? 'bg-slate-900 text-white border-slate-900 shadow-xl' : 'text-slate-400 hover:bg-white bg-slate-50/50 border-slate-100 hover:border-slate-200' 
     }`}
   >

@@ -30,7 +30,8 @@ export const INITIAL_DATA: AppData = {
     shortTermTarget: "Senior Tax Consultant",
     longTermTarget: "Tax Manager",
     description: "Seorang profesional perpajakan yang berdedikasi dengan fokus pada kepatuhan pajak korporat dan perencanaan strategis.",
-    photoUrl: ""
+    photoUrl: "",
+    jobCategory: "Keuangan & Akuntansi"
   },
   workExperiences: [],
   educations: [],
@@ -74,6 +75,8 @@ export const INITIAL_DATA: AppData = {
       reflection: 'Banyak perubahan di aturan teknis pemotongan PPh 21.'
     }
   ],
+  // Fix: Added missing dailyReflections property required by AppData interface
+  dailyReflections: [],
   skills: [
     { 
       id: 's1', 
@@ -273,9 +276,9 @@ export const INITIAL_DATA: AppData = {
       name: 'Instagram Branding Pajak',
       date: '2025-06-15',
       skills: ['Copywriting', 'Branding Personal', 'Komunikasi Klien'],
-      link: 'https://www.instagram.com/diary.pajak',
+      link: 'https://www.instagram.com/direct/pajak',
       status: ProjectStatus.PROSES,
-      description: 'Membangun akun instagram untuk membagikan tips pajak dengan gaya personal branding'
+      description: 'Membangunan akun instagram untuk membagikan tips pajak dengan gaya personal branding'
     },
     {
       id: 'pp3',
@@ -287,6 +290,8 @@ export const INITIAL_DATA: AppData = {
       description: 'Merancang Google Sheet template untuk laporan pajak pribadi dan freelance'
     }
   ],
+  todoList: [],
+  todoCategories: ['Pendukung Kerja', 'Pengembangan Diri', 'Buka Peluang', 'Keseimbangan Hidup'],
   affirmations: ["I am capable of achieving my professional goals", "Every challenge is an opportunity to grow"],
   workCategories: ['Operasional', 'Meeting', 'Learning', 'Administratif', 'Lainnya'],
   onlineCV: {
@@ -306,9 +311,12 @@ export const INITIAL_DATA: AppData = {
   reminderConfig: {
     weeklyProgress: true,
     monthlyEvaluation: true,
-    dailyMotivation: true
+    dailyMotivation: true,
+    // Nilai Default Reminder
+    dailyLogReminderTime: "17:00",
+    reflectionReminderTime: "18:00",
+    todoReminderTime: "20:00"
   },
-  // Fix: Added missing property required by AppData interface
   completedAiMilestones: []
 };
 

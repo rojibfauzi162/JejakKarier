@@ -15,6 +15,19 @@ interface ProfileViewProps {
   onDeleteEducation: (id: string) => void;
 }
 
+const JOB_CATEGORIES = [
+  'Operasional & Produksi',
+  'Pemasaran & Penjualan',
+  'Keuangan & Akuntansi',
+  'Sumber Daya Manusia (SDM/HR)',
+  'Teknologi Informasi (IT)',
+  'Administrasi & Umum',
+  'Research & Development (R&D) / Inovasi',
+  'Logistik & Rantai Pasok',
+  'Layanan Pelanggan',
+  'Hukum & Kepatuhan'
+];
+
 const ProfileView: React.FC<ProfileViewProps> = ({ 
   profile, workExperiences, educations,
   onUpdateProfile, onAddWork, onUpdateWork, onDeleteWork,
@@ -155,8 +168,19 @@ const ProfileView: React.FC<ProfileViewProps> = ({
               <InputGroup label="Nomor Handphone" value={formData.phone} onChange={v => setFormData({ ...formData, phone: v })} placeholder="e.g. 08123456789" />
               <InputGroup label="Domisili" value={formData.domicile} onChange={v => setFormData({ ...formData, domicile: v })} placeholder="e.g. Jakarta Selatan" />
               
-              <InputGroup label="Target Role Utama" value={formData.mainCareer} onChange={v => setFormData({ ...formData, mainCareer: v })} placeholder="e.g. Senior Product Manager" />
-              <InputGroup label="Current Company" value={formData.currentCompany} onChange={v => setFormData({ ...formData, currentCompany: v })} placeholder="e.g. Tech Industries" />
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Kategori Jabatan</label>
+                <select 
+                  className="w-full px-5 py-3.5 rounded-2xl border border-slate-200 outline-none bg-slate-50/30 text-slate-800 font-bold focus:ring-4 focus:ring-blue-500/5 transition-all"
+                  value={formData.jobCategory || ''}
+                  onChange={e => setFormData({ ...formData, jobCategory: e.target.value })}
+                >
+                  <option value="" disabled>Pilih Kategori...</option>
+                  {JOB_CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                </select>
+              </div>
+
+              <InputGroup label="Current Company" value={formData.currentCompany} onChange={v => setFormData({ ...formData, currentCompany: v })} placeholder="e.g. Tax Industries" />
               <InputGroup label="Current Title" value={formData.currentPosition} onChange={v => setFormData({ ...formData, currentPosition: v })} placeholder="e.g. Mid-level Engineer" />
               
               {/* Kolom baru Deskripsi Diri */}
@@ -396,10 +420,10 @@ const InputGroup: React.FC<{ label: string; value: string | number; onChange: (v
   <div className="space-y-2">
     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{label}</label>
     <input 
-      type={type}
+      type={type} 
       placeholder={placeholder}
       className="w-full px-5 py-3.5 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-blue-500/5 outline-none bg-slate-50/30 transition-all text-slate-800 font-medium placeholder:text-slate-300"
-      value={value || ''}
+      value={value || ''} 
       onChange={e => onChange(e.target.value)}
     />
   </div>

@@ -263,6 +263,26 @@ const JobTracker: React.FC<JobTrackerProps> = ({ applications, onAdd, onUpdate, 
         ))}
         {filteredApplications.length === 0 && <div className="py-16 text-center text-slate-400 italic font-medium">Kosong.</div>}
       </div>
+
+      {/* MODAL FORM: Tambah & Edit - Fixed Integration */}
+      {isFormOpen && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[500] p-4">
+          <div className="bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl p-8 lg:p-10 animate-in zoom-in duration-300 max-h-[90vh] overflow-y-auto">
+            <JobForm 
+              initialData={editingItem}
+              onSubmit={(data) => {
+                if (editingItem) {
+                  onUpdate({ ...editingItem, ...data } as JobApplication);
+                } else {
+                  onAdd({ ...data, id: Math.random().toString(36).substr(2, 9) } as JobApplication);
+                }
+                setIsFormOpen(false);
+              }}
+              onCancel={() => setIsFormOpen(false)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

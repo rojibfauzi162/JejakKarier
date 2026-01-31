@@ -105,6 +105,7 @@ export interface UserProfile {
   longTermTarget: string;
   description: string; // Properti baru untuk deskripsi diri
   photoUrl?: string; // Properti baru untuk foto profil
+  jobCategory?: string; // Baru: Kategori Jabatan
 }
 
 export interface DailyReport {
@@ -118,6 +119,24 @@ export interface DailyReport {
   metricValue: number;
   metricLabel: string;
   reflection: string;
+  isPlan?: boolean; // Baru: Penanda apakah ini masih rencana
+  targetValue?: number; // Baru: Target angka yang ingin dicapai
+}
+
+export interface WorkReflection {
+  id: string;
+  date: string; // ISO YYYY-MM-DD
+  mood: number; // 1-5
+  energy: 'Low' | 'Medium' | 'High';
+  workload: 'Light' | 'Normal' | 'Heavy';
+  mainContribution: string;
+  microWins: string[]; // List of checkboxes
+  skillsUsed: string[]; // Array of skill names
+  suggestedSkills?: string[]; // Up to 2 manual new skills
+  energyDrain?: string;
+  focusTomorrow?: string;
+  rotatingQuestion: string;
+  rotatingAnswer: string;
 }
 
 export interface Skill {
@@ -230,6 +249,17 @@ export interface PersonalProject {
   description: string;
 }
 
+export interface ToDoTask {
+  id: string;
+  task: string;
+  description?: string; // Properti baru
+  category: string;
+  status: 'Pending' | 'Completed';
+  createdAt: string;
+  source: 'AI' | 'Manual';
+  isFocusToday?: boolean; // Properti baru
+}
+
 // Konfigurasi khusus untuk CV Online / Landing Page
 export interface OnlineCVConfig {
   username: string;
@@ -298,6 +328,10 @@ export interface ReminderConfig {
   weeklyProgress: boolean;
   monthlyEvaluation: boolean;
   dailyMotivation: boolean;
+  // BARU: Pengaturan Waktu Reminder Spesifik
+  dailyLogReminderTime: string; // Format "HH:mm"
+  reflectionReminderTime: string; // Format "HH:mm"
+  todoReminderTime: string; // Format "HH:mm"
 }
 
 export interface AppData {
@@ -322,6 +356,7 @@ export interface AppData {
   workExperiences: WorkExperience[];
   educations: Education[];
   dailyReports: DailyReport[];
+  dailyReflections: WorkReflection[]; // Baru: Refleksi harian
   skills: Skill[];
   trainings: Training[];
   certifications: Certification[];
@@ -331,6 +366,8 @@ export interface AppData {
   monthlyReviews: MonthlyReview[];
   jobApplications: JobApplication[];
   personalProjects: PersonalProject[];
+  todoList: ToDoTask[]; // Baru: Daftar tugas harian
+  todoCategories: string[]; // Baru: Kategori tugas kustom
   aiInsights?: AiInsightRecord[]; // Riwayat AI Insight
   affirmations: string[];
   workCategories: string[]; // Properti baru untuk kustomisasi kategori kerja

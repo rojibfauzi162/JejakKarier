@@ -1,6 +1,6 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
-import { AppData, AiConfig } from "../types";
+import { AppData, AiConfig, WorkReflection } from "../types";
 import { getAiConfig } from "./firebase";
 
 // Cache lokal untuk konfigurasi AI agar tidak redundant ke Firestore
@@ -289,6 +289,76 @@ export async function generateCareerInsight(data: AppData, audience: 'self' | 's
       aiReflection: { type: Type.STRING }
     },
     required: ["title", "summary", "startDate", "endDate", "sections", "metrics", "aiReflection"]
+  };
+
+  return await callAI(prompt, schema);
+}
+
+/**
+ * Menganalisis data refleksi harian untuk memberikan insight mendalam pola produktivitas & mood.
+ */
+export async function analyzeReflections(data: AppData, reflections: WorkReflection[], filterRange: string) {
+  const prompt = `
+    ANALYZE DAILY WORK REFLECTIONS
+    USER: ${data.profile.name} (${data.profile.currentPosition})
+    RANGE: ${filterRange}
+    DATA: ${JSON.stringify(reflections.map(r => ({
+      date: r.date,
+      mood: r.mood,
+      energy: r.energy,
+      load: r.workload,
+      contribution: r.mainContribution,
+      skills: r.skillsUsed
+    })))}
+
+    TASK:
+    Generate a deep professional analysis following the user's specific request.
+    1 week: Productivity patterns and mood peaks.
+    1 month: Dominant skills matrix and workload-mood correlation.
+    3 months: Registry of Golden Contributions for performance reviews.
+    6 months: Long-term career evaluation based on initiatives and wins.
+
+    OUTPUT JSON SCHEMA:
+    {
+      "executiveSummary": "string",
+      "productivityPattern": "string",
+      "skillAnalysis": "string",
+      "moodCorrelation": "string",
+      "goldenContributions": ["string"],
+      "careerReadiness": "string",
+      "suggestedConnections": [
+        {
+          "type": "skill" | "task" | "achievement",
+          "label": "string",
+          "detail": "string"
+        }
+      ]
+    }
+  `;
+
+  const schema = {
+    type: Type.OBJECT,
+    properties: {
+      executiveSummary: { type: Type.STRING },
+      productivityPattern: { type: Type.STRING },
+      skillAnalysis: { type: Type.STRING },
+      moodCorrelation: { type: Type.STRING },
+      goldenContributions: { type: Type.ARRAY, items: { type: Type.STRING } },
+      careerReadiness: { type: Type.STRING },
+      suggestedConnections: {
+        type: Type.ARRAY,
+        items: {
+          type: Type.OBJECT,
+          properties: {
+            type: { type: Type.STRING },
+            label: { type: Type.STRING },
+            detail: { type: Type.STRING }
+          },
+          required: ["type", "label", "detail"]
+        }
+      }
+    },
+    required: ["executiveSummary", "productivityPattern", "skillAnalysis", "moodCorrelation", "goldenContributions", "careerReadiness", "suggestedConnections"]
   };
 
   return await callAI(prompt, schema);

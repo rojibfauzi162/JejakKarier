@@ -1,9 +1,9 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { onAuthStateChanged, signOut, type User } from '@firebase/auth';
 import { doc, onSnapshot, setDoc } from "firebase/firestore";
 import { auth, db, saveUserData } from './services/firebase';
-import { AppData, UserProfile, DailyReport, Skill, Training, Certification, CareerPath, Achievement, Contact, MonthlyReview, WorkExperience, Education, JobApplication, PersonalProject, OnlineCVConfig, UserRole, SubscriptionPlan, AccountStatus, AiStrategy, ReminderConfig } from './types';
+import { AppData, UserProfile, DailyReport, Skill, Training, Certification, CareerPath, Achievement, Contact, MonthlyReview, WorkExperience, Education, JobApplication, PersonalProject, OnlineCVConfig, UserRole, SubscriptionPlan, AccountStatus, AiStrategy, ReminderConfig, SkillStatus, ToDoTask, WorkReflection } from './types';
 import { INITIAL_DATA } from './constants';
 import Dashboard from './components/Dashboard';
 import ProfileView from './components/ProfileView';
@@ -27,6 +27,177 @@ import AccountSettings from './components/AccountSettings';
 import AdminPanel from './components/AdminPanel';
 import Reminders from './components/Reminders';
 import AiInsightActivity from './components/AiInsightActivity';
+import ToDoList from './components/ToDoList';
+import WorkReflectionView from './components/WorkReflection';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
+
+// Fix: Implement HubButton for the Apps Hub view
+const HubButton: React.FC<{ onClick: () => void, label: string, icon: string, color: string }> = ({ onClick, label, icon, color }) => {
+  const colors: Record<string, string> = {
+    indigo: 'bg-indigo-50 text-indigo-600 border-indigo-100 hover:bg-indigo-100',
+    emerald: 'bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-emerald-100',
+    blue: 'bg-blue-50 text-blue-600 border-blue-100 hover:bg-blue-100',
+    purple: 'bg-purple-50 text-purple-100 hover:bg-purple-100',
+    cyan: 'bg-cyan-50 text-cyan-600 border-cyan-100 hover:bg-cyan-100',
+    amber: 'bg-amber-50 text-amber-600 border-amber-100 hover:bg-amber-100',
+    slate: 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100',
+  };
+  return (
+    <button onClick={onClick} className={`flex flex-col items-center gap-3 p-6 rounded-[2rem] border transition-all active:scale-95 group ${colors[color] || colors.indigo}`}>
+      <div className="text-3xl transition-transform group-hover:scale-110"><i className={`bi ${icon}`}></i></div>
+      <span className="text-[10px] font-black uppercase tracking-widest text-center">{label}</span>
+    </button>
+  );
+};
+
+// Fix: Implement MetricCard for local App usage (e.g. mobile stats)
+const MetricCard: React.FC<{ title: string; value: number | string; subtitle: string; icon: React.ReactNode; color: string }> = ({ title, value, subtitle, icon, color }) => {
+  const colors: Record<string, string> = {
+    indigo: 'bg-indigo-50 text-indigo-600',
+    emerald: 'bg-emerald-50 text-emerald-600',
+    slate: 'bg-slate-100 text-slate-900',
+    amber: 'bg-amber-50 text-amber-600',
+  };
+
+  return (
+    <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 transition-all duration-500 hover:shadow-md group">
+      <div className={`w-12 h-12 ${colors[color] || colors.indigo} rounded-2xl flex items-center justify-center mb-6 shadow-inner group-hover:scale-110 transition-transform text-xl`}>
+        {icon}
+      </div>
+      <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.3em] mb-1">{title}</p>
+      <h4 className="text-xl font-black text-slate-900 tracking-tight">{value}</h4>
+      <p className="text-[9px] text-slate-500 mt-4 font-bold uppercase tracking-widest opacity-60 italic">{subtitle}</p>
+    </div>
+  );
+};
+
+// Fix: Implement InputGroup for the Onboarding wizard
+const InputGroup: React.FC<{ label: string, value: string, onChange: (v: string) => void, placeholder?: string, type?: string }> = ({ label, value, onChange, placeholder, type = "text" }) => (
+  <div className="space-y-1.5">
+    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{label}</label>
+    <input 
+      type={type}
+      className="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-slate-50 font-bold text-xs outline-none focus:ring-4 focus:ring-blue-500/5 transition-all"
+      placeholder={placeholder}
+      value={value}
+      onChange={e => onChange(e.target.value)}
+    />
+  </div>
+);
+
+// Fix: Implement ActionItem helper for the NotificationOverlay
+const ActionItem = ({ label, isDone, onComplete }: { label: string; isDone: boolean; onComplete: () => void }) => (
+  <div className={`p-4 rounded-2xl border flex items-center gap-4 transition-all ${isDone ? 'bg-slate-50 border-slate-100 opacity-50' : 'bg-white border-slate-100 shadow-sm'}`}>
+    <button 
+      onClick={() => !isDone && onComplete()}
+      className={`shrink-0 w-6 h-6 rounded-lg flex items-center justify-center transition-all ${isDone ? 'bg-emerald-500 text-white' : 'border-2 border-slate-200 text-transparent hover:border-emerald-400'}`}
+    >
+      <i className="bi bi-check-lg text-xs"></i>
+    </button>
+    <p className={`text-[11px] font-bold leading-tight ${isDone ? 'line-through text-slate-400' : 'text-slate-700'}`}>{label}</p>
+  </div>
+);
+
+// Fix: Implement NotificationOverlay to show AI-driven career signals and smart reminders
+const NotificationOverlay: React.FC<{ data: AppData, onClose: () => void, onUpdateMilestone: (id: string, label: string) => void, onNavigate: (tab: string, date?: string) => void }> = ({ data, onClose, onUpdateMilestone, onNavigate }) => {
+  const latestStrategy = data.aiStrategies?.[0];
+  const completed = data.completedAiMilestones || [];
+
+  // Hitung Pengingat Harian
+  const today = new Date().toISOString().split('T')[0];
+  const hasWorkLogs = data.dailyReports.some(l => l.date === today);
+  const hasReflection = data.dailyReflections.some(r => r.date === today);
+  
+  // Perbaikan: Identifikasi tanggal tugas tertunda tertua untuk navigasi akurat
+  const pendingTasks = data.todoList.filter(t => t.status === 'Pending');
+  const oldestPendingDate = pendingTasks.length > 0 
+    ? pendingTasks.sort((a,b) => a.createdAt.localeCompare(b.createdAt))[0].createdAt.split('T')[0]
+    : today;
+
+  // Perbaikan: Identifikasi log kerja yang terlewat (3 hari terakhir)
+  const last3Days = [0, 1, 2].map(daysBack => {
+    const d = new Date();
+    d.setDate(d.getDate() - daysBack);
+    return d.toISOString().split('T')[0];
+  });
+  const oldestMissingLogDate = last3Days.reverse().find(date => !data.dailyReports.some(l => l.date === date)) || today;
+
+  return (
+    <div className="fixed inset-0 z-[1000]">
+      <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-sm" onClick={onClose}></div>
+      <div className="absolute right-0 top-0 bottom-0 w-4/5 max-w-sm bg-white shadow-2xl animate-in slide-in-from-right duration-500 flex flex-col">
+        <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+           <h3 className="text-sm font-black uppercase tracking-widest text-slate-900">Notifications Hub</h3>
+           <button onClick={onClose} className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-900"><i className="bi bi-x-lg"></i></button>
+        </div>
+        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+           {/* Section 1: Smart Reminders */}
+           <div className="space-y-4">
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Daily Protocol Reminders</p>
+              {!hasWorkLogs && (
+                <button onClick={() => { onNavigate('daily', oldestMissingLogDate); onClose(); }} className="w-full p-4 bg-indigo-50 border border-indigo-100 rounded-2xl text-left flex items-center gap-4 hover:bg-indigo-100 transition-colors">
+                   <span className="text-xl">📝</span>
+                   <div>
+                      <p className="text-[11px] font-black text-indigo-700 leading-tight">Log Harian Belum Diisi!</p>
+                      <p className="text-[9px] font-bold text-indigo-400 uppercase tracking-widest">
+                        {oldestMissingLogDate === today ? 'Hari Ini' : new Date(oldestMissingLogDate).toLocaleDateString('id-ID', {day:'numeric', month:'short'})}
+                      </p>
+                   </div>
+                </button>
+              )}
+              {!hasReflection && (
+                <button onClick={() => { onNavigate('work_reflection', today); onClose(); }} className="w-full p-4 bg-rose-50 border border-rose-100 rounded-2xl text-left flex items-center gap-4 hover:bg-rose-100 transition-colors">
+                   <span className="text-xl">🧘</span>
+                   <div>
+                      <p className="text-[11px] font-black text-rose-700 leading-tight">Refleksi Belum Terisi!</p>
+                      <p className="text-[9px] font-bold text-rose-400 uppercase tracking-widest">Self Review</p>
+                   </div>
+                </button>
+              )}
+              {pendingTasks.length > 0 && (
+                <button onClick={() => { onNavigate('todo_list', oldestPendingDate); onClose(); }} className="w-full p-4 bg-emerald-50 border border-emerald-100 rounded-2xl text-left flex items-center gap-4 hover:bg-emerald-100 transition-colors">
+                   <span className="text-xl">🚀</span>
+                   <div>
+                      <p className="text-[11px] font-black text-emerald-700 leading-tight">{pendingTasks.length} Langkah Tertunda</p>
+                      <p className="text-[9px] font-bold text-emerald-400 uppercase tracking-widest">Mulai dari {new Date(oldestPendingDate).toLocaleDateString('id-ID', {day:'numeric', month:'short'})}</p>
+                   </div>
+                </button>
+              )}
+              {hasWorkLogs && hasReflection && pendingTasks.length === 0 && (
+                <div className="p-10 text-center bg-slate-50 rounded-3xl border border-dashed border-slate-200">
+                   <span className="text-3xl grayscale mb-4 block">✅</span>
+                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Semua Protokol Tuntas!</p>
+                </div>
+              )}
+           </div>
+
+           {/* Section 2: AI Actions */}
+           {latestStrategy && (
+             <div className="space-y-6 pt-6 border-t border-slate-100">
+               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Career Signals</p>
+               <div className="p-5 bg-slate-900 rounded-[1.5rem] text-white">
+                  <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-3">AI Coach Motivation</p>
+                  <p className="text-xs font-bold italic leading-relaxed opacity-80">"{latestStrategy.motivation}"</p>
+               </div>
+               <div className="space-y-4">
+                  <ActionItem 
+                    label={latestStrategy.immediateActions.weekly} 
+                    isDone={completed.includes(`action:${latestStrategy.immediateActions.weekly}`)}
+                    onComplete={() => onUpdateMilestone(`action:${latestStrategy.immediateActions.weekly}`, latestStrategy.immediateActions.weekly)}
+                  />
+                  <ActionItem 
+                    label={latestStrategy.immediateActions.monthly} 
+                    isDone={completed.includes(`action:${latestStrategy.immediateActions.monthly}`)}
+                    onComplete={() => onUpdateMilestone(`action:${latestStrategy.immediateActions.monthly}`, latestStrategy.immediateActions.monthly)}
+                  />
+               </div>
+             </div>
+           )}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -34,6 +205,13 @@ const App: React.FC = () => {
   const [dbError, setDbError] = useState<string | null>(null);
   const [permissionsBlocked, setPermissionsBlocked] = useState(false);
   
+  // New State for Notification Overlay
+  const [showNotif, setShowNotif] = useState(false);
+
+  // Onboarding State
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [onboardingStep, setOnboardingStep] = useState(1);
+
   // UI States for Alert and Confirmation
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [showConfirm, setShowConfirm] = useState<{ key: keyof AppData; id: string; label: string } | null>(null);
@@ -52,6 +230,7 @@ const App: React.FC = () => {
     };
   });
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [globalTargetDate, setGlobalTargetDate] = useState<string | undefined>(undefined);
 
   const searchParams = new URLSearchParams(window.location.search);
   const isPublicView = searchParams.get('view') === 'shared_report' || searchParams.get('view') === 'shared_insight';
@@ -62,6 +241,22 @@ const App: React.FC = () => {
   const pathParts = window.location.pathname.split('/');
   const onlineUserSlug = searchParams.get('u') || (pathParts[1] === 'profile' ? pathParts[2] : null);
   const isOnlineCVView = !!onlineUserSlug;
+
+  // Notification count logic
+  const notificationCount = useMemo(() => {
+    const today = new Date().toISOString().split('T')[0];
+    let count = 0;
+    if (!data.dailyReports.some(l => l.date === today)) count++;
+    if (!data.dailyReflections.some(r => r.date === today)) count++;
+    const pendingTasks = data.todoList.filter(t => t.status === 'Pending' && new Date(t.createdAt).toISOString().split('T')[0] === today);
+    count += pendingTasks.length;
+    return count;
+  }, [data]);
+
+  const handleTabChange = (tab: string, date?: string) => {
+    setActiveTab(tab);
+    setGlobalTargetDate(date);
+  };
 
   useEffect(() => {
     if (isPublicView || isOnlineCVView) {
@@ -89,6 +284,12 @@ const App: React.FC = () => {
         setPermissionsBlocked(false);
         if (docSnap.exists()) {
           const cloudData = docSnap.data() as AppData;
+          
+          // Cek Onboarding: Jika profile jobDesk kosong, tampilkan onboarding
+          if (!cloudData.profile?.jobDesk && cloudData.role !== UserRole.SUPERADMIN) {
+            setShowOnboarding(true);
+          }
+
           const authEmail = (user.email || '').toLowerCase();
           const isHardcodedAdmin = authEmail === 'admin@jejakkarir.com';
           let needsUpdateToDB = false;
@@ -97,6 +298,7 @@ const App: React.FC = () => {
           if (!cloudData.workExperiences) cloudData.workExperiences = [];
           if (!cloudData.educations) cloudData.educations = [];
           if (!cloudData.dailyReports) cloudData.dailyReports = [];
+          if (!cloudData.dailyReflections) cloudData.dailyReflections = [];
           if (!cloudData.skills) cloudData.skills = [];
           if (!cloudData.trainings) cloudData.trainings = [];
           if (!cloudData.certifications) cloudData.certifications = [];
@@ -106,6 +308,8 @@ const App: React.FC = () => {
           if (!cloudData.monthlyReviews) cloudData.monthlyReviews = [];
           if (!cloudData.jobApplications) cloudData.jobApplications = [];
           if (!cloudData.personalProjects) cloudData.personalProjects = [];
+          if (!cloudData.todoList) cloudData.todoList = [];
+          if (!cloudData.todoCategories) cloudData.todoCategories = INITIAL_DATA.todoCategories;
           if (!cloudData.workCategories) cloudData.workCategories = INITIAL_DATA.workCategories;
           if (!cloudData.onlineCV) cloudData.onlineCV = INITIAL_DATA.onlineCV;
           if (!cloudData.reminderConfig) cloudData.reminderConfig = INITIAL_DATA.reminderConfig;
@@ -183,14 +387,15 @@ const App: React.FC = () => {
             completedAiMilestones: []
           };
           saveUserData(user.uid, newData as AppData);
+          setShowOnboarding(true);
         }
       }, (error) => {
         console.warn("Firestore access issues:", error);
         if (error.code === 'permission-denied') {
           setPermissionsBlocked(true);
-          setDbError("Secure Database Access Denied.");
+          setDbError("Akses database ditolak.");
         } else {
-          setDbError("System synchronization latency detected.");
+          setDbError("Terjadi hambatan sinkronisasi sistem.");
         }
       });
     };
@@ -215,7 +420,7 @@ const App: React.FC = () => {
     if (user && !permissionsBlocked) {
       saveUserData(user.uid, newData);
     }
-    triggerToast("Central Record Updated Successfully.");
+    triggerToast("Data Berhasil Diperbarui.");
   };
 
   const handleRetrySync = () => {
@@ -243,7 +448,7 @@ const App: React.FC = () => {
       }
       return prev;
     });
-    triggerToast("Entry permanently recorded.");
+    triggerToast("Data Berhasil Ditambah.");
   };
 
   const deleteItem = (key: keyof AppData, id: string) => {
@@ -261,7 +466,7 @@ const App: React.FC = () => {
       }
       return prev;
     });
-    triggerToast("Entry permanently purged.");
+    triggerToast("Data Telah Dihapus.");
   };
 
   const requestDelete = (key: keyof AppData, id: string, label: string) => {
@@ -302,11 +507,48 @@ const App: React.FC = () => {
     }
   };
 
-  const handleUpdateMilestone = (milestoneId: string) => {
+  const handleAddTodoCategory = (cat: string) => {
+    syncData({ ...data, todoCategories: [...data.todoCategories, cat] });
+  };
+
+  const handleUpdateTodoCategory = (old: string, next: string) => {
+    syncData({ 
+      ...data, 
+      todoCategories: data.todoCategories.map(c => c === old ? next : c),
+      todoList: data.todoList.map(t => t.category === old ? { ...t, category: next } : t)
+    });
+  };
+
+  const handleDeleteTodoCategory = (cat: string) => {
+    const isFixed = ['Pendukung Kerja', 'Pengembangan Diri', 'Buka Peluang', 'Keseimbangan Hidup'].includes(cat);
+    if (!isFixed) {
+      syncData({ ...data, todoCategories: data.todoCategories.filter(c => c !== cat) });
+    }
+  };
+
+  const handleUpdateMilestone = (milestoneId: string, label: string) => {
     const current = data.completedAiMilestones || [];
     if (!current.includes(milestoneId)) {
-      syncData({ ...data, completedAiMilestones: [...current, milestoneId] });
-      triggerToast("Progres dikunci. AI akan menyesuaikan target berikutnya.");
+      // 1. Lock Milestone Centang
+      const newCompleted = [...current, milestoneId];
+      
+      // 2. Add to To-Do List
+      const newTask: ToDoTask = {
+        id: Math.random().toString(36).substr(2, 9),
+        task: label,
+        category: 'Pengembangan Diri', // Default category for AI tasks
+        status: 'Pending',
+        createdAt: new Date().toISOString(),
+        source: 'AI'
+      };
+
+      syncData({ 
+        ...data, 
+        completedAiMilestones: newCompleted,
+        todoList: [newTask, ...(data.todoList || [])]
+      });
+      
+      triggerToast("Tugas AI ditambahkan ke Langkah Pengembangan! 🚀");
     }
   };
 
@@ -324,13 +566,13 @@ const App: React.FC = () => {
               <div className="w-24 h-24 bg-rose-50 text-rose-500 rounded-[2.5rem] flex items-center justify-center mx-auto mb-10 shadow-inner">
                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
               </div>
-              <h2 className="text-4xl font-black text-slate-900 mb-6 tracking-tighter">{data.isDeleted ? 'Vault Decommissioned' : 'Access Restricted'}</h2>
+              <h2 className="text-4xl font-black text-slate-900 mb-6 tracking-tighter">{data.isDeleted ? 'Akun Dinonaktifkan' : 'Akses Terbatas'}</h2>
               <p className="text-slate-400 leading-relaxed font-bold mb-12 text-sm uppercase tracking-widest">
                 {data.isDeleted 
-                  ? 'Your account is scheduled for permanent purge. Contact administration if this is an error.' 
-                  : 'Your credentials have been flagged by the system administrator due to policy compliance issues.'}
+                  ? 'Akun Anda sedang dijadwalkan untuk dihapus permanen. Hubungi admin jika ini kesalahan.' 
+                  : 'Akses akun Anda telah dibatasi sementara oleh admin sistem.'}
               </p>
-              <button onClick={() => setActiveTab('settings')} className="w-full py-5 bg-slate-950 text-white font-black rounded-3xl uppercase tracking-[0.3em] text-[10px] shadow-2xl hover:scale-[1.02] transition-all">Go to Security Settings</button>
+              <button onClick={() => setActiveTab('settings')} className="w-full py-5 bg-slate-950 text-white font-black rounded-3xl uppercase tracking-[0.3em] text-[10px] shadow-2xl hover:scale-[1.02] transition-all">Buka Pengaturan Keamanan</button>
            </div>
         </div>
       );
@@ -342,154 +584,369 @@ const App: React.FC = () => {
       return <AdminPanel initialMode="dashboard" />;
     }
 
-    switch (activeTab) {
-      case 'dashboard': return <Dashboard data={data} />;
-      case 'profile': return (
-        <ProfileView 
-          profile={data.profile} 
-          workExperiences={data.workExperiences}
-          educations={data.educations}
-          onUpdateProfile={updateProfile} 
-          onAddWork={(w) => addItem('workExperiences', w)}
-          onUpdateWork={(w) => updateItem('workExperiences', w)}
-          onDeleteWork={(id) => requestDelete('workExperiences', id, 'Experience Record')}
-          onAddEducation={(e) => addItem('educations', e)}
-          onUpdateEducation={(e) => updateItem('educations', e)}
-          onDeleteEducation={(id) => requestDelete('educations', id, 'Education Record')}
-        />
+    // Wrap content with Mobile Header for navigation experience
+    const content = (() => {
+      switch (activeTab) {
+        case 'dashboard': return <Dashboard data={data} onNavigate={handleTabChange} onOpenNotif={() => setShowNotif(true)} />;
+        case 'apps_hub': return (
+          <div className="p-6 pt-6 space-y-10 animate-in fade-in duration-700">
+             <div className="space-y-8">
+                <div>
+                   <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4 ml-1">Aktivitas Harian</h3>
+                   <div className="grid grid-cols-2 gap-4">
+                      <HubButton onClick={() => setActiveTab('daily')} label="Daily Work" icon="bi-pencil-square" color="indigo" />
+                      <HubButton onClick={() => setActiveTab('todo_list')} label="Langkah Pengembangan" icon="bi-check2-square" color="emerald" />
+                      <HubButton onClick={() => setActiveTab('work_reflection')} label="Refleksi Kerja" icon="bi-chat-quote" color="amber" />
+                      <HubButton onClick={() => setActiveTab('reports')} label="Performa Data" icon="bi-graph-up-arrow" color="blue" />
+                      <HubButton onClick={() => setActiveTab('ai_insights')} label="AI Insight Activity" icon="bi-cpu" color="purple" />
+                   </div>
+                </div>
+                <div>
+                   <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4 ml-1">Pengembangan Diri</h3>
+                   <div className="grid grid-cols-2 gap-4">
+                      <HubButton onClick={() => setActiveTab('skills')} label="Skills & Learning" icon="bi-mortarboard" color="cyan" />
+                      <HubButton onClick={() => setActiveTab('career')} label="Career Path" icon="bi-rocket-takeoff" color="amber" />
+                      <HubButton onClick={() => setActiveTab('achievements')} label="Achievements" icon="bi-trophy" color="emerald" />
+                   </div>
+                </div>
+                <div>
+                   <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4 ml-1">Lowongan & Karir</h3>
+                   <div className="grid grid-cols-2 gap-4">
+                      <HubButton onClick={() => setActiveTab('loker')} label="Loker Tracker" icon="bi-briefcase" color="slate" />
+                      <HubButton onClick={() => setActiveTab('cv_generator')} label="PDF Export" icon="bi-file-earmark-pdf" color="indigo" />
+                      <HubButton onClick={() => setActiveTab('online_cv')} label="Digital Page" icon="bi-globe" color="blue" />
+                      <HubButton onClick={() => setActiveTab('networking')} label="Networking" icon="bi-people" color="emerald" />
+                   </div>
+                </div>
+                <div>
+                   <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4 ml-1">Proyek & Review</h3>
+                   <div className="grid grid-cols-2 gap-4">
+                      <HubButton onClick={() => setActiveTab('projects')} label="Personal Project" icon="bi-tools" color="purple" />
+                      <HubButton onClick={() => setActiveTab('reviews')} label="Monthly Review" icon="bi-calendar-check" color="slate" />
+                   </div>
+                </div>
+             </div>
+          </div>
+        );
+        case 'todo_list': return (
+          <div className="pt-6">
+            <ToDoList 
+              tasks={data.todoList || []}
+              categories={data.todoCategories || []}
+              onAdd={(t) => addItem('todoList', t)}
+              onUpdate={(t) => updateItem('todoList', t)}
+              onDelete={(id) => requestDelete('todoList', id, 'Langkah harian')}
+              onAddCategory={handleAddTodoCategory}
+              onUpdateCategory={handleUpdateTodoCategory}
+              onDeleteCategory={handleDeleteTodoCategory}
+              targetDate={globalTargetDate}
+            />
+          </div>
+        );
+        case 'work_reflection': return (
+          <div className="pt-6">
+            <WorkReflectionView 
+              reflections={data.dailyReflections || []}
+              skills={data.skills || []}
+              onAdd={(r) => addItem('dailyReflections', r)}
+              onUpdateSkill={(s) => addItem('skills', s)}
+              onAddTodo={(t) => addItem('todoList', t)}
+              onAddAchievement={(a) => addItem('achievements', a)}
+              appData={data}
+              targetDate={globalTargetDate}
+            />
+          </div>
+        );
+        case 'mobile_stats': return (
+          <div className="p-6 pt-6 space-y-10 animate-in fade-in duration-700">
+             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <MetricCard title="Produktivitas" value={data.dailyReports.length > 0 ? data.dailyReports[data.dailyReports.length - 1].metricValue : 0} subtitle="Metrik Terakhir" icon={<i className="bi bi-graph-up"></i>} color="indigo" />
+                <MetricCard title="Skill Matrix" value={`${data.skills.length}`} subtitle="Total Keahlian" icon={<i className="bi bi-bullseye"></i>} color="emerald" />
+                <MetricCard title="Achievements" value={data.achievements.length} subtitle="Milestones" icon={<i className="bi bi-trophy"></i>} color="amber" />
+                <MetricCard title="Akun" value={data.plan} subtitle="Status Member" icon={<i className="bi bi-gem"></i>} color="slate" />
+             </div>
+             <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100">
+                <h3 className="text-xl font-black text-slate-800 tracking-tight mb-6">Trend 7 Hari Terakhir</h3>
+                <div className="h-64">
+                   <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={data.dailyReports.slice(-7).map(r => ({ n: new Date(r.date).toLocaleDateString('en-US', {weekday:'short'}), v: r.metricValue }))}>
+                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                         <XAxis dataKey="n" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 10, fontWeight: 700}} />
+                         <YAxis hide />
+                         <Tooltip />
+                         <Area type="monotone" dataKey="v" stroke="#6366f1" strokeWidth={4} fill="#6366f1" fillOpacity={0.1} />
+                      </AreaChart>
+                   </ResponsiveContainer>
+                </div>
+             </div>
+          </div>
+        );
+        case 'profile': return (
+          <div className="pt-6 px-4">
+            <ProfileView 
+              profile={data.profile} 
+              workExperiences={data.workExperiences}
+              educations={data.educations}
+              onUpdateProfile={updateProfile} 
+              onAddWork={(w) => addItem('workExperiences', w)}
+              onUpdateWork={(w) => updateItem('workExperiences', w)}
+              onDeleteWork={(id) => requestDelete('workExperiences', id, 'Catatan Pengalaman')}
+              onAddEducation={(e) => addItem('educations', e)}
+              onUpdateEducation={(e) => updateItem('educations', e)}
+              onDeleteEducation={(id) => requestDelete('educations', id, 'Catatan Pendidikan')}
+            />
+          </div>
+        );
+        case 'daily': return (
+          <div className="pt-6">
+            <DailyLogs 
+              logs={data.dailyReports} 
+              categories={data.workCategories}
+              currentCompany={data.profile.currentCompany}
+              onAdd={(log) => addItem('dailyReports', log)} 
+              onUpdate={(log) => updateItem('dailyReports', log)} 
+              onDelete={(id) => requestDelete('dailyReports', id, 'Log Aktivitas')}
+              onAddCategory={handleAddCategory}
+              onDeleteCategory={handleDeleteCategory}
+              affirmation={data.affirmations[Math.floor(Math.random() * data.affirmations.length)]}
+              targetDate={globalTargetDate}
+            />
+          </div>
+        );
+        case 'reports': return (
+          <div className="pt-6"><PerformanceReports data={data} /></div>
+        );
+        case 'ai_insights': return (
+          <div className="pt-6">
+            <AiInsightActivity 
+              data={data} 
+              onUpdateInsights={(newInsights) => {
+                setData(prev => ({ ...prev, aiInsights: newInsights }));
+                if (user && !permissionsBlocked) saveUserData(user.uid, { ...data, aiInsights: newInsights });
+              }}
+              onAddAchievement={(ach) => addItem('achievements', ach)}
+            />
+          </div>
+        );
+        case 'skills': return (
+          <div className="pt-6">
+            <SkillTracker 
+              data={data}
+              skills={data.skills}
+              trainings={data.trainings}
+              certs={data.certifications}
+              onAddSkill={(s) => addItem('skills', s)}
+              onUpdateSkill={(s) => updateItem('skills', s)}
+              onDeleteSkill={(id) => requestDelete('skills', id, 'Data Skill')}
+              onAddTraining={(t) => addItem('trainings', t)}
+              onUpdateTraining={(t) => updateItem('trainings', t)}
+              onDeleteTraining={(id) => requestDelete('trainings', id, 'Log Pelatihan')}
+              onAddCert={(c) => addItem('certifications', c)}
+              onUpdateCert={(c) => updateItem('certifications', c)}
+              onDeleteCert={(id) => requestDelete('certifications', id, 'Data Sertifikat')}
+              onAddTodo={(t) => addItem('todoList', t)}
+              onSaveStrategy={(strategy) => {
+                setData(prev => ({ ...prev, aiStrategies: [strategy, ...(prev.aiStrategies || [])] }));
+                if (user && !permissionsBlocked) saveUserData(user.uid, { ...data, aiStrategies: [strategy, ...(data.aiStrategies || [])] });
+              }}
+            />
+          </div>
+        );
+        case 'loker': return (
+          <div className="pt-6">
+            <JobTracker 
+              applications={data.jobApplications || []}
+              onAdd={(j) => addItem('jobApplications', j)}
+              onUpdate={(j) => updateItem('jobApplications', j)}
+              onDelete={(id) => requestDelete('jobApplications', id, 'Registri Lamaran')}
+            />
+          </div>
+        );
+        case 'projects': return (
+          <div className="pt-6">
+            <PersonalProjectTracker 
+              projects={data.personalProjects || []}
+              onAdd={(p) => addItem('personalProjects', p)}
+              onUpdate={(p) => updateItem('personalProjects', p)}
+              onDelete={(id) => requestDelete('personalProjects', id, 'Milestone Proyek')}
+            />
+          </div>
+        );
+        case 'career': return (
+          <div className="pt-6">
+            <CareerPlanner 
+              paths={data.careerPaths}
+              appData={data}
+              onAddPath={(p) => addItem('careerPaths', p)}
+              onUpdatePath={(p) => updateItem('careerPaths', p)}
+              onDeletePath={(id) => requestDelete('careerPaths', id, 'Target Karir')}
+            />
+          </div>
+        );
+        case 'achievements': return (
+          <div className="pt-6">
+            <AchievementTracker 
+              achievements={data.achievements}
+              profile={data.profile}
+              workExperiences={data.workExperiences}
+              onAdd={(a) => addItem('achievements', a)}
+              onUpdate={(a) => updateItem('achievements', a)}
+              onDelete={(id) => requestDelete('achievements', id, 'Entri Penghargaan')}
+            />
+          </div>
+        );
+        case 'networking': return (
+          <div className="pt-6">
+            <Networking 
+              contacts={data.contacts}
+              onAdd={(c) => addItem('contacts', c)}
+              onUpdate={(c) => updateItem('contacts', c)}
+              onDelete={(id) => requestDelete('contacts', id, 'Kontak Jaringan')}
+            />
+          </div>
+        );
+        case 'reviews': return (
+          <div className="pt-6">
+            <Reviews 
+              reviews={data.monthlyReviews}
+              onAdd={(r) => addItem('monthlyReviews', r)}
+              onDelete={(id) => requestDelete('monthlyReviews', id, 'Review Berkala')}
+            />
+          </div>
+        );
+        case 'cv_generator': return (
+          <div className="pt-6"><CVGenerator data={data} /></div>
+        );
+        case 'online_cv': return (
+          <div className="pt-6">
+            <OnlineCVBuilder 
+              data={data} 
+              onUpdateConfig={(config) => syncData({ ...data, onlineCV: config })} 
+            />
+          </div>
+        );
+        case 'settings': return (
+          <div className="pt-6">
+            <AccountSettings 
+              reminderConfig={data.reminderConfig} 
+              onUpdateReminders={(config) => syncData({ ...data, reminderConfig: config })} 
+            />
+          </div>
+        );
+        case 'admin_dashboard': return (
+          <AdminPanel initialMode="dashboard" />
+        );
+        case 'admin_users': return (
+          <AdminPanel initialMode="users" />
+        );
+        case 'admin_products': return (
+          <AdminPanel initialMode="products" />
+        );
+        case 'admin_ai': return (
+          <AdminPanel initialMode="ai" />
+        );
+        case 'admin_health': return (
+          <AdminPanel initialMode="health" />
+        );
+        default: return <Dashboard data={data} onNavigate={handleTabChange} onOpenNotif={() => setShowNotif(true)} />;
+      }
+    })();
+
+    // In mobile, show a "Back Header" if not in dashboard
+    if (activeTab !== 'dashboard' && !activeTab.includes('admin') && window.innerWidth < 1024) {
+      return (
+        <div className="min-h-screen bg-slate-50 flex flex-col">
+           <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-100 p-6 flex items-center justify-between shadow-sm">
+              <div className="flex items-center gap-3">
+                <button onClick={() => setActiveTab('dashboard')} className="flex items-center gap-3 group">
+                   <div className="w-10 h-10 bg-slate-900 text-white rounded-xl flex items-center justify-center font-black transition-transform group-active:scale-90"><i className="bi bi-arrow-left"></i></div>
+                   <span className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-900">Home</span>
+                </button>
+              </div>
+              <div className="flex items-center gap-3">
+                <button onClick={() => setShowNotif(true)} className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center text-lg relative">
+                  <i className="bi bi-bell"></i>
+                  {notificationCount > 0 && (
+                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-rose-500 text-white text-[10px] font-black rounded-full border-2 border-white flex items-center justify-center shadow-lg">{notificationCount}</span>
+                  )}
+                </button>
+                <button onClick={handleLogout} className="w-10 h-10 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center text-lg"><i className="bi bi-box-arrow-right"></i></button>
+              </div>
+           </header>
+           <div className="flex-1">
+             {content}
+           </div>
+        </div>
       );
-      case 'daily': return (
-        <DailyLogs 
-          logs={data.dailyReports} 
-          categories={data.workCategories}
-          currentCompany={data.profile.currentCompany}
-          onAdd={(log) => addItem('dailyReports', log)} 
-          onUpdate={(log) => updateItem('dailyReports', log)} 
-          onDelete={(id) => requestDelete('dailyReports', id, 'Daily Activity Log')}
-          onAddCategory={handleAddCategory}
-          onDeleteCategory={handleDeleteCategory}
-          affirmation={data.affirmations[Math.floor(Math.random() * data.affirmations.length)]}
-        />
-      );
-      case 'reports': return (
-        <PerformanceReports data={data} />
-      );
-      case 'ai_insights': return (
-        <AiInsightActivity 
-          data={data} 
-          onUpdateInsights={(newInsights) => {
-            setData(prev => ({ ...prev, aiInsights: newInsights }));
-            if (user && !permissionsBlocked) saveUserData(user.uid, { ...data, aiInsights: newInsights });
-          }}
-          onAddAchievement={(ach) => addItem('achievements', ach)}
-        />
-      );
-      case 'reminders': return (
-        <Reminders data={data} onUpdateMilestone={handleUpdateMilestone} />
-      );
-      case 'skills': return (
-        <SkillTracker 
-          data={data}
-          skills={data.skills}
-          trainings={data.trainings}
-          certs={data.certifications}
-          onAddSkill={(s) => addItem('skills', s)}
-          onUpdateSkill={(s) => updateItem('skills', s)}
-          onDeleteSkill={(id) => requestDelete('skills', id, 'Core Skill Entry')}
-          onAddTraining={(t) => addItem('trainings', t)}
-          onUpdateTraining={(t) => updateItem('trainings', t)}
-          onDeleteTraining={(id) => requestDelete('trainings', id, 'Training Log')}
-          onAddCert={(c) => addItem('certifications', c)}
-          onUpdateCert={(c) => updateItem('certifications', c)}
-          onDeleteCert={(id) => requestDelete('certifications', id, 'Credential Record')}
-          onSaveStrategy={(strategy) => {
-            setData(prev => ({ ...prev, aiStrategies: [strategy, ...(prev.aiStrategies || [])] }));
-            if (user && !permissionsBlocked) saveUserData(user.uid, { ...data, aiStrategies: [strategy, ...(data.aiStrategies || [])] });
-          }}
-        />
-      );
-      case 'loker': return (
-        <JobTracker 
-          applications={data.jobApplications || []}
-          onAdd={(j) => addItem('jobApplications', j)}
-          onUpdate={(j) => updateItem('jobApplications', j)}
-          onDelete={(id) => requestDelete('jobApplications', id, 'Application Registry')}
-        />
-      );
-      case 'projects': return (
-        <PersonalProjectTracker 
-          projects={data.personalProjects || []}
-          onAdd={(p) => addItem('personalProjects', p)}
-          onUpdate={(p) => updateItem('personalProjects', p)}
-          onDelete={(id) => requestDelete('personalProjects', id, 'Venture Milestone')}
-        />
-      );
-      case 'career': return (
-        <CareerPlanner 
-          paths={data.careerPaths}
-          appData={data}
-          onAddPath={(p) => addItem('careerPaths', p)}
-          onUpdatePath={(p) => updateItem('careerPaths', p)}
-          onDeletePath={(id) => requestDelete('careerPaths', id, 'Career Objective')}
-        />
-      );
-      case 'achievements': return (
-        <AchievementTracker 
-          achievements={data.achievements}
-          profile={data.profile}
-          workExperiences={data.workExperiences}
-          onAdd={(a) => addItem('achievements', a)}
-          onUpdate={(a) => updateItem('achievements', a)}
-          onDelete={(id) => requestDelete('achievements', id, 'Hall of Fame Entry')}
-        />
-      );
-      case 'networking': return (
-        <Networking 
-          contacts={data.contacts}
-          onAdd={(c) => addItem('contacts', c)}
-          onUpdate={(c) => updateItem('contacts', c)}
-          onDelete={(id) => requestDelete('contacts', id, 'Networking Node')}
-        />
-      );
-      case 'reviews': return (
-        <Reviews 
-          reviews={data.monthlyReviews}
-          onAdd={(r) => addItem('monthlyReviews', r)}
-          onDelete={(id) => requestDelete('monthlyReviews', id, 'Periodic Review')}
-        />
-      );
-      case 'cv_generator': return (
-        <CVGenerator data={data} />
-      );
-      case 'online_cv': return (
-        <OnlineCVBuilder 
-          data={data} 
-          onUpdateConfig={(config) => syncData({ ...data, onlineCV: config })} 
-        />
-      );
-      case 'settings': return (
-        <AccountSettings 
-          reminderConfig={data.reminderConfig} 
-          onUpdateReminders={(config) => syncData({ ...data, reminderConfig: config })} 
-        />
-      );
-      case 'admin_dashboard': return (
-        <AdminPanel initialMode="dashboard" />
-      );
-      case 'admin_users': return (
-        <AdminPanel initialMode="users" />
-      );
-      case 'admin_products': return (
-        <AdminPanel initialMode="products" />
-      );
-      case 'admin_ai': return (
-        <AdminPanel initialMode="ai" />
-      );
-      case 'admin_health': return (
-        <AdminPanel initialMode="health" />
-      );
-      default: return <Dashboard data={data} />;
     }
+
+    return (
+      <div className="flex flex-col min-h-screen bg-slate-50">
+         {/* Desktop Top Bar - Dark Style - FULL WIDTH FIX */}
+         <div className="hidden lg:flex justify-between items-center px-12 py-6 bg-slate-950 border-b border-white/5 shadow-2xl w-full sticky top-0 z-50">
+           <div className="flex items-center gap-4">
+              <p className="text-white font-black text-sm uppercase tracking-tight">Home / <span className="text-indigo-400 capitalize">{activeTab.replace('_', ' ')}</span></p>
+           </div>
+           <div className="flex items-center gap-8">
+              {/* Notification bell - Interactive fixed position */}
+              <button 
+                onClick={() => setShowNotif(true)} 
+                className="w-10 h-10 bg-white/5 rounded-xl border border-white/10 flex items-center justify-center text-indigo-400 hover:bg-white/10 transition-all relative group"
+              >
+                <i className="bi bi-bell text-lg group-hover:rotate-12 transition-transform"></i>
+                {notificationCount > 0 && (
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-rose-500 text-white text-[10px] font-black rounded-full border-2 border-slate-950 flex items-center justify-center shadow-xl">{notificationCount}</span>
+                )}
+                {notificationCount === 0 && <span className="absolute top-2 right-2 w-2 h-2 bg-emerald-500 rounded-full border-2 border-slate-950 animate-pulse"></span>}
+              </button>
+
+              <div className="h-8 w-px bg-white/10"></div>
+
+              {/* User Identity Section */}
+              <div className="flex items-center gap-4">
+                 <div className="text-right">
+                    <p className="text-xs font-black text-white leading-none">{data.profile.name}</p>
+                    <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-1">{data.profile.currentPosition || 'Profession'}</p>
+                 </div>
+                 <div className="relative group cursor-pointer">
+                    <div className="w-10 h-10 rounded-xl bg-indigo-600 border-2 border-white/10 overflow-hidden shadow-lg shadow-indigo-900/20">
+                       {data.profile.photoUrl ? (
+                         <img src={data.profile.photoUrl} className="w-full h-full object-cover" alt="User" />
+                       ) : (
+                         <div className="w-full h-full flex items-center justify-center font-black text-white">{data.profile.name.charAt(0)}</div>
+                       )}
+                    </div>
+                    {/* User Dropdown - Floating Menu */}
+                    <div className="absolute right-0 top-full pt-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
+                       <div className="w-48 bg-white rounded-2xl shadow-2xl border border-slate-100 p-2 overflow-hidden flex flex-col">
+                          <button onClick={() => setActiveTab('profile')} className="w-full px-4 py-3 text-left hover:bg-slate-50 rounded-xl transition-colors flex items-center gap-3 group/item">
+                             <span className="text-slate-400 group-hover/item:text-indigo-600 transition-colors"><i className="bi bi-person"></i></span>
+                             <span className="text-[10px] font-black uppercase text-slate-600 tracking-widest">Edit Profil</span>
+                          </button>
+                          <button onClick={() => setActiveTab('settings')} className="w-full px-4 py-3 text-left hover:bg-slate-50 rounded-xl transition-colors flex items-center gap-3 group/item">
+                             <span className="text-slate-400 group-hover/item:text-indigo-600 transition-colors"><i className="bi bi-gear"></i></span>
+                             <span className="text-[10px] font-black uppercase text-slate-600 tracking-widest">Setting</span>
+                          </button>
+                          <div className="h-px bg-slate-50 my-1"></div>
+                          <button onClick={handleLogout} className="w-full px-4 py-3 text-left hover:bg-rose-50 rounded-xl transition-colors flex items-center gap-3 group/item text-rose-500">
+                             <span className="transition-colors"><i className="bi bi-box-arrow-right"></i></span>
+                             <span className="text-[10px] font-black uppercase tracking-widest">Logout</span>
+                          </button>
+                       </div>
+                    </div>
+                 </div>
+              </div>
+           </div>
+         </div>
+         
+         {/* Konten dengan pembatasan lebar dan jarak vertikal tambahan - PERBAIKAN: pt-2 pada mobile untuk mempersempit gap */}
+         <div className="flex-1 px-4 lg:px-12 pt-2 pb-10 lg:py-16">
+            <div className="max-w-7xl mx-auto w-full">
+              {content}
+            </div>
+         </div>
+      </div>
+    );
   };
 
   if (authLoading) {
@@ -521,29 +978,114 @@ const App: React.FC = () => {
         <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} onLogout={handleLogout} isAdmin={data.role === UserRole.SUPERADMIN} />
       </div>
       
-      <MobileNav activeTab={activeTab} setActiveTab={setActiveTab} onLogout={handleLogout} isAdmin={data.role === UserRole.SUPERADMIN} />
+      <MobileNav activeTab={activeTab} setActiveTab={handleTabChange} onLogout={handleLogout} isAdmin={data.role === UserRole.SUPERADMIN} />
 
-      <main className="flex-1 lg:ml-64 p-6 lg:p-12 pb-32 lg:pb-12 overflow-x-hidden">
-        <div className="max-w-7xl mx-auto w-full">
+      <main className="flex-1 lg:ml-64 p-0 pb-32 lg:pb-0 overflow-x-hidden relative">
+        <div className="w-full h-full">
           {dbError && (
-            <div className="mb-10 p-6 bg-rose-50 border border-rose-200 text-rose-700 rounded-[2rem] text-xs flex justify-between items-center shadow-xl animate-in slide-in-from-top duration-500">
-              <div className="flex items-center gap-4">
-                 <span className="text-xl">⚠️</span>
-                 <p className="font-bold uppercase tracking-widest">{dbError}</p>
+            <div className="max-w-7xl mx-auto px-4 mt-8">
+              <div className="p-6 bg-rose-50 border border-rose-200 text-rose-700 rounded-[2rem] text-xs flex justify-between items-center shadow-xl animate-in slide-in-from-top duration-500">
+                <div className="flex items-center gap-4">
+                  <span className="text-xl">⚠️</span>
+                  <p className="font-bold uppercase tracking-widest">{dbError}</p>
+                </div>
+                <button onClick={handleRetrySync} className="px-6 py-2.5 bg-rose-600 text-white rounded-xl font-black uppercase tracking-widest hover:bg-rose-700 transition-all active:scale-95">Hubungkan Lagi</button>
               </div>
-              <button onClick={handleRetrySync} className="px-6 py-2.5 bg-rose-600 text-white rounded-xl font-black uppercase tracking-widest hover:bg-rose-700 transition-all active:scale-95">Re-establish Protocol</button>
             </div>
           )}
           {renderContent()}
         </div>
       </main>
 
+      {/* Notification Overlay Component */}
+      {showNotif && (
+        <NotificationOverlay 
+          data={data} 
+          onClose={() => setShowNotif(false)} 
+          onUpdateMilestone={handleUpdateMilestone}
+          onNavigate={handleTabChange}
+        />
+      )}
+
+      {/* Onboarding Wizard Modal */}
+      {showOnboarding && (
+        <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-xl z-[9000] flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-2xl rounded-[3rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.4)] overflow-hidden animate-in zoom-in duration-500">
+             <div className="p-8 lg:p-12">
+                <div className="flex justify-between items-center mb-10">
+                   <div>
+                      <h3 className="text-2xl font-black text-slate-900 tracking-tight">Profil Profesional Baru</h3>
+                      <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Langkah {onboardingStep} dari 3</p>
+                   </div>
+                   <button onClick={() => setShowOnboarding(false)} className="px-5 py-2 text-[10px] font-black uppercase text-slate-400 hover:text-rose-500 transition-colors">Isi Nanti (Skip)</button>
+                </div>
+
+                {onboardingStep === 1 && (
+                  <div className="space-y-6 animate-in slide-in-from-right-4">
+                     <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-3xl mb-8 shadow-inner"><i className="bi bi-person-bounding-box"></i></div>
+                     <p className="text-sm font-medium text-slate-500 leading-relaxed">Halo {data.profile.name}! Mari lengkapi data dasar identitas Anda untuk personalisasi sistem.</p>
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <InputGroup label="Nama Lengkap" value={data.profile.name} onChange={v => updateProfile({...data.profile, name: v})} placeholder="Alex Johnson" />
+                        <InputGroup label="Nomor Handphone" value={data.profile.phone} onChange={v => updateProfile({...data.profile, phone: v})} placeholder="0812xxxx" />
+                        <div className="md:col-span-2">
+                           <InputGroup label="Domisili" value={data.profile.domicile} onChange={v => updateProfile({...data.profile, domicile: v})} placeholder="Jakarta Selatan" />
+                        </div>
+                     </div>
+                  </div>
+                )}
+
+                {onboardingStep === 2 && (
+                  <div className="space-y-6 animate-in slide-in-from-right-4">
+                     <div className="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center text-3xl mb-8 shadow-inner"><i className="bi bi-briefcase-fill"></i></div>
+                     <p className="text-sm font-medium text-slate-500 leading-relaxed">Dimana Anda bekerja sekarang? Data ini krusial untuk fitur Daily Logs.</p>
+                     <div className="space-y-6">
+                        <InputGroup label="Jabatan Sekarang" value={data.profile.currentPosition} onChange={v => updateProfile({...data.profile, currentPosition: v})} placeholder="Senior Tax Associate" />
+                        <InputGroup label="Nama Instansi/Perusahaan" value={data.profile.currentCompany} onChange={v => updateProfile({...data.profile, currentCompany: v})} placeholder="PT Solusi Digital" />
+                        <div className="space-y-1.5">
+                           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Deskripsi Singkat Pekerjaan</label>
+                           <textarea className="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-slate-50 font-bold text-xs outline-none focus:ring-4 focus:ring-blue-500/5 transition-all min-h-[100px] resize-none" placeholder="Menangani kepatuhan pajak korporat..." value={data.profile.jobDesk} onChange={e => updateProfile({...data.profile, jobDesk: e.target.value})} />
+                        </div>
+                     </div>
+                  </div>
+                )}
+
+                {onboardingStep === 3 && (
+                  <div className="space-y-6 animate-in slide-in-from-right-4">
+                     <div className="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center text-3xl mb-8 shadow-inner"><i className="bi bi-flag-fill"></i></div>
+                     <p className="text-sm font-medium text-slate-500 leading-relaxed">Terakhir, apa impian karir Anda? AI akan membantu memetakan roadmap menuju ke sana.</p>
+                     <div className="space-y-6">
+                        <InputGroup label="Role Impian Masa Depan" value={data.profile.mainCareer} onChange={v => updateProfile({...data.profile, mainCareer: v})} placeholder="Chief Financial Officer (CFO)" />
+                        <InputGroup label="Target Jangka Pendek (1-2 Thn)" value={data.profile.shortTermTarget} onChange={v => updateProfile({...data.profile, shortTermTarget: v})} placeholder="Sertifikasi Brevet C" />
+                        <InputGroup label="Target Jangka Panjang (5+ Thn)" value={data.profile.longTermTarget} onChange={v => updateProfile({...data.profile, longTermTarget: v})} placeholder="Membangunan Konsultan Sendiri" />
+                     </div>
+                  </div>
+                )}
+
+                <div className="mt-12 flex gap-4 pt-8 border-t border-slate-100">
+                   {onboardingStep > 1 && (
+                     <button onClick={() => setOnboardingStep(s => s - 1)} className="flex-1 py-4 bg-slate-100 text-slate-400 font-black uppercase text-[10px] tracking-widest rounded-2xl hover:bg-slate-100 transition-all">Kembali</button>
+                   )}
+                   <button 
+                    onClick={() => {
+                      if (onboardingStep < 3) setOnboardingStep(s => s + 1);
+                      else setShowOnboarding(false);
+                    }} 
+                    className="flex-[2] py-4 bg-slate-900 text-white font-black uppercase text-[10px] tracking-widest rounded-2xl shadow-xl hover:bg-black transition-all"
+                   >
+                     {onboardingStep < 3 ? 'Lanjut Langkah Berikutnya' : 'Selesaikan Pengaturan ✨'}
+                   </button>
+                </div>
+             </div>
+          </div>
+        </div>
+      )}
+
       {/* Global Success Alert (Toast) */}
       {toast && (
         <div className="fixed bottom-28 lg:bottom-12 left-1/2 -translate-x-1/2 z-[3000] animate-in slide-in-from-bottom-8 duration-500">
           <div className="bg-slate-900 text-white px-10 py-5 rounded-[2rem] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] flex items-center gap-4 border border-white/10 backdrop-blur-xl">
             <div className="w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center text-sm shadow-[0_0_15px_rgba(16,185,129,0.4)]">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              <i className="bi bi-check-lg"></i>
             </div>
             <span className="font-black text-[10px] uppercase tracking-[0.3em]">{toast.message}</span>
           </div>
@@ -555,12 +1097,12 @@ const App: React.FC = () => {
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center z-[5000] p-6">
           <div className="bg-white w-full max-w-lg rounded-[3.5rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.3)] p-12 lg:p-16 animate-in zoom-in duration-500 border border-slate-100">
             <div className="text-center">
-              <div className="w-24 h-24 bg-rose-50 text-rose-500 rounded-[2.5rem] flex items-center justify-center mx-auto mb-8 shadow-inner">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+              <div className="w-24 h-24 bg-rose-50 text-rose-500 rounded-[2.5rem] flex items-center justify-center mx-auto mb-8 shadow-inner text-4xl">
+                <i className="bi bi-trash3"></i>
               </div>
-              <h3 className="text-3xl font-black text-slate-900 tracking-tighter uppercase">Purge Registry?</h3>
+              <h3 className="text-3xl font-black text-slate-900 tracking-tighter uppercase">Hapus Data?</h3>
               <p className="text-slate-400 text-sm mt-5 leading-relaxed font-bold uppercase tracking-widest opacity-80">
-                Confirming the deletion of <span className="text-rose-600 font-black">"{showConfirm.label}"</span>. This operation is irreversible.
+                Apakah Anda yakin ingin menghapus <span className="text-rose-600 font-black">"{showConfirm.label}"</span>? Data ini tidak bisa dikembalikan.
               </p>
             </div>
             <div className="flex gap-4 mt-12">
@@ -568,13 +1110,13 @@ const App: React.FC = () => {
                 onClick={() => setShowConfirm(null)}
                 className="flex-1 py-5 bg-slate-50 text-slate-400 font-black uppercase tracking-[0.2em] text-[10px] rounded-3xl hover:bg-slate-100 transition-all"
               >
-                Abort
+                Batal
               </button>
               <button 
                 onClick={confirmDelete}
                 className="flex-[1.5] py-5 bg-rose-600 text-white font-black uppercase tracking-[0.2em] text-[10px] rounded-3xl shadow-[0_15px_30px_rgba(225,29,72,0.3)] hover:bg-rose-700 transition-all active:scale-95"
               >
-                Confirm Purge
+                Ya, Hapus Sekarang
               </button>
             </div>
           </div>
