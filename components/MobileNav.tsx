@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 
 interface MobileNavProps {
@@ -68,7 +67,7 @@ const MobileNav: React.FC<MobileNavProps> = ({ activeTab, setActiveTab, onLogout
       )}
 
       {/* Tactile 3D Bottom Nav Bar */}
-      <nav className="bg-white/95 backdrop-blur-xl border-t-2 border-indigo-500/10 px-6 pt-3 pb-8 flex items-center justify-between shadow-[0_-12px_40px_rgba(0,0,0,0.08)] relative z-10">
+      <nav className="bg-white/95 backdrop-blur-xl border-t-2 border-indigo-500/10 px-6 pt-3 pb-4 flex items-center justify-between shadow-[0_-12px_40px_rgba(0,0,0,0.08)] relative z-10">
         {mainItems.map((item) => {
           const isActive = activeTab === item.id || (item.isSpecial && (activeTab === 'daily' || activeTab === 'work_reflection'));
           return (

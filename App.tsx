@@ -589,7 +589,7 @@ const App: React.FC = () => {
       switch (activeTab) {
         case 'dashboard': return <Dashboard data={data} onNavigate={handleTabChange} onOpenNotif={() => setShowNotif(true)} />;
         case 'apps_hub': return (
-          <div className="p-6 pt-6 space-y-10 animate-in fade-in duration-700">
+          <div className="px-5 py-6 lg:px-0 lg:pt-6 space-y-10 animate-in fade-in duration-700">
              <div className="space-y-8">
                 <div>
                    <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4 ml-1">Aktivitas Harian</h3>
@@ -629,7 +629,7 @@ const App: React.FC = () => {
           </div>
         );
         case 'todo_list': return (
-          <div className="pt-6">
+          <div className="px-5 lg:px-0 pt-6">
             <ToDoList 
               tasks={data.todoList || []}
               categories={data.todoCategories || []}
@@ -644,7 +644,7 @@ const App: React.FC = () => {
           </div>
         );
         case 'work_reflection': return (
-          <div className="pt-6">
+          <div className="px-5 lg:px-0 pt-6">
             <WorkReflectionView 
               reflections={data.dailyReflections || []}
               skills={data.skills || []}
@@ -658,7 +658,7 @@ const App: React.FC = () => {
           </div>
         );
         case 'mobile_stats': return (
-          <div className="p-6 pt-6 space-y-10 animate-in fade-in duration-700">
+          <div className="px-5 py-6 lg:px-0 lg:pt-6 space-y-10 animate-in fade-in duration-700">
              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <MetricCard title="Produktivitas" value={data.dailyReports.length > 0 ? data.dailyReports[data.dailyReports.length - 1].metricValue : 0} subtitle="Metrik Terakhir" icon={<i className="bi bi-graph-up"></i>} color="indigo" />
                 <MetricCard title="Skill Matrix" value={`${data.skills.length}`} subtitle="Total Keahlian" icon={<i className="bi bi-bullseye"></i>} color="emerald" />
@@ -682,7 +682,7 @@ const App: React.FC = () => {
           </div>
         );
         case 'profile': return (
-          <div className="pt-6 px-4">
+          <div className="px-5 lg:px-0 pt-6">
             <ProfileView 
               profile={data.profile} 
               workExperiences={data.workExperiences}
@@ -698,7 +698,7 @@ const App: React.FC = () => {
           </div>
         );
         case 'daily': return (
-          <div className="pt-6">
+          <div className="px-5 lg:px-0 pt-6">
             <DailyLogs 
               logs={data.dailyReports} 
               categories={data.workCategories}
@@ -714,10 +714,10 @@ const App: React.FC = () => {
           </div>
         );
         case 'reports': return (
-          <div className="pt-6"><PerformanceReports data={data} /></div>
+          <div className="px-5 lg:px-0 pt-6"><PerformanceReports data={data} /></div>
         );
         case 'ai_insights': return (
-          <div className="pt-6">
+          <div className="px-5 lg:px-0 pt-6">
             <AiInsightActivity 
               data={data} 
               onUpdateInsights={(newInsights) => {
@@ -729,7 +729,7 @@ const App: React.FC = () => {
           </div>
         );
         case 'skills': return (
-          <div className="pt-6">
+          <div className="px-5 lg:px-0 pt-6">
             <SkillTracker 
               data={data}
               skills={data.skills}
@@ -753,7 +753,7 @@ const App: React.FC = () => {
           </div>
         );
         case 'loker': return (
-          <div className="pt-6">
+          <div className="px-5 lg:px-0 pt-6">
             <JobTracker 
               applications={data.jobApplications || []}
               onAdd={(j) => addItem('jobApplications', j)}
@@ -763,7 +763,7 @@ const App: React.FC = () => {
           </div>
         );
         case 'projects': return (
-          <div className="pt-6">
+          <div className="px-5 lg:px-0 pt-6">
             <PersonalProjectTracker 
               projects={data.personalProjects || []}
               onAdd={(p) => addItem('personalProjects', p)}
@@ -773,7 +773,7 @@ const App: React.FC = () => {
           </div>
         );
         case 'career': return (
-          <div className="pt-6">
+          <div className="px-5 lg:px-0 pt-6">
             <CareerPlanner 
               paths={data.careerPaths}
               appData={data}
@@ -784,7 +784,7 @@ const App: React.FC = () => {
           </div>
         );
         case 'achievements': return (
-          <div className="pt-6">
+          <div className="px-5 lg:px-0 pt-6">
             <AchievementTracker 
               achievements={data.achievements}
               profile={data.profile}
@@ -796,7 +796,7 @@ const App: React.FC = () => {
           </div>
         );
         case 'networking': return (
-          <div className="pt-6">
+          <div className="px-5 lg:px-0 pt-6">
             <Networking 
               contacts={data.contacts}
               onAdd={(c) => addItem('contacts', c)}
@@ -806,7 +806,7 @@ const App: React.FC = () => {
           </div>
         );
         case 'reviews': return (
-          <div className="pt-6">
+          <div className="px-5 lg:px-0 pt-6">
             <Reviews 
               reviews={data.monthlyReviews}
               onAdd={(r) => addItem('monthlyReviews', r)}
@@ -815,10 +815,10 @@ const App: React.FC = () => {
           </div>
         );
         case 'cv_generator': return (
-          <div className="pt-6"><CVGenerator data={data} /></div>
+          <div className="px-5 lg:px-0 pt-6"><CVGenerator data={data} /></div>
         );
         case 'online_cv': return (
-          <div className="pt-6">
+          <div className="px-5 lg:px-0 pt-6">
             <OnlineCVBuilder 
               data={data} 
               onUpdateConfig={(config) => syncData({ ...data, onlineCV: config })} 
@@ -826,7 +826,7 @@ const App: React.FC = () => {
           </div>
         );
         case 'settings': return (
-          <div className="pt-6">
+          <div className="px-5 lg:px-0 pt-6">
             <AccountSettings 
               reminderConfig={data.reminderConfig} 
               onUpdateReminders={(config) => syncData({ ...data, reminderConfig: config })} 
@@ -856,7 +856,7 @@ const App: React.FC = () => {
     if (activeTab !== 'dashboard' && !activeTab.includes('admin') && window.innerWidth < 1024) {
       return (
         <div className="min-h-screen bg-slate-50 flex flex-col">
-           <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-100 p-6 flex items-center justify-between shadow-sm">
+           <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-100 p-5 flex items-center justify-between shadow-sm">
               <div className="flex items-center gap-3">
                 <button onClick={() => setActiveTab('dashboard')} className="flex items-center gap-3 group">
                    <div className="w-10 h-10 bg-slate-900 text-white rounded-xl flex items-center justify-center font-black transition-transform group-active:scale-90"><i className="bi bi-arrow-left"></i></div>
@@ -940,7 +940,7 @@ const App: React.FC = () => {
          </div>
          
          {/* Konten dengan pembatasan lebar dan jarak vertikal tambahan - PERBAIKAN: pt-2 pada mobile untuk mempersempit gap */}
-         <div className="flex-1 px-4 lg:px-12 pt-2 pb-10 lg:py-16">
+         <div className="flex-1 px-0 lg:px-12 pt-2 pb-10 lg:py-16">
             <div className="max-w-7xl mx-auto w-full">
               {content}
             </div>
@@ -983,7 +983,7 @@ const App: React.FC = () => {
       <main className="flex-1 lg:ml-64 p-0 pb-32 lg:pb-0 overflow-x-hidden relative">
         <div className="w-full h-full">
           {dbError && (
-            <div className="max-w-7xl mx-auto px-4 mt-8">
+            <div className="max-w-7xl mx-auto px-5 mt-8">
               <div className="p-6 bg-rose-50 border border-rose-200 text-rose-700 rounded-[2rem] text-xs flex justify-between items-center shadow-xl animate-in slide-in-from-top duration-500">
                 <div className="flex items-center gap-4">
                   <span className="text-xl">⚠️</span>
