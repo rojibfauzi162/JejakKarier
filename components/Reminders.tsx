@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { AppData, AiStrategy } from '../types';
 
@@ -62,7 +61,7 @@ const Reminders: React.FC<RemindersProps> = ({ data, onUpdateMilestone }) => {
       {!latestStrategy && (
         <div className="bg-amber-50 border border-amber-200 p-8 rounded-[2.5rem] text-center">
            <p className="text-amber-800 font-bold">Belum ada strategi AI yang terdeteksi.</p>
-           <p className="text-amber-600 text-xs mt-2 uppercase tracking-widest font-black">Lakukan analisis di tab 'Skill & Learning > AI Strategist' untuk mengaktifkan pengingat.</p>
+           <p className="text-amber-600 text-xs mt-2 uppercase tracking-widest font-black">Lakukan analisis di tab 'Skill & Learning &gt; AI Strategist' untuk mengaktifkan pengingat.</p>
         </div>
       )}
 

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { AppData, UserRole, AccountStatus, SubscriptionPlan, AiConfig } from '../types';
 // Add auth to imports
@@ -150,7 +149,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
     setError(null);
     try {
       // Menjalankan fetch secara paralel dan menangkap error masing-masing
-      // Fix: Destructure results for better narrowing and to avoid property access issues on union types
       const [usersResult, aiResult, productsResult] = await Promise.allSettled([
         getAllUsers(),
         getAiConfig(),
@@ -158,7 +156,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
       ]);
 
       // Modul User
-      // Fix: Use the destructured result variable to correctly narrow PromiseSettledResult
       if (usersResult.status === 'fulfilled') {
         setUsers(usersResult.value);
       } else {
@@ -175,7 +172,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
       }
 
       // Modul AI
-      // Fix: Properly handle narrowing for aiResult. Check status first before value to ensure .reason is available in the else block.
       if (aiResult.status === 'fulfilled') {
         if (aiResult.value) {
           setAiConfigState(aiResult.value);
@@ -188,7 +184,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
       }
 
       // Modul Produk
-      // Fix: Use the destructured result variable for consistency and correct narrowing
       if (productsResult.status === 'fulfilled' && productsResult.value) {
         setProducts(productsResult.value);
       }
@@ -479,7 +474,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
              <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-3">🛠️ Solusi Perbaikan Manual:</p>
              <ol className="text-[10px] text-slate-400 space-y-2 font-medium">
                 <li>1. Buka <span className="text-white">Firebase Console</span>.</li>
-                <li>2. Pilih <span className="text-white">Firestore Database > Rules</span>.</li>
+                <li>2. Pilih <span className="text-white">Firestore Database &gt; Rules</span>.</li>
                 <li>3. Pastikan izin <span className="text-emerald-400">read & write</span> diizinkan bagi user dengan <code className="text-indigo-300">resource.data.role == 'superadmin'</code> atau ubah ke <code className="text-emerald-300">allow read, write: if true;</code> untuk mode pengembangan.</li>
                 <li>4. Publish Rules dan <span className="text-white">Refresh Halaman Ini</span>.</li>
              </ol>
