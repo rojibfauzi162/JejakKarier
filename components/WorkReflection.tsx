@@ -12,6 +12,7 @@ interface WorkReflectionProps {
   onAddTodo?: (task: ToDoTask) => void;
   onAddAchievement?: (achievement: Achievement) => void;
   appData?: AppData;
+  targetDate?: string;
 }
 
 const MICRO_WINS = [
@@ -31,7 +32,7 @@ const ROTATING_QUESTIONS = [
   "Apa satu hal yang paling kamu syukuri dari pekerjaanmu hari ini?"
 ];
 
-const WorkReflectionView: React.FC<WorkReflectionProps> = ({ reflections, skills, onAdd, onUpdateSkill, onAddTodo, onAddAchievement, appData }) => {
+const WorkReflectionView: React.FC<WorkReflectionProps> = ({ reflections, skills, onAdd, onUpdateSkill, onAddTodo, onAddAchievement, appData, targetDate }) => {
   const today = new Date().toISOString().split('T')[0];
   const todayReflection = reflections.find(r => r.date === today);
 
@@ -571,7 +572,7 @@ const WorkReflectionView: React.FC<WorkReflectionProps> = ({ reflections, skills
                 <button disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)} className="w-10 h-10 rounded-xl bg-white border border-slate-200 text-slate-400 disabled:opacity-20">←</button>
                 <div className="flex gap-1">
                    {[...Array(totalPages)].map((_, i) => (
-                     <button key={i} onClick={() => setCurrentPage(i + 1)} className={`w-10 h-10 rounded-xl font-black text-xs transition-all ${currentPage === i + 1 ? 'bg-indigo-600 text-white shadow-lg' : 'bg-white border border-slate-100 text-slate-400'}`}>{i + 1}</button>
+                     <button key={i} onClick={() => setCurrentPage(i + 1)} className={`w-10 h-10 rounded-xl font-black text-xs transition-all ${currentPage === i + 1 ? 'bg-indigo-600 text-white shadow-lg' : 'bg-white border-slate-100 text-slate-400'}`}>{i + 1}</button>
                    ))}
                 </div>
                 <button disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)} className="w-10 h-10 rounded-xl bg-white border border-slate-200 text-slate-400 disabled:opacity-20">→</button>
@@ -636,7 +637,7 @@ const WorkReflectionView: React.FC<WorkReflectionProps> = ({ reflections, skills
                           </div>
                        </div>
                     </div>
-                    <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/10 rounded-full blur-[120px] -mr-48 -mt-48"></div>
+                    <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-50/10 rounded-full blur-[120px] -mr-48 -mt-48"></div>
                  </div>
                )}
 

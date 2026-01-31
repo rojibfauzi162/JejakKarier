@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { AppData, UserRole, AccountStatus, SubscriptionPlan, AiConfig } from '../types';
 // Add auth to imports
@@ -599,7 +600,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
                   </thead>
                   <tbody className="divide-y divide-slate-50">
                     {filteredUsers.map(u => {
-                      const displayName = u.profile?.name && u.profile.name !== 'Alex' ? u.profile.name : u.profile?.email || u.uid;
+                      const displayName = (u.profile?.name && u.profile.name !== 'Alex' ? u.profile.name : u.profile?.email || u.uid) || 'User';
                       const displayEmail = u.profile?.email || 'No email';
                       const initial = displayName.charAt(0).toUpperCase();
 
