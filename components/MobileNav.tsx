@@ -19,7 +19,6 @@ const MobileNav: React.FC<MobileNavProps> = ({ activeTab, setActiveTab, onLogout
   const [showDailyMenu, setShowDailyMenu] = useState(false);
 
   // Menu untuk User Biasa
-  // Fix: Explicitly typed as NavItem[] to resolve 'isSpecial' property error in mainItems
   const userItems: NavItem[] = [
     { id: 'dashboard', label: 'Home', icon: 'bi-house-door' },
     { id: 'daily_toggle', label: 'Daily Work', icon: 'bi-journal-text', isSpecial: true },
@@ -28,19 +27,22 @@ const MobileNav: React.FC<MobileNavProps> = ({ activeTab, setActiveTab, onLogout
   ];
 
   // Menu Khusus Super Admin
-  // Fix: Explicitly typed as NavItem[] to maintain type consistency for mainItems
+  // Menambahkan item Logout khusus untuk role Admin di mobile
   const adminItems: NavItem[] = [
     { id: 'admin_dashboard', label: 'Admin', icon: 'bi-speedometer2' },
     { id: 'admin_users', label: 'Users', icon: 'bi-people' },
     { id: 'admin_ai', label: 'AI Build', icon: 'bi-cpu' },
     { id: 'admin_products', label: 'Products', icon: 'bi-box-seam' },
     { id: 'admin_health', label: 'Health', icon: 'bi-activity' },
+    { id: 'logout', label: 'Logout', icon: 'bi-box-arrow-right' },
   ];
 
   const mainItems = isAdmin ? adminItems : userItems;
 
   const handleMenuClick = (id: string) => {
-    if (id === 'daily_toggle') {
+    if (id === 'logout') {
+      onLogout();
+    } else if (id === 'daily_toggle') {
       setShowDailyMenu(!showDailyMenu);
     } else {
       setShowDailyMenu(false);
@@ -89,9 +91,8 @@ const MobileNav: React.FC<MobileNavProps> = ({ activeTab, setActiveTab, onLogout
       )}
 
       {/* Tactile 3D Bottom Nav Bar */}
-      <nav className={`bg-white/95 backdrop-blur-xl border-t-2 border-indigo-500/10 ${isAdmin ? 'px-4' : 'px-6'} pt-3 pb-4 flex items-center justify-between shadow-[0_-12px_40px_rgba(0,0,0,0.08)] relative z-10`}>
+      <nav className={`bg-white/95 backdrop-blur-xl border-t-2 border-indigo-500/10 ${isAdmin ? 'px-2' : 'px-6'} pt-3 pb-4 flex items-center justify-between shadow-[0_-12px_40px_rgba(0,0,0,0.08)] relative z-10`}>
         {mainItems.map((item) => {
-          // Fix: item.isSpecial is now correctly recognized due to NavItem interface
           const isActive = activeTab === item.id || (item.isSpecial && (activeTab === 'daily' || activeTab === 'work_reflection'));
           return (
             <button
@@ -99,7 +100,7 @@ const MobileNav: React.FC<MobileNavProps> = ({ activeTab, setActiveTab, onLogout
               key={item.id}
               onClick={() => handleMenuClick(item.id)}
               className={`flex flex-col items-center gap-1.5 p-2 transition-all relative group ${
-                isActive ? 'text-indigo-600' : 'text-slate-400'
+                isActive ? 'text-indigo-600' : item.id === 'logout' ? 'text-rose-500' : 'text-slate-400'
               }`}
             >
               <div className={`text-2xl transition-transform ${isActive ? 'scale-125 -translate-y-1' : 'group-active:scale-90'}`}>

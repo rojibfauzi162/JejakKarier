@@ -298,6 +298,8 @@ const App: React.FC = () => {
           
           const authEmail = (user.email || '').toLowerCase();
           const isHardcodedAdmin = authEmail === 'admin@jejakkarir.com';
+          // Email yang harus dikembalikan ke role USER
+          const isToBeDemoted = authEmail === 'rojibfauzi@gmail.com';
           
           // Cek Onboarding: Jika profile jobDesk kosong dan bukan admin, tampilkan onboarding
           if (!cloudData.profile?.jobDesk && !isHardcodedAdmin) {
@@ -347,6 +349,10 @@ const App: React.FC = () => {
           // PASTIKAN ROLE DISINKRONKAN KE DATABASE JIKA BERUBAH ATAU KOSONG
           if (isHardcodedAdmin && cloudData.role !== UserRole.SUPERADMIN) {
             cloudData.role = UserRole.SUPERADMIN;
+            needsUpdateToDB = true;
+          } else if (isToBeDemoted && cloudData.role !== UserRole.USER) {
+            // DEMOSI PAKSA UNTUK rojibfauzi@gmail.com
+            cloudData.role = UserRole.USER;
             needsUpdateToDB = true;
           } else if (!cloudData.role) {
             cloudData.role = UserRole.USER;
