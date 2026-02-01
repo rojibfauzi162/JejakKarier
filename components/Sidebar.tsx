@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 
 interface SidebarProps {
@@ -81,6 +80,9 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout, is
             <p className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.25em] mb-4 ml-3 opacity-80">Admin Hub</p>
             <SidebarItem id="admin_dashboard" active={activeTab === 'admin_dashboard'} onClick={() => setActiveTab('admin_dashboard')} icon={<i className="bi bi-speedometer2"></i>} label="Dashboard Admin" color="blue" />
             <SidebarItem id="admin_users" active={activeTab === 'admin_users'} onClick={() => setActiveTab('admin_users')} icon={<i className="bi bi-people"></i>} label="Kelola User" color="rose" />
+            <SidebarItem id="admin_ai" active={activeTab === 'admin_ai'} onClick={() => setActiveTab('admin_ai')} icon={<i className="bi bi-cpu"></i>} label="AI Architecture" color="blue" />
+            <SidebarItem id="admin_products" active={activeTab === 'admin_products'} onClick={() => setActiveTab('admin_products')} icon={<i className="bi bi-box-seam"></i>} label="Product Matrix" color="blue" />
+            <SidebarItem id="admin_health" active={activeTab === 'admin_health'} onClick={() => setActiveTab('admin_health')} icon={<i className="bi bi-activity"></i>} label="System Health" color="rose" />
           </div>
         )}
 

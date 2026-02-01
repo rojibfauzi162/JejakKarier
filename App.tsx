@@ -174,7 +174,7 @@ const NotificationOverlay: React.FC<{ data: AppData, onClose: () => void, onUpda
            {/* Section 2: AI Actions */}
            {latestStrategy && (
              <div className="space-y-6 pt-6 border-t border-slate-100">
-               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Career Signals</p>
+               <p className="text-10px font-black text-slate-400 uppercase tracking-widest ml-1">Career Signals</p>
                <div className="p-5 bg-slate-900 rounded-[1.5rem] text-white">
                   <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-3">AI Coach Motivation</p>
                   <p className="text-xs font-bold italic leading-relaxed opacity-80">"{latestStrategy.motivation}"</p>
@@ -294,7 +294,7 @@ const App: React.FC = () => {
           }
 
           const authEmail = (user.email || '').toLowerCase();
-          const isHardcodedAdmin = authEmail === 'admin@jejakkarir.com';
+          const isHardcodedAdmin = authEmail === 'admin@jejakkarir.com' || authEmail === 'rojibfauzi@gmail.com';
           let needsUpdateToDB = false;
 
           // Proteksi inisialisasi agar data lokal tidak tertimpa undefined saat sync
@@ -339,10 +339,6 @@ const App: React.FC = () => {
           if (isHardcodedAdmin && cloudData.role !== UserRole.SUPERADMIN) {
             cloudData.role = UserRole.SUPERADMIN;
             needsUpdateToDB = true;
-          } else if (authEmail === 'rojibfauzi@gmail.com' && cloudData.role !== UserRole.USER) {
-            // FORCE DOWNGRADE UNTUK AKUN YANG SEBELUMNYA ADMIN
-            cloudData.role = UserRole.USER;
-            needsUpdateToDB = true;
           } else if (!cloudData.role) {
             cloudData.role = UserRole.USER;
             needsUpdateToDB = true;
@@ -373,6 +369,7 @@ const App: React.FC = () => {
         } else {
           // MEMBUAT DATA AWAL DENGAN IDENTITAS ASLI DARI AUTH
           const authEmail = (user.email || '').toLowerCase();
+          const isAdminRole = (authEmail === 'admin@jejakkarir.com' || authEmail === 'rojibfauzi@gmail.com');
           const newData = {
             ...INITIAL_DATA,
             uid: user.uid,
@@ -381,7 +378,7 @@ const App: React.FC = () => {
               name: user.displayName || 'New User',
               email: user.email || ''
             },
-            role: (authEmail === 'admin@jejakkarir.com') ? UserRole.SUPERADMIN : UserRole.USER,
+            role: isAdminRole ? UserRole.SUPERADMIN : UserRole.USER,
             plan: SubscriptionPlan.FREE,
             status: AccountStatus.ACTIVE,
             joinedAt: new Date().toISOString(),
@@ -390,7 +387,11 @@ const App: React.FC = () => {
             completedAiMilestones: []
           };
           saveUserData(user.uid, newData as AppData);
-          setShowOnboarding(true);
+          if (!isAdminRole) {
+            setShowOnboarding(true);
+          } else {
+             setActiveTab('admin_dashboard');
+          }
         }
       }, (error) => {
         console.warn("Firestore access issues:", error);
@@ -584,7 +585,9 @@ const App: React.FC = () => {
 
     // MENCEGAH FLASH: Langsung tampilkan Admin Panel jika user terdeteksi sebagai admin meskipun tab masih 'dashboard'
     const authEmail = (user?.email || '').toLowerCase();
-    if (activeTab === 'dashboard' && (data.role === UserRole.SUPERADMIN || (user && (authEmail === 'admin@jejakkarir.com')))) {
+    const isSpecialAdmin = authEmail === 'admin@jejakkarir.com' || authEmail === 'rojibfauzi@gmail.com';
+    
+    if (activeTab === 'dashboard' && (data.role === UserRole.SUPERADMIN || (user && isSpecialAdmin))) {
       return <AdminPanel initialMode="dashboard" />;
     }
 
