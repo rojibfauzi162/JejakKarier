@@ -15,23 +15,37 @@ async function callAI(prompt: string, schema?: any) {
   // Refresh config if older than 5 minutes or not cached
   if (!config || (now - lastConfigFetch > 300000)) {
     try {
+      console.log("[AI SERVICE] Attempting to fetch config from Firestore...");
       const configPromise = getAiConfig();
-      const timeoutPromise = new Promise<null>((_, reject) => setTimeout(() => reject(new Error("DB Timeout")), 10000));
-      config = await Promise.race([configPromise, timeoutPromise]) as AiConfig | null;
-      if (config) {
-        cachedAiConfig = config;
+      const timeoutPromise = new Promise<null>((_, reject) => setTimeout(() => reject(new Error("DB Timeout")), 8000));
+      
+      const fetchedConfig = await Promise.race([configPromise, timeoutPromise]) as AiConfig | null;
+      
+      if (fetchedConfig && fetchedConfig.openRouterKey) {
+        console.log("[AI SERVICE] Config successfully fetched from DB.");
+        config = fetchedConfig;
+        cachedAiConfig = fetchedConfig;
         lastConfigFetch = now;
+      } else {
+        console.warn("[AI SERVICE] Fetched config is empty or missing OpenRouter Key.");
+        config = cachedAiConfig;
       }
-    } catch (e) {
-      console.warn("[AI SERVICE] Config fetch timed out or failed, using previous cache if available.");
+    } catch (e: any) {
+      // Deteksi kegagalan permission khusus Firestore
+      if (e.message?.includes('permission-denied') || e.code === 'permission-denied') {
+        console.error("[AI SERVICE] SECURITY ALERT: Role 'User' is blocked from reading system_metadata collection by Firestore Rules.");
+      } else {
+        console.error("[AI SERVICE] DB Connection Error:", e.message);
+      }
       config = cachedAiConfig;
     }
   }
   
-  // LOGIKA PRIORITAS: Jika OpenRouter Key tersedia, gunakan OpenRouter
-  if (config && config.openRouterKey && config.openRouterKey.trim() !== '') {
+  // LOGIKA UTAMA: Jika OpenRouter Key tersedia di Database, gunakan OpenRouter API (Hanya fetch)
+  if (config && config.openRouterKey && config.openRouterKey.trim() !== '' && config.openRouterKey !== 'undefined') {
+    console.log("[AI SERVICE] Processing via OpenRouter Gateway...");
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s timeout for complex reports
+    const timeoutId = setTimeout(() => controller.abort(), 60000); 
 
     const targetModel = config.modelName || "google/gemini-2.0-flash-exp:free";
 
@@ -47,7 +61,7 @@ async function callAI(prompt: string, schema?: any) {
         body: JSON.stringify({
           model: targetModel,
           messages: [
-            { role: "system", content: schema ? "You are a professional career qualification analyst. Return ONLY raw JSON. No markdown blocks. STRICT: Write normally. No extra spaces between letters. No ALL-CAPS paragraphs. Use standard sentence casing." : "You are a helpful career assistant." },
+            { role: "system", content: schema ? "You are a professional career qualification analyst. Return ONLY raw JSON. No markdown blocks." : "You are a helpful career assistant." },
             { role: "user", content: prompt }
           ],
           max_tokens: config.maxTokens || 2000,
@@ -65,40 +79,43 @@ async function callAI(prompt: string, schema?: any) {
         if (schema) {
           try {
             const jsonMatch = text.match(/\{[\s\S]*\}/);
-            if (jsonMatch) {
-              return JSON.parse(jsonMatch[0]);
-            }
+            if (jsonMatch) return JSON.parse(jsonMatch[0]);
             return JSON.parse(text);
           } catch (e) {
-            console.error("[AI SERVICE] OpenRouter JSON Parse error. Attempting fallback...");
-            // Let it fall through to SDK
+            console.error("[AI SERVICE] OpenRouter JSON Parse error.");
           }
         } else {
           return text;
         }
       } else {
         const errorData = await response.json().catch(() => ({}));
-        console.error("[AI SERVICE] OpenRouter error:", response.status, errorData);
-        // Do not return null here, let it fall through to Gemini SDK fallback
+        console.error("[AI SERVICE] OpenRouter error response:", errorData);
+        throw new Error(`AI Gagal Merespon: ${errorData.error?.message || 'Gangguan pada Provider AI'}`);
       }
     } catch (error: any) {
       clearTimeout(timeoutId);
-      console.error("[AI SERVICE] OpenRouter Request failed:", error.message);
-      // Biarkan lanjut ke fallback di bawah, jangan return null di sini
+      if (error.name === 'AbortError') throw new Error("Waktu generate AI habis. Silakan coba lagi.");
+      throw error;
     }
+    return null;
   }
 
-  // FALLBACK: Google SDK
-  console.log("[AI SERVICE] Using default Gemini SDK");
+  // PENANGANAN FALLBACK AMAN: Mencegah Library Crash
+  console.log("[AI SERVICE] OpenRouter config missing, checking native environment...");
   
-  // PENGECEKAN AMAN: Cegah inisialisasi SDK jika Key kosong/undefined/string-kosong
-  const envKey = process.env.API_KEY || '';
-  const isKeyInvalid = !envKey || envKey === 'undefined' || envKey.trim() === '';
-
-  if (isKeyInvalid && (!config || !config.openRouterKey)) {
-    throw new Error("⚠️ GAGAL AKSES AI: Konfigurasi OpenRouter tidak terbaca oleh Role 'User'. Hal ini biasanya karena Firestore Security Rules membatasi akses koleksi 'system_metadata'. Silakan hubungi Admin untuk mengubah Rules agar 'system_metadata' bisa dibaca oleh user yang login.");
+  let envKey = '';
+  try { 
+    // Ambil API Key dari environment jika ada
+    envKey = process.env.API_KEY || ''; 
+  } catch(e) {}
+  
+  // VALIDASI KRITIS: Jika tidak ada kunci sama sekali, STOP di sini. Jangan panggil GoogleGenAI().
+  if ((!envKey || envKey === 'undefined' || envKey.trim() === '') && (!config || !config.openRouterKey)) {
+    throw new Error("⚠️ ERROR KONFIGURASI: Aplikasi tidak menemukan API Key. \n\nHal ini biasanya terjadi karena Firestore Security Rules membatasi akses role 'User' ke koleksi 'system_metadata' sehingga kunci OpenRouter dari Admin tidak terbaca. \n\nMohon pastikan Firestore Rules untuk 'system_metadata' sudah di-Publish ke Public/Authenticated Users.");
   }
 
+  // Jika sampai sini berarti ada envKey yang valid
+  console.log("[AI SERVICE] Using Native Gemini SDK Fallback");
   const ai = new GoogleGenAI({ apiKey: envKey });
   const model = 'gemini-3-flash-preview';
 
@@ -106,31 +123,18 @@ async function callAI(prompt: string, schema?: any) {
     const response = await ai.models.generateContent({
       model,
       contents: prompt,
-      config: schema ? {
-        responseMimeType: "application/json",
-        responseSchema: schema
-      } : undefined
+      config: schema ? { responseMimeType: "application/json", responseSchema: schema } : undefined
     });
     
     let text = response.text?.trim() || (schema ? '{}' : '');
-    
     if (schema) {
-      try {
-        // Robust extraction for SDK too
-        const jsonMatch = text.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          return JSON.parse(jsonMatch[0]);
-        }
-        return JSON.parse(text);
-      } catch (e) {
-        console.error("[AI SERVICE] SDK JSON Parse error:", e);
-        return null;
-      }
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      return jsonMatch ? JSON.parse(jsonMatch[0]) : JSON.parse(text);
     }
     return text;
-  } catch (error) {
-    console.error("[AI SERVICE] Default SDK failure:", error);
-    return null;
+  } catch (error: any) {
+    console.error("[AI SERVICE] Native SDK failure:", error);
+    throw new Error(`Kesalahan Layanan AI: ${error.message}`);
   }
 }
 
@@ -147,7 +151,7 @@ export async function analyzeSkillGap(data: AppData, lang: 'id' | 'en' = 'id') {
     ACHIEVEMENT CONTEXT: ${completedHistory}
     
     INSTRUCTIONS:
-    1. STRICT: Write normally. No spaced-out text (e.g. DO NOT write 'P L A N'). 
+    1. STRICT: Write normally. No spaced-out text. 
     2. Use Sentence Case for all paragraphs.
     3. LANGUAGE: ${lang === 'id' ? 'Bahasa Indonesia' : 'English'}.
     
@@ -223,11 +227,9 @@ export async function summarizeMonthlyReview(reviewText: string) {
 }
 
 export async function generateCareerInsight(data: AppData, audience: 'self' | 'supervisor', period: 'weekly' | 'monthly', contexts: string[]) {
-  // If audience is supervisor, filter only 'Perusahaan' (Kantor)
   const isSupervisor = audience === 'supervisor';
   const targetContexts = isSupervisor ? ['Perusahaan'] : contexts;
   
-  // OPTIMASI PAYLOAD: Hanya kirim data esensial untuk mencegah token overflow
   const minimalLogs = data.dailyReports
     .filter(l => targetContexts.includes(l.context))
     .slice(-40)
@@ -241,7 +243,7 @@ export async function generateCareerInsight(data: AppData, audience: 'self' | 's
   const prompt = `
     GENERATE PROFESSIONAL CAREER INSIGHT REPORT
     FOR: ${data.profile.name}
-    AUDIENCE: ${isSupervisor ? 'SUPERVISOR (Focus ONLY on corporate tasks/Perusahaan)' : 'SELF REFLECTION.'}
+    AUDIENCE: ${isSupervisor ? 'SUPERVISOR (Focus ONLY on corporate tasks)' : 'SELF REFLECTION.'}
     PERIOD: ${period === 'weekly' ? 'Weekly' : 'Monthly'}
     
     DATA PROVIDED:
@@ -250,9 +252,8 @@ export async function generateCareerInsight(data: AppData, audience: 'self' | 's
     
     INSTRUCTIONS (STRICT FORMATTING):
     1. Write in normal professional Bahasa Indonesia. 
-    2. DILARANG KERAS menggunakan spasi tambahan di antara setiap huruf (Contoh gaya salah: 'P E N C A P A I A N'). Gunakan gaya normal: 'Pencapaian'.
-    3. DILARANG menggunakan huruf KAPITAL SEMUA (ALL-CAPS) untuk isi paragraf. Gunakan Sentence case (Huruf kapital di awal kalimat saja).
-    4. Identifikasi pencapaian (Achievements) yang valid dari data log di atas.
+    2. DILARANG KERAS menggunakan spasi tambahan di antara setiap huruf.
+    3. DILARANG menggunakan huruf KAPITAL SEMUA untuk isi paragraf.
     
     SCHEMA:
     {
@@ -303,9 +304,6 @@ export async function generateCareerInsight(data: AppData, audience: 'self' | 's
   return await callAI(prompt, schema);
 }
 
-/**
- * Menganalisis data refleksi harian untuk memberikan insight mendalam pola produktivitas & mood.
- */
 export async function analyzeReflections(data: AppData, reflections: WorkReflection[], filterRange: string) {
   const prompt = `
     ANALYZE DAILY WORK REFLECTIONS
@@ -319,13 +317,6 @@ export async function analyzeReflections(data: AppData, reflections: WorkReflect
       contribution: r.mainContribution,
       skills: r.skillsUsed
     })))}
-
-    TASK:
-    Generate a deep professional analysis following the user's specific request.
-    1 week: Productivity patterns and mood peaks.
-    1 month: Dominant skills matrix and workload-mood correlation.
-    3 months: Registry of Golden Contributions for performance reviews.
-    6 months: Long-term career evaluation based on initiatives and wins.
 
     OUTPUT JSON SCHEMA:
     {
