@@ -1,7 +1,7 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
 import { AppData, AiConfig, WorkReflection } from "../types";
-import { getAiConfig } from "./firebase";
+import { getAiConfig, auth, recordAiTokens } from "./firebase";
 
 // Cache lokal untuk konfigurasi AI agar tidak redundant ke Firestore
 let cachedAiConfig: AiConfig | null = null;
@@ -74,6 +74,13 @@ async function callAI(prompt: string, schema?: any) {
 
       if (response.ok) {
         const json = await response.json();
+        
+        // Log Token Usage if available
+        const tokenCount = json.usage?.total_tokens || 0;
+        if (tokenCount > 0 && auth.currentUser) {
+          recordAiTokens(auth.currentUser.uid, tokenCount);
+        }
+
         let text = json.choices[0].message?.content || "";
         
         if (schema) {

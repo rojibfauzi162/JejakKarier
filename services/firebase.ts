@@ -2,7 +2,7 @@
 import { initializeApp } from "firebase/app";
 // Use @firebase/auth to ensure named exports like getAuth are correctly resolved in modular Firebase v9+ environments
 import { getAuth } from '@firebase/auth';
-import { getFirestore, doc, setDoc, getDoc, collection, getDocs, updateDoc, deleteDoc } from "firebase/firestore";
+import { getFirestore, doc, setDoc, getDoc, collection, getDocs, updateDoc, deleteDoc, increment } from "firebase/firestore";
 import { AppData, AiConfig } from "../types";
 
 // MASUKKAN CONFIG ANDA DI SINI
@@ -86,6 +86,18 @@ export const logAIUsage = async (uid: string, type: 'cvGenerated' | 'coverLetter
     }
   } catch (error) {
     console.error("Error logging AI usage:", error);
+  }
+};
+
+export const recordAiTokens = async (uid: string, count: number) => {
+  try {
+    const userRef = doc(db, "users", uid);
+    await updateDoc(userRef, {
+      "aiUsage.totalTokens": increment(count),
+      updatedAt: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error("Error recording tokens:", error);
   }
 };
 

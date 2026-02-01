@@ -350,6 +350,8 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
     return days;
   };
 
+  const dayNames = ['S', 'S', 'R', 'K', 'J', 'S', 'M'];
+
   return (
     <div className="space-y-8 animate-in slide-in-from-bottom duration-500 pb-20">
       {/* Banner Header */}
@@ -446,7 +448,7 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
                     </div>
 
                     <div className="grid grid-cols-7 gap-1 text-center border-t border-slate-200 pt-4">
-                        {['S', 'S', 'R', 'K', 'J', 'S', 'M'].map((d, i) => <div key={i} className="text-[10px] font-black text-slate-300 py-2">{d}</div>)}
+                        {dayNames.map((d, i) => <div key={i} className="text-[10px] font-black text-slate-300 py-2">{d}</div>)}
                         {renderCalendarGrid()}
                     </div>
 
@@ -855,6 +857,14 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
                             >
                               {metricChoices.map(m => <option key={m} value={m}>{m}</option>)}
                             </select>
+                            {line.metricOption === 'Custom' && (
+                              <input 
+                                placeholder="Ketik Satuan (misal: Modul, Berkas, dsb)"
+                                className="w-full px-4 py-2 mt-2 rounded-lg border border-indigo-100 bg-white font-bold text-[10px] outline-none animate-in slide-in-from-top-1"
+                                value={line.customMetricLabel}
+                                onChange={e => updateLine(line.tempId, { customMetricLabel: e.target.value })}
+                              />
+                            )}
                          </div>
                          
                          <div className="md:col-span-2">

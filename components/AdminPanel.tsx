@@ -70,6 +70,10 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
   const [modelSearchQuery, setModelSearchQuery] = useState('');
   const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
   const [fetchingModels, setFetchingModels] = useState(false);
+  
+  // State baru untuk Health Monitoring OpenRouter
+  const [keyUsage, setKeyUsage] = useState<any>(null);
+  const [fetchingUsage, setFetchingUsage] = useState(false);
 
   // State untuk CRUD Produk dengan Tier Category dan Multi-Durasi
   const [products, setProducts] = useState<SubscriptionProduct[]>([
@@ -119,6 +123,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
       return last.toDateString() === new Date().toDateString();
     }).length;
     const totalAI = users.reduce((acc, u) => acc + (u.aiUsage?.cvGenerated || 0) + (u.aiUsage?.careerAnalysis || 0), 0);
+    const totalTokensConsumed = users.reduce((acc, u) => acc + (u.aiUsage?.totalTokens || 0), 0);
 
     // Registration Data Aggregation
     const regMap: Record<string, { date: string, paid: number, free: number }> = {};
@@ -139,7 +144,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
     });
 
     return { 
-      adminStats: { total, activeToday, totalAI },
+      adminStats: { total, activeToday, totalAI, totalTokensConsumed },
       registrationChartData: Object.values(regMap).slice(-7),
       activityChartData: Object.values(actMap).slice(-7)
     };
@@ -202,7 +207,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
 
   // Fetch OpenRouter Models
   useEffect(() => {
-    if (initialMode === 'ai') {
+    if (initialMode === 'ai' || initialMode === 'health') {
       const fetchModels = async () => {
         setFetchingModels(true);
         try {
@@ -218,6 +223,47 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
       fetchModels();
     }
   }, [initialMode]);
+
+  // Logic: Monitor OpenRouter Key Health & Auto-switch low balance
+  useEffect(() => {
+    if (initialMode === 'health' && aiConfig.openRouterKey && aiConfig.openRouterKey.length > 5) {
+      const checkUsage = async () => {
+        setFetchingUsage(true);
+        try {
+          const response = await fetch("https://openrouter.ai/api/v1/auth/key", {
+            headers: {
+              "Authorization": `Bearer ${aiConfig.openRouterKey}`
+            }
+          });
+          const json = await response.json();
+          if (json.data) {
+            setKeyUsage(json.data);
+
+            // Logic Otomatis: Ganti ke model FREE jika sisa kredit kritis (di bawah $0.10)
+            const remaining = (json.data.limit || 0) - (json.data.usage || 0);
+            const isCritical = json.data.limit !== null && remaining < 0.1;
+            
+            if (isCritical && !aiConfig.modelName.includes(':free')) {
+              console.warn("[SYSTEM] Low credit balance. Triggering auto-switch to FREE model.");
+              
+              // Cari model dengan label ':free'
+              const freeModel = availableModels.find(m => m.id.includes(':free'))?.id || "google/gemini-2.0-flash-exp:free";
+              
+              const updatedConfig = { ...aiConfig, modelName: freeModel };
+              await saveAiConfig(updatedConfig);
+              setAiConfigState(updatedConfig);
+              triggerToast("Low Credits! Auto-switched to Free Model.", "error");
+            }
+          }
+        } catch (e) {
+          console.error("Health Check failed:", e);
+        } finally {
+          setFetchingUsage(false);
+        }
+      };
+      checkUsage();
+    }
+  }, [initialMode, aiConfig.openRouterKey, availableModels]);
 
   const filteredUsers = useMemo(() => {
     return users.filter(u => {
@@ -945,18 +991,99 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
       {/* SYSTEM PULSE MODULE */}
       {initialMode === 'health' && (
         <div className="space-y-8 animate-in slide-in-from-bottom-4">
-           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <AdminStatCard title="DB Latency" value="124ms" sub="Optimal Performance" icon="⚡" color="emerald" />
-              <AdminStatCard title="API Success" value="99.8%" sub="Uptime Verified" icon="🟢" color="blue" />
-              <AdminStatCard title="Auth Tokens" value="1.2k" sub="Active Sessions" icon="🔑" color="amber" />
-              <AdminStatCard title="Storage" value="4.2GB" sub="Cloud Resource" icon="☁️" color="indigo" />
+           {/* AI TOKEN VITALITY SECTION */}
+           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="bg-white p-8 rounded-[3rem] shadow-sm border border-slate-100 space-y-6">
+                <div className="flex items-center justify-between">
+                   <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center text-xl shadow-inner">🤖</div>
+                      <div>
+                        <h4 className="text-lg font-black text-slate-800 tracking-tight uppercase">AI Token Vitality</h4>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">OpenRouter Account Health</p>
+                      </div>
+                   </div>
+                   {fetchingUsage && <div className="w-4 h-4 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>}
+                </div>
+
+                {keyUsage ? (
+                  <div className="space-y-6">
+                     <div className="grid grid-cols-2 gap-4">
+                        <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                           <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Value Used</p>
+                           <p className="text-xl font-black text-indigo-600">${keyUsage.usage?.toFixed(4)}</p>
+                        </div>
+                        <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                           <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Credit Limit</p>
+                           <p className="text-xl font-black text-slate-700">{keyUsage.limit === null ? '∞ (Post-pay)' : `$${keyUsage.limit?.toFixed(2)}`}</p>
+                        </div>
+                     </div>
+
+                     {keyUsage.limit !== null && (
+                       <div className="space-y-6 pt-4 border-t border-slate-100">
+                          <div className="space-y-2">
+                             <div className="flex justify-between items-end">
+                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Usage Progress</p>
+                                <p className="text-[11px] font-black text-indigo-600">
+                                  {Math.round((keyUsage.usage / keyUsage.limit) * 100)}%
+                                </p>
+                             </div>
+                             <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
+                                <div 
+                                  className={`h-full transition-all duration-1000 ${ (keyUsage.usage / keyUsage.limit) > 0.9 ? 'bg-rose-500' : 'bg-indigo-500' }`}
+                                  style={{ width: `${Math.min((keyUsage.usage / keyUsage.limit) * 100, 100)}%` }}
+                                ></div>
+                             </div>
+                          </div>
+                          <div className="flex justify-between items-center p-5 bg-indigo-900 rounded-[2rem] text-white">
+                             <div className="space-y-0.5">
+                                <p className="text-[8px] font-black uppercase text-indigo-300 tracking-[0.2em]">Credits Remaining</p>
+                                <p className="text-xl font-black tracking-tighter">${(keyUsage.limit - keyUsage.usage).toFixed(4)}</p>
+                             </div>
+                             <div className="text-right">
+                                <p className="text-[8px] font-black uppercase text-indigo-300 tracking-[0.2em]">Est. Lifetime</p>
+                                <p className="text-xs font-bold">{keyUsage.limit - keyUsage.usage < 0.5 ? 'LOW' : 'STABLE'}</p>
+                             </div>
+                          </div>
+                       </div>
+                     )}
+
+                     <div className="pt-4 border-t border-slate-100">
+                        <div className="flex justify-between items-center bg-indigo-50/50 p-4 rounded-2xl border border-indigo-100">
+                           <div>
+                              <p className="text-[8px] font-black text-indigo-400 uppercase tracking-widest">Active Model Safety</p>
+                              <p className="text-[11px] font-black text-slate-700 uppercase mt-0.5 truncate max-w-[200px]">{aiConfig.modelName}</p>
+                           </div>
+                           <span className={`px-3 py-1 rounded-full text-[8px] font-black uppercase border ${aiConfig.modelName.includes(':free') ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 'bg-blue-100 text-blue-700 border-blue-200'}`}>
+                             {aiConfig.modelName.includes(':free') ? 'Eco (Free)' : 'Premium'}
+                           </span>
+                        </div>
+                        {keyUsage.limit !== null && (keyUsage.limit - keyUsage.usage < 0.2) && (
+                          <p className="text-[8px] text-rose-500 font-bold uppercase mt-3 italic text-center animate-pulse">⚠️ Low Balance: Auto-switch protocol active</p>
+                        )}
+                     </div>
+                  </div>
+                ) : (
+                  <div className="py-12 text-center bg-slate-50 rounded-3xl border border-dashed border-slate-200">
+                    <p className="text-slate-400 font-bold text-xs uppercase tracking-widest">Connect OpenRouter Key to view health</p>
+                  </div>
+                )}
+              </div>
+
+              <div className="grid grid-cols-2 gap-6 h-full">
+                <AdminStatCard title="DB Latency" value="124ms" sub="Optimal Performance" icon="⚡" color="emerald" />
+                <AdminStatCard title="API Success" value="99.8%" sub="Uptime Verified" icon="🟢" color="blue" />
+                <AdminStatCard title="Auth Tokens" value="1.2k" sub="Active Sessions" icon="🔑" color="amber" />
+                <AdminStatCard title="Token Flux" value={adminStats.totalTokensConsumed.toLocaleString()} sub="System Throughput" icon="💎" color="indigo" />
+              </div>
            </div>
+
            <div className="bg-slate-900 p-10 rounded-[3rem] text-emerald-400 font-mono text-xs overflow-hidden shadow-2xl border border-white/5">
               <p className="text-white font-black mb-4 uppercase tracking-[0.2em] font-sans">System Real-time Logs</p>
               <div className="space-y-1 opacity-80">
                  <p>[{new Date().toISOString()}] NODE_BOOT: Citizens Nexus Protocol Established.</p>
                  <p>[{new Date().toISOString()}] DB_SYNC: Global Firestore handshake successful.</p>
                  <p>[{new Date().toISOString()}] AI_GATEWAY: OpenRouter heartbeat detected.</p>
+                 {keyUsage && <p>[{new Date().toISOString()}] OR_MONITOR: Usage ${keyUsage.usage?.toFixed(6)} / Limit ${keyUsage.limit || 'UNLIMITED'}</p>}
                  <p className="animate-pulse">_</p>
               </div>
            </div>
@@ -1116,7 +1243,8 @@ const AdminStatCard = ({ title, value, sub, icon, color }: any) => {
   const colorMap: any = {
     blue: 'bg-blue-50 text-blue-600 border-blue-100',
     amber: 'bg-amber-50 text-amber-600 border-amber-100',
-    emerald: 'bg-emerald-50 text-emerald-600 border-emerald-100'
+    emerald: 'bg-emerald-50 text-emerald-600 border-emerald-100',
+    indigo: 'bg-indigo-50 text-indigo-600 border-indigo-100'
   };
   return (
     <div className={`bg-white p-8 rounded-[2.5rem] border flex items-center gap-6 shadow-sm hover:shadow-xl transition-all ${colorMap[color]}`}>
