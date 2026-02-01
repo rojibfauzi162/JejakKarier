@@ -224,8 +224,9 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
     }
   }, [initialMode]);
 
-  // Logic: Monitor OpenRouter Key Health & Auto-switch low balance
+  // Logic: Monitor OpenRouter Key Health & Auto-switch low balance with periodic sync
   useEffect(() => {
+    let interval: any;
     if (initialMode === 'health' && aiConfig.openRouterKey && aiConfig.openRouterKey.length > 5) {
       const checkUsage = async () => {
         setFetchingUsage(true);
@@ -261,8 +262,14 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
           setFetchingUsage(false);
         }
       };
+      
       checkUsage();
+      // Melakukan sinkronisasi otomatis sisa kredit setiap 30 detik
+      interval = setInterval(checkUsage, 30000);
     }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
   }, [initialMode, aiConfig.openRouterKey, availableModels]);
 
   const filteredUsers = useMemo(() => {
@@ -1009,12 +1016,27 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
                   <div className="space-y-6">
                      <div className="grid grid-cols-2 gap-4">
                         <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                           <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Value Used</p>
+                           <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Account Used (USD)</p>
                            <p className="text-xl font-black text-indigo-600">${keyUsage.usage?.toFixed(4)}</p>
                         </div>
                         <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                           <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Credit Limit</p>
-                           <p className="text-xl font-black text-slate-700">{keyUsage.limit === null ? '∞ (Post-pay)' : `$${keyUsage.limit?.toFixed(2)}`}</p>
+                           <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Credit Limit (USD)</p>
+                           <p className="text-xl font-black text-slate-700">
+                              {keyUsage.limit === null ? `∞ (Post-pay)` : `$${keyUsage.limit?.toFixed(2)}`}
+                           </p>
+                        </div>
+                     </div>
+
+                     <div className="grid grid-cols-2 gap-4">
+                        <div className="p-4 bg-indigo-50/50 rounded-2xl border border-indigo-100">
+                           <p className="text-[8px] font-black text-indigo-400 uppercase tracking-widest mb-1">System Request Cap</p>
+                           <p className="text-xl font-black text-indigo-800">{aiConfig.maxTokens} <span className="text-[10px] opacity-40">Tokens</span></p>
+                           <p className="text-[8px] text-slate-400 mt-1 uppercase font-bold">* Limit per generation</p>
+                        </div>
+                        <div className="p-4 bg-slate-900 rounded-2xl text-white">
+                           <p className="text-[8px] font-black text-indigo-300 uppercase tracking-widest mb-1">Total Used In System</p>
+                           <p className="text-xl font-black text-white">{(adminStats.totalTokensConsumed / 1000).toFixed(1)}k <span className="text-[10px] opacity-40">Tokens</span></p>
+                           <p className="text-[8px] text-indigo-400 mt-1 uppercase font-bold">* All user consumption</p>
                         </div>
                      </div>
 
@@ -1034,32 +1056,19 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
                                 ></div>
                              </div>
                           </div>
-                          <div className="flex justify-between items-center p-5 bg-indigo-900 rounded-[2rem] text-white">
-                             <div className="space-y-0.5">
-                                <p className="text-[8px] font-black uppercase text-indigo-300 tracking-[0.2em]">Credits Remaining</p>
-                                <p className="text-xl font-black tracking-tighter">${(keyUsage.limit - keyUsage.usage).toFixed(4)}</p>
-                             </div>
-                             <div className="text-right">
-                                <p className="text-[8px] font-black uppercase text-indigo-300 tracking-[0.2em]">Est. Lifetime</p>
-                                <p className="text-xs font-bold">{keyUsage.limit - keyUsage.usage < 0.5 ? 'LOW' : 'STABLE'}</p>
-                             </div>
-                          </div>
                        </div>
                      )}
 
                      <div className="pt-4 border-t border-slate-100">
                         <div className="flex justify-between items-center bg-indigo-50/50 p-4 rounded-2xl border border-indigo-100">
                            <div>
-                              <p className="text-[8px] font-black text-indigo-400 uppercase tracking-widest">Active Model Safety</p>
+                              <p className="text-[8px] font-black text-indigo-400 uppercase tracking-widest">Active Model Platform</p>
                               <p className="text-[11px] font-black text-slate-700 uppercase mt-0.5 truncate max-w-[200px]">{aiConfig.modelName}</p>
                            </div>
                            <span className={`px-3 py-1 rounded-full text-[8px] font-black uppercase border ${aiConfig.modelName.includes(':free') ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 'bg-blue-100 text-blue-700 border-blue-200'}`}>
                              {aiConfig.modelName.includes(':free') ? 'Eco (Free)' : 'Premium'}
                            </span>
                         </div>
-                        {keyUsage.limit !== null && (keyUsage.limit - keyUsage.usage < 0.2) && (
-                          <p className="text-[8px] text-rose-500 font-bold uppercase mt-3 italic text-center animate-pulse">⚠️ Low Balance: Auto-switch protocol active</p>
-                        )}
                      </div>
                   </div>
                 ) : (
@@ -1073,7 +1082,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
                 <AdminStatCard title="DB Latency" value="124ms" sub="Optimal Performance" icon="⚡" color="emerald" />
                 <AdminStatCard title="API Success" value="99.8%" sub="Uptime Verified" icon="🟢" color="blue" />
                 <AdminStatCard title="Auth Tokens" value="1.2k" sub="Active Sessions" icon="🔑" color="amber" />
-                <AdminStatCard title="Token Flux" value={adminStats.totalTokensConsumed.toLocaleString()} sub="System Throughput" icon="💎" color="indigo" />
+                <AdminStatCard title="Total Flux" value={adminStats.totalTokensConsumed.toLocaleString()} sub="System Throughput" icon="💎" color="indigo" />
               </div>
            </div>
 
