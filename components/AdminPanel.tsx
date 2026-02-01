@@ -885,7 +885,9 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
                                      type="button"
                                      className="w-full text-left px-6 py-4 hover:bg-slate-50 border-b border-slate-50 last:border-none transition-colors group"
                                      onClick={() => {
-                                       setAiConfigState({...aiConfig, modelName: model.id});
+                                       // OpenRouter models provide context_length. We cap max response tokens at 4096 or the model's limit.
+                                       const modelTokens = model.context_length ? Math.min(model.context_length, 4096) : 2000;
+                                       setAiConfigState({...aiConfig, modelName: model.id, maxTokens: modelTokens});
                                        setIsModelDropdownOpen(false);
                                        setModelSearchQuery('');
                                      }}
@@ -906,12 +908,12 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
                           )}
                        </div>
                        <div className="space-y-1.5">
-                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Max Response Tokens</label>
+                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Max Response Tokens (Auto)</label>
                           <input 
                             type="number"
-                            className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs"
+                            readOnly
+                            className="w-full px-6 py-4 rounded-2xl bg-slate-100 border border-slate-200 outline-none font-bold text-xs text-slate-500 cursor-not-allowed"
                             value={aiConfig.maxTokens}
-                            onChange={e => setAiConfigState({...aiConfig, maxTokens: parseInt(e.target.value) || 0})}
                           />
                        </div>
                     </div>
@@ -922,7 +924,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
                     <ul className="space-y-2 text-[11px] font-medium opacity-70 leading-relaxed">
                        <li>• JejakKarir uses OpenRouter as a universal LLM bridge.</li>
                        <li>• Fallback: If Key is empty, system uses default Gemini SDK (process.env.API_KEY).</li>
-                       <li>• Token Input: Setting max_tokens ensures predictable cost and speed.</li>
+                       <li>• Token Input: Max response tokens are now managed automatically based on model specifications to prevent errors.</li>
                     </ul>
                  </div>
 
