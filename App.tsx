@@ -245,6 +245,14 @@ const App: React.FC = () => {
   const onlineUserSlug = searchParams.get('u') || (pathParts[1] === 'profile' ? pathParts[2] : null);
   const isOnlineCVView = !!onlineUserSlug;
 
+  // IDENTIFIKASI ADMIN SECARA LANGSUNG DARI EMAIL AUTH (MENCEGAH LAG FIRESTORE)
+  // Perbaikan: Menghapus rojibfauzi@gmail.com dari daftar pengecekan Admin
+  const isAdmin = useMemo(() => {
+    const authEmail = (user?.email || '').toLowerCase();
+    const isSpecialEmail = authEmail === 'admin@jejakkarir.com';
+    return data.role === UserRole.SUPERADMIN || isSpecialEmail;
+  }, [user, data.role]);
+
   // Notification count logic
   const notificationCount = useMemo(() => {
     const today = new Date().toISOString().split('T')[0];
@@ -288,13 +296,14 @@ const App: React.FC = () => {
         if (docSnap.exists()) {
           const cloudData = docSnap.data() as AppData;
           
-          // Cek Onboarding: Jika profile jobDesk kosong, tampilkan onboarding
-          if (!cloudData.profile?.jobDesk && cloudData.role !== UserRole.SUPERADMIN) {
+          const authEmail = (user.email || '').toLowerCase();
+          const isHardcodedAdmin = authEmail === 'admin@jejakkarir.com';
+          
+          // Cek Onboarding: Jika profile jobDesk kosong dan bukan admin, tampilkan onboarding
+          if (!cloudData.profile?.jobDesk && !isHardcodedAdmin) {
             setShowOnboarding(true);
           }
 
-          const authEmail = (user.email || '').toLowerCase();
-          const isHardcodedAdmin = authEmail === 'admin@jejakkarir.com' || authEmail === 'rojibfauzi@gmail.com';
           let needsUpdateToDB = false;
 
           // Proteksi inisialisasi agar data lokal tidak tertimpa undefined saat sync
@@ -361,7 +370,7 @@ const App: React.FC = () => {
           }
 
           // REDIREKSI ADMIN KE ADMIN DASHBOARD PADA LOGIN PERTAMA
-          if (cloudData.role === UserRole.SUPERADMIN && activeTab === 'dashboard') {
+          if (isHardcodedAdmin && (activeTab === 'dashboard' || !activeTab.includes('admin'))) {
             setActiveTab('admin_dashboard');
           }
 
@@ -369,7 +378,7 @@ const App: React.FC = () => {
         } else {
           // MEMBUAT DATA AWAL DENGAN IDENTITAS ASLI DARI AUTH
           const authEmail = (user.email || '').toLowerCase();
-          const isAdminRole = (authEmail === 'admin@jejakkarir.com' || authEmail === 'rojibfauzi@gmail.com');
+          const isAdminRole = (authEmail === 'admin@jejakkarir.com');
           const newData = {
             ...INITIAL_DATA,
             uid: user.uid,
@@ -564,7 +573,7 @@ const App: React.FC = () => {
 
   const renderContent = () => {
     // PROTEKSI: Akun banned atau isDeleted tidak bisa akses fitur utama
-    if ((data.status === AccountStatus.BANNED || data.isDeleted) && !['settings', 'admin_dashboard', 'admin_users', 'admin_products', 'admin_health', 'admin_ai'].includes(activeTab)) {
+    if ((data.status === AccountStatus.BANNED || data.isDeleted) && !isAdmin) {
       return (
         <div className="h-full flex items-center justify-center p-8 animate-in fade-in zoom-in duration-700">
            <div className="max-w-xl w-full bg-white p-16 rounded-[4rem] shadow-[0_40px_100px_-20px_rgba(0,0,0,0.1)] text-center border border-rose-100">
@@ -583,12 +592,9 @@ const App: React.FC = () => {
       );
     }
 
-    // MENCEGAH FLASH: Langsung tampilkan Admin Panel jika user terdeteksi sebagai admin meskipun tab masih 'dashboard'
-    const authEmail = (user?.email || '').toLowerCase();
-    const isSpecialAdmin = authEmail === 'admin@jejakkarir.com' || authEmail === 'rojibfauzi@gmail.com';
-    
-    if (activeTab === 'dashboard' && (data.role === UserRole.SUPERADMIN || (user && isSpecialAdmin))) {
-      return <AdminPanel initialMode="dashboard" />;
+    // PROTEKSI KHUSUS ADMIN: Akun admin tertentu hanya boleh melihat Admin Panel
+    if (isAdmin && (activeTab === 'dashboard' || !activeTab.includes('admin'))) {
+       return <AdminPanel initialMode="dashboard" />;
     }
 
     // Wrap content with Mobile Header for navigation experience
@@ -997,10 +1003,10 @@ const App: React.FC = () => {
   return (
     <div className="flex min-h-screen bg-slate-50 relative font-sans text-slate-900">
       <div className="hidden lg:block">
-        <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} onLogout={handleLogout} isAdmin={data.role === UserRole.SUPERADMIN} />
+        <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} onLogout={handleLogout} isAdmin={isAdmin} />
       </div>
       
-      <MobileNav activeTab={activeTab} setActiveTab={handleTabChange} onLogout={handleLogout} isAdmin={data.role === UserRole.SUPERADMIN} />
+      <MobileNav activeTab={activeTab} setActiveTab={handleTabChange} onLogout={handleLogout} isAdmin={isAdmin} />
 
       <main className="flex-1 lg:ml-64 p-0 pb-32 lg:pb-0 overflow-x-hidden relative">
         <div className="w-full h-full">
