@@ -91,12 +91,15 @@ async function callAI(prompt: string, schema?: any) {
   // FALLBACK: Google SDK
   console.log("[AI SERVICE] Using default Gemini SDK");
   
-  // PENGECEKAN AMAN: Jika config null dan API_KEY env kosong, lempar error yang bermakna
-  if (!process.env.API_KEY && !config?.openRouterKey) {
-    throw new Error("Akses AI Gagal: Role 'User' tidak diizinkan membaca konfigurasi database (Firestore Rules Error) atau API Key tidak terdeteksi di server. Silakan hubungi Super Admin.");
+  // PENGECEKAN AMAN: Cegah inisialisasi SDK jika Key kosong/undefined/string-kosong
+  const envKey = process.env.API_KEY || '';
+  const isKeyInvalid = !envKey || envKey === 'undefined' || envKey.trim() === '';
+
+  if (isKeyInvalid && (!config || !config.openRouterKey)) {
+    throw new Error("⚠️ GAGAL AKSES AI: Konfigurasi OpenRouter tidak terbaca oleh Role 'User'. Hal ini biasanya karena Firestore Security Rules membatasi akses koleksi 'system_metadata'. Silakan hubungi Admin untuk mengubah Rules agar 'system_metadata' bisa dibaca oleh user yang login.");
   }
 
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+  const ai = new GoogleGenAI({ apiKey: envKey });
   const model = 'gemini-3-flash-preview';
 
   try {
@@ -354,14 +357,11 @@ export async function analyzeReflections(data: AppData, reflections: WorkReflect
       suggestedConnections: {
         type: Type.ARRAY,
         items: {
-          type: Type.OBJECT,
-          properties: {
-            type: { type: Type.STRING },
-            label: { type: Type.STRING },
-            detail: { type: Type.STRING }
-          },
-          required: ["type", "label", "detail"]
-        }
+          type: { type: Type.STRING },
+          label: { type: Type.STRING },
+          detail: { type: Type.STRING }
+        },
+        required: ["type", "label", "detail"]
       }
     },
     required: ["executiveSummary", "productivityPattern", "skillAnalysis", "moodCorrelation", "goldenContributions", "careerReadiness", "suggestedConnections"]
