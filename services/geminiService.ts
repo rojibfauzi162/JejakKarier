@@ -90,7 +90,13 @@ async function callAI(prompt: string, schema?: any) {
 
   // FALLBACK: Google SDK
   console.log("[AI SERVICE] Using default Gemini SDK");
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  
+  // PENGECEKAN AMAN: Jika config null dan API_KEY env kosong, lempar error yang bermakna
+  if (!process.env.API_KEY && !config?.openRouterKey) {
+    throw new Error("Akses AI Gagal: Role 'User' tidak diizinkan membaca konfigurasi database (Firestore Rules Error) atau API Key tidak terdeteksi di server. Silakan hubungi Super Admin.");
+  }
+
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
   const model = 'gemini-3-flash-preview';
 
   try {
