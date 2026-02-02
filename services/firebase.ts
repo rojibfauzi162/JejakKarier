@@ -92,10 +92,24 @@ export const logAIUsage = async (uid: string, type: 'cvGenerated' | 'coverLetter
 export const recordAiTokens = async (uid: string, count: number) => {
   try {
     const userRef = doc(db, "users", uid);
-    await updateDoc(userRef, {
-      "aiUsage.totalTokens": increment(count),
-      updatedAt: new Date().toISOString()
-    });
+    const userSnap = await getDoc(userRef);
+    
+    if (userSnap.exists()) {
+      const userData = userSnap.data();
+      // Proteksi: Jika field aiUsage belum ada, inisialisasi dulu agar increment tidak gagal
+      if (!userData.aiUsage) {
+        await updateDoc(userRef, {
+          aiUsage: { cvGenerated: 0, coverLetters: 0, careerAnalysis: 0, totalTokens: count },
+          updatedAt: new Date().toISOString()
+        });
+      } else {
+        await updateDoc(userRef, {
+          "aiUsage.totalTokens": increment(count),
+          updatedAt: new Date().toISOString()
+        });
+      }
+      console.log(`[FIREBASE] Recorded ${count} tokens for user ${uid}`);
+    }
   } catch (error) {
     console.error("Error recording tokens:", error);
   }

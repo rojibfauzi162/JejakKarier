@@ -133,6 +133,11 @@ async function callAI(prompt: string, schema?: any) {
       config: schema ? { responseMimeType: "application/json", responseSchema: schema } : undefined
     });
     
+    // Record Native SDK Tokens
+    if (response.usageMetadata && auth.currentUser) {
+      recordAiTokens(auth.currentUser.uid, response.usageMetadata.totalTokenCount);
+    }
+    
     let text = response.text?.trim() || (schema ? '{}' : '');
     if (schema) {
       const jsonMatch = text.match(/\{[\s\S]*\}/);
@@ -143,6 +148,24 @@ async function callAI(prompt: string, schema?: any) {
     console.error("[AI SERVICE] Native SDK failure:", error);
     throw new Error(`Kesalahan Layanan AI: ${error.message}`);
   }
+}
+
+export async function generateProfileBio(data: AppData) {
+  const prompt = `
+    GENERATE A PROFESSIONAL CAREER BIO
+    NAME: ${data.profile.name}
+    POSITION: ${data.profile.currentPosition}
+    TARGET GOAL: ${data.profile.shortTermTarget}
+    SUMMARY OF WORK: ${data.workExperiences.map(w => w.position + ' at ' + w.company).join(', ')}
+    
+    INSTRUCTIONS:
+    1. Write in professional Bahasa Indonesia.
+    2. Make it high-impact for recruiters.
+    3. Keep it between 2-3 sentences.
+    4. Focus on value proposition and future goals.
+    5. No formatting, just raw text.
+  `;
+  return await callAI(prompt);
 }
 
 export async function analyzeSkillGap(data: AppData, lang: 'id' | 'en' = 'id') {

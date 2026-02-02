@@ -1,6 +1,9 @@
 
-import React, { useState, useRef } from 'react';
-import { UserProfile, WorkExperience, Education } from '../types';
+import React, { useState, useRef, useEffect } from 'react';
+import { UserProfile, WorkExperience, Education, AppData } from '../types';
+import { generateProfileBio } from '../services/geminiService';
+// Added import for auth to fix "Cannot find name 'auth'" errors
+import { auth } from '../services/firebase';
 
 interface ProfileViewProps {
   profile: UserProfile;
@@ -13,6 +16,7 @@ interface ProfileViewProps {
   onAddEducation: (e: Education) => void;
   onUpdateEducation: (e: Education) => void;
   onDeleteEducation: (id: string) => void;
+  appData?: AppData;
 }
 
 const JOB_CATEGORIES = [
@@ -31,17 +35,40 @@ const JOB_CATEGORIES = [
 const ProfileView: React.FC<ProfileViewProps> = ({ 
   profile, workExperiences, educations,
   onUpdateProfile, onAddWork, onUpdateWork, onDeleteWork,
-  onAddEducation, onUpdateEducation, onDeleteEducation
+  onAddEducation, onUpdateEducation, onDeleteEducation,
+  appData
 }) => {
   const [formData, setFormData] = useState<UserProfile>(profile);
   const [isEditingWork, setIsEditingWork] = useState<string | null>(null);
   const [isEditingEdu, setIsEditingEdu] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // States for AI Generate Limit
+  const [isGeneratingBio, setIsGeneratingBio] = useState(false);
+  const [aiLimitRemaining, setAiLimitRemaining] = useState(3);
+
   // States for flexible education year range
   const [isRangeEdu, setIsRangeEdu] = useState(false);
   const [startYearEdu, setStartYearEdu] = useState('');
   const [endYearEdu, setEndYearEdu] = useState('');
+
+  // Effect to sync and check AI limits from local storage
+  useEffect(() => {
+    const checkLimit = () => {
+      const today = new Date().toISOString().split('T')[0];
+      // Added fix: use auth from firebase service to identify current user for usage limits
+      const saved = localStorage.getItem(`ai_bio_usage_${auth.currentUser?.uid || 'guest'}`);
+      if (saved) {
+        const { date, count } = JSON.parse(saved);
+        if (date === today) {
+          setAiLimitRemaining(Math.max(0, 3 - count));
+        } else {
+          setAiLimitRemaining(3);
+        }
+      }
+    };
+    checkLimit();
+  }, []);
 
   const calculateAge = (birthDate: string) => {
     if (!birthDate) return "-";
@@ -59,6 +86,40 @@ const ProfileView: React.FC<ProfileViewProps> = ({
     e.preventDefault();
     onUpdateProfile(formData);
     alert('Informasi profil diperbarui!');
+  };
+
+  const handleAiBio = async () => {
+    if (!appData) return;
+    if (aiLimitRemaining <= 0) {
+      alert("Maaf, limit generate bio AI Anda hari ini sudah habis (Maksimal 3x sehari). Silakan coba lagi besok.");
+      return;
+    }
+
+    setIsGeneratingBio(true);
+    try {
+      const bio = await generateProfileBio(appData);
+      if (bio) {
+        setFormData(prev => ({ ...prev, description: bio }));
+        
+        // Update Limit
+        const today = new Date().toISOString().split('T')[0];
+        // Added fix: use auth from firebase service to identify current user for usage limits
+        const saved = localStorage.getItem(`ai_bio_usage_${auth.currentUser?.uid || 'guest'}`);
+        let newCount = 1;
+        if (saved) {
+          const { date, count } = JSON.parse(saved);
+          newCount = date === today ? count + 1 : 1;
+        }
+        // Added fix: use auth from firebase service to identify current user for usage limits
+        localStorage.setItem(`ai_bio_usage_${auth.currentUser?.uid || 'guest'}`, JSON.stringify({ date: today, count: newCount }));
+        setAiLimitRemaining(3 - newCount);
+        alert("✨ Bio profesional Anda telah berhasil digenerate!");
+      }
+    } catch (e: any) {
+      alert("Gagal generate bio: " + e.message);
+    } finally {
+      setIsGeneratingBio(false);
+    }
   };
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -106,6 +167,26 @@ const ProfileView: React.FC<ProfileViewProps> = ({
     setEndYearEdu(end);
     const finalYear = range && end ? `${start} - ${end}` : start;
     onUpdateEducation({ ...edu, year: finalYear });
+  };
+
+  // List Item Management for Work Description
+  const handleAddWorkDescItem = (work: WorkExperience) => {
+    const current = work.description || '';
+    const items = current.split('\n').filter(s => s.trim() !== '');
+    items.push('Butir deskripsi baru...');
+    onUpdateWork({ ...work, description: items.join('\n') });
+  };
+
+  const handleUpdateWorkDescItem = (work: WorkExperience, index: number, value: string) => {
+    const items = (work.description || '').split('\n');
+    items[index] = value;
+    onUpdateWork({ ...work, description: items.join('\n') });
+  };
+
+  const handleRemoveWorkDescItem = (work: WorkExperience, index: number) => {
+    const items = (work.description || '').split('\n');
+    items.splice(index, 1);
+    onUpdateWork({ ...work, description: items.join('\n') });
   };
 
   return (
@@ -180,18 +261,32 @@ const ProfileView: React.FC<ProfileViewProps> = ({
                 </select>
               </div>
 
-              <InputGroup label="Current Company" value={formData.currentCompany} onChange={v => setFormData({ ...formData, currentCompany: v })} placeholder="e.g. Tax Industries" />
-              <InputGroup label="Current Title" value={formData.currentPosition} onChange={v => setFormData({ ...formData, currentPosition: v })} placeholder="e.g. Mid-level Engineer" />
+              <InputGroup label="Current Company" value={formData.currentCompany} onChange={v => setFormData({ ...formData, currentCompany: v })} placeholder="e.g. Tax Solutions Global" />
+              <InputGroup label="Current Title" value={formData.currentPosition} onChange={v => setFormData({ ...formData, currentPosition: v })} placeholder="e.g. Tax Associate" />
               
-              {/* Kolom baru Deskripsi Diri */}
-              <div className="md:col-span-2 space-y-2">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Deskripsi Diri</label>
+              {/* Kolom Deskripsi Diri dengan integrasi AI */}
+              <div className="md:col-span-2 space-y-3">
+                <div className="flex justify-between items-end px-1">
+                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Deskripsi Diri</label>
+                   <button 
+                    type="button"
+                    onClick={handleAiBio}
+                    disabled={isGeneratingBio}
+                    className="text-[9px] font-black uppercase tracking-widest px-3 py-1 bg-indigo-50 text-indigo-600 rounded-lg border border-indigo-100 hover:bg-indigo-600 hover:text-white transition-all flex items-center gap-2"
+                   >
+                     {isGeneratingBio ? (
+                       <span className="w-2 h-2 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></span>
+                     ) : '✨'}
+                     {isGeneratingBio ? 'Generating...' : `Auto-Generate AI (${aiLimitRemaining})`}
+                   </button>
+                </div>
                 <textarea 
                   className="w-full px-5 py-3.5 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-blue-500/5 outline-none bg-slate-50/30 transition-all text-slate-800 font-medium placeholder:text-slate-300 min-h-[120px] resize-none"
                   placeholder="Ceritakan sedikit tentang latar belakang profesional dan keahlian utama Anda..."
                   value={formData.description || ''}
                   onChange={e => setFormData({ ...formData, description: e.target.value })}
                 />
+                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest ml-1 italic">* AI akan merangkum profil Anda menjadi bio profesional dalam Bahasa Indonesia.</p>
               </div>
             </div>
           </div>
@@ -222,7 +317,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({
           {workExperiences.map(work => (
             <div key={work.id} className="p-6 rounded-2xl bg-slate-50 border border-slate-100 relative group">
               {isEditingWork === work.id ? (
-                <div className="space-y-4">
+                <div className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <input 
                       placeholder="Posisi" 
@@ -243,14 +338,45 @@ const ProfileView: React.FC<ProfileViewProps> = ({
                       onChange={e => onUpdateWork({ ...work, duration: e.target.value })}
                     />
                   </div>
-                  <textarea 
-                    placeholder="Deskripsi pekerjaan & pencapaian..." 
-                    className="w-full px-4 py-2 rounded-lg border border-slate-200 outline-none min-h-[100px]"
-                    value={work.description} 
-                    onChange={e => onUpdateWork({ ...work, description: e.target.value })}
-                  />
-                  <div className="flex justify-end">
-                    <button onClick={() => setIsEditingWork(null)} className="px-6 py-2 bg-indigo-600 text-white font-bold rounded-lg text-xs">Selesai</button>
+                  
+                  {/* List Item-based Work Description Editor */}
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center px-1">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Butir Deskripsi & Pencapaian</label>
+                      <button 
+                        type="button" 
+                        onClick={() => handleAddWorkDescItem(work)}
+                        className="text-[9px] font-black text-indigo-600 uppercase border border-indigo-100 px-3 py-1 rounded-lg hover:bg-indigo-50"
+                      >
+                        + Item Baru
+                      </button>
+                    </div>
+                    <div className="space-y-2">
+                       {(work.description || '').split('\n').map((item, idx) => (
+                         <div key={idx} className="flex gap-2 animate-in slide-in-from-right-2 duration-300">
+                           <div className="w-1.5 h-1.5 rounded-full bg-indigo-200 mt-4 shrink-0"></div>
+                           <input 
+                            className="flex-1 bg-white border border-slate-100 rounded-xl px-4 py-2.5 text-sm font-medium outline-none focus:border-indigo-400"
+                            value={item}
+                            onChange={(e) => handleUpdateWorkDescItem(work, idx, e.target.value)}
+                           />
+                           <button 
+                            type="button"
+                            onClick={() => handleRemoveWorkDescItem(work, idx)}
+                            className="w-10 h-10 bg-rose-50 text-rose-400 rounded-xl flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all"
+                           >
+                             ✕
+                           </button>
+                         </div>
+                       ))}
+                       {(!work.description || work.description.trim() === '') && (
+                         <p className="text-[10px] text-slate-400 italic text-center py-4 bg-white/50 border border-dashed rounded-xl">Belum ada butir deskripsi. Klik "Item Baru" untuk memulai.</p>
+                       )}
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end pt-2">
+                    <button onClick={() => setIsEditingWork(null)} className="px-10 py-3 bg-indigo-600 text-white font-black rounded-xl text-[10px] uppercase tracking-widest shadow-xl">Selesai</button>
                   </div>
                 </div>
               ) : (
@@ -259,7 +385,14 @@ const ProfileView: React.FC<ProfileViewProps> = ({
                     <h4 className="font-bold text-slate-800 text-lg">{work.position || 'Judul Posisi'}</h4>
                     <p className="text-indigo-600 font-semibold text-sm">{work.company || 'Nama Perusahaan'}</p>
                     <p className="text-xs text-slate-400 font-medium mt-1 uppercase">{work.duration}</p>
-                    <p className="text-sm text-slate-600 mt-4 leading-relaxed line-clamp-3">{work.description}</p>
+                    <div className="mt-4 space-y-2">
+                       {(work.description || '').split('\n').filter(s => s.trim() !== '').map((item, idx) => (
+                         <div key={idx} className="flex gap-3 items-start">
+                           <span className="w-1.5 h-1.5 rounded-full bg-blue-400 mt-1.5 shrink-0"></span>
+                           <p className="text-sm text-slate-600 leading-relaxed">{item}</p>
+                         </div>
+                       ))}
+                    </div>
                   </div>
                   <div className="flex gap-2 opacity-100 transition-opacity">
                     <button onClick={() => setIsEditingWork(work.id)} className="p-2 text-slate-400 hover:text-indigo-600">✎</button>
