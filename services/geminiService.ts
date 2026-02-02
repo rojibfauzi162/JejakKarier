@@ -133,9 +133,9 @@ async function callAI(prompt: string, schema?: any) {
       config: schema ? { responseMimeType: "application/json", responseSchema: schema } : undefined
     });
     
-    // Record Native SDK Tokens
+    // Record Native SDK Tokens - Perbaikan: Menambahkan fallback || 0 untuk menghindari error TS2345
     if (response.usageMetadata && auth.currentUser) {
-      recordAiTokens(auth.currentUser.uid, response.usageMetadata.totalTokenCount);
+      recordAiTokens(auth.currentUser.uid, response.usageMetadata.totalTokenCount || 0);
     }
     
     let text = response.text?.trim() || (schema ? '{}' : '');
