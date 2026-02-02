@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 
 interface MobileNavProps {
@@ -27,13 +28,13 @@ const MobileNav: React.FC<MobileNavProps> = ({ activeTab, setActiveTab, onLogout
   ];
 
   // Menu Khusus Super Admin
-  // Menambahkan item Logout khusus untuk role Admin di mobile
+  // Menambahkan item Integrasi untuk role Admin di mobile
   const adminItems: NavItem[] = [
     { id: 'admin_dashboard', label: 'Admin', icon: 'bi-speedometer2' },
     { id: 'admin_users', label: 'Users', icon: 'bi-people' },
     { id: 'admin_ai', label: 'AI Build', icon: 'bi-cpu' },
     { id: 'admin_products', label: 'Products', icon: 'bi-box-seam' },
-    { id: 'admin_health', label: 'Health', icon: 'bi-activity' },
+    { id: 'admin_integrations', label: 'Integrasi', icon: 'bi-link-45deg' },
     { id: 'logout', label: 'Logout', icon: 'bi-box-arrow-right' },
   ];
 

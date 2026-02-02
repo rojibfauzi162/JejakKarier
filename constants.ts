@@ -37,6 +37,18 @@ export const INITIAL_DATA: AppData = {
   educations: [],
   dailyReports: [
     {
+      id: 'd0',
+      date: '2025-01-31',
+      activity: 'Finalisasi Audit Report Q4',
+      category: 'Operasional',
+      context: 'Perusahaan',
+      companyName: 'Tax Solutions Global',
+      output: 'Audit Report Signed',
+      metricValue: 1,
+      metricLabel: 'Laporan',
+      reflection: 'Laporan final sudah disetujui atasan.'
+    },
+    {
       id: 'd1',
       date: '2025-01-20',
       activity: 'Rekonsiliasi PPN Masa Desember',

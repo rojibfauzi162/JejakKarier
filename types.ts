@@ -285,6 +285,12 @@ export interface AiConfig {
   updatedAt?: string;
 }
 
+export interface ScalevConfig {
+  apiKey: string;
+  webhookSecret?: string;
+  updatedAt?: string;
+}
+
 export interface AiRecommendation {
   name: string;
   provider: string;
@@ -332,6 +338,23 @@ export interface ReminderConfig {
   dailyLogReminderTime: string; // Format "HH:mm"
   reflectionReminderTime: string; // Format "HH:mm"
   todoReminderTime: string; // Format "HH:mm"
+}
+
+export interface SubscriptionProduct {
+  id: string;
+  name: string;
+  tier: SubscriptionPlan;
+  price: number;
+  durationDays: number;
+  enabledDurations: number[];
+  allowedModules: string[];
+  scalevProductId?: string; // Menghubungkan paket dengan ID Produk di Scalev
+  limits: {
+    dailyLogs: number | 'unlimited';
+    skills: number | 'unlimited';
+    projects: number | 'unlimited';
+    cvExports: number | 'unlimited';
+  };
 }
 
 export interface AppData {

@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { UserProfile, WorkExperience, Education, AppData } from '../types';
 import { generateProfileBio } from '../services/geminiService';
@@ -53,21 +52,34 @@ const ProfileView: React.FC<ProfileViewProps> = ({
   const [endYearEdu, setEndYearEdu] = useState('');
 
   // Effect to sync and check AI limits from local storage
+  // FIX: Dependency ditambahkan agar limit dicek ulang setiap kali status Auth berubah
   useEffect(() => {
     const checkLimit = () => {
       const today = new Date().toISOString().split('T')[0];
-      // Added fix: use auth from firebase service to identify current user for usage limits
-      const saved = localStorage.getItem(`ai_bio_usage_${auth.currentUser?.uid || 'guest'}`);
+      const currentUser = auth.currentUser;
+      const userKey = currentUser ? currentUser.uid : 'guest';
+      
+      const saved = localStorage.getItem(`ai_bio_usage_${userKey}`);
       if (saved) {
-        const { date, count } = JSON.parse(saved);
-        if (date === today) {
-          setAiLimitRemaining(Math.max(0, 3 - count));
-        } else {
+        try {
+          const { date, count } = JSON.parse(saved);
+          if (date === today) {
+            setAiLimitRemaining(Math.max(0, 3 - count));
+          } else {
+            setAiLimitRemaining(3);
+          }
+        } catch (e) {
           setAiLimitRemaining(3);
         }
+      } else {
+        setAiLimitRemaining(3);
       }
     };
+    
     checkLimit();
+    // Listener auth untuk memastikan limit terdeteksi saat user login/logout
+    const unsubscribe = auth.onAuthStateChanged(() => checkLimit());
+    return () => unsubscribe();
   }, []);
 
   const calculateAge = (birthDate: string) => {
@@ -89,7 +101,14 @@ const ProfileView: React.FC<ProfileViewProps> = ({
   };
 
   const handleAiBio = async () => {
-    if (!appData) return;
+    // Debug log untuk memastikan aksi klik terdeteksi
+    console.log("[AI ACTION] Generate bio clicked. Limit remaining:", aiLimitRemaining);
+    
+    if (!appData) {
+        alert("Data profil belum siap. Silakan refresh halaman.");
+        return;
+    }
+
     if (aiLimitRemaining <= 0) {
       alert("Maaf, limit generate bio AI Anda hari ini sudah habis (Maksimal 3x sehari). Silakan coba lagi besok.");
       return;
@@ -103,19 +122,21 @@ const ProfileView: React.FC<ProfileViewProps> = ({
         
         // Update Limit
         const today = new Date().toISOString().split('T')[0];
-        // Added fix: use auth from firebase service to identify current user for usage limits
-        const saved = localStorage.getItem(`ai_bio_usage_${auth.currentUser?.uid || 'guest'}`);
+        const userKey = auth.currentUser ? auth.currentUser.uid : 'guest';
+        const saved = localStorage.getItem(`ai_bio_usage_${userKey}`);
         let newCount = 1;
+        
         if (saved) {
           const { date, count } = JSON.parse(saved);
           newCount = date === today ? count + 1 : 1;
         }
-        // Added fix: use auth from firebase service to identify current user for usage limits
-        localStorage.setItem(`ai_bio_usage_${auth.currentUser?.uid || 'guest'}`, JSON.stringify({ date: today, count: newCount }));
+        
+        localStorage.setItem(`ai_bio_usage_${userKey}`, JSON.stringify({ date: today, count: newCount }));
         setAiLimitRemaining(3 - newCount);
         alert("✨ Bio profesional Anda telah berhasil digenerate!");
       }
     } catch (e: any) {
+      console.error("[AI ERROR]", e.message);
       alert("Gagal generate bio: " + e.message);
     } finally {
       setIsGeneratingBio(false);
@@ -264,21 +285,10 @@ const ProfileView: React.FC<ProfileViewProps> = ({
               <InputGroup label="Current Company" value={formData.currentCompany} onChange={v => setFormData({ ...formData, currentCompany: v })} placeholder="e.g. Tax Solutions Global" />
               <InputGroup label="Current Title" value={formData.currentPosition} onChange={v => setFormData({ ...formData, currentPosition: v })} placeholder="e.g. Tax Associate" />
               
-              {/* Kolom Deskripsi Diri dengan integrasi AI */}
+              {/* Kolom Deskripsi Diri (Fitur AI dihapus sesuai permintaan) */}
               <div className="md:col-span-2 space-y-3">
                 <div className="flex justify-between items-end px-1">
                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Deskripsi Diri</label>
-                   <button 
-                    type="button"
-                    onClick={handleAiBio}
-                    disabled={isGeneratingBio}
-                    className="text-[9px] font-black uppercase tracking-widest px-3 py-1 bg-indigo-50 text-indigo-600 rounded-lg border border-indigo-100 hover:bg-indigo-600 hover:text-white transition-all flex items-center gap-2"
-                   >
-                     {isGeneratingBio ? (
-                       <span className="w-2 h-2 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></span>
-                     ) : '✨'}
-                     {isGeneratingBio ? 'Generating...' : `Auto-Generate AI (${aiLimitRemaining})`}
-                   </button>
                 </div>
                 <textarea 
                   className="w-full px-5 py-3.5 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-blue-500/5 outline-none bg-slate-50/30 transition-all text-slate-800 font-medium placeholder:text-slate-300 min-h-[120px] resize-none"
@@ -286,7 +296,6 @@ const ProfileView: React.FC<ProfileViewProps> = ({
                   value={formData.description || ''}
                   onChange={e => setFormData({ ...formData, description: e.target.value })}
                 />
-                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest ml-1 italic">* AI akan merangkum profil Anda menjadi bio profesional dalam Bahasa Indonesia.</p>
               </div>
             </div>
           </div>

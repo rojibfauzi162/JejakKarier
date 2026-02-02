@@ -928,7 +928,7 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
       {/* MODAL: MANAGE CATEGORIES */}
       {isManageCatsOpen && (
         <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md flex items-center justify-center z-[300] p-4">
-          <div className="bg-white w-full max-md rounded-[3rem] shadow-2xl p-8 lg:p-10 animate-in zoom-in duration-300">
+          <div className="bg-white w-full max-w-md rounded-[3rem] shadow-2xl p-8 lg:p-10 animate-in zoom-in duration-300">
              <div className="flex justify-between items-center mb-8">
                 <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">Kelola Bidang Kerja</h3>
                 <button onClick={() => setIsManageCatsOpen(false)} className="text-slate-400 hover:text-slate-900">✕</button>

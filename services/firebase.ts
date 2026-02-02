@@ -1,11 +1,10 @@
 
 import { initializeApp } from "firebase/app";
-// Use @firebase/auth to ensure named exports like getAuth are correctly resolved in modular Firebase v9+ environments
 import { getAuth } from '@firebase/auth';
-import { getFirestore, doc, setDoc, getDoc, collection, getDocs, updateDoc, deleteDoc, increment } from "firebase/firestore";
-import { AppData, AiConfig } from "../types";
+import { getFirestore, doc, setDoc, getDoc, collection, getDocs, updateDoc, deleteDoc, increment, query, where, limit } from "firebase/firestore";
+import { AppData, AiConfig, SubscriptionProduct, AccountStatus, SubscriptionPlan, ScalevConfig } from "../types";
 
-// MASUKKAN CONFIG ANDA DI SINI
+// KONFIGURASI FIREBASE
 const firebaseConfig = {
   apiKey: "AIzaSyCDvX0tJX24etCFWS9D-IG9B3_BV6xFGEk",
   authDomain: "jejakkarir-11379.firebaseapp.com",
@@ -20,11 +19,37 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 
+/* 
+  ========================================================================
+  SALIN ATURAN BERIKUT KE FIREBASE CONSOLE > FIRESTORE > RULES
+  ========================================================================
+  
+  rules_version = '2';
+  service cloud.firestore {
+    match /databases/{database}/documents {
+      // Aturan untuk data user
+      match /users/{userId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+        allow read, write: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'superadmin';
+      }
+      
+      // Aturan untuk metadata sistem (OpenRouter Key, Katalog Produk)
+      match /system_metadata/{document} {
+        // Penting: Izinkan semua user login baca metadata agar AI bisa jalan
+        allow read: if request.auth != null;
+        // Hanya Superadmin yang bisa ubah settingan
+        allow write: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'superadmin';
+      }
+    }
+  }
+  ========================================================================
+*/
+
 export const saveUserData = async (uid: string, data: AppData) => {
   try {
     await setDoc(doc(db, "users", uid), {
       ...data,
-      uid, // Pastikan UID tersimpan di doc
+      uid,
       updatedAt: new Date().toISOString()
     });
   } catch (error) {
@@ -58,9 +83,7 @@ export const getAllUsers = async (): Promise<AppData[]> => {
 
 export const updateAdminMetadata = async (uid: string, fields: Partial<AppData>) => {
   try {
-    if (!uid || typeof uid !== 'string') {
-      throw new Error("Valid UID is required for updating metadata");
-    }
+    if (!uid) throw new Error("Valid UID required");
     const userRef = doc(db, "users", uid);
     await updateDoc(userRef, {
       ...fields,
@@ -72,31 +95,12 @@ export const updateAdminMetadata = async (uid: string, fields: Partial<AppData>)
   }
 };
 
-export const logAIUsage = async (uid: string, type: 'cvGenerated' | 'coverLetters' | 'careerAnalysis') => {
-  try {
-    const userRef = doc(db, "users", uid);
-    const userSnap = await getDoc(userRef);
-    if (userSnap.exists()) {
-      const data = userSnap.data() as AppData;
-      const currentUsage = data.aiUsage || { cvGenerated: 0, coverLetters: 0, careerAnalysis: 0, totalTokens: 0 };
-      await updateDoc(userRef, {
-        [`aiUsage.${type}`]: (currentUsage[type] || 0) + 1,
-        updatedAt: new Date().toISOString()
-      });
-    }
-  } catch (error) {
-    console.error("Error logging AI usage:", error);
-  }
-};
-
 export const recordAiTokens = async (uid: string, count: number) => {
   try {
     const userRef = doc(db, "users", uid);
     const userSnap = await getDoc(userRef);
-    
     if (userSnap.exists()) {
       const userData = userSnap.data();
-      // Proteksi: Jika field aiUsage belum ada, inisialisasi dulu agar increment tidak gagal
       if (!userData.aiUsage) {
         await updateDoc(userRef, {
           aiUsage: { cvGenerated: 0, coverLetters: 0, careerAnalysis: 0, totalTokens: count },
@@ -108,7 +112,6 @@ export const recordAiTokens = async (uid: string, count: number) => {
           updatedAt: new Date().toISOString()
         });
       }
-      console.log(`[FIREBASE] Recorded ${count} tokens for user ${uid}`);
     }
   } catch (error) {
     console.error("Error recording tokens:", error);
@@ -117,16 +120,18 @@ export const recordAiTokens = async (uid: string, count: number) => {
 
 export const getAiConfig = async (): Promise<AiConfig | null> => {
   try {
-    // Menggunakan koleksi system_metadata agar tidak berbenturan dengan rules users
+    // Gunakan timeout singkat untuk pengecekan config agar UI tidak hang
     const docRef = doc(db, "system_metadata", "ai_configuration");
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
       return docSnap.data() as AiConfig;
     }
   } catch (error: any) {
-    // Jika error permission, return null secara diam-diam untuk regular user
-    if (error.code !== 'permission-denied') {
-      console.error("Error fetching AI config:", error);
+    // Silent fail jika permission denied, biarkan service AI menggunakan fallback
+    if (error.code === 'permission-denied') {
+      console.warn("[FIREBASE] Akses config AI diblokir Rules. Pastikan rules system_metadata diizinkan untuk read.");
+    } else {
+      console.error("[FIREBASE] Gagal ambil config AI:", error.message);
     }
   }
   return null;
@@ -135,11 +140,10 @@ export const getAiConfig = async (): Promise<AiConfig | null> => {
 export const saveAiConfig = async (config: AiConfig) => {
   try {
     const docRef = doc(db, "system_metadata", "ai_configuration");
-    // Eksplisit mapping untuk menghindari error tipe data atau undefined di Firestore
     const dataToSave = {
       openRouterKey: config.openRouterKey || "",
       modelName: config.modelName || "google/gemini-2.0-flash-exp:free",
-      maxTokens: Number(config.maxTokens) || 2000,
+      maxTokens: Math.min(Number(config.maxTokens) || 4096, 8192), // Safety cap
       updatedAt: new Date().toISOString()
     };
     await setDoc(docRef, dataToSave, { merge: true });
@@ -149,9 +153,31 @@ export const saveAiConfig = async (config: AiConfig) => {
   }
 };
 
-// --- PRODUCT CATALOG PERSISTENCE ---
+export const getScalevConfig = async (): Promise<ScalevConfig | null> => {
+  try {
+    const docRef = doc(db, "system_metadata", "scalev_configuration");
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) return docSnap.data() as ScalevConfig;
+  } catch (e) {
+    console.error("Error fetching Scalev config:", e);
+  }
+  return null;
+};
 
-export const getProductsCatalog = async (): Promise<any[] | null> => {
+export const saveScalevConfig = async (config: ScalevConfig) => {
+  try {
+    const docRef = doc(db, "system_metadata", "scalev_configuration");
+    await setDoc(docRef, {
+      ...config,
+      updatedAt: new Date().toISOString()
+    }, { merge: true });
+  } catch (error) {
+    console.error("Error saving Scalev config:", error);
+    throw error;
+  }
+};
+
+export const getProductsCatalog = async (): Promise<SubscriptionProduct[] | null> => {
   try {
     const docRef = doc(db, "system_metadata", "products_catalog");
     const snap = await getDoc(docRef);
@@ -162,12 +188,58 @@ export const getProductsCatalog = async (): Promise<any[] | null> => {
   return null;
 };
 
-export const saveProductsCatalog = async (products: any[]) => {
+export const saveProductsCatalog = async (products: SubscriptionProduct[]) => {
   try {
     const docRef = doc(db, "system_metadata", "products_catalog");
     await setDoc(docRef, { list: products, updatedAt: new Date().toISOString() });
   } catch (e) {
-    console.error("Error saving products:", e);
     throw e;
   }
+};
+
+/**
+ * MOCKUP BACKEND LOGIC (Hanya berjalan di Server/Cloud Functions)
+ * Fungsi ini digunakan untuk memproses Webhook dari Scalev
+ */
+export const processScalevOrder = async (email: string, scalevProdId: string) => {
+  // 1. Cari Paket yang sesuai dengan ID Produk Scalev
+  const catalog = await getProductsCatalog();
+  const matchedPlan = catalog?.find(p => p.scalevProductId === scalevProdId);
+  
+  if (!matchedPlan) {
+    console.error("Order Gagal: ID Produk Scalev tidak dikenali di sistem JejakKarir.");
+    return;
+  }
+
+  // 2. Cari User berdasarkan Email
+  const usersRef = collection(db, "users");
+  const q = query(usersRef, where("profile.email", "==", email), limit(1));
+  const querySnap = await getDocs(q);
+
+  if (querySnap.empty) {
+    console.warn("User belum terdaftar. Menyiapkan record pre-purchase...");
+    // Bisa tambahkan logic untuk simpan email agar saat daftar nanti otomatis aktif
+    return;
+  }
+
+  const userDoc = querySnap.docs[0];
+  const userRef = doc(db, "users", userDoc.id);
+
+  // 3. Hitung Masa Aktif
+  const now = new Date();
+  const expiry = new Date();
+  expiry.setDate(now.getDate() + matchedPlan.durationDays);
+
+  // 4. Update Akun User
+  await updateDoc(userRef, {
+    plan: matchedPlan.tier,
+    status: AccountStatus.ACTIVE,
+    activeFrom: now.toISOString(),
+    expiryDate: expiry.toISOString(),
+    planPermissions: matchedPlan.allowedModules,
+    planLimits: matchedPlan.limits,
+    updatedAt: new Date().toISOString()
+  });
+
+  console.log(`Berhasil mengaktifkan paket ${matchedPlan.name} untuk user ${email}`);
 };

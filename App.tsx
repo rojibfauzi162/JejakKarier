@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { onAuthStateChanged, signOut, type User } from '@firebase/auth';
 import { doc, onSnapshot, setDoc } from "firebase/firestore";
@@ -246,7 +247,6 @@ const App: React.FC = () => {
   const isOnlineCVView = !!onlineUserSlug;
 
   // IDENTIFIKASI ADMIN SECARA LANGSUNG DARI EMAIL AUTH (MENCEGAH LAG FIRESTORE)
-  // Perbaikan: Menghapus rojibfauzi@gmail.com dari daftar pengecekan Admin
   const isAdmin = useMemo(() => {
     const authEmail = (user?.email || '').toLowerCase();
     const isSpecialEmail = authEmail === 'admin@jejakkarir.com';
@@ -863,6 +863,9 @@ const App: React.FC = () => {
         );
         case 'admin_ai': return (
           <AdminPanel initialMode="ai" />
+        );
+        case 'admin_integrations': return (
+          <AdminPanel initialMode="integrations" />
         );
         case 'admin_health': return (
           <AdminPanel initialMode="health" />

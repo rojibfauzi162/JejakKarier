@@ -274,7 +274,7 @@ const CVGenerator: React.FC<CVGeneratorProps> = ({ data }) => {
           <div key={s.id} className="flex flex-col items-center gap-2 relative z-10">
             <div className={`w-10 h-10 rounded-full flex items-center justify-center font-black text-xs transition-all ${
               step === s.id ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20 scale-110' : 
-              step > s.id ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-400'
+              step > s.id ? 'bg-emerald-50 text-white' : 'bg-slate-100 text-slate-400'
             }`}>
               {step > s.id ? '✓' : s.icon}
             </div>
@@ -400,7 +400,14 @@ const CVContent = ({ filteredData, visibleSections, SectionHeader, hideSections 
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{w.duration}</span>
                 </div>
                 <p className="text-blue-600 text-[10px] font-black uppercase mb-2 tracking-widest">{w.company}</p>
-                <p className="text-xs text-slate-600 leading-relaxed text-justify">{w.description}</p>
+                <div className="mt-2 space-y-1.5">
+                   {(w.description || '').split('\n').filter((s: string) => s.trim() !== '').map((item: string, idx: number) => (
+                     <div key={idx} className="flex gap-2 items-start">
+                       <span className="w-1 h-1 rounded-full bg-slate-400 mt-1.5 shrink-0"></span>
+                       <p className="text-xs text-slate-600 leading-relaxed text-justify">{item}</p>
+                     </div>
+                   ))}
+                </div>
               </div>
             ))}
           </div>
