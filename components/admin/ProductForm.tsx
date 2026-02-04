@@ -44,22 +44,35 @@ const ProductForm = ({ initialData, onCancel, onSubmit, onDelete }: any) => {
         </div>
       </div>
 
-      <div className="p-6 bg-blue-50/50 border-2 border-blue-100 rounded-[2rem] space-y-4">
-        <div className="flex items-center gap-3">
-          <span className="w-8 h-8 bg-blue-600 text-white rounded-lg flex items-center justify-center text-xs font-black">M</span>
+      {/* MAYAR INTEGRATION FIELD - UPDATED WITH HELPERS */}
+      <div className="p-8 bg-blue-50/50 border-2 border-blue-100 rounded-[2.5rem] space-y-6">
+        <div className="flex items-center gap-4">
+          <span className="w-12 h-12 bg-blue-600 text-white rounded-2xl flex items-center justify-center text-xl font-black shadow-lg shadow-blue-200">M</span>
           <div>
-            <h4 className="text-[10px] font-black text-blue-900 uppercase tracking-widest">Mayar.id Integration</h4>
-            <p className="text-[8px] font-bold text-blue-400 uppercase tracking-tighter">Masukkan Product ID atau Link ID dari Mayar untuk automasi.</p>
+            <h4 className="text-xs font-black text-blue-900 uppercase tracking-widest">Mayar.id Automation</h4>
+            <p className="text-[9px] font-bold text-blue-400 uppercase tracking-tighter">Sinkronisasi Transaksi & Aktivasi Akun Otomatis</p>
           </div>
         </div>
-        <div className="space-y-1.5">
-           <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Mayar Product ID / Link ID</label>
+        
+        <div className="space-y-3">
+           <label className="text-[10px] font-black text-slate-600 uppercase tracking-widest ml-1">Mayar Link ID / Slug</label>
            <input 
-             className="w-full px-5 py-3 rounded-xl bg-white border border-blue-200 outline-none font-mono text-[10px] text-blue-600 focus:border-blue-500 transition-all" 
-             placeholder="Contoh: p-XXXXX atau prod-XXXXX"
+             className="w-full px-6 py-4 rounded-2xl bg-white border-2 border-blue-200 outline-none font-mono text-xs text-blue-600 focus:border-blue-500 transition-all placeholder:text-slate-300" 
+             placeholder="Contoh: p-abcd123 atau slug-link-anda"
              value={form.mayarProductId || ''} 
              onChange={e => setForm({...form, mayarProductId: e.target.value})} 
            />
+           
+           <div className="bg-white/60 p-4 rounded-xl border border-blue-100 space-y-2">
+              <p className="text-[9px] font-black text-blue-800 uppercase tracking-widest flex items-center gap-2">
+                <i className="bi bi-info-circle-fill"></i> CARA MENDAPATKAN ID:
+              </p>
+              <ul className="text-[10px] text-slate-500 space-y-1 font-medium italic list-disc ml-4">
+                <li>Buka Dashboard Mayar &gt; Pilih Link Pembayaran / Produk.</li>
+                <li>ID adalah <b>Slug</b> di akhir URL. (Misal: mayar.id/pl/<b>ABCDE</b> &rarr; Isikan <b>ABCDE</b>).</li>
+                <li>Atau jika menggunakan fitur "Product", gunakan ID yang tertera di URL edit produk.</li>
+              </ul>
+           </div>
         </div>
       </div>
 
