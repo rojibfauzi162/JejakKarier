@@ -37,7 +37,7 @@ const ScalevIntegration: React.FC = () => {
   return (
     <div className="max-w-4xl space-y-8 animate-in fade-in duration-500">
       {toast && (
-        <div className={`fixed top-10 right-10 z-[3000] px-8 py-4 rounded-2xl shadow-2xl border text-white font-black text-[10px] uppercase tracking-widest animate-in slide-in-from-right-4 ${toast.t === 's' ? 'bg-emerald-600 border-emerald-500' : 'bg-rose-600 border-rose-500'}`}>
+        <div className={`fixed top-10 right-10 z-[3000] px-8 py-4 rounded-2xl shadow-2xl border text-white font-black text-[10px] uppercase tracking-widest animate-in slide-in-from-right-4 ${toast.t === 's' ? 'bg-emerald-600 border-emerald-500 text-white' : 'bg-rose-600 border-rose-500 text-white'}`}>
            {toast.m}
         </div>
       )}
@@ -62,7 +62,7 @@ const ScalevIntegration: React.FC = () => {
                 onChange={e => setConfig({...config, apiKey: e.target.value})}
                 required
                />
-               <p className="text-[9px] text-slate-400 italic mt-1 ml-1">Dapatkan di Dashboard Scalev > Settings > API Keys.</p>
+               <p className="text-[9px] text-slate-400 italic mt-1 ml-1">Dapatkan di Dashboard Scalev &gt; Settings &gt; API Keys.</p>
             </div>
 
             <div className="space-y-2">

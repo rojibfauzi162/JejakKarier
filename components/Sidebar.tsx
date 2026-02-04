@@ -179,7 +179,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout, is
             <div className="mt-auto pt-2">
               <SidebarStandaloneItem 
                 active={activeTab === 'settings'} 
-                onClick={() => setActiveTab('settings'} 
+                onClick={() => setActiveTab('settings')} 
                 icon={<i className="bi bi-gear"></i>} 
                 label="Pengaturan" 
               />
