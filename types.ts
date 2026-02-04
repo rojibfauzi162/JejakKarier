@@ -103,9 +103,9 @@ export interface UserProfile {
   jobDesk: string;
   shortTermTarget: string;
   longTermTarget: string;
-  description: string; // Properti baru untuk deskripsi diri
-  photoUrl?: string; // Properti baru untuk foto profil
-  jobCategory?: string; // Baru: Kategori Jabatan
+  description: string;
+  photoUrl?: string;
+  jobCategory?: string;
 }
 
 export interface DailyReport {
@@ -113,14 +113,14 @@ export interface DailyReport {
   date: string;
   activity: string;
   category: string; 
-  context: 'Perusahaan' | 'Personal' | 'Sampingan'; // Field baru
-  companyName?: string; // Field baru
+  context: 'Perusahaan' | 'Personal' | 'Sampingan';
+  companyName?: string;
   output: string;
   metricValue: number;
   metricLabel: string;
   reflection: string;
-  isPlan?: boolean; // Baru: Penanda apakah ini masih rencana
-  targetValue?: number; // Baru: Target angka yang ingin dicapai
+  isPlan?: boolean;
+  targetValue?: number;
 }
 
 export interface WorkReflection {
@@ -130,9 +130,9 @@ export interface WorkReflection {
   energy: 'Low' | 'Medium' | 'High';
   workload: 'Light' | 'Normal' | 'Heavy';
   mainContribution: string;
-  microWins: string[]; // List of checkboxes
-  skillsUsed: string[]; // Array of skill names
-  suggestedSkills?: string[]; // Up to 2 manual new skills
+  microWins: string[];
+  skillsUsed: string[];
+  suggestedSkills?: string[];
   energyDrain?: string;
   focusTomorrow?: string;
   rotatingQuestion: string;
@@ -161,10 +161,10 @@ export interface Training {
   status: TrainingStatus;
   link: string;
   notes: string;
-  progress: number; // Properti baru 0-100
-  deadline: string; // Properti baru YYYY-MM-DD
-  priority: SkillPriority; // Properti baru
-  certLink?: string; // Properti baru link/file sertifikat
+  progress: number;
+  deadline: string;
+  priority: SkillPriority;
+  certLink?: string;
 }
 
 export interface Certification {
@@ -176,9 +176,9 @@ export interface Certification {
   isActive: boolean;
   relatedSkill: string;
   fileLink: string;
-  status?: TrainingStatus; // Properti baru
-  deadline?: string; // Properti baru YYYY-MM-DD
-  certNumber?: string; // Properti baru nomor sertifikat
+  status?: TrainingStatus;
+  deadline?: string;
+  certNumber?: string;
 }
 
 export interface CareerPath {
@@ -189,14 +189,14 @@ export interface CareerPath {
   requiredSkills: string[];
   skillLevel: number;
   developmentPlan: string;
-  actionDeadline: string; // Display: "MMM YYYY", stored as YYYY-MM
+  actionDeadline: string;
   status: CareerStatus;
 }
 
 export interface Achievement {
   id: string;
   title: string;
-  date: string; // Support flexible strings for ranges
+  date: string;
   category: AchievementCategory;
   impact: string;
   scope: 'Perusahaan' | 'Personal';
@@ -252,15 +252,14 @@ export interface PersonalProject {
 export interface ToDoTask {
   id: string;
   task: string;
-  description?: string; // Properti baru
+  description?: string;
   category: string;
   status: 'Pending' | 'Completed';
   createdAt: string;
   source: 'AI' | 'Manual';
-  isFocusToday?: boolean; // Properti baru
+  isFocusToday?: boolean;
 }
 
-// Konfigurasi khusus untuk CV Online / Landing Page
 export interface OnlineCVConfig {
   username: string;
   themeId: string;
@@ -293,15 +292,6 @@ export interface MayarConfig {
   updatedAt?: string;
 }
 
-export interface ScalevConfig {
-  apiKey: string;
-  clientId?: string;
-  clientSecret?: string;
-  webhookSecret?: string;
-  enabledEvents?: string[];
-  updatedAt?: string;
-}
-
 export interface AiRecommendation {
   name: string;
   provider: string;
@@ -328,27 +318,26 @@ export interface AiStrategy {
   };
   motivation: string;
   executiveSummary: string;
-  dataFingerprint?: string; // Properti baru untuk validasi perubahan data
+  dataFingerprint?: string;
 }
 
 export interface AiInsightRecord {
   id: string;
   date: string;
-  label: string; // e.g. "Januari 2026 Minggu ke-1"
+  label: string;
   period: 'weekly' | 'monthly';
   audience: 'self' | 'supervisor';
   contexts: string[];
-  result: any; // The JSON object returned by Gemini
+  result: any;
 }
 
 export interface ReminderConfig {
   weeklyProgress: boolean;
   monthlyEvaluation: boolean;
   dailyMotivation: boolean;
-  // BARU: Pengaturan Waktu Reminder Spesifik
-  dailyLogReminderTime: string; // Format "HH:mm"
-  reflectionReminderTime: string; // Format "HH:mm"
-  todoReminderTime: string; // Format "HH:mm"
+  dailyLogReminderTime: string;
+  reflectionReminderTime: string;
+  todoReminderTime: string;
 }
 
 export interface SubscriptionProduct {
@@ -359,8 +348,7 @@ export interface SubscriptionProduct {
   durationDays: number;
   enabledDurations: number[];
   allowedModules: string[];
-  scalevProductId?: string; // Deprecated
-  mayarProductId?: string; // Menghubungkan paket dengan ID Produk/Link di Mayar
+  mayarProductId?: string;
   limits: {
     dailyLogs: number | 'unlimited';
     skills: number | 'unlimited';
@@ -370,17 +358,17 @@ export interface SubscriptionProduct {
 }
 
 export interface AppData {
-  uid?: string; // Ditambahkan untuk identifikasi di admin
+  uid?: string;
   role: UserRole;
   plan: SubscriptionPlan;
   status: AccountStatus;
   joinedAt: string;
   lastLogin: string;
-  activeFrom?: string; // Tanggal mulai masa aktif
-  expiryDate?: string; // Tanggal akhir masa aktif
-  planPermissions?: string[]; // Modul yang diizinkan (e.g. 'daily', 'cv')
-  planLimits?: Record<string, number | 'unlimited'>; // Batas data per modul
-  bypassAiLimits?: boolean; // Modul admin bypass kuota
+  activeFrom?: string;
+  expiryDate?: string;
+  planPermissions?: string[];
+  planLimits?: Record<string, number | 'unlimited'>;
+  bypassAiLimits?: boolean;
   aiUsage: {
     cvGenerated: number;
     coverLetters: number;
@@ -391,7 +379,7 @@ export interface AppData {
   workExperiences: WorkExperience[];
   educations: Education[];
   dailyReports: DailyReport[];
-  dailyReflections: WorkReflection[]; // Baru: Refleksi harian
+  dailyReflections: WorkReflection[];
   skills: Skill[];
   trainings: Training[];
   certifications: Certification[];
@@ -401,15 +389,15 @@ export interface AppData {
   monthlyReviews: MonthlyReview[];
   jobApplications: JobApplication[];
   personalProjects: PersonalProject[];
-  todoList: ToDoTask[]; // Baru: Daftar tugas harian
-  todoCategories: string[]; // Baru: Kategori tugas kustom
-  aiInsights?: AiInsightRecord[]; // Riwayat AI Insight
+  todoList: ToDoTask[];
+  todoCategories: string[];
+  aiInsights?: AiInsightRecord[];
   affirmations: string[];
-  workCategories: string[]; // Properti baru untuk kustomisasi kategori kerja
-  onlineCV: OnlineCVConfig; // Properti baru untuk CV Online
-  aiStrategies?: AiStrategy[]; // Properti baru untuk riwayat strategi AI
-  reminderConfig: ReminderConfig; // Baru: Konfigurasi pengingat
-  completedAiMilestones: string[]; // Baru: Simpan ID mileston yang sudah tuntas
-  isDeleted?: boolean; // Untuk fitur soft delete
+  workCategories: string[];
+  onlineCV: OnlineCVConfig;
+  aiStrategies?: AiStrategy[];
+  reminderConfig: ReminderConfig;
+  completedAiMilestones: string[];
+  isDeleted?: boolean;
   deletedAt?: string;
 }

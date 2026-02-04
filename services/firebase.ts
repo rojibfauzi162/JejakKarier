@@ -1,8 +1,8 @@
 
 import { initializeApp } from "firebase/app";
 import { getAuth } from '@firebase/auth';
-import { getFirestore, doc, setDoc, getDoc, collection, getDocs, updateDoc, deleteDoc, increment, query, where, limit } from "firebase/firestore";
-import { AppData, AiConfig, SubscriptionProduct, AccountStatus, SubscriptionPlan, ScalevConfig, MayarConfig } from "../types";
+import { getFirestore, doc, setDoc, getDoc, collection, getDocs, updateDoc, increment, query, where, limit } from "firebase/firestore";
+import { AppData, AiConfig, SubscriptionProduct, AccountStatus, MayarConfig } from "../types";
 
 // KONFIGURASI FIREBASE
 const firebaseConfig = {
@@ -100,11 +100,7 @@ export const getAiConfig = async (): Promise<AiConfig | null> => {
       return docSnap.data() as AiConfig;
     }
   } catch (error: any) {
-    if (error.code === 'permission-denied') {
-      console.warn("[FIREBASE] Akses config AI diblokir Rules.");
-    } else {
-      console.error("[FIREBASE] Gagal ambil config AI:", error.message);
-    }
+    console.error("[FIREBASE] Gagal ambil config AI:", error.message);
   }
   return null;
 };
@@ -145,30 +141,6 @@ export const saveMayarConfig = async (config: MayarConfig) => {
     }, { merge: true });
   } catch (error) {
     console.error("Error saving Mayar config:", error);
-    throw error;
-  }
-};
-
-export const getScalevConfig = async (): Promise<ScalevConfig | null> => {
-  try {
-    const docRef = doc(db, "system_metadata", "scalev_configuration");
-    const docSnap = await getDoc(docRef);
-    if (docSnap.exists()) return docSnap.data() as ScalevConfig;
-  } catch (e) {
-    console.error("Error fetching Scalev config:", e);
-  }
-  return null;
-};
-
-export const saveScalevConfig = async (config: ScalevConfig) => {
-  try {
-    const docRef = doc(db, "system_metadata", "scalev_configuration");
-    await setDoc(docRef, {
-      ...config,
-      updatedAt: new Date().toISOString()
-    }, { merge: true });
-  } catch (error) {
-    console.error("Error saving Scalev config:", error);
     throw error;
   }
 };
