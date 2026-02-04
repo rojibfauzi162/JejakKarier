@@ -10,7 +10,7 @@ import AiArchitecture from './admin/AiArchitecture';
 import ProductMatrix from './admin/ProductMatrix';
 import SystemHealth from './admin/SystemHealth';
 import ProductForm from './admin/ProductForm';
-import ScalevIntegration from './admin/ScalevIntegration'; // File ini akan diperbarui isinya untuk Mayar
+import MayarIntegration from './admin/MayarIntegration';
 
 interface AdminPanelProps {
   initialMode?: 'dashboard' | 'users' | 'products' | 'health' | 'ai' | 'integrations';
@@ -293,7 +293,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
       )}
       {initialMode === 'products' && <ProductMatrix products={products} setEditingProduct={setEditingProduct} setIsProductModalOpen={setIsProductModalOpen} />}
       {initialMode === 'health' && <SystemHealth keyInfo={keyInfo} fetchingKeyInfo={fetchingKeyInfo} aiConfig={aiConfig} totalTokens={adminStats.totalTokens} />}
-      {initialMode === 'integrations' && <ScalevIntegration />}
+      {initialMode === 'integrations' && <MayarIntegration />}
 
       {/* MODAL USER */}
       {isUserModalOpen && editingUser && (

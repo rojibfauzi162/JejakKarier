@@ -5,7 +5,7 @@ import { SubscriptionPlan, SubscriptionProduct } from '../../types';
 const ProductForm = ({ initialData, onCancel, onSubmit, onDelete }: any) => {
   const [form, setForm] = useState<Partial<SubscriptionProduct>>(initialData || {
     name: '', tier: SubscriptionPlan.FREE, price: 0, durationDays: 30,
-    mayarProductId: '', // Menggunakan field Mayar
+    mayarProductId: '',
     allowedModules: ['dashboard', 'profile', 'daily', 'skills'],
     limits: { dailyLogs: 10, skills: 10, projects: 5, cvExports: 1 }
   });
@@ -44,7 +44,6 @@ const ProductForm = ({ initialData, onCancel, onSubmit, onDelete }: any) => {
         </div>
       </div>
 
-      {/* MAYAR INTEGRATION FIELD */}
       <div className="p-6 bg-blue-50/50 border-2 border-blue-100 rounded-[2rem] space-y-4">
         <div className="flex items-center gap-3">
           <span className="w-8 h-8 bg-blue-600 text-white rounded-lg flex items-center justify-center text-xs font-black">M</span>
@@ -67,16 +66,17 @@ const ProductForm = ({ initialData, onCancel, onSubmit, onDelete }: any) => {
       <div className="space-y-4">
         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Limitasi Data (0 = Unlimited)</label>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {Object.keys(form.limits || {}).map(k => (
+          {['dailyLogs', 'skills', 'projects', 'cvExports'].map(k => (
             <div key={k} className="space-y-1">
               <span className="text-[8px] font-black text-slate-500 uppercase ml-1">{k}</span>
               <input 
                 type="number" 
                 className="w-full px-4 py-3 rounded-xl border border-slate-200 text-xs font-black" 
-                value={(form.limits as any)?.[k] || 0} 
+                value={form.limits ? (form.limits as any)[k] === 'unlimited' ? 0 : (form.limits as any)[k] : 0} 
                 onChange={e => {
                   const val = Number(e.target.value) || 'unlimited';
-                  const nextLimits = { ...(form.limits || {}), [k]: val } as SubscriptionProduct['limits'];
+                  const currentLimits = form.limits || { dailyLogs: 10, skills: 10, projects: 5, cvExports: 1 };
+                  const nextLimits = { ...currentLimits, [k]: val } as SubscriptionProduct['limits'];
                   setForm({ ...form, limits: nextLimits });
                 }} 
               />
