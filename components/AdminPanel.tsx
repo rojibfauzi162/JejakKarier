@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { AppData, UserRole, AccountStatus, SubscriptionPlan, AiConfig } from '../types';
+import { AppData, UserRole, AccountStatus, SubscriptionPlan, AiConfig, SubscriptionProduct } from '../types';
 import { getAllUsers, updateAdminMetadata, getAiConfig, saveAiConfig, getProductsCatalog, saveProductsCatalog } from '../services/firebase';
 
 // Sub-modules import
@@ -10,23 +10,7 @@ import AiArchitecture from './admin/AiArchitecture';
 import ProductMatrix from './admin/ProductMatrix';
 import SystemHealth from './admin/SystemHealth';
 import ProductForm from './admin/ProductForm';
-import ScalevIntegration from './admin/ScalevIntegration';
-
-interface SubscriptionProduct {
-  id: string;
-  name: string;
-  tier: SubscriptionPlan;
-  price: number;
-  durationDays: number;
-  enabledDurations: number[];
-  allowedModules: string[];
-  limits: {
-    dailyLogs: number | 'unlimited';
-    skills: number | 'unlimited';
-    projects: number | 'unlimited';
-    cvExports: number | 'unlimited';
-  };
-}
+import ScalevIntegration from './admin/ScalevIntegration'; // File ini akan diperbarui isinya untuk Mayar
 
 interface AdminPanelProps {
   initialMode?: 'dashboard' | 'users' | 'products' | 'health' | 'ai' | 'integrations';
@@ -92,7 +76,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
     } catch (err: any) {
       console.error(err);
       if (err.message?.includes('permission-denied') || err.code === 'permission-denied') {
-        setError("Firebase Permission Denied. Pastikan role 'superadmin' sudah tersemat di document user Anda di Firestore dan Rules sudah diperbarui.");
+        setError("Firebase Permission Denied. Pastikan role 'superadmin' sudah tersemat.");
       } else {
         setError(err.message || "Gagal mengambil data dari server.");
       }
@@ -193,7 +177,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
     setIsSavingAi(true);
     try {
       await saveAiConfig(aiConfig);
-      triggerToast("Setingan AI berhasil diperbarui! 🚀");
+      triggerToast("Setingan AI diperbarui! 🚀");
       fetchOpenRouterKeyInfo();
     } catch (err) {
       triggerToast("Gagal simpan setingan AI.", "error");
@@ -220,7 +204,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
       fetchUsersAndConfig(true);
       setIsUserModalOpen(false);
     } catch (e) {
-      triggerToast("Gagal update user. Cek Firestore Rules.", "error");
+      triggerToast("Gagal update user.", "error");
     }
   };
 
@@ -281,7 +265,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
       <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 pt-4">
         <div>
           <h2 className="text-3xl font-black text-slate-900 tracking-tight uppercase">
-            {initialMode === 'health' ? 'Kesehatan Sistem' : initialMode === 'users' ? 'Kelola User' : initialMode === 'ai' ? 'Arsitektur AI' : initialMode === 'products' ? 'Matriks Produk' : initialMode === 'integrations' ? 'Integrasi Layanan' : 'Dashboard Admin Hub'}
+            {initialMode === 'health' ? 'Kesehatan Sistem' : initialMode === 'users' ? 'Kelola User' : initialMode === 'ai' ? 'Arsitektur AI' : initialMode === 'products' ? 'Matriks Produk' : initialMode === 'integrations' ? 'Integrasi Mayar' : 'Dashboard Admin Hub'}
           </h2>
           <p className="text-slate-500 font-medium italic">Manajemen sistem JejakKarir.</p>
         </div>

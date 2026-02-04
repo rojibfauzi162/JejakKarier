@@ -46,13 +46,13 @@ const ProductMatrix: React.FC<ProductMatrixProps> = ({ products, setEditingProdu
                      </div>
                   </div>
 
-                  {/* INFO MAPPING SCALEV */}
-                  <div className={`p-4 rounded-2xl border flex items-center gap-3 ${p.scalevProductId ? 'bg-emerald-50 border-emerald-100' : 'bg-rose-50 border-rose-100'}`}>
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black ${p.scalevProductId ? 'bg-emerald-600 text-white' : 'bg-rose-600 text-white'}`}>S</div>
+                  {/* INFO MAPPING MAYAR */}
+                  <div className={`p-4 rounded-2xl border flex items-center gap-3 ${p.mayarProductId ? 'bg-emerald-50 border-emerald-100' : 'bg-rose-50 border-rose-100'}`}>
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black ${p.mayarProductId ? 'bg-emerald-600 text-white' : 'bg-rose-600 text-white'}`}>M</div>
                     <div className="overflow-hidden">
-                      <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Scalev Product ID</p>
-                      <p className={`text-[10px] font-mono font-bold truncate ${p.scalevProductId ? 'text-emerald-700' : 'text-rose-700'}`}>
-                        {p.scalevProductId || 'BELUM TERHUBUNG'}
+                      <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Mayar Product ID</p>
+                      <p className={`text-[10px] font-mono font-bold truncate ${p.mayarProductId ? 'text-emerald-700' : 'text-rose-700'}`}>
+                        {p.mayarProductId || 'BELUM TERHUBUNG'}
                       </p>
                     </div>
                   </div>

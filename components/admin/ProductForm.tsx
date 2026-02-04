@@ -5,7 +5,7 @@ import { SubscriptionPlan, SubscriptionProduct } from '../../types';
 const ProductForm = ({ initialData, onCancel, onSubmit, onDelete }: any) => {
   const [form, setForm] = useState<Partial<SubscriptionProduct>>(initialData || {
     name: '', tier: SubscriptionPlan.FREE, price: 0, durationDays: 30,
-    scalevProductId: '', // Inisialisasi field Scalev
+    mayarProductId: '', // Menggunakan field Mayar
     allowedModules: ['dashboard', 'profile', 'daily', 'skills'],
     limits: { dailyLogs: 10, skills: 10, projects: 5, cvExports: 1 }
   });
@@ -44,22 +44,22 @@ const ProductForm = ({ initialData, onCancel, onSubmit, onDelete }: any) => {
         </div>
       </div>
 
-      {/* SCALEV INTEGRATION FIELD */}
-      <div className="p-6 bg-indigo-50/50 border-2 border-indigo-100 rounded-[2rem] space-y-4">
+      {/* MAYAR INTEGRATION FIELD */}
+      <div className="p-6 bg-blue-50/50 border-2 border-blue-100 rounded-[2rem] space-y-4">
         <div className="flex items-center gap-3">
-          <span className="w-8 h-8 bg-indigo-600 text-white rounded-lg flex items-center justify-center text-xs font-black">S</span>
+          <span className="w-8 h-8 bg-blue-600 text-white rounded-lg flex items-center justify-center text-xs font-black">M</span>
           <div>
-            <h4 className="text-[10px] font-black text-indigo-900 uppercase tracking-widest">Scalev Integration</h4>
-            <p className="text-[8px] font-bold text-indigo-400 uppercase tracking-tighter">Masukkan ID Produk dari dashboard Scalev untuk automasi.</p>
+            <h4 className="text-[10px] font-black text-blue-900 uppercase tracking-widest">Mayar.id Integration</h4>
+            <p className="text-[8px] font-bold text-blue-400 uppercase tracking-tighter">Masukkan Product ID atau Link ID dari Mayar untuk automasi.</p>
           </div>
         </div>
         <div className="space-y-1.5">
-           <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Scalev Product ID</label>
+           <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Mayar Product ID / Link ID</label>
            <input 
-             className="w-full px-5 py-3 rounded-xl bg-white border border-indigo-200 outline-none font-mono text-[10px] text-indigo-600 focus:border-indigo-500 transition-all" 
-             placeholder="Contoh: prod_XXXXX"
-             value={form.scalevProductId || ''} 
-             onChange={e => setForm({...form, scalevProductId: e.target.value})} 
+             className="w-full px-5 py-3 rounded-xl bg-white border border-blue-200 outline-none font-mono text-[10px] text-blue-600 focus:border-blue-500 transition-all" 
+             placeholder="Contoh: p-XXXXX atau prod-XXXXX"
+             value={form.mayarProductId || ''} 
+             onChange={e => setForm({...form, mayarProductId: e.target.value})} 
            />
         </div>
       </div>

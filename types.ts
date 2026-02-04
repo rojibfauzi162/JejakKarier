@@ -285,9 +285,20 @@ export interface AiConfig {
   updatedAt?: string;
 }
 
-export interface ScalevConfig {
+export interface MayarConfig {
   apiKey: string;
   webhookSecret?: string;
+  enabledEvents?: string[];
+  environment: 'sandbox' | 'production';
+  updatedAt?: string;
+}
+
+export interface ScalevConfig {
+  apiKey: string;
+  clientId?: string;
+  clientSecret?: string;
+  webhookSecret?: string;
+  enabledEvents?: string[];
   updatedAt?: string;
 }
 
@@ -348,7 +359,8 @@ export interface SubscriptionProduct {
   durationDays: number;
   enabledDurations: number[];
   allowedModules: string[];
-  scalevProductId?: string; // Menghubungkan paket dengan ID Produk di Scalev
+  scalevProductId?: string; // Deprecated
+  mayarProductId?: string; // Menghubungkan paket dengan ID Produk/Link di Mayar
   limits: {
     dailyLogs: number | 'unlimited';
     skills: number | 'unlimited';

@@ -2,7 +2,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from '@firebase/auth';
 import { getFirestore, doc, setDoc, getDoc, collection, getDocs, updateDoc, deleteDoc, increment, query, where, limit } from "firebase/firestore";
-import { AppData, AiConfig, SubscriptionProduct, AccountStatus, SubscriptionPlan, ScalevConfig } from "../types";
+import { AppData, AiConfig, SubscriptionProduct, AccountStatus, SubscriptionPlan, ScalevConfig, MayarConfig } from "../types";
 
 // KONFIGURASI FIREBASE
 const firebaseConfig = {
@@ -18,32 +18,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
-
-/* 
-  ========================================================================
-  SALIN ATURAN BERIKUT KE FIREBASE CONSOLE > FIRESTORE > RULES
-  ========================================================================
-  
-  rules_version = '2';
-  service cloud.firestore {
-    match /databases/{database}/documents {
-      // Aturan untuk data user
-      match /users/{userId} {
-        allow read, write: if request.auth != null && request.auth.uid == userId;
-        allow read, write: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'superadmin';
-      }
-      
-      // Aturan untuk metadata sistem (OpenRouter Key, Katalog Produk)
-      match /system_metadata/{document} {
-        // Penting: Izinkan semua user login baca metadata agar AI bisa jalan
-        allow read: if request.auth != null;
-        // Hanya Superadmin yang bisa ubah settingan
-        allow write: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'superadmin';
-      }
-    }
-  }
-  ========================================================================
-*/
 
 export const saveUserData = async (uid: string, data: AppData) => {
   try {
@@ -120,16 +94,14 @@ export const recordAiTokens = async (uid: string, count: number) => {
 
 export const getAiConfig = async (): Promise<AiConfig | null> => {
   try {
-    // Gunakan timeout singkat untuk pengecekan config agar UI tidak hang
     const docRef = doc(db, "system_metadata", "ai_configuration");
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
       return docSnap.data() as AiConfig;
     }
   } catch (error: any) {
-    // Silent fail jika permission denied, biarkan service AI menggunakan fallback
     if (error.code === 'permission-denied') {
-      console.warn("[FIREBASE] Akses config AI diblokir Rules. Pastikan rules system_metadata diizinkan untuk read.");
+      console.warn("[FIREBASE] Akses config AI diblokir Rules.");
     } else {
       console.error("[FIREBASE] Gagal ambil config AI:", error.message);
     }
@@ -143,12 +115,36 @@ export const saveAiConfig = async (config: AiConfig) => {
     const dataToSave = {
       openRouterKey: config.openRouterKey || "",
       modelName: config.modelName || "google/gemini-2.0-flash-exp:free",
-      maxTokens: Math.min(Number(config.maxTokens) || 4096, 8192), // Safety cap
+      maxTokens: Math.min(Number(config.maxTokens) || 4096, 8192),
       updatedAt: new Date().toISOString()
     };
     await setDoc(docRef, dataToSave, { merge: true });
   } catch (error) {
     console.error("Error saving AI config:", error);
+    throw error;
+  }
+};
+
+export const getMayarConfig = async (): Promise<MayarConfig | null> => {
+  try {
+    const docRef = doc(db, "system_metadata", "mayar_configuration");
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) return docSnap.data() as MayarConfig;
+  } catch (e) {
+    console.error("Error fetching Mayar config:", e);
+  }
+  return null;
+};
+
+export const saveMayarConfig = async (config: MayarConfig) => {
+  try {
+    const docRef = doc(db, "system_metadata", "mayar_configuration");
+    await setDoc(docRef, {
+      ...config,
+      updatedAt: new Date().toISOString()
+    }, { merge: true });
+  } catch (error) {
+    console.error("Error saving Mayar config:", error);
     throw error;
   }
 };
@@ -198,39 +194,33 @@ export const saveProductsCatalog = async (products: SubscriptionProduct[]) => {
 };
 
 /**
- * MOCKUP BACKEND LOGIC (Hanya berjalan di Server/Cloud Functions)
- * Fungsi ini digunakan untuk memproses Webhook dari Scalev
+ * Pemrosesan Webhook Mayar.id
  */
-export const processScalevOrder = async (email: string, scalevProdId: string) => {
-  // 1. Cari Paket yang sesuai dengan ID Produk Scalev
+export const processMayarOrder = async (email: string, mayarProdId: string) => {
   const catalog = await getProductsCatalog();
-  const matchedPlan = catalog?.find(p => p.scalevProductId === scalevProdId);
+  const matchedPlan = catalog?.find(p => p.mayarProductId === mayarProdId);
   
   if (!matchedPlan) {
-    console.error("Order Gagal: ID Produk Scalev tidak dikenali di sistem JejakKarir.");
+    console.error("Order Gagal: ID Produk Mayar tidak dikenali.");
     return;
   }
 
-  // 2. Cari User berdasarkan Email
   const usersRef = collection(db, "users");
   const q = query(usersRef, where("profile.email", "==", email), limit(1));
   const querySnap = await getDocs(q);
 
   if (querySnap.empty) {
-    console.warn("User belum terdaftar. Menyiapkan record pre-purchase...");
-    // Bisa tambahkan logic untuk simpan email agar saat daftar nanti otomatis aktif
+    console.warn("User belum terdaftar. Menunggu registrasi email tersebut.");
     return;
   }
 
   const userDoc = querySnap.docs[0];
   const userRef = doc(db, "users", userDoc.id);
 
-  // 3. Hitung Masa Aktif
   const now = new Date();
   const expiry = new Date();
   expiry.setDate(now.getDate() + matchedPlan.durationDays);
 
-  // 4. Update Akun User
   await updateDoc(userRef, {
     plan: matchedPlan.tier,
     status: AccountStatus.ACTIVE,
@@ -241,5 +231,5 @@ export const processScalevOrder = async (email: string, scalevProdId: string) =>
     updatedAt: new Date().toISOString()
   });
 
-  console.log(`Berhasil mengaktifkan paket ${matchedPlan.name} untuk user ${email}`);
+  console.log(`Berhasil mengaktifkan paket ${matchedPlan.name} (Mayar) untuk user ${email}`);
 };

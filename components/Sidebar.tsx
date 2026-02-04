@@ -83,7 +83,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout, is
             <SidebarItem id="admin_users" active={activeTab === 'admin_users'} onClick={() => setActiveTab('admin_users')} icon={<i className="bi bi-people"></i>} label="Kelola User" color="rose" />
             <SidebarItem id="admin_ai" active={activeTab === 'admin_ai'} onClick={() => setActiveTab('admin_ai')} icon={<i className="bi bi-cpu"></i>} label="AI Architecture" color="blue" />
             <SidebarItem id="admin_products" active={activeTab === 'admin_products'} onClick={() => setActiveTab('admin_products')} icon={<i className="bi bi-box-seam"></i>} label="Product Matrix" color="blue" />
-            <SidebarItem id="admin_integrations" active={activeTab === 'admin_integrations'} onClick={() => setActiveTab('admin_integrations')} icon={<i className="bi bi-link-45deg"></i>} label="Integrasi Scalev" color="blue" />
+            <SidebarItem id="admin_integrations" active={activeTab === 'admin_integrations'} onClick={() => setActiveTab('admin_integrations')} icon={<i className="bi bi-link-45deg"></i>} label="Integrasi Mayar" color="blue" />
             <SidebarItem id="admin_health" active={activeTab === 'admin_health'} onClick={() => setActiveTab('admin_health')} icon={<i className="bi bi-activity"></i>} label="System Health" color="rose" />
           </div>
         )}
@@ -192,7 +192,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout, is
       <div className="p-6 border-t border-white/5 bg-slate-950/50 backdrop-blur-md">
         <button 
           onClick={onLogout}
-          className="w-full flex items-center justify-center gap-3 px-4 py-3.5 rounded-2xl bg-rose-500/5 text-rose-500 border border-rose-500/10 hover:bg-rose-500 hover:text-white transition-all duration-500 font-black text-[10px] uppercase tracking-widest group"
+          className="w-full flex items-center justify-center gap-3 px-4 py-3.5 rounded-2xl bg-rose-50/5 text-rose-500 border border-rose-500/10 hover:bg-rose-500 hover:text-white transition-all duration-500 font-black text-[10px] uppercase tracking-widest group"
         >
           <span className="group-hover:rotate-12 transition-transform text-xs">
             <i className="bi bi-box-arrow-right"></i>
