@@ -22,9 +22,9 @@ const MobileNav: React.FC<MobileNavProps> = ({ activeTab, setActiveTab, onLogout
   // Menu untuk User Biasa
   const userItems: NavItem[] = [
     { id: 'dashboard', label: 'Home', icon: 'bi-house-door' },
-    { id: 'daily_toggle', label: 'Daily Work', icon: 'bi-journal-text', isSpecial: true },
+    { id: 'daily_toggle', label: 'Daily', icon: 'bi-journal-text', isSpecial: true },
     { id: 'todo_list', label: 'Langkah', icon: 'bi-check2-square' },
-    { id: 'mobile_stats', label: 'Stats', icon: 'bi-bar-chart-line' },
+    { id: 'billing', label: 'Billing', icon: 'bi-credit-card' },
   ];
 
   // Menu Khusus Super Admin

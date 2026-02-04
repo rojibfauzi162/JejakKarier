@@ -1,16 +1,16 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { AppData, UserRole, AccountStatus, SubscriptionPlan, AiConfig, SubscriptionProduct } from '../types';
-import { getAllUsers, updateAdminMetadata, getAiConfig, saveAiConfig, getProductsCatalog, saveProductsCatalog } from '../services/firebase';
+import { AppData, UserRole, AccountStatus, SubscriptionPlan, AiConfig, SubscriptionProduct } from '../../types';
+import { getAllUsers, updateAdminMetadata, getAiConfig, saveAiConfig, getProductsCatalog, saveProductsCatalog } from '../../services/firebase';
 
 // Sub-modules import
-import AdminDashboard from './admin/AdminDashboard';
-import UserManagement from './admin/UserManagement';
-import AiArchitecture from './admin/AiArchitecture';
-import ProductMatrix from './admin/ProductMatrix';
-import SystemHealth from './admin/SystemHealth';
-import ProductForm from './admin/ProductForm';
-import MayarIntegration from './admin/MayarIntegration';
+import AdminDashboard from './AdminDashboard';
+import UserManagement from './UserManagement';
+import AiArchitecture from './AiArchitecture';
+import ProductMatrix from './ProductMatrix';
+import SystemHealth from './SystemHealth';
+import ProductForm from './ProductForm';
+import MayarIntegration from './MayarIntegration';
 
 interface AdminPanelProps {
   initialMode?: 'dashboard' | 'users' | 'products' | 'health' | 'ai' | 'integrations';
@@ -64,9 +64,15 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
         setError(null);
     }
     try {
+      // Menggunakan try-catch individual untuk metadata agar jika salah satu fail (misal produk belum ada), dashboard tetap terbuka
+      const usersTask = getAllUsers().catch(e => { console.error(e); return [] as AppData[]; });
+      const configTask = getAiConfig().catch(e => { console.error(e); return null; });
+      const productsTask = getProductsCatalog().catch(e => { console.error(e); return [] as SubscriptionProduct[]; });
+
       const [usersData, configData, productsData] = await Promise.all([
-        getAllUsers(), getAiConfig(), getProductsCatalog()
+        usersTask, configTask, productsTask
       ]);
+
       setUsers(usersData);
       if (configData) setAiConfigState(configData);
       if (productsData && productsData.length > 0) setProducts(productsData);

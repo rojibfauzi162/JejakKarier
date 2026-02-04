@@ -100,7 +100,7 @@ export const getAiConfig = async (): Promise<AiConfig | null> => {
       return docSnap.data() as AiConfig;
     }
   } catch (error: any) {
-    console.error("[FIREBASE] Gagal ambil config AI:", error.message);
+    console.warn("[FIREBASE] Config AI belum disetel atau akses dibatasi:", error.message);
   }
   return null;
 };
@@ -126,8 +126,8 @@ export const getMayarConfig = async (): Promise<MayarConfig | null> => {
     const docRef = doc(db, "system_metadata", "mayar_configuration");
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) return docSnap.data() as MayarConfig;
-  } catch (e) {
-    console.error("Error fetching Mayar config:", e);
+  } catch (e: any) {
+    console.warn("[FIREBASE] Config Mayar belum disetel atau akses dibatasi:", e.message);
   }
   return null;
 };
@@ -150,8 +150,8 @@ export const getProductsCatalog = async (): Promise<SubscriptionProduct[] | null
     const docRef = doc(db, "system_metadata", "products_catalog");
     const snap = await getDoc(docRef);
     if (snap.exists()) return snap.data().list;
-  } catch (e) {
-    console.error("Error fetching products:", e);
+  } catch (e: any) {
+    console.warn("[FIREBASE] Katalog produk belum disetel atau akses dibatasi:", e.message);
   }
   return null;
 };

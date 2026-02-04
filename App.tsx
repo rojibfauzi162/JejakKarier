@@ -2,8 +2,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { onAuthStateChanged, signOut, type User } from '@firebase/auth';
 import { doc, onSnapshot, setDoc } from "firebase/firestore";
-import { auth, db, saveUserData } from './services/firebase';
-import { AppData, UserProfile, DailyReport, Skill, Training, Certification, CareerPath, Achievement, Contact, MonthlyReview, WorkExperience, Education, JobApplication, PersonalProject, OnlineCVConfig, UserRole, SubscriptionPlan, AccountStatus, AiStrategy, ReminderConfig, SkillStatus, ToDoTask, WorkReflection } from './types';
+import { auth, db, saveUserData, getProductsCatalog } from './services/firebase';
+import { AppData, UserProfile, DailyReport, Skill, Training, Certification, CareerPath, Achievement, Contact, MonthlyReview, WorkExperience, Education, JobApplication, PersonalProject, OnlineCVConfig, UserRole, SubscriptionPlan, AccountStatus, AiStrategy, ReminderConfig, SkillStatus, ToDoTask, WorkReflection, SubscriptionProduct } from './types';
 import { INITIAL_DATA } from './constants';
 import Dashboard from './components/Dashboard';
 import ProfileView from './components/ProfileView';
@@ -30,6 +30,7 @@ import Reminders from './components/Reminders';
 import AiInsightActivity from './components/AiInsightActivity';
 import ToDoList from './components/ToDoList';
 import WorkReflectionView from './components/WorkReflection';
+import Billing from './components/Billing';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 
 // Fix: Implement HubButton for the Apps Hub view
@@ -220,6 +221,8 @@ const App: React.FC = () => {
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [showConfirm, setShowConfirm] = useState<{ key: keyof AppData; id: string; label: string } | null>(null);
 
+  const [products, setProducts] = useState<SubscriptionProduct[]>([]);
+
   const [data, setData] = useState<AppData>(() => {
     const saved = localStorage.getItem('jejakkarir_data');
     return saved ? JSON.parse(saved) : {
@@ -281,6 +284,16 @@ const App: React.FC = () => {
     });
     return () => unsubscribe();
   }, [isPublicView, isOnlineCVView]);
+
+  useEffect(() => {
+    if (user) {
+        const fetchProds = async () => {
+            const p = await getProductsCatalog();
+            if (p) setProducts(p);
+        };
+        fetchProds();
+    }
+  }, [user]);
 
   useEffect(() => {
     if (!user || isPublicView || isOnlineCVView) {
@@ -844,6 +857,14 @@ const App: React.FC = () => {
             />
           </div>
         );
+        case 'billing': return (
+          <div className="px-5 lg:px-0 pt-6">
+            <Billing 
+              data={data} 
+              products={products} 
+            />
+          </div>
+        );
         case 'settings': return (
           <div className="px-5 lg:px-0 pt-6">
             <AccountSettings 
@@ -944,6 +965,10 @@ const App: React.FC = () => {
                           <button onClick={() => setActiveTab('profile')} className="w-full px-4 py-3 text-left hover:bg-slate-50 rounded-xl transition-colors flex items-center gap-3 group/item">
                              <span className="text-slate-400 group-hover/item:text-indigo-600 transition-colors"><i className="bi bi-person"></i></span>
                              <span className="text-[10px] font-black uppercase text-slate-600 tracking-widest">Edit Profil</span>
+                          </button>
+                          <button onClick={() => setActiveTab('billing')} className="w-full px-4 py-3 text-left hover:bg-slate-50 rounded-xl transition-colors flex items-center gap-3 group/item">
+                             <span className="text-slate-400 group-hover/item:text-indigo-600 transition-colors"><i className="bi bi-credit-card"></i></span>
+                             <span className="text-[10px] font-black uppercase text-slate-600 tracking-widest">Billing & Plan</span>
                           </button>
                           <button onClick={() => setActiveTab('settings')} className="w-full px-4 py-3 text-left hover:bg-slate-50 rounded-xl transition-colors flex items-center gap-3 group/item">
                              <span className="text-slate-400 group-hover/item:text-indigo-600 transition-colors"><i className="bi bi-gear"></i></span>

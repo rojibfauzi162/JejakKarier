@@ -175,8 +175,14 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout, is
               </div>
             ))}
 
-            {/* Bottom Group - Settings */}
-            <div className="mt-auto pt-2">
+            {/* Bottom Group - Settings & Billing */}
+            <div className="mt-auto pt-2 space-y-1">
+              <SidebarStandaloneItem 
+                active={activeTab === 'billing'} 
+                onClick={() => setActiveTab('billing')} 
+                icon={<i className="bi bi-credit-card"></i>} 
+                label="Billing & Plan" 
+              />
               <SidebarStandaloneItem 
                 active={activeTab === 'settings'} 
                 onClick={() => setActiveTab('settings')} 
