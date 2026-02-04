@@ -70,7 +70,16 @@ const ProductForm = ({ initialData, onCancel, onSubmit, onDelete }: any) => {
           {Object.keys(form.limits || {}).map(k => (
             <div key={k} className="space-y-1">
               <span className="text-[8px] font-black text-slate-500 uppercase ml-1">{k}</span>
-              <input type="number" className="w-full px-4 py-3 rounded-xl border border-slate-200 text-xs font-black" value={(form.limits as any)[k]} onChange={e => setForm({...form, limits: {...form.limits, [k]: Number(e.target.value) || 'unlimited'}})} />
+              <input 
+                type="number" 
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 text-xs font-black" 
+                value={(form.limits as any)?.[k] || 0} 
+                onChange={e => {
+                  const val = Number(e.target.value) || 'unlimited';
+                  const nextLimits = { ...(form.limits || {}), [k]: val } as SubscriptionProduct['limits'];
+                  setForm({ ...form, limits: nextLimits });
+                }} 
+              />
             </div>
           ))}
         </div>

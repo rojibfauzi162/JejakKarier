@@ -14,7 +14,7 @@ interface AiArchitectureProps {
   setModelSearchTerm: (term: string) => void;
   filteredOpenRouterModels: any[];
   handleModelSelect: (model: any) => void;
-  dropdownRef: React.RefObject<HTMLDivElement>;
+  dropdownRef: React.RefObject<HTMLDivElement | null>;
 }
 
 const AiArchitecture: React.FC<AiArchitectureProps> = ({ 
