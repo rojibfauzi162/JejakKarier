@@ -153,7 +153,7 @@ const MayarIntegration: React.FC = () => {
                   <button type="button" onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/api/webhooks/mayar`); alert("URL disalin!"); }} className="px-4 py-3 bg-white border border-blue-200 rounded-xl text-xs hover:bg-blue-50 transition-colors">📋 Copy</button>
                </div>
                <p className="text-[9px] text-blue-400 font-medium mt-4 leading-relaxed">
-                  Pasang URL di atas pada dashboard Mayar > Settings > Webhooks. Pastikan event <code>payment.success</code> diaktifkan.
+                  Pasang URL di atas pada dashboard Mayar &gt; Settings &gt; Webhooks. Pastikan event <code>payment.success</code> diaktifkan.
                </p>
                <button type="button" onClick={() => window.open('https://docs.mayar.id/webhook', '_blank')} className="text-[9px] font-black text-blue-600 uppercase tracking-widest mt-4 hover:underline">Dokumentasi Webhook Mayar ↗</button>
             </div>
