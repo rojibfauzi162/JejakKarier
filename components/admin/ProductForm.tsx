@@ -1,14 +1,24 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SubscriptionPlan, SubscriptionProduct } from '../../types';
 
 const ProductForm = ({ initialData, onCancel, onSubmit, onDelete }: any) => {
   const [form, setForm] = useState<Partial<SubscriptionProduct>>(initialData || {
-    name: '', tier: SubscriptionPlan.FREE, price: 0, durationDays: 30,
+    name: '', tier: SubscriptionPlan.FREE, price: 0, originalPrice: 0, durationDays: 30,
     mayarProductId: '',
     allowedModules: ['dashboard', 'profile', 'daily', 'skills'],
     limits: { dailyLogs: 10, skills: 10, projects: 5, cvExports: 1 }
   });
+
+  const [discount, setDiscount] = useState<number>(0);
+
+  // Hitung diskon awal jika sedang mengedit data yang sudah ada
+  useEffect(() => {
+    if (form.price && form.originalPrice && form.originalPrice > form.price) {
+      const calculatedDiscount = Math.round(((form.originalPrice - form.price) / form.originalPrice) * 100);
+      setDiscount(calculatedDiscount);
+    }
+  }, []);
 
   const tiers = Object.values(SubscriptionPlan);
   const modules = ['dashboard', 'profile', 'daily', 'skills', 'todo', 'career', 'loker', 'cv', 'networking', 'projects', 'reviews', 'ai_insights'];
@@ -21,30 +31,86 @@ const ProductForm = ({ initialData, onCancel, onSubmit, onDelete }: any) => {
     setForm({...form, allowedModules: next});
   };
 
+  const formatIDRInput = (num: number) => {
+    return num.toLocaleString('id-ID');
+  };
+
+  const parseIDRInput = (str: string) => {
+    return Number(str.replace(/[^0-9]/g, '')) || 0;
+  };
+
+  const handlePriceChange = (newPrice: number) => {
+    const updatedForm = { ...form, price: newPrice };
+    if (discount > 0 && discount < 100) {
+      updatedForm.originalPrice = Math.round(newPrice / (1 - discount / 100));
+    }
+    setForm(updatedForm);
+  };
+
+  const handleDiscountChange = (percent: number) => {
+    setDiscount(percent);
+    if (percent > 0 && percent < 100 && form.price) {
+      const calculatedOriginal = Math.round(form.price / (1 - percent / 100));
+      setForm({ ...form, originalPrice: calculatedOriginal });
+    } else if (percent === 0) {
+      setForm({ ...form, originalPrice: 0 });
+    }
+  };
+
   return (
     <form onSubmit={(e) => { e.preventDefault(); onSubmit(form); }} className="space-y-8">
       <div className="grid grid-cols-2 gap-6">
-        <div className="space-y-2">
+        <div className="space-y-2 col-span-2 md:col-span-1">
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nama Paket</label>
           <input className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs" value={form.name} onChange={e => setForm({...form, name: e.target.value})} required />
         </div>
-        <div className="space-y-2">
+        <div className="space-y-2 col-span-2 md:col-span-1">
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tier</label>
           <select className="w-full px-5 py-4 rounded-2xl bg-white border border-slate-200 outline-none font-bold text-xs" value={form.tier} onChange={e => setForm({...form, tier: e.target.value as SubscriptionPlan})}>
             {tiers.map(t => <option key={t} value={t}>{t}</option>)}
           </select>
         </div>
+        
         <div className="space-y-2">
-          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Harga (IDR)</label>
-          <input type="number" className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs" value={form.price} onChange={e => setForm({...form, price: Number(e.target.value)})} required />
+          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Harga Utama (Rp)</label>
+          <input 
+            type="text"
+            className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs focus:border-indigo-400 transition-all" 
+            value={formatIDRInput(form.price || 0)} 
+            onChange={e => handlePriceChange(parseIDRInput(e.target.value))} 
+            required 
+          />
         </div>
+
         <div className="space-y-2">
+          <label className="text-[10px] font-black text-indigo-500 uppercase tracking-widest ml-1">Set Diskon (%)</label>
+          <input 
+            type="number"
+            min="0"
+            max="99"
+            className="w-full px-5 py-4 rounded-2xl bg-indigo-50/30 border border-indigo-100 outline-none font-bold text-xs text-indigo-600 focus:border-indigo-400 transition-all" 
+            placeholder="Misal: 20"
+            value={discount || ''} 
+            onChange={e => handleDiscountChange(Number(e.target.value))} 
+          />
+        </div>
+
+        <div className="space-y-2 col-span-2">
+          <label className="text-[10px] font-black text-rose-500 uppercase tracking-widest ml-1 italic">Harga Coret / Normal (Rp) - <span className="normal-case opacity-60">Terisi Otomatis</span></label>
+          <input 
+            type="text"
+            className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs text-rose-500" 
+            value={formatIDRInput(form.originalPrice || 0)} 
+            onChange={e => setForm({...form, originalPrice: parseIDRInput(e.target.value)})} 
+          />
+        </div>
+
+        <div className="space-y-2 col-span-2 md:col-span-2">
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Masa Aktif (Hari)</label>
           <input type="number" className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs" value={form.durationDays} onChange={e => setForm({...form, durationDays: Number(e.target.value)})} required />
         </div>
       </div>
 
-      {/* MAYAR INTEGRATION FIELD - UPDATED WITH HELPERS */}
       <div className="p-8 bg-blue-50/50 border-2 border-blue-100 rounded-[2.5rem] space-y-6">
         <div className="flex items-center gap-4">
           <span className="w-12 h-12 bg-blue-600 text-white rounded-2xl flex items-center justify-center text-xl font-black shadow-lg shadow-blue-200">M</span>

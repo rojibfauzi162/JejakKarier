@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { AppData, SubscriptionProduct, AccountStatus } from '../types';
+import { AppData, SubscriptionProduct, AccountStatus } from '../../types';
 
 interface BillingProps {
   data: AppData;
@@ -14,6 +14,10 @@ const Billing: React.FC<BillingProps> = ({ data, products }) => {
   const isExpired = daysRemaining <= 0;
 
   const currentProduct = products.find(p => p.tier === data.plan);
+
+  const formatIDR = (num: number) => {
+    return num.toLocaleString('id-ID');
+  };
 
   const handlePay = (mayarProdId?: string) => {
     if (!mayarProdId) {
@@ -100,11 +104,11 @@ const Billing: React.FC<BillingProps> = ({ data, products }) => {
                           <span className="px-3 py-1 bg-blue-50 text-blue-600 text-[8px] font-black uppercase rounded-lg border border-blue-100">{p.tier}</span>
                        </div>
                        
-                       <div className="space-y-1">
-                          {p.originalPrice ? (
-                             <p className="text-sm font-bold text-rose-400 line-through">Rp {p.originalPrice.toLocaleString('id-ID')}</p>
-                          ) : null}
-                          <p className="text-3xl font-black text-slate-900">Rp {p.price.toLocaleString('id-ID')}</p>
+                       <div className="flex items-baseline gap-2">
+                          <p className="text-3xl font-black text-slate-900">Rp {formatIDR(p.price)}</p>
+                          {p.originalPrice && p.originalPrice > p.price && (
+                            <p className="text-sm font-bold text-rose-400 line-through italic">Rp {formatIDR(p.originalPrice)}</p>
+                          )}
                        </div>
                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Akses selama {p.durationDays} Hari</p>
                     </div>

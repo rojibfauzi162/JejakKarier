@@ -345,6 +345,7 @@ export interface SubscriptionProduct {
   name: string;
   tier: SubscriptionPlan;
   price: number;
+  originalPrice?: number;
   durationDays: number;
   enabledDurations: number[];
   allowedModules: string[];

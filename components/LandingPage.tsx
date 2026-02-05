@@ -1,12 +1,38 @@
-import React, { useState } from 'react';
+
+import React, { useState, useMemo } from 'react';
+import { SubscriptionProduct } from '../types';
 
 interface LandingPageProps {
   onStart: () => void;
   onLogin: () => void;
+  products?: SubscriptionProduct[];
 }
 
-const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin }) => {
+const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, products }) => {
   const [showAllFeatures, setShowAllFeatures] = useState(false);
+
+  // LOGIC: Sync all plans from admin data if available
+  const monthlyPlan = useMemo(() => products?.find(p => p.durationDays >= 25 && p.durationDays <= 35 && p.price > 0), [products]);
+  const quarterlyPlan = useMemo(() => products?.find(p => p.durationDays >= 85 && p.durationDays <= 100 && p.price > 0), [products]);
+  const annualPlan = useMemo(() => products?.find(p => p.durationDays >= 350 && p.price > 0), [products]);
+
+  const getDiscountLabel = (plan: any, fallback: string) => {
+    if (plan && plan.originalPrice && plan.originalPrice > plan.price) {
+      const pct = Math.round(((plan.originalPrice - plan.price) / plan.originalPrice) * 100);
+      const nominal = (plan.originalPrice - plan.price).toLocaleString('id-ID');
+      // Tampilkan nominal diskon untuk menarik minat
+      return `Hemat Rp ${nominal} (${pct}%)`;
+    }
+    return fallback;
+  };
+
+  const getPriceFormatted = (plan: any, fallback: string) => {
+    return plan ? plan.price.toLocaleString('id-ID') : fallback;
+  };
+
+  const getOriginalPriceFormatted = (plan: any, fallback: string) => {
+    return plan && plan.originalPrice ? plan.originalPrice.toLocaleString('id-ID') : fallback;
+  };
 
   const features = [
     { icon: "bi-journal-text", title: "Daily Growth Registry", desc: "Catat aktivitas harian untuk membangun basis data performa yang tervalidasi.", isMain: true },
@@ -41,7 +67,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin }) => {
         </div>
       </nav>
 
-      {/* HERO SECTION - Reduced Padding and Gap */}
+      {/* HERO SECTION */}
       <section className="pt-32 pb-16 px-6 lg:px-12 max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           <div className="space-y-8">
@@ -97,7 +123,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin }) => {
         </div>
       </section>
 
-      {/* VALUE PROPOSITION / FEATURES - Adjusted py-24 to py-20 */}
+      {/* VALUE PROPOSITION / FEATURES */}
       <section className="py-20 bg-slate-50">
         <div className="max-w-7xl mx-auto px-6 lg:px-12 space-y-16">
           <div className="text-center max-w-2xl mx-auto space-y-4">
@@ -129,7 +155,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin }) => {
         </div>
       </section>
 
-      {/* PRICING SECTION - Adjusted py-32 to py-20 */}
+      {/* PRICING SECTION */}
       <section className="py-20 px-6 lg:px-12 max-w-7xl mx-auto overflow-hidden">
         <div className="text-center max-w-2xl mx-auto space-y-4 mb-16">
           <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-indigo-600">Investasi Karir</h2>
@@ -137,37 +163,35 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin }) => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 relative items-center">
-          {/* Paket Bulanan - 20% Discount */}
           <PricingCard 
             title="Bulanan" 
             duration="1 Bulan" 
-            originalPrice="49.000"
-            price="39.000" 
-            discount="Hemat 20%"
+            originalPrice={getOriginalPriceFormatted(monthlyPlan, "49.000")}
+            price={getPriceFormatted(monthlyPlan, "39.000")} 
+            discount={getDiscountLabel(monthlyPlan, "Hemat 20%")}
             features={["Unlimited Daily Logs", "Skill Matrix Mapping", "Basic Performance Chart", "Reminder Harian"]}
             cta="Mulai Berprogres"
             onStart={onStart}
           />
           
-          {/* Paket 3 Bulanan (Growth) - 40% Discount */}
           <PricingCard 
             title="3 Bulan" 
             duration="90 Hari" 
-            originalPrice="165.000"
-            price="99.000" 
-            discount="Hemat 40%"
+            originalPrice={getOriginalPriceFormatted(quarterlyPlan, "165.000")}
+            price={getPriceFormatted(quarterlyPlan, "99.000")} 
+            discount={getDiscountLabel(quarterlyPlan, "Hemat 40%")}
             features={["Semua fitur Bulanan", "AI Career Insight", "Strategy Roadmap v2.0", "Priority Support"]}
             cta="Akselerasi Sekarang"
             onStart={onStart}
           />
 
-          {/* Paket Tahunan - 70% Discount - HIGHLIGHTED */}
           <PricingCard 
             title="Tahunan" 
             duration="1 Tahun" 
-            originalPrice="499.000"
-            price="149.000" 
-            discount="Paling Hemat"
+            label="Paling Hemat"
+            originalPrice={getOriginalPriceFormatted(annualPlan, "499.000")}
+            price={getPriceFormatted(annualPlan, "149.000")} 
+            discount={getDiscountLabel(annualPlan, "Hemat 70%")}
             breakdown="Hanya Rp 12rb-an / bulan"
             features={["Akses Unlimited 1 Tahun", "Personal Landing Page Link", "E-Book Roadmap Karir", "Annual Performance Report"]}
             highlight={true}
@@ -178,7 +202,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin }) => {
         <p className="text-center text-[9px] font-black text-slate-400 uppercase tracking-widest mt-12 animate-pulse">🔥 Penawaran terbatas: Harga promo khusus bulan ini!</p>
       </section>
 
-      {/* TESTIMONIALS - Adjusted py-24 to py-20 */}
+      {/* TESTIMONIALS */}
       <section className="py-20 bg-slate-950 text-white relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-6 lg:px-12 relative z-10 space-y-12">
            <div className="flex flex-col md:flex-row justify-between items-end gap-6">
@@ -238,17 +262,24 @@ const FeatureCard = ({ icon, title, desc, highlight }: any) => (
   </div>
 );
 
-const PricingCard = ({ title, duration, originalPrice, price, discount, features, highlight, cta, onStart, breakdown }: any) => (
-  <div className={`p-8 lg:p-10 rounded-[3.5rem] border-2 flex flex-col h-full transition-all duration-700 ${highlight ? 'bg-slate-900 text-white border-slate-900 shadow-[0_40px_100px_-20px_rgba(79,70,229,0.3)] scale-105 z-10' : 'bg-white text-slate-900 border-slate-100 hover:border-indigo-100 shadow-sm'}`}>
+const PricingCard = ({ title, duration, originalPrice, price, discount, features, highlight, cta, onStart, breakdown, label }: any) => (
+  <div className={`p-8 lg:p-10 rounded-[3.5rem] border-2 flex flex-col h-full transition-all duration-700 relative ${highlight ? 'bg-slate-900 text-white border-slate-900 shadow-[0_40px_100px_-20px_rgba(79,70,229,0.3)] scale-105 z-10' : 'bg-white text-slate-900 border-slate-100 hover:border-indigo-100 shadow-sm'}`}>
+    {label && (
+      <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-indigo-600 text-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-xl whitespace-nowrap animate-bounce">
+        {label}
+      </div>
+    )}
     <div className="flex-1">
       <div className="flex justify-between items-start mb-4">
         <p className={`text-[9px] font-black uppercase tracking-[0.3em] ${highlight ? 'text-indigo-400' : 'text-slate-400'}`}>{duration}</p>
         <span className={`px-2.5 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ${highlight ? 'bg-indigo-600 text-white' : 'bg-indigo-50 text-indigo-600'}`}>{discount}</span>
       </div>
-      <h4 className="text-lg font-black uppercase tracking-tight mb-6 leading-none">{title}</h4>
+      <h4 className="text-xl font-black uppercase tracking-tight mb-6 leading-none">{title}</h4>
       <div className="mb-10">
-        <p className={`text-[10px] font-bold line-through opacity-40 mb-1 ${highlight ? 'text-slate-300' : 'text-slate-400'}`}>Rp {originalPrice}</p>
-        <span className="text-3xl font-black tracking-tighter">Rp {price}</span>
+        {originalPrice ? (
+          <p className={`text-sm font-bold line-through mb-1 ${highlight ? 'text-rose-400' : 'text-rose-500'}`}>Rp {originalPrice}</p>
+        ) : null}
+        <span className="text-4xl font-black tracking-tighter">Rp {price}</span>
         {breakdown && <p className={`text-[10px] font-black mt-1 ${highlight ? 'text-indigo-400' : 'text-indigo-600'}`}>{breakdown}</p>}
         <p className={`text-[8px] font-bold uppercase mt-2 ${highlight ? 'opacity-40' : 'text-slate-400'}`}>Akses Penuh Selama {duration}</p>
       </div>

@@ -37,8 +37,11 @@ const ProductMatrix: React.FC<ProductMatrixProps> = ({ products, setEditingProdu
                <div className="space-y-6">
                   <div className="grid grid-cols-2 gap-4">
                      <div className="p-5 bg-slate-50 rounded-2xl border">
-                        <p className="text-[8px] font-black text-slate-400 uppercase mb-1">Harga</p>
-                        <p className="text-base font-black text-slate-800">Rp {p.price.toLocaleString()}</p>
+                        <p className="text-[8px] font-black text-slate-400 uppercase mb-1">Harga Utama</p>
+                        <p className="text-base font-black text-slate-800">Rp {p.price.toLocaleString('id-ID')}</p>
+                        {p.originalPrice ? (
+                          <p className="text-[10px] font-bold text-rose-400 line-through">Rp {p.originalPrice.toLocaleString('id-ID')}</p>
+                        ) : null}
                      </div>
                      <div className="p-5 bg-slate-50 rounded-2xl border">
                         <p className="text-[8px] font-black text-slate-400 uppercase mb-1">Durasi</p>
@@ -46,7 +49,7 @@ const ProductMatrix: React.FC<ProductMatrixProps> = ({ products, setEditingProdu
                      </div>
                   </div>
 
-                  {/* INFO MAPPING MAYAR - UPDATED LABEL */}
+                  {/* INFO MAPPING MAYAR */}
                   <div className={`p-4 rounded-2xl border flex items-center gap-3 ${p.mayarProductId ? 'bg-emerald-50 border-emerald-100' : 'bg-rose-50 border-rose-100'}`}>
                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black ${p.mayarProductId ? 'bg-emerald-600 text-white' : 'bg-rose-600 text-white'}`}>M</div>
                     <div className="overflow-hidden">

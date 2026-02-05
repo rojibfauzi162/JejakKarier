@@ -5,32 +5,32 @@ import { doc, onSnapshot, setDoc } from "firebase/firestore";
 import { auth, db, saveUserData, getProductsCatalog } from './services/firebase';
 import { AppData, UserProfile, DailyReport, Skill, Training, Certification, CareerPath, Achievement, Contact, MonthlyReview, WorkExperience, Education, JobApplication, PersonalProject, OnlineCVConfig, UserRole, SubscriptionPlan, AccountStatus, AiStrategy, ReminderConfig, SkillStatus, ToDoTask, WorkReflection, SubscriptionProduct } from './types';
 import { INITIAL_DATA } from './constants';
-import Dashboard from './components/Dashboard';
-import ProfileView from './components/ProfileView';
-import DailyLogs from './components/DailyLogs';
-import SkillTracker from './components/SkillTracker';
-import JobTracker from './components/JobTracker';
-import CareerPlanner from './components/CareerPlanner';
-import AchievementTracker from './components/AchievementTracker';
-import Networking from './components/Networking';
-import Reviews from './components/Reviews';
-import PersonalProjectTracker from './components/PersonalProjectTracker';
-import PerformanceReports from './components/PerformanceReports';
+import Dashboard from './components/user/Dashboard';
+import ProfileView from './components/user/ProfileView';
+import DailyLogs from './components/user/DailyLogs';
+import SkillTracker from './components/user/SkillTracker';
+import JobTracker from './components/user/JobTracker';
+import CareerPlanner from './components/user/CareerPlanner';
+import AchievementTracker from './components/user/AchievementTracker';
+import Networking from './components/user/Networking';
+import Reviews from './components/user/Reviews';
+import PersonalProjectTracker from './components/user/PersonalProjectTracker';
+import PerformanceReports from './components/user/PerformanceReports';
 import PublicReportView from './components/PublicReportView';
 import Sidebar from './components/Sidebar';
 import MobileNav from './components/MobileNav';
 import Auth from './components/Auth';
 import LandingPage from './components/LandingPage';
-import CVGenerator from './components/CVGenerator';
-import OnlineCVBuilder from './components/OnlineCVBuilder';
-import OnlineCVView from './components/OnlineCVView';
-import AccountSettings from './components/AccountSettings';
+import CVGenerator from './components/user/CVGenerator';
+import OnlineCVBuilder from './components/user/OnlineCVBuilder';
+import OnlineCVView from './components/user/OnlineCVView';
+import AccountSettings from './components/user/AccountSettings';
 import AdminPanel from './components/AdminPanel';
-import Reminders from './components/Reminders';
-import AiInsightActivity from './components/AiInsightActivity';
-import ToDoList from './components/ToDoList';
-import WorkReflectionView from './components/WorkReflection';
-import Billing from './components/Billing';
+import Reminders from './components/user/Reminders';
+import AiInsightActivity from './components/user/AiInsightActivity';
+import ToDoList from './components/user/ToDoList';
+import WorkReflectionView from './components/user/WorkReflection';
+import Billing from './components/user/Billing';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 
 // Fix: Implement HubButton for the Apps Hub view
@@ -81,7 +81,7 @@ const InputGroup: React.FC<{ label: string, value: string, onChange: (v: string)
       type={type}
       className="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-slate-50 font-bold text-xs outline-none focus:ring-4 focus:ring-blue-500/5 transition-all"
       placeholder={placeholder}
-      value={value}
+      value={label === "Nama Lengkap" ? value : value} 
       onChange={e => onChange(e.target.value)}
     />
   </div>
@@ -286,13 +286,12 @@ const App: React.FC = () => {
   }, [isPublicView, isOnlineCVView]);
 
   useEffect(() => {
-    if (user) {
-        const fetchProds = async () => {
-            const p = await getProductsCatalog();
-            if (p) setProducts(p);
-        };
-        fetchProds();
-    }
+    // Perbaikan: Ambil produk selalu (termasuk guest) agar Landing Page punya data riil
+    const fetchProds = async () => {
+        const p = await getProductsCatalog();
+        if (p) setProducts(p);
+    };
+    fetchProds();
   }, [user]);
 
   useEffect(() => {
@@ -1019,7 +1018,7 @@ const App: React.FC = () => {
 
   if (!user) {
     if (guestMode === 'landing') {
-      return <LandingPage onStart={() => setGuestMode('auth')} onLogin={() => setGuestMode('auth')} />;
+      return <LandingPage onStart={() => setGuestMode('auth')} onLogin={() => setGuestMode('auth')} products={products} />;
     }
     return (
       <div className="relative">
