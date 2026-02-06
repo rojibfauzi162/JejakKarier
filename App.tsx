@@ -92,12 +92,44 @@ const ActionItem = ({ label, isDone, onComplete }: { label: string; isDone: bool
   <div className={`p-4 rounded-2xl border flex items-center gap-4 transition-all ${isDone ? 'bg-slate-50 border-slate-100 opacity-50' : 'bg-white border-slate-100 shadow-sm'}`}>
     <button 
       onClick={() => !isDone && onComplete()}
-      className={`shrink-0 w-6 h-6 rounded-lg flex items-center justify-center transition-all ${isDone ? 'bg-emerald-500 text-white' : 'border-2 border-slate-200 text-transparent hover:border-emerald-400'}`}
+      className={`shrink-0 w-6 h-6 rounded-lg flex items-center justify-center transition-all ${isDone ? 'bg-emerald-50 text-white' : 'border-2 border-slate-200 text-transparent hover:border-emerald-400'}`}
     >
       <i className="bi bi-check-lg text-xs"></i>
     </button>
     <p className={`text-[11px] font-bold leading-tight ${isDone ? 'line-through text-slate-400' : 'text-slate-700'}`}>{label}</p>
   </div>
+);
+
+// Desktop Header with Notif and Profile
+const DesktopHeader: React.FC<{ data: AppData; onOpenNotif: () => void; onNavigate: (t: string) => void }> = ({ data, onOpenNotif, onNavigate }) => (
+  <header className="hidden lg:flex items-center justify-between px-12 py-6 bg-white/50 backdrop-blur-md sticky top-0 z-[45] border-b border-slate-100">
+    <div className="flex items-center gap-4">
+       <div className="flex items-center gap-2">
+         <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+         <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">System Live</span>
+       </div>
+    </div>
+    <div className="flex items-center gap-6">
+       <button onClick={onOpenNotif} className="w-11 h-11 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-slate-500 hover:text-indigo-600 hover:border-indigo-100 transition-all shadow-sm relative group">
+          <i className="bi bi-bell text-lg"></i>
+          <span className="absolute top-3.5 right-3.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-white"></span>
+       </button>
+       <div className="h-8 w-px bg-slate-100"></div>
+       <button onClick={() => onNavigate('profile')} className="flex items-center gap-4 pl-2 pr-4 py-2 bg-white border border-slate-100 rounded-2xl hover:border-indigo-100 transition-all shadow-sm group">
+          <div className="w-9 h-9 rounded-xl overflow-hidden border border-slate-50 shadow-inner">
+             {data.profile.photoUrl ? (
+               <img src={data.profile.photoUrl} alt="Avatar" className="w-full h-full object-cover" />
+             ) : (
+               <div className="w-full h-full bg-slate-50 flex items-center justify-center text-slate-400"><i className="bi bi-person"></i></div>
+             )}
+          </div>
+          <div className="text-left">
+             <p className="text-[10px] font-black text-slate-900 leading-none mb-1 uppercase tracking-tight">{data.profile.name}</p>
+             <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">{data.plan} Account</p>
+          </div>
+       </button>
+    </div>
+  </header>
 );
 
 // NotificationOverlay to show AI-driven career signals and smart reminders
@@ -367,6 +399,7 @@ const App: React.FC = () => {
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} onLogout={handleLogout} isAdmin={isAdmin} />
       <MobileNav activeTab={activeTab} setActiveTab={handleTabChange} onLogout={handleLogout} isAdmin={isAdmin} />
       <main className="flex-1 lg:ml-64 p-0 pb-32 lg:pb-0 overflow-x-hidden relative">
+         <DesktopHeader data={data} onOpenNotif={() => setShowNotif(true)} onNavigate={handleTabChange} />
          <div className="max-w-7xl mx-auto px-0 lg:px-12 pt-2 pb-10 lg:py-16">
             {renderContent()}
          </div>

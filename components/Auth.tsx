@@ -40,7 +40,11 @@ const Auth: React.FC = () => {
     try {
       await signInWithGoogle();
     } catch (err: any) {
-      setError(err.message || 'Gagal login dengan Google.');
+      if (err.code === 'auth/unauthorized-domain') {
+        setError(`Domain ${window.location.hostname} belum terdaftar di Firebase Authorized Domains. Silakan buka Firebase Console > Authentication > Settings > Authorized Domains dan tambahkan domain ini.`);
+      } else {
+        setError(err.message || 'Gagal login dengan Google.');
+      }
     } finally {
       setLoading(false);
     }
@@ -77,7 +81,7 @@ const Auth: React.FC = () => {
         </div>
 
         {error && (
-          <div className="bg-rose-500/10 border border-rose-500/20 text-rose-500 p-4 rounded-2xl text-xs font-bold mb-6 animate-in slide-in-from-top-2">
+          <div className="bg-rose-500/10 border border-rose-500/20 text-rose-500 p-4 rounded-2xl text-xs font-bold mb-6 animate-in slide-in-from-top-2 whitespace-pre-wrap">
             ⚠️ {error}
           </div>
         )}
