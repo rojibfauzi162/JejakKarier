@@ -11,9 +11,11 @@ import ProductMatrix from './ProductMatrix';
 import SystemHealth from './SystemHealth';
 import ProductForm from './ProductForm';
 import MayarIntegration from './MayarIntegration';
+import TransactionManagement from './TransactionManagement';
+import AdminManagement from './AdminManagement';
 
 interface AdminPanelProps {
-  initialMode?: 'dashboard' | 'users' | 'products' | 'health' | 'ai' | 'integrations';
+  initialMode?: 'dashboard' | 'users' | 'products' | 'health' | 'ai' | 'integrations' | 'admin_transactions' | 'admin_admins';
 }
 
 const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) => {
@@ -64,7 +66,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
         setError(null);
     }
     try {
-      // Menggunakan try-catch individual untuk metadata agar jika salah satu fail (misal produk belum ada), dashboard tetap terbuka
       const usersTask = getAllUsers().catch(e => { console.error(e); return [] as AppData[]; });
       const configTask = getAiConfig().catch(e => { console.error(e); return null; });
       const productsTask = getProductsCatalog().catch(e => { console.error(e); return [] as SubscriptionProduct[]; });
@@ -271,9 +272,9 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
       <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 pt-4">
         <div>
           <h2 className="text-3xl font-black text-slate-900 tracking-tight uppercase">
-            {initialMode === 'health' ? 'Kesehatan Sistem' : initialMode === 'users' ? 'Kelola User' : initialMode === 'ai' ? 'Arsitektur AI' : initialMode === 'products' ? 'Matriks Produk' : initialMode === 'integrations' ? 'Integrasi Mayar' : 'Dashboard Admin Hub'}
+            {initialMode === 'health' ? 'Kesehatan Sistem' : initialMode === 'users' ? 'Kelola User' : initialMode === 'ai' ? 'Arsitektur AI' : initialMode === 'products' ? 'Matriks Produk' : initialMode === 'integrations' ? 'Integrasi Mayar' : initialMode === 'admin_admins' ? 'Kelola Admin' : initialMode === 'admin_transactions' ? 'Manajemen Keuangan' : 'Dashboard Admin Hub'}
           </h2>
-          <p className="text-slate-500 font-medium italic">Manajemen sistem JejakKarir.</p>
+          <p className="text-slate-500 font-medium italic">Sistem Administrasi FokusKarir.</p>
         </div>
         <div className="flex gap-4">
           {!isSynced && (
@@ -285,7 +286,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
       </header>
 
       {/* RENDER MODUL SESUAI MODE */}
-      {initialMode === 'dashboard' && <AdminDashboard stats={adminStats} />}
+      {initialMode === 'dashboard' && <AdminDashboard stats={adminStats} users={users} />}
       {initialMode === 'users' && <UserManagement users={filteredUsers} searchQuery={searchQuery} setSearchQuery={setSearchQuery} onManage={(u) => { setEditingUser(u); setIsUserModalOpen(true); }} />}
       {initialMode === 'ai' && (
         <AiArchitecture 
@@ -300,6 +301,20 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
       {initialMode === 'products' && <ProductMatrix products={products} setEditingProduct={setEditingProduct} setIsProductModalOpen={setIsProductModalOpen} />}
       {initialMode === 'health' && <SystemHealth keyInfo={keyInfo} fetchingKeyInfo={fetchingKeyInfo} aiConfig={aiConfig} totalTokens={adminStats.totalTokens} />}
       {initialMode === 'integrations' && <MayarIntegration />}
+      {initialMode === 'admin_transactions' && (
+        <TransactionManagement 
+          users={users} 
+          products={products}
+          onUpdateMetadata={async (uid, fields) => { await updateAdminMetadata(uid, fields); triggerToast("Data Keuangan Diperbarui ✅"); fetchUsersAndConfig(true); }} 
+          onManageUser={(u) => { setEditingUser(u); setIsUserModalOpen(true); }} 
+        />
+      )}
+      {initialMode === 'admin_admins' && (
+        <AdminManagement 
+          users={users} 
+          onUpdateMetadata={async (uid, fields) => { await updateAdminMetadata(uid, fields); triggerToast("Identitas Admin Diperbarui ✅"); fetchUsersAndConfig(true); }} 
+        />
+      )}
 
       {/* MODAL USER */}
       {isUserModalOpen && editingUser && (
@@ -328,7 +343,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
                   </div>
                 </div>
 
-                {/* MANAJEMEN PAKET & MASA AKTIF */}
                 <div className="pt-6 border-t border-slate-100 space-y-5">
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Subscription Control</p>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -369,7 +383,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
                                 if(!p) { alert("Silakan pilih paket produk terlebih dahulu sebelum memperpanjang."); return; }
                                 const currentExpiry = editingUser.expiryDate ? new Date(editingUser.expiryDate) : new Date();
                                 const now = new Date();
-                                // Jika sudah expired, hitung dari hari ini. Jika belum, tambahkan ke yang sudah ada.
                                 const baseDate = currentExpiry > now ? currentExpiry : now;
                                 baseDate.setDate(baseDate.getDate() + p.durationDays);
                                 

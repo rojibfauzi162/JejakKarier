@@ -60,8 +60,8 @@ const Auth: React.FC = () => {
 
       <div className="w-full max-w-md bg-white/10 backdrop-blur-xl border border-white/10 p-8 lg:p-12 rounded-[3rem] shadow-2xl relative z-10 animate-in zoom-in duration-500">
         <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 text-white text-2xl font-black rounded-2xl shadow-xl shadow-blue-500/20 mb-6">J</div>
-          <h1 className="text-3xl font-black text-white tracking-tight">JejakKarir</h1>
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 text-white text-2xl font-black rounded-2xl shadow-xl shadow-blue-500/20 mb-6">F</div>
+          <h1 className="text-3xl font-black text-white tracking-tight">FokusKarir</h1>
           <p className="text-slate-400 text-sm mt-2 font-medium">Your Intelligence Career Partner</p>
         </div>
 
@@ -107,7 +107,7 @@ const Auth: React.FC = () => {
               type="email"
               required
               className="w-full px-5 py-4 rounded-2xl bg-white/5 border border-white/10 text-white outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-bold placeholder:text-slate-600"
-              placeholder="alex@jejakkarir.com"
+              placeholder="alex@fokuskarir.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
@@ -153,7 +153,7 @@ const Auth: React.FC = () => {
         </button>
         
         <p className="text-center text-slate-500 text-[10px] font-bold uppercase tracking-widest mt-10">
-          © 2025 JejakKarir. Protected by SSL.
+          © 2025 FokusKarir. Protected by SSL.
         </p>
       </div>
     </div>

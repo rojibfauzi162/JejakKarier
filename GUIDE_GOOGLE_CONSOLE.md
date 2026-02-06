@@ -1,5 +1,5 @@
 
-# Panduan Aktivasi Google Authentication (JejakKarir)
+# Panduan Aktivasi Google Authentication (FokusKarir)
 
 Agar fitur "Masuk dengan Google" berfungsi, Anda perlu mengaktifkan penyedia Google di Firebase Console dan mengonfigurasi OAuth di Google Cloud Console.
 
@@ -10,7 +10,7 @@ Agar fitur "Masuk dengan Google" berfungsi, Anda perlu mengaktifkan penyedia Goo
 4. Klik tab **Sign-in method**.
 5. Klik **Add new provider** dan pilih **Google**.
 6. Aktifkan toggle **Enable**.
-7. Isi **Project public-facing name** (contoh: JejakKarir).
+7. Isi **Project public-facing name** (contoh: FokusKarir).
 8. Pilih **Project support email** (email Anda).
 9. Klik **Save**.
 
@@ -21,7 +21,7 @@ Jika status verifikasi belum selesai, Anda mungkin perlu mengatur layar persetuj
 3. Buka menu **APIs & Services** > **OAuth consent screen**.
 4. Pilih **User Type: External** dan klik **Create**.
 5. Isi informasi aplikasi yang wajib:
-   - **App name**: JejakKarir
+   - **App name**: FokusKarir
    - **User support email**: Email Anda
    - **Developer contact info**: Email Anda
 6. Klik **Save and Continue** sampai selesai.
@@ -33,4 +33,4 @@ Jika status verifikasi belum selesai, Anda mungkin perlu mengatur layar persetuj
 4. Jika belum, klik **Add domain**.
 
 ### 4. Selesai
-Tombol Google di aplikasi JejakKarir sekarang siap digunakan. Sistem akan secara otomatis membuat akun (pendaftaran) jika email Google tersebut belum terdaftar, atau masuk (login) jika sudah pernah digunakan.
+Tombol Google di aplikasi FokusKarir sekarang siap digunakan. Sistem akan secara otomatis membuat akun (pendaftaran) jika email Google tersebut belum terdaftar, atau masuk (login) jika sudah pernah digunakan.

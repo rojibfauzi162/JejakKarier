@@ -40,7 +40,7 @@ async function callAI(prompt: string, schema?: any) {
         headers: {
           "Authorization": `Bearer ${config.openRouterKey}`,
           "HTTP-Referer": window.location.origin,
-          "X-Title": "JejakKarir",
+          "X-Title": "FokusKarir",
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
@@ -83,14 +83,13 @@ async function callAI(prompt: string, schema?: any) {
   }
 
   // FALLBACK KE NATIVE SDK (Jika Firestore Key tidak ditemukan/akses ditolak)
-  let envKey = '';
-  try { envKey = process.env.API_KEY || ''; } catch(e) {}
-  
-  if (!envKey && (!config || !config.openRouterKey)) {
+  // Fix: Obtained API key exclusively from environment variable process.env.API_KEY
+  if (!process.env.API_KEY && (!config || !config.openRouterKey)) {
     throw new Error("Layanan AI Belum Dikonfigurasi. Silakan hubungi Superadmin untuk setting API Key.");
   }
 
-  const ai = new GoogleGenAI({ apiKey: envKey });
+  // Fix: Always use const ai = new GoogleGenAI({apiKey: process.env.API_KEY});
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   try {
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
@@ -100,6 +99,7 @@ async function callAI(prompt: string, schema?: any) {
     if (response.usageMetadata && auth.currentUser) {
       recordAiTokens(auth.currentUser.uid, response.usageMetadata.totalTokenCount || 0);
     }
+    // Fix: Access .text property directly (not a method)
     let text = response.text?.trim() || '';
     if (schema) {
       const jsonMatch = text.match(/\{[\s\S]*\}/);

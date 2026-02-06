@@ -72,6 +72,22 @@ export enum AccountStatus {
   BANNED = 'Banned'
 }
 
+export enum PaymentStatus {
+  PAID = 'Paid',
+  UNPAID = 'Unpaid'
+}
+
+export interface ManualTransaction {
+  id: string;
+  amount: number;
+  date: string;
+  status: PaymentStatus;
+  planTier: SubscriptionPlan;
+  notes?: string;
+  userName?: string;
+  userEmail?: string;
+}
+
 export interface WorkExperience {
   id: string;
   position: string;
@@ -370,6 +386,9 @@ export interface AppData {
   planPermissions?: string[];
   planLimits?: Record<string, number | 'unlimited'>;
   bypassAiLimits?: boolean;
+  isAdminVerified?: boolean;
+  adminPromotionRequested?: boolean;
+  manualTransactions?: ManualTransaction[];
   aiUsage: {
     cvGenerated: number;
     coverLetters: number;

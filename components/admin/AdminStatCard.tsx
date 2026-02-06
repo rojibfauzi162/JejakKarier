@@ -6,7 +6,7 @@ interface AdminStatCardProps {
   value: number | string;
   sub: string;
   icon: string;
-  color: 'blue' | 'amber' | 'emerald' | 'indigo';
+  color: 'blue' | 'amber' | 'emerald' | 'indigo' | 'rose';
 }
 
 const AdminStatCard: React.FC<AdminStatCardProps> = ({ title, value, sub, icon, color }) => {
@@ -14,7 +14,8 @@ const AdminStatCard: React.FC<AdminStatCardProps> = ({ title, value, sub, icon, 
     blue: 'bg-blue-50 text-blue-600 border-blue-100',
     amber: 'bg-amber-50 text-amber-600 border-amber-100',
     emerald: 'bg-emerald-50 text-emerald-600 border-emerald-100',
-    indigo: 'bg-indigo-50 text-indigo-600 border-indigo-100'
+    indigo: 'bg-indigo-50 text-indigo-600 border-indigo-100',
+    rose: 'bg-rose-50 text-rose-600 border-rose-100'
   };
   return (
     <div className={`p-8 rounded-[2.5rem] border flex flex-col justify-center items-center text-center shadow-sm ${colorMap[color]}`}>

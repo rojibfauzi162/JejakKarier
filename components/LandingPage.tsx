@@ -57,8 +57,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, products })
       <nav className="fixed top-0 left-0 right-0 z-[100] bg-white/80 backdrop-blur-xl border-b border-slate-100">
         <div className="max-w-7xl mx-auto px-6 lg:px-12 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-black shadow-lg shadow-indigo-200">J</div>
-            <span className="text-xl font-black tracking-tighter">JejakKarir</span>
+            <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-black shadow-lg shadow-indigo-200">F</div>
+            <span className="text-xl font-black tracking-tighter">FokusKarir</span>
           </div>
           <div className="flex items-center gap-8">
             <button onClick={onLogin} className="hidden md:block text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-indigo-600 transition-colors">Masuk</button>
@@ -127,7 +127,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, products })
       <section className="py-20 bg-slate-50">
         <div className="max-w-7xl mx-auto px-6 lg:px-12 space-y-16">
           <div className="text-center max-w-2xl mx-auto space-y-4">
-            <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-indigo-600">Ekosistem JejakKarir</h2>
+            <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-indigo-600">Ekosistem FokusKarir</h2>
             <h3 className="text-3xl lg:text-4xl font-black tracking-tight text-slate-900 leading-none uppercase">Kelola Pertumbuhan Anda Tanpa Batas.</h3>
             <p className="text-sm lg:text-base text-slate-500 font-medium leading-relaxed italic">Satu platform terintegrasi untuk mendokumentasikan setiap kemajuan karir Anda secara objektif.</p>
           </div>
@@ -208,7 +208,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, products })
            <div className="flex flex-col md:flex-row justify-between items-end gap-6">
               <div>
                 <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-indigo-400 mb-4">Suara Profesional</h2>
-                <h3 className="text-3xl lg:text-4xl font-black tracking-tight uppercase leading-none">Kata Mereka Tentang JejakKarir.</h3>
+                <h3 className="text-3xl lg:text-4xl font-black tracking-tight uppercase leading-none">Kata Mereka Tentang FokusKarir.</h3>
               </div>
            </div>
 
@@ -216,7 +216,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, products })
               <TestimonialCard 
                 name="Andini" 
                 role="HR Manager, Tech Industry" 
-                quote="JejakKarir membantu tim saya memvalidasi kontribusi individu dengan data objektif saat performance review. Sangat profesional!" 
+                quote="FokusKarir membantu tim saya memvalidasi kontribusi individu dengan data objektif saat performance review. Sangat profesional!" 
               />
               <TestimonialCard 
                 name="Budi" 
@@ -237,8 +237,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, products })
       <footer className="py-10 border-t border-slate-100 px-6 lg:px-12">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white text-[10px] font-black">J</div>
-            <span className="text-lg font-black tracking-tighter">JejakKarir</span>
+            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white text-[10px] font-black">F</div>
+            <span className="text-lg font-black tracking-tighter">FokusKarir</span>
           </div>
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">© 2025 Intelligent Performance System. Hak Cipta Dilindungi.</p>
           <div className="flex gap-6">

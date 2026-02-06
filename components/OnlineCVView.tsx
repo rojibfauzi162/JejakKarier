@@ -51,10 +51,10 @@ const OnlineCVView: React.FC<OnlineCVViewProps> = ({ slug, initialData }) => {
       {/* Floating Badge Branding */}
       <div className="fixed bottom-6 right-6">
          <a href="/" target="_blank" className="flex items-center gap-3 bg-white/80 backdrop-blur-md p-2 pl-4 pr-6 rounded-full border border-slate-200 shadow-xl group hover:bg-slate-900 transition-all duration-500">
-            <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-[10px] font-black group-hover:scale-110 transition-transform">J</div>
+            <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-[10px] font-black group-hover:scale-110 transition-transform">F</div>
             <div className="flex flex-col">
                <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none">Created with</span>
-               <span className="text-[10px] font-black text-slate-900 group-hover:text-white transition-colors tracking-tighter">JejakKarir Platform</span>
+               <span className="text-[10px] font-black text-slate-900 group-hover:text-white transition-colors tracking-tighter">FokusKarir Platform</span>
             </div>
          </a>
       </div>

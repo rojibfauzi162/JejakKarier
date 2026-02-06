@@ -66,9 +66,9 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout, is
       {/* Header Branding */}
       <div className="p-8 pt-10">
         <div className="flex items-center gap-3 mb-10 group cursor-pointer" onClick={() => setActiveTab('dashboard')}>
-          <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center font-black shadow-[0_0_20px_rgba(79,70,229,0.4)] group-hover:scale-105 transition-transform duration-300">J</div>
+          <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center font-black shadow-[0_0_20px_rgba(79,70,229,0.4)] group-hover:scale-105 transition-transform duration-300">F</div>
           <div>
-            <h1 className="text-xl font-black tracking-tighter leading-none">JejakKarir</h1>
+            <h1 className="text-xl font-black tracking-tighter leading-none">FokusKarir</h1>
             <span className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.3em]">Pro Tracker</span>
           </div>
         </div>
@@ -81,6 +81,8 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout, is
             <p className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.25em] mb-4 ml-3 opacity-80">Admin Hub</p>
             <SidebarItem id="admin_dashboard" active={activeTab === 'admin_dashboard'} onClick={() => setActiveTab('admin_dashboard')} icon={<i className="bi bi-speedometer2"></i>} label="Dashboard Admin" color="blue" />
             <SidebarItem id="admin_users" active={activeTab === 'admin_users'} onClick={() => setActiveTab('admin_users')} icon={<i className="bi bi-people"></i>} label="Kelola User" color="rose" />
+            <SidebarItem id="admin_admins" active={activeTab === 'admin_admins'} onClick={() => setActiveTab('admin_admins')} icon={<i className="bi bi-shield-lock"></i>} label="Kelola Admin" color="rose" />
+            <SidebarItem id="admin_transactions" active={activeTab === 'admin_transactions'} onClick={() => setActiveTab('admin_transactions')} icon={<i className="bi bi-currency-dollar"></i>} label="Kelola Transaksi" color="blue" />
             <SidebarItem id="admin_ai" active={activeTab === 'admin_ai'} onClick={() => setActiveTab('admin_ai')} icon={<i className="bi bi-cpu"></i>} label="AI Architecture" color="blue" />
             <SidebarItem id="admin_products" active={activeTab === 'admin_products'} onClick={() => setActiveTab('admin_products')} icon={<i className="bi bi-box-seam"></i>} label="Product Matrix" color="blue" />
             <SidebarItem id="admin_integrations" active={activeTab === 'admin_integrations'} onClick={() => setActiveTab('admin_integrations')} icon={<i className="bi bi-link-45deg"></i>} label="Integrasi Mayar" color="blue" />
