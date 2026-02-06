@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { AppData, UserRole } from './types';
+import { AppData, UserRole, SubscriptionProduct } from './types';
 import { INITIAL_DATA } from './constants';
 import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
@@ -20,7 +20,8 @@ import Billing from './components/Billing';
 import AdminPanel from './components/admin/AdminPanel';
 import MobileNav from './components/MobileNav';
 import Auth from './components/Auth';
-import { auth, getUserData, saveUserData } from './services/firebase';
+import LandingPage from './components/LandingPage';
+import { auth, getUserData, saveUserData, getProductsCatalog } from './services/firebase';
 import { onAuthStateChanged } from '@firebase/auth';
 
 const App: React.FC = () => {
@@ -28,6 +29,17 @@ const App: React.FC = () => {
   const [data, setData] = useState<AppData>(INITIAL_DATA);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [loading, setLoading] = useState(true);
+  
+  // States for Landing Page logic
+  const [showAuth, setShowAuth] = useState(false);
+  const [publicProducts, setPublicProducts] = useState<SubscriptionProduct[]>([]);
+
+  // Load public products for landing page
+  useEffect(() => {
+    getProductsCatalog().then(p => {
+      if (p) setPublicProducts(p);
+    });
+  }, []);
 
   // Authenticate and load user data on mount
   useEffect(() => {
@@ -57,7 +69,18 @@ const App: React.FC = () => {
   }, []);
 
   if (loading) return <div className="h-screen w-full flex items-center justify-center font-black text-slate-400 uppercase tracking-widest">Loading Gateway...</div>;
-  if (!user) return <Auth />;
+  
+  // Logic: Show Landing Page first, then Auth, then App
+  if (!user) {
+    if (showAuth) return <Auth />;
+    return (
+      <LandingPage 
+        onStart={() => setShowAuth(true)} 
+        onLogin={() => setShowAuth(true)} 
+        products={publicProducts} 
+      />
+    );
+  }
 
   const isAdmin = data.role === UserRole.SUPERADMIN;
 
@@ -75,7 +98,7 @@ const App: React.FC = () => {
           onDeleteWork={(id) => setData({...data, workExperiences: data.workExperiences.filter(i => i.id !== id)})} 
           onAddEducation={(e) => setData({...data, educations: [...data.educations, e]})} 
           onUpdateEducation={(e) => setData({...data, educations: data.educations.map(i => i.id === e.id ? e : i)})} 
-          onDeleteEducation={(id) => setData({...data, educations: data.educations.filter(i => i.id !== id)})} 
+          onDeleteEducation={(id) => setData({...data, educations: data.educations.filter(id => id !== id)})} 
           appData={data} 
         />
       );
@@ -117,7 +140,7 @@ const App: React.FC = () => {
       case 'cv_generator': return <CVGenerator data={data} />;
       case 'online_cv': return <OnlineCVBuilder data={data} onUpdateConfig={(c) => setData({...data, onlineCV: c})} />;
       case 'settings': return <AccountSettings reminderConfig={data.reminderConfig} onUpdateReminders={(c) => setData({...data, reminderConfig: c})} />;
-      case 'billing': return <Billing data={data} products={[]} />;
+      case 'billing': return <Billing data={data} products={publicProducts} />;
       case 'admin_dashboard': return <AdminPanel initialMode="dashboard" />;
       case 'admin_users': return <AdminPanel initialMode="users" />;
       case 'admin_admins': return <AdminPanel initialMode="admin_admins" />;
