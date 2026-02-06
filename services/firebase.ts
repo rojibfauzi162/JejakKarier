@@ -41,7 +41,7 @@ export const saveUserData = async (uid: string, data: AppData) => {
       ...data,
       uid,
       updatedAt: new Date().toISOString()
-    });
+    }, { merge: true });
   } catch (error) {
     console.error("Error saving data to Firebase:", error);
   }
