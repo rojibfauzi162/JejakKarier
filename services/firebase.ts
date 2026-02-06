@@ -1,6 +1,6 @@
 
 import { initializeApp } from "firebase/app";
-import { getAuth } from '@firebase/auth';
+import { getAuth, GoogleAuthProvider, signInWithPopup } from '@firebase/auth';
 import { getFirestore, doc, setDoc, getDoc, collection, getDocs, updateDoc, increment, query, where, limit } from "firebase/firestore";
 import { AppData, AiConfig, SubscriptionProduct, AccountStatus, MayarConfig } from "../types";
 
@@ -18,6 +18,22 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
+
+// Provider Google Auth
+const googleProvider = new GoogleAuthProvider();
+
+/**
+ * Fungsi Login/Register dengan Google
+ */
+export const signInWithGoogle = async () => {
+  try {
+    const result = await signInWithPopup(auth, googleProvider);
+    return result.user;
+  } catch (error: any) {
+    console.error("Error signing in with Google:", error);
+    throw error;
+  }
+};
 
 export const saveUserData = async (uid: string, data: AppData) => {
   try {
