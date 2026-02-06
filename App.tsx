@@ -72,7 +72,7 @@ const App: React.FC = () => {
   
   // Logic: Show Landing Page first, then Auth, then App
   if (!user) {
-    if (showAuth) return <Auth />;
+    if (showAuth) return <Auth onBack={() => setShowAuth(false)} />;
     return (
       <LandingPage 
         onStart={() => setShowAuth(true)} 

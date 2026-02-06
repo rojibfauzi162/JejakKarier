@@ -4,7 +4,11 @@ import React, { useState } from 'react';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from '@firebase/auth';
 import { auth, signInWithGoogle } from '../services/firebase';
 
-const Auth: React.FC = () => {
+interface AuthProps {
+  onBack?: () => void;
+}
+
+const Auth: React.FC<AuthProps> = ({ onBack }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -59,7 +63,19 @@ const Auth: React.FC = () => {
       </div>
 
       <div className="w-full max-w-md bg-white/10 backdrop-blur-xl border border-white/10 p-8 lg:p-12 rounded-[3rem] shadow-2xl relative z-10 animate-in zoom-in duration-500">
-        <div className="text-center mb-10">
+        
+        {/* Back Button */}
+        {onBack && (
+          <button 
+            onClick={onBack}
+            className="absolute top-8 left-8 flex items-center gap-2 text-slate-400 hover:text-indigo-400 transition-colors text-[10px] font-black uppercase tracking-widest group"
+          >
+            <i className="bi bi-arrow-left text-sm group-hover:-translate-x-1 transition-transform"></i>
+            Kembali ke Beranda
+          </button>
+        )}
+
+        <div className="text-center mb-10 mt-6">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 text-white text-2xl font-black rounded-2xl shadow-xl shadow-blue-500/20 mb-6">F</div>
           <h1 className="text-3xl font-black text-white tracking-tight">FokusKarir</h1>
           <p className="text-slate-400 text-sm mt-2 font-medium">Your Intelligence Career Partner</p>
