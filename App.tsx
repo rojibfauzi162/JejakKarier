@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { AppData, UserRole, SubscriptionProduct, SubscriptionPlan, AccountStatus, ToDoTask, AiStrategy, Training, Certification, Skill } from './types';
 import { INITIAL_DATA } from './constants';
@@ -18,6 +19,7 @@ import AccountSettings from './components/AccountSettings';
 import Billing from './components/Billing';
 import AdminPanel from './components/admin/AdminPanel';
 import MobileNav from './components/MobileNav';
+import MobileHeader from './components/user/MobileHeader';
 import Auth from './components/Auth';
 import LandingPage from './components/LandingPage';
 import PublicLegalView from './components/PublicLegalView';
@@ -265,7 +267,7 @@ const App: React.FC = () => {
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'dashboard': return <Dashboard data={data} onNavigate={handleNavigate} />;
+      case 'dashboard': return <Dashboard data={data} onNavigate={handleNavigate} onLogout={() => auth.signOut()} />;
       case 'apps_hub': return <AppsHub onNavigate={handleNavigate} />;
       case 'profile': return (
         <ProfileView 
@@ -359,16 +361,17 @@ const App: React.FC = () => {
       case 'online_cv': return withPermission('cv', <OnlineCVBuilder data={data} onUpdateConfig={(c) => setData({...data, onlineCV: c})} />);
       case 'settings': return <AccountSettings role={data.role} reminderConfig={data.reminderConfig} onUpdateReminders={(c) => setData({...data, reminderConfig: c})} />;
       case 'billing': return <Billing data={data} products={publicProducts} />;
-      case 'admin_dashboard': return isAdmin ? <AdminPanel initialMode="dashboard" userRole={data.role} /> : <Dashboard data={data} onNavigate={handleNavigate} />;
-      case 'admin_users': return isAdmin ? <AdminPanel initialMode="users" userRole={data.role} /> : <Dashboard data={data} onNavigate={handleNavigate} />;
-      case 'admin_admins': return isAdmin ? <AdminPanel initialMode="admin_admins" userRole={data.role} /> : <Dashboard data={data} onNavigate={handleNavigate} />;
-      case 'admin_transactions': return isAdmin ? <AdminPanel initialMode="admin_transactions" userRole={data.role} /> : <Dashboard data={data} onNavigate={handleNavigate} />;
-      case 'admin_ai': return isAdmin ? <AdminPanel initialMode="ai" userRole={data.role} /> : <Dashboard data={data} onNavigate={handleNavigate} />;
-      case 'admin_products': return isAdmin ? <AdminPanel initialMode="products" userRole={data.role} /> : <Dashboard data={data} onNavigate={handleNavigate} />;
-      case 'admin_integrations': return isAdmin ? <AdminPanel initialMode="integrations" userRole={data.role} /> : <Dashboard data={data} onNavigate={handleNavigate} />;
-      case 'admin_settings': return isAdmin ? <AdminPanel initialMode="settings" userRole={data.role} /> : <Dashboard data={data} onNavigate={handleNavigate} />;
-      case 'admin_health': return isAdmin ? <AdminPanel initialMode="health" userRole={data.role} /> : <Dashboard data={data} onNavigate={handleNavigate} />;
-      default: return <Dashboard data={data} onNavigate={handleNavigate} />;
+      case 'apps_hub': return <AppsHub onNavigate={handleNavigate} />;
+      case 'admin_dashboard': return isAdmin ? <AdminPanel initialMode="dashboard" userRole={data.role} /> : <Dashboard data={data} onNavigate={handleNavigate} onLogout={() => auth.signOut()} />;
+      case 'admin_users': return isAdmin ? <AdminPanel initialMode="users" userRole={data.role} /> : <Dashboard data={data} onNavigate={handleNavigate} onLogout={() => auth.signOut()} />;
+      case 'admin_admins': return isAdmin ? <AdminPanel initialMode="admin_admins" userRole={data.role} /> : <Dashboard data={data} onNavigate={handleNavigate} onLogout={() => auth.signOut()} />;
+      case 'admin_transactions': return isAdmin ? <AdminPanel initialMode="admin_transactions" userRole={data.role} /> : <Dashboard data={data} onNavigate={handleNavigate} onLogout={() => auth.signOut()} />;
+      case 'admin_ai': return isAdmin ? <AdminPanel initialMode="ai" userRole={data.role} /> : <Dashboard data={data} onNavigate={handleNavigate} onLogout={() => auth.signOut()} />;
+      case 'admin_products': return isAdmin ? <AdminPanel initialMode="products" userRole={data.role} /> : <Dashboard data={data} onNavigate={handleNavigate} onLogout={() => auth.signOut()} />;
+      case 'admin_integrations': return isAdmin ? <AdminPanel initialMode="integrations" userRole={data.role} /> : <Dashboard data={data} onNavigate={handleNavigate} onLogout={() => auth.signOut()} />;
+      case 'admin_settings': return isAdmin ? <AdminPanel initialMode="settings" userRole={data.role} /> : <Dashboard data={data} onNavigate={handleNavigate} onLogout={() => auth.signOut()} />;
+      case 'admin_health': return isAdmin ? <AdminPanel initialMode="health" userRole={data.role} /> : <Dashboard data={data} onNavigate={handleNavigate} onLogout={() => auth.signOut()} />;
+      default: return <Dashboard data={data} onNavigate={handleNavigate} onLogout={() => auth.signOut()} />;
     }
   };
 
@@ -377,45 +380,48 @@ const App: React.FC = () => {
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} onLogout={() => auth.signOut()} isAdmin={isAdmin} />
       
       <main className="flex-1 lg:ml-64 p-4 lg:p-8">
-        {/* Upgrade Modal Component */}
-        {isUpgradeModalOpen && (
-          <UpgradeModal 
-            products={publicProducts} 
-            onClose={() => setIsUpgradeModalOpen(false)} 
-            currentPlan={data.plan}
-          />
-        )}
-        
-        {/* Header Desktop */}
-        <div className="hidden lg:flex items-center justify-between mb-8">
-           <div>
-              <h2 className="text-xl font-black text-slate-900 tracking-tight uppercase">{activeTab.replace('_', ' ')}</h2>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">FokusKarir Control Center</p>
-           </div>
-           <div className="flex items-center gap-6">
-              {activeAlerts.length > 0 && (
-                <div className="flex -space-x-2">
-                   {activeAlerts.slice(0, 3).map(alert => (
-                     <div key={alert.id} className={`w-8 h-8 rounded-full bg-${alert.color}-50 text-${alert.color}-600 border-2 border-white flex items-center justify-center text-xs shadow-sm cursor-pointer`} title={alert.text} onClick={() => handleNavigate(alert.target)}>
-                        <i className={`bi ${alert.icon}`}></i>
-                     </div>
-                   ))}
+        {/* PT-6 Wrapper for content to add space from header in mobile */}
+        <div className={`${!isAdmin ? 'pt-2 lg:pt-0' : ''}`}>
+          {/* Upgrade Modal Component */}
+          {isUpgradeModalOpen && (
+            <UpgradeModal 
+              products={publicProducts} 
+              onClose={() => setIsUpgradeModalOpen(false)} 
+              currentPlan={data.plan}
+            />
+          )}
+          
+          {/* Header Desktop */}
+          <div className="hidden lg:flex items-center justify-between mb-8">
+             <div>
+                <h2 className="text-xl font-black text-slate-900 tracking-tight uppercase">{activeTab.replace('_', ' ')}</h2>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">FokusKarir Control Center</p>
+             </div>
+             <div className="flex items-center gap-6">
+                {activeAlerts.length > 0 && (
+                  <div className="flex -space-x-2">
+                     {activeAlerts.slice(0, 3).map(alert => (
+                       <div key={alert.id} className={`w-8 h-8 rounded-full bg-${alert.color}-50 text-${alert.color}-600 border-2 border-white flex items-center justify-center text-xs shadow-sm cursor-pointer`} title={alert.text} onClick={() => handleNavigate(alert.target)}>
+                          <i className={`bi ${alert.icon}`}></i>
+                       </div>
+                     ))}
+                  </div>
+                )}
+                <div className="h-8 w-px bg-slate-200"></div>
+                <div className="flex items-center gap-3">
+                   <div className="text-right">
+                      <p className="text-[10px] font-black text-slate-900 leading-none">{data.profile.name}</p>
+                      <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-1">{data.plan} Member</p>
+                   </div>
+                   <div className="w-10 h-10 rounded-full bg-slate-200 overflow-hidden border-2 border-white shadow-sm">
+                      {data.profile.photoUrl ? <img src={data.profile.photoUrl} className="w-full h-full object-cover" alt="User profile" /> : <div className="w-full h-full flex items-center justify-center text-slate-400"><i className="bi bi-person"></i></div>}
+                   </div>
                 </div>
-              )}
-              <div className="h-8 w-px bg-slate-200"></div>
-              <div className="flex items-center gap-3">
-                 <div className="text-right">
-                    <p className="text-[10px] font-black text-slate-900 leading-none">{data.profile.name}</p>
-                    <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-1">{data.plan} Member</p>
-                 </div>
-                 <div className="w-10 h-10 rounded-full bg-slate-200 overflow-hidden border-2 border-white shadow-sm">
-                    {data.profile.photoUrl ? <img src={data.profile.photoUrl} className="w-full h-full object-cover" alt="User profile" /> : <div className="w-full h-full flex items-center justify-center text-slate-400"><i className="bi bi-person"></i></div>}
-                 </div>
-              </div>
-           </div>
-        </div>
+             </div>
+          </div>
 
-        {renderContent()}
+          {renderContent()}
+        </div>
       </main>
 
       {/* Mobile Navigation */}

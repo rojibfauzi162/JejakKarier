@@ -7,17 +7,30 @@ interface DashboardProps {
   data: AppData;
   onNavigate?: (tab: string, date?: string) => void;
   onOpenNotif?: () => void;
+  onLogout?: () => void;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenNotif }) => {
+const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenNotif, onLogout }) => {
   const currentAffirmation = data.affirmations[Math.floor(Math.random() * data.affirmations.length)];
   const [isMenuExpanded, setIsMenuExpanded] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   
-  // Fitur Tour Dinonaktifkan sementara untuk kebersihan UI (Sesuai Request)
-  const [tourStep, setTourStep] = useState(0);
-  const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
-  
+  // State for UI interactions
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+  const [showReminderModal, setShowReminderModal] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsProfileDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   // Logic: Smart Reminder Alert System (Hanya untuk Hari Ini)
   const getReminders = () => {
     const today = new Date().toISOString().split('T')[0];
@@ -30,13 +43,13 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenNotif }) 
     // 1. Check Daily Work (Hanya Hari Ini)
     const hasWorkLogs = data.dailyReports.some(l => l.date === today);
     if (!hasWorkLogs && currentTime >= data.reminderConfig.dailyLogReminderTime) {
-      alerts.push({ id: 'log', text: "Kamu belum mengisi Aktivitas Kerja hari ini!", target: 'daily', date: today, icon: '📝', color: 'indigo' });
+      alerts.push({ id: 'log', text: "Kamu belum mengisi Aktivitas Kerja hari ini!", target: 'daily', date: today, icon: '📝', color: 'indigo', actionLabel: 'ISI SEKARANG →' });
     }
 
     // 2. Check Reflection (Hanya Hari Ini)
     const hasReflection = data.dailyReflections.some(r => r.date === today);
     if (!hasReflection && currentTime >= data.reminderConfig.reflectionReminderTime) {
-      alerts.push({ id: 'ref', text: "Jangan lupa isi Refleksi Kerja hari ini!", target: 'work_reflection', date: today, icon: '🧘', color: 'rose' });
+      alerts.push({ id: 'ref', text: "Jangan lupa isi Refleksi Kerja hari ini!", target: 'work_reflection', date: today, icon: '🧘', color: 'rose', actionLabel: 'ISI SEKARANG →' });
     }
 
     return alerts;
@@ -44,9 +57,16 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenNotif }) 
 
   const reminders = getReminders();
 
+  // Auto show modal if there are reminders on mount (mobile only context usually)
+  useEffect(() => {
+    if (reminders.length > 0) {
+      setShowReminderModal(true);
+    }
+  }, []);
+
   // State untuk Widget/Pinned Menus - Default 8 menu pertama
   const [pinnedMenuIds, setPinnedMenuIds] = useState<string[]>(() => {
-    const saved = localStorage.getItem('fokuskarir_pinned_menus');
+    const saved = localStorage.getItem('jejakkarir_pinned_menus');
     return saved ? JSON.parse(saved) : ['daily', 'work_reflection', 'todo_list', 'mobile_stats', 'skills', 'career', 'cv_generator', 'projects'];
   });
 
@@ -88,7 +108,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenNotif }) 
         }
         next = [...prev, id];
       }
-      localStorage.setItem('fokuskarir_pinned_menus', JSON.stringify(next));
+      localStorage.setItem('jejakkarir_pinned_menus', JSON.stringify(next));
       return next;
     });
   };
@@ -100,49 +120,97 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenNotif }) 
   return (
     <div className="space-y-6 lg:space-y-10 animate-in fade-in duration-700 pb-20 overflow-x-hidden">
       
-      {/* DASHBOARD ALERT REMINDERS BAR */}
-      {reminders.length > 0 && (
-        <div className="px-4 lg:px-0 space-y-3">
-          {reminders.map(alert => (
-            <div key={alert.id} className={`flex flex-col md:flex-row items-center justify-between p-6 lg:px-10 rounded-[2.5rem] border-2 shadow-xl animate-in slide-in-from-top-4 duration-700 bg-white border-${alert.color}-100`}>
-              <div className="flex items-center gap-6 text-center md:text-left mb-4 md:mb-0">
-                <span className="text-3xl lg:text-4xl">{alert.icon}</span>
-                <div>
-                   <p className={`text-[10px] font-black uppercase tracking-widest text-${alert.color}-400 mb-1`}>Reminder: Selesaikan Segera</p>
-                   <p className="text-sm lg:text-base font-black text-slate-800 tracking-tight">{alert.text}</p>
-                </div>
-              </div>
-              <button 
-                onClick={() => onNavigate?.(alert.target, alert.date)} 
-                className={`px-8 py-3 bg-${alert.color === 'rose' ? 'rose-600' : alert.color === 'emerald' ? 'emerald-600' : 'indigo-600'} text-white font-black rounded-2xl text-[10px] uppercase tracking-widest shadow-2xl active:scale-95 transition-all`}
-              >
-                Isi Sekarang →
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
-
       {/* MOBILE APP INTERFACE */}
       <div className="block lg:hidden space-y-6 bg-white min-h-screen">
-        <header className="px-6 pt-0 flex items-center justify-between">
+        {/* NEW ENHANCED MOBILE HEADER */}
+        <header className="px-6 pt-4 pb-2 flex items-center justify-between sticky top-0 bg-white/80 backdrop-blur-md z-[110] border-b border-slate-50">
            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-full border-4 border-slate-50 overflow-hidden shadow-md">
+              <div className="w-12 h-12 rounded-full border-2 border-slate-100 overflow-hidden shadow-sm">
                  {data.profile.photoUrl ? <img src={data.profile.photoUrl} alt="User" className="w-full h-full object-cover" /> : <div className="w-full h-full bg-slate-100 flex items-center justify-center text-xl"><i className="bi bi-person"></i></div>}
               </div>
               <div>
-                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1.5">Good Morning 👋</p>
-                 <h2 className="text-xl font-black text-slate-900 tracking-tight">{data.profile.name}</h2>
+                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Good Morning 👋</p>
+                 <h2 className="text-lg font-black text-slate-900 tracking-tight leading-none">{data.profile.name.split(' ')[0]}</h2>
               </div>
            </div>
-           <div className="flex gap-4">
-              <button onClick={onOpenNotif} className="w-10 h-10 rounded-full border border-slate-100 flex items-center justify-center shadow-sm text-indigo-600 relative">
-                <i className="bi bi-bell"></i>
-                <span className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full border-2 border-white animate-pulse"></span>
+           <div className="flex gap-3">
+              {/* Notification with Badge Count */}
+              <button 
+                onClick={() => reminders.length > 0 ? setShowReminderModal(true) : onOpenNotif?.()} 
+                className={`w-10 h-10 rounded-full border border-slate-100 flex items-center justify-center shadow-sm relative transition-colors ${reminders.length > 0 ? 'text-indigo-600 bg-indigo-50' : 'text-slate-400'}`}
+              >
+                <i className={`bi ${reminders.length > 0 ? 'bi-bell-fill' : 'bi-bell'}`}></i>
+                {reminders.length > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-rose-500 text-white text-[9px] font-black rounded-full flex items-center justify-center px-1 border-2 border-white animate-in zoom-in duration-300">
+                    {reminders.length}
+                  </span>
+                )}
               </button>
-              <button onClick={() => onNavigate?.('profile')} className="w-10 h-10 rounded-full border border-slate-100 flex items-center justify-center shadow-sm text-lg text-slate-400"><i className="bi bi-person-circle"></i></button>
+
+              {/* Profile Shortcut with Dropdown */}
+              <div className="relative" ref={dropdownRef}>
+                <button 
+                  onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)} 
+                  className={`w-10 h-10 rounded-full border border-slate-100 flex items-center justify-center shadow-sm text-lg transition-all ${isProfileDropdownOpen ? 'bg-slate-900 text-white border-slate-900' : 'text-slate-400'}`}
+                >
+                  <i className="bi bi-person-circle"></i>
+                </button>
+                
+                {isProfileDropdownOpen && (
+                  <div className="absolute right-0 mt-3 w-48 bg-white/95 backdrop-blur-xl border border-slate-100 rounded-[1.5rem] shadow-2xl p-2 animate-in slide-in-from-top-2 duration-300 z-[120]">
+                    <div className="p-3 border-b border-slate-50 mb-1">
+                        <p className="text-[10px] font-black text-slate-900 leading-none truncate">{data.profile.name}</p>
+                        <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-1">User Account</p>
+                    </div>
+                    <button onClick={() => { onNavigate?.('profile'); setIsProfileDropdownOpen(false); }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 transition-all text-left">
+                        <i className="bi bi-person-circle text-sm"></i>
+                        <span className="text-[10px] font-black uppercase tracking-widest">Profil Saya</span>
+                    </button>
+                    <button onClick={() => { onNavigate?.('settings'); setIsProfileDropdownOpen(false); }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 transition-all text-left">
+                        <i className="bi bi-gear-fill text-sm"></i>
+                        <span className="text-[10px] font-black uppercase tracking-widest">Pengaturan</span>
+                    </button>
+                    <div className="h-px bg-slate-50 my-1 mx-2"></div>
+                    <button onClick={() => { if(onLogout) onLogout(); setIsProfileDropdownOpen(false); }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-rose-50 text-rose-500 transition-all text-left">
+                        <i className="bi bi-box-arrow-right text-sm"></i>
+                        <span className="text-[10px] font-black uppercase tracking-widest">Logout</span>
+                    </button>
+                  </div>
+                )}
+              </div>
            </div>
         </header>
+
+        {/* Reminder Modal Popup (Instead of Bars) */}
+        {showReminderModal && reminders.length > 0 && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 animate-in fade-in duration-300">
+             <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm" onClick={() => setShowReminderModal(false)}></div>
+             <div className="relative bg-white w-full max-w-sm rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in duration-500">
+                <div className="p-8 bg-indigo-600 text-white text-center">
+                   <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4">🔔</div>
+                   <h3 className="text-xl font-black uppercase tracking-tight">Jangan Terlewat!</h3>
+                   <p className="text-[10px] font-bold text-indigo-200 uppercase tracking-widest mt-1">Selesaikan rekam jejak harian Anda</p>
+                </div>
+                <div className="p-6 space-y-4">
+                   {reminders.map(alert => (
+                     <div key={alert.id} className={`p-5 rounded-2xl border-2 bg-white border-${alert.color}-50 shadow-sm flex flex-col gap-4`}>
+                        <div className="flex items-start gap-4">
+                           <span className="text-2xl shrink-0">{alert.icon}</span>
+                           <p className="text-xs font-black text-slate-800 leading-tight uppercase">{alert.text}</p>
+                        </div>
+                        <button 
+                          onClick={() => { onNavigate?.(alert.target, alert.date); setShowReminderModal(false); }}
+                          className={`w-full py-3 bg-${alert.color === 'rose' ? 'rose-600' : 'indigo-600'} text-white font-black rounded-xl text-[10px] uppercase tracking-widest shadow-lg active:scale-95 transition-all`}
+                        >
+                          {alert.actionLabel}
+                        </button>
+                     </div>
+                   ))}
+                   <button onClick={() => setShowReminderModal(false)} className="w-full py-3 text-slate-400 font-black uppercase text-[9px] tracking-widest">Nanti Saja</button>
+                </div>
+             </div>
+          </div>
+        )}
 
         <div className="px-6">
            <div className="bg-gradient-to-br from-indigo-600 to-blue-500 p-8 rounded-[2.5rem] shadow-2xl shadow-indigo-200 text-white relative overflow-hidden group">
@@ -225,6 +293,29 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenNotif }) 
             <div><p className="text-[10px] text-white/50 uppercase font-black tracking-[0.2em] mb-1">Inspirasi Hari Ini</p><p className="text-base italic font-semibold leading-tight">"{currentAffirmation}"</p></div>
           </div>
         </header>
+
+        {/* DASHBOARD ALERT REMINDERS BAR - Desktop Only */}
+        {reminders.length > 0 && (
+          <div className="px-4 lg:px-0 space-y-3">
+            {reminders.map(alert => (
+              <div key={alert.id} className={`flex flex-col md:flex-row items-center justify-between p-6 lg:px-10 rounded-[2.5rem] border-2 shadow-xl animate-in slide-in-from-top-4 duration-700 bg-white border-${alert.color}-100`}>
+                <div className="flex items-center gap-6 text-center md:text-left mb-4 md:mb-0">
+                  <span className="text-3xl lg:text-4xl">{alert.icon}</span>
+                  <div>
+                    <p className={`text-[10px] font-black uppercase tracking-widest text-${alert.color}-400 mb-1`}>Reminder: Selesaikan Segera</p>
+                    <p className="text-sm lg:text-base font-black text-slate-800 tracking-tight">{alert.text}</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => onNavigate?.(alert.target, alert.date)} 
+                  className={`px-8 py-3 bg-${alert.color === 'rose' ? 'rose-600' : alert.color === 'emerald' ? 'emerald-600' : 'indigo-600'} text-white font-black rounded-2xl text-[10px] uppercase tracking-widest shadow-2xl active:scale-95 transition-all`}
+                >
+                  Isi Sekarang →
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
           <MetricCard title="Produktivitas" value={data.dailyReports.length > 0 ? data.dailyReports[data.dailyReports.length - 1].metricValue : 0} subtitle={`${data.dailyReports.length > 0 ? data.dailyReports[data.dailyReports.length - 1].metricLabel : 'Belum ada data'}`} icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>} color="indigo" />
