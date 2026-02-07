@@ -1,21 +1,35 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { updateProfile, updatePassword, User } from '@firebase/auth';
-import { auth } from '../services/firebase';
-import { ReminderConfig } from '../types';
+import { auth, getLegalConfig, saveLegalConfig } from '../services/firebase';
+import { ReminderConfig, UserRole, LegalConfig } from '../types';
 
 interface AccountSettingsProps {
+  role?: UserRole;
   reminderConfig: ReminderConfig;
   onUpdateReminders: (config: ReminderConfig) => void;
 }
 
-const AccountSettings: React.FC<AccountSettingsProps> = ({ reminderConfig, onUpdateReminders }) => {
+const AccountSettings: React.FC<AccountSettingsProps> = ({ role, reminderConfig, onUpdateReminders }) => {
   const user = auth.currentUser;
   const [name, setName] = useState(user?.displayName || '');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ text: string, type: 'success' | 'error' } | null>(null);
+
+  // Legal Content Management (Superadmin Only)
+  const isSuperadmin = role === UserRole.SUPERADMIN;
+  const [legalConfig, setLegalConfig] = useState<LegalConfig>({ privacyPolicy: '', termsOfService: '' });
+  const [savingLegal, setSavingLegal] = useState(false);
+
+  useEffect(() => {
+    if (isSuperadmin) {
+      getLegalConfig().then(res => {
+        if (res) setLegalConfig(res);
+      });
+    }
+  }, [isSuperadmin]);
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,6 +64,18 @@ const AccountSettings: React.FC<AccountSettingsProps> = ({ reminderConfig, onUpd
       setMessage({ text: 'Gagal update password. Silakan login ulang dan coba lagi.', type: 'error' });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSaveLegal = async () => {
+    setSavingLegal(true);
+    try {
+      await saveLegalConfig(legalConfig);
+      setMessage({ text: 'Kebijakan legal berhasil diperbarui.', type: 'success' });
+    } catch (e) {
+      setMessage({ text: 'Gagal menyimpan kebijakan legal.', type: 'error' });
+    } finally {
+      setSavingLegal(false);
     }
   };
 
@@ -140,6 +166,52 @@ const AccountSettings: React.FC<AccountSettingsProps> = ({ reminderConfig, onUpd
            </div>
         </section>
 
+        {/* Super Admin: Legal Management */}
+        {isSuperadmin && (
+          <section className="md:col-span-2 bg-white p-8 lg:p-12 rounded-[3.5rem] shadow-sm border-2 border-indigo-100 space-y-8 animate-in zoom-in duration-500">
+             <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-slate-900 text-white rounded-2xl flex items-center justify-center">
+                   <i className="bi bi-file-earmark-lock-fill text-xl"></i>
+                </div>
+                <div>
+                   <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight">Manajemen Konten Legal (Hanya Admin)</h3>
+                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Edit kebijakan privasi dan syarat layanan yang muncul di publik.</p>
+                </div>
+             </div>
+
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="space-y-3">
+                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Privacy Policy</label>
+                   <textarea 
+                    className="w-full px-6 py-4 rounded-[2rem] border border-slate-200 outline-none bg-slate-50 font-medium text-xs leading-relaxed min-h-[300px] resize-none focus:border-indigo-400 transition-all"
+                    value={legalConfig.privacyPolicy}
+                    onChange={e => setLegalConfig({...legalConfig, privacyPolicy: e.target.value})}
+                    placeholder="Masukkan konten kebijakan privasi..."
+                   />
+                </div>
+                <div className="space-y-3">
+                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Terms of Service</label>
+                   <textarea 
+                    className="w-full px-6 py-4 rounded-[2rem] border border-slate-200 outline-none bg-slate-50 font-medium text-xs leading-relaxed min-h-[300px] resize-none focus:border-indigo-400 transition-all"
+                    value={legalConfig.termsOfService}
+                    onChange={e => setLegalConfig({...legalConfig, termsOfService: e.target.value})}
+                    placeholder="Masukkan konten syarat layanan..."
+                   />
+                </div>
+             </div>
+
+             <div className="flex justify-end pt-4">
+                <button 
+                  onClick={handleSaveLegal}
+                  disabled={savingLegal}
+                  className="px-12 py-5 bg-indigo-600 text-white font-black rounded-2xl uppercase tracking-widest text-[10px] shadow-xl shadow-indigo-100 hover:bg-indigo-700 active:scale-95 transition-all disabled:opacity-50"
+                >
+                   {savingLegal ? 'Menyimpan...' : 'Perbarui Konten Legal Publik'}
+                </button>
+             </div>
+          </section>
+        )}
+
         {/* Keamanan Akun */}
         <section className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 space-y-8">
           <div className="flex items-center gap-4">
@@ -162,8 +234,8 @@ const AccountSettings: React.FC<AccountSettingsProps> = ({ reminderConfig, onUpd
         </section>
 
         {/* Info Akun Tambahan */}
-        <section className="md:col-span-2 bg-slate-900 p-10 rounded-[3rem] text-white">
-           <div className="flex flex-col md:flex-row justify-between items-center gap-8">
+        <section className="md:col-span-1 bg-slate-900 p-10 rounded-[3rem] text-white">
+           <div className="flex flex-col justify-between h-full gap-8">
               <div className="text-center md:text-left">
                  <h4 className="text-xs font-black text-indigo-400 uppercase tracking-[0.3em] mb-2">Informasi Akun</h4>
                  <p className="text-[10px] text-slate-500 uppercase font-bold">Terdaftar Pada: <span className="text-white ml-2">{user?.metadata.creationTime}</span></p>

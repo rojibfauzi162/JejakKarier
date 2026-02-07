@@ -86,6 +86,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout, is
             <SidebarItem id="admin_ai" active={activeTab === 'admin_ai'} onClick={() => setActiveTab('admin_ai')} icon={<i className="bi bi-cpu"></i>} label="AI Architecture" color="blue" />
             <SidebarItem id="admin_products" active={activeTab === 'admin_products'} onClick={() => setActiveTab('admin_products')} icon={<i className="bi bi-box-seam"></i>} label="Product Matrix" color="blue" />
             <SidebarItem id="admin_integrations" active={activeTab === 'admin_integrations'} onClick={() => setActiveTab('admin_integrations')} icon={<i className="bi bi-link-45deg"></i>} label="Integrasi Mayar" color="blue" />
+            <SidebarItem id="admin_settings" active={activeTab === 'admin_settings'} onClick={() => setActiveTab('admin_settings')} icon={<i className="bi bi-gear-fill"></i>} label="Pengaturan Admin" color="blue" />
             <SidebarItem id="admin_health" active={activeTab === 'admin_health'} onClick={() => setActiveTab('admin_health')} icon={<i className="bi bi-activity"></i>} label="System Health" color="rose" />
           </div>
         )}

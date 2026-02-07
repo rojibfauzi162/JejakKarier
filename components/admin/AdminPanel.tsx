@@ -13,9 +13,10 @@ import ProductForm from './ProductForm';
 import MayarIntegration from './MayarIntegration';
 import TransactionManagement from './TransactionManagement';
 import AdminManagement from './AdminManagement';
+import AdminSettings from './AdminSettings';
 
 interface AdminPanelProps {
-  initialMode?: 'dashboard' | 'users' | 'products' | 'health' | 'ai' | 'integrations' | 'admin_transactions' | 'admin_admins';
+  initialMode?: 'dashboard' | 'users' | 'products' | 'health' | 'ai' | 'integrations' | 'admin_transactions' | 'admin_admins' | 'settings';
 }
 
 const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) => {
@@ -272,7 +273,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
       <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 pt-4">
         <div>
           <h2 className="text-3xl font-black text-slate-900 tracking-tight uppercase">
-            {initialMode === 'health' ? 'Kesehatan Sistem' : initialMode === 'users' ? 'Kelola User' : initialMode === 'ai' ? 'Arsitektur AI' : initialMode === 'products' ? 'Matriks Produk' : initialMode === 'integrations' ? 'Integrasi Mayar' : initialMode === 'admin_admins' ? 'Kelola Admin' : initialMode === 'admin_transactions' ? 'Manajemen Keuangan' : 'Dashboard Admin Hub'}
+            {initialMode === 'health' ? 'Kesehatan Sistem' : initialMode === 'users' ? 'Kelola User' : initialMode === 'ai' ? 'Arsitektur AI' : initialMode === 'products' ? 'Matriks Produk' : initialMode === 'integrations' ? 'Integrasi Mayar' : initialMode === 'admin_admins' ? 'Kelola Admin' : initialMode === 'admin_transactions' ? 'Manajemen Keuangan' : initialMode === 'settings' ? 'Global Settings' : 'Dashboard Admin Hub'}
           </h2>
           <p className="text-slate-500 font-medium italic">Sistem Administrasi FokusKarir.</p>
         </div>
@@ -315,6 +316,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
           onUpdateMetadata={async (uid, fields) => { await updateAdminMetadata(uid, fields); triggerToast("Identitas Admin Diperbarui ✅"); fetchUsersAndConfig(true); }} 
         />
       )}
+      {initialMode === 'settings' && <AdminSettings />}
 
       {/* MODAL USER */}
       {isUserModalOpen && editingUser && (
@@ -422,7 +424,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
       {/* MODAL PRODUCT */}
       {isProductModalOpen && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[2000] p-4">
-          <div className="bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl p-10 lg:p-14 animate-in zoom-in duration-300 overflow-y-auto max-h-[95vh] no-scrollbar">
+          <div className="bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl p-10 lg:p-14 animate-in zoom-in duration-300 overflow-y-auto max-h-[90vh] no-scrollbar">
              <div className="flex justify-between items-center mb-10">
                 <h3 className="text-3xl font-black text-slate-900 uppercase">Konfigurasi Paket</h3>
                 <button onClick={() => setIsProductModalOpen(false)} className="w-10 h-10 rounded-full bg-slate-50 text-slate-400 flex items-center justify-center font-black">✕</button>

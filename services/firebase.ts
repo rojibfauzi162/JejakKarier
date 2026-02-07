@@ -2,7 +2,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, signInWithPopup } from '@firebase/auth';
 import { getFirestore, doc, setDoc, getDoc, collection, getDocs, updateDoc, increment, query, where, limit } from "firebase/firestore";
-import { AppData, AiConfig, SubscriptionProduct, AccountStatus, MayarConfig } from "../types";
+import { AppData, AiConfig, SubscriptionProduct, AccountStatus, MayarConfig, LegalConfig } from "../types";
 
 // KONFIGURASI FIREBASE
 const firebaseConfig = {
@@ -133,6 +133,28 @@ export const saveAiConfig = async (config: AiConfig) => {
     await setDoc(docRef, dataToSave, { merge: true });
   } catch (error) {
     console.error("Error saving AI config:", error);
+    throw error;
+  }
+};
+
+export const getLegalConfig = async (): Promise<LegalConfig | null> => {
+  try {
+    const docRef = doc(db, "system_metadata", "legal_configuration");
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) return docSnap.data() as LegalConfig;
+  } catch (e: any) {
+    console.warn("[FIREBASE] Legal config error:", e.message);
+  }
+  // Selalu return objek default agar UI tidak error saat loading
+  return { privacyPolicy: '', termsOfService: '' };
+};
+
+export const saveLegalConfig = async (config: LegalConfig) => {
+  try {
+    const docRef = doc(db, "system_metadata", "legal_configuration");
+    await setDoc(docRef, { ...config, updatedAt: new Date().toISOString() }, { merge: true });
+  } catch (error) {
+    console.error("Error saving legal config:", error);
     throw error;
   }
 };

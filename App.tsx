@@ -21,6 +21,7 @@ import AdminPanel from './components/admin/AdminPanel';
 import MobileNav from './components/MobileNav';
 import Auth from './components/Auth';
 import LandingPage from './components/LandingPage';
+import PublicLegalView from './components/PublicLegalView';
 import { auth, getUserData, saveUserData, getProductsCatalog } from './services/firebase';
 import { onAuthStateChanged } from '@firebase/auth';
 
@@ -30,18 +31,57 @@ const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [loading, setLoading] = useState(true);
   
-  // States for Landing Page logic
+  // State routing mandiri untuk halaman legal publik menggunakan query param
+  const [publicLegalPage, setPublicLegalPage] = useState<'privacy' | 'terms' | null>(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const view = searchParams.get('view');
+    if (view === 'privacy' || view === 'terms') return view as 'privacy' | 'terms';
+    return null;
+  });
+
+  // Fungsi navigasi yang menggunakan query parameter untuk menghindari error Origin/History di sandbox
+  const navigateToLegal = (type: 'privacy' | 'terms' | null) => {
+    try {
+      const url = new URL(window.location.href);
+      if (type) {
+        url.searchParams.set('view', type);
+      } else {
+        url.searchParams.delete('view');
+      }
+      
+      // Update browser history secara manual agar sinkron
+      window.history.pushState({ type }, '', url.search || '/');
+      setPublicLegalPage(type);
+    } catch (e) {
+      // Fallback jika PushState dibatasi lingkungan sandbox
+      setPublicLegalPage(type);
+    }
+  };
+
+  // Listener tombol Back/Forward browser
+  useEffect(() => {
+    const handlePopState = () => {
+      const searchParams = new URLSearchParams(window.location.search);
+      const view = searchParams.get('view');
+      if (view === 'privacy' || view === 'terms') {
+        setPublicLegalPage(view as 'privacy' | 'terms');
+      } else {
+        setPublicLegalPage(null);
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
   const [showAuth, setShowAuth] = useState(false);
   const [publicProducts, setPublicProducts] = useState<SubscriptionProduct[]>([]);
 
-  // Load public products for landing page
   useEffect(() => {
     getProductsCatalog().then(p => {
       if (p) setPublicProducts(p);
     });
   }, []);
 
-  // Authenticate and load user data on mount
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setUser(user);
@@ -68,15 +108,24 @@ const App: React.FC = () => {
     return () => unsubscribe();
   }, []);
 
-  if (loading) return <div className="h-screen w-full flex items-center justify-center font-black text-slate-400 uppercase tracking-widest">Loading Gateway...</div>;
+  // PRIORITAS: Tampilkan View Legal Publik jika sedang berada di route legal
+  if (publicLegalPage) {
+    return <PublicLegalView type={publicLegalPage} onBack={() => navigateToLegal(null)} />;
+  }
+
+  if (loading) return (
+    <div className="h-screen w-full flex items-center justify-center bg-white font-black text-slate-400 uppercase tracking-[0.3em] animate-pulse">
+       Initializing Gateway...
+    </div>
+  );
   
-  // Logic: Show Landing Page first, then Auth, then App
   if (!user) {
     if (showAuth) return <Auth onBack={() => setShowAuth(false)} />;
     return (
       <LandingPage 
         onStart={() => setShowAuth(true)} 
         onLogin={() => setShowAuth(true)} 
+        onShowLegal={(type) => navigateToLegal(type)}
         products={publicProducts} 
       />
     );
@@ -139,7 +188,7 @@ const App: React.FC = () => {
       case 'reviews': return <Reviews reviews={data.monthlyReviews} onAdd={(r) => setData({...data, monthlyReviews: [...data.monthlyReviews, r]})} onDelete={(id) => setData({...data, monthlyReviews: data.monthlyReviews.filter(i => i.id !== id)})} />;
       case 'cv_generator': return <CVGenerator data={data} />;
       case 'online_cv': return <OnlineCVBuilder data={data} onUpdateConfig={(c) => setData({...data, onlineCV: c})} />;
-      case 'settings': return <AccountSettings reminderConfig={data.reminderConfig} onUpdateReminders={(c) => setData({...data, reminderConfig: c})} />;
+      case 'settings': return <AccountSettings role={data.role} reminderConfig={data.reminderConfig} onUpdateReminders={(c) => setData({...data, reminderConfig: c})} />;
       case 'billing': return <Billing data={data} products={publicProducts} />;
       case 'admin_dashboard': return <AdminPanel initialMode="dashboard" />;
       case 'admin_users': return <AdminPanel initialMode="users" />;
@@ -148,6 +197,7 @@ const App: React.FC = () => {
       case 'admin_ai': return <AdminPanel initialMode="ai" />;
       case 'admin_products': return <AdminPanel initialMode="products" />;
       case 'admin_integrations': return <AdminPanel initialMode="integrations" />;
+      case 'admin_settings': return <AdminPanel initialMode="settings" />;
       case 'admin_health': return <AdminPanel initialMode="health" />;
       default: return <Dashboard data={data} onNavigate={setActiveTab} />;
     }

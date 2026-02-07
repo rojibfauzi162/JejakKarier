@@ -5,10 +5,11 @@ import { SubscriptionProduct } from '../types';
 interface LandingPageProps {
   onStart: () => void;
   onLogin: () => void;
+  onShowLegal?: (type: 'privacy' | 'terms') => void;
   products?: SubscriptionProduct[];
 }
 
-const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, products }) => {
+const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal, products }) => {
   const [showAllFeatures, setShowAllFeatures] = useState(false);
 
   // LOGIC: Sync all plans from admin data if available
@@ -181,7 +182,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, products })
             price={getPriceFormatted(quarterlyPlan, "99.000")} 
             discount={getDiscountLabel(quarterlyPlan, "Hemat 40%")}
             features={["Semua fitur Bulanan", "AI Career Insight", "Strategy Roadmap v2.0", "Priority Support"]}
-            cta="Akselerasi Sekarang"
+            cta="Mulai Berprogres"
             onStart={onStart}
           />
 
@@ -195,7 +196,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, products })
             breakdown="Hanya Rp 12rb-an / bulan"
             features={["Akses Unlimited 1 Tahun", "Personal Landing Page Link", "E-Book Roadmap Karir", "Annual Performance Report"]}
             highlight={true}
-            cta="Investasi Jangka Panjang"
+            cta="Mulai Berprogres"
             onStart={onStart}
           />
         </div>
@@ -242,8 +243,18 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, products })
           </div>
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">© 2025 Intelligent Performance System. Hak Cipta Dilindungi.</p>
           <div className="flex gap-6">
-             <button className="text-[10px] font-black uppercase text-slate-400 hover:text-slate-900 transition-colors">Privacy</button>
-             <button className="text-[10px] font-black uppercase text-slate-400 hover:text-slate-900 transition-colors">Terms</button>
+             <button 
+                onClick={(e) => { e.preventDefault(); onShowLegal?.('privacy'); }}
+                className="text-[10px] font-black uppercase text-slate-400 hover:text-slate-900 transition-colors"
+             >
+                Privacy
+             </button>
+             <button 
+                onClick={(e) => { e.preventDefault(); onShowLegal?.('terms'); }}
+                className="text-[10px] font-black uppercase text-slate-400 hover:text-slate-900 transition-colors"
+             >
+                Terms
+             </button>
              <button className="text-[10px] font-black uppercase text-slate-400 hover:text-slate-900 transition-colors">Contact</button>
           </div>
         </div>

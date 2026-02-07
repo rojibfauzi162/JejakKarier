@@ -300,6 +300,12 @@ export interface AiConfig {
   updatedAt?: string;
 }
 
+export interface LegalConfig {
+  privacyPolicy: string;
+  termsOfService: string;
+  updatedAt?: string;
+}
+
 export interface MayarConfig {
   apiKey: string;
   webhookSecret?: string;
