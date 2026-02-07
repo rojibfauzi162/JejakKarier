@@ -358,7 +358,7 @@ const WorkReflectionView: React.FC<WorkReflectionProps> = ({ reflections, skills
          
          <div className="flex flex-col items-center gap-6 py-10">
             <button onClick={() => window.print()} className="px-12 py-5 bg-white border-2 border-slate-900 text-slate-900 font-black rounded-2xl uppercase tracking-[0.3em] text-[10px] shadow-xl hover:bg-slate-50 transition-all">Download Laporan (.PDF)</button>
-            <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest">© 2025 JejakKarir Intelligent Performance System</p>
+            <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest">© 2025 FokusKarir Intelligent Performance System</p>
          </div>
       </div>
     );
@@ -497,7 +497,7 @@ const WorkReflectionView: React.FC<WorkReflectionProps> = ({ reflections, skills
                       <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest ml-1">Skill Baru yang Dipraktekkan (Maks. 2)</p>
                       <div className="flex flex-wrap gap-2">
                          {(formData.suggestedSkills || []).map(skill => (
-                           <div key={skill} className="bg-blue-50 text-blue-600 px-5 py-2.5 rounded-xl border border-blue-100 flex items-center gap-3"><span className="text-[10px] font-black uppercase">{skill}</span><button type="button" onClick={() => promoteSkillToDatabase(skill)} className="w-6 h-6 bg-blue-600 text-white rounded-lg flex items-center justify-center text-xs shadow-lg hover:scale-110 transition-transform">+</button><button type="button" onClick={() => setFormData({...formData, suggestedSkills: (formData.suggestedSkills || []).filter(s => s !== skill)})} className="text-blue-300 hover:text-blue-600">✕</button></div>
+                           <div key={skill} className="bg-blue-50 text-blue-600 px-5 py-2.5 rounded-xl border border-blue-100 flex items-center gap-3"><span className="text-10px font-black uppercase">{skill}</span><button type="button" onClick={() => promoteSkillToDatabase(skill)} className="w-6 h-6 bg-blue-600 text-white rounded-lg flex items-center justify-center text-xs shadow-lg hover:scale-110 transition-transform">+</button><button type="button" onClick={() => setFormData({...formData, suggestedSkills: (formData.suggestedSkills || []).filter(s => s !== skill)})} className="text-blue-300 hover:text-blue-600">✕</button></div>
                          ))}
                          {(formData.suggestedSkills || []).length < 2 && (
                             <div className="flex gap-2"><input className="px-5 py-2.5 rounded-xl bg-slate-50 border border-slate-100 text-xs font-bold outline-none" placeholder="Ketik skill baru..." value={newSkillInput} onChange={e => setNewSkillInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addSuggestedSkill())} /><button type="button" onClick={addSuggestedSkill} className="w-10 h-10 bg-slate-900 text-white rounded-xl flex items-center justify-center text-xl">+</button></div>

@@ -12,7 +12,7 @@ const AdminManagement: React.FC<AdminManagementProps> = ({ users, onUpdateMetada
   const [searchEmail, setSearchEmail] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const currentUserEmail = auth.currentUser?.email?.toLowerCase();
-  const isPrimaryAdmin = currentUserEmail === 'admin@jejakkarir.com';
+  const isPrimaryAdmin = currentUserEmail === 'admin@fokuskarir.web.id';
 
   // Daftar admin saat ini
   const admins = useMemo(() => {
@@ -41,7 +41,7 @@ const AdminManagement: React.FC<AdminManagementProps> = ({ users, onUpdateMetada
       try {
         await onUpdateMetadata(uid, { adminPromotionRequested: true });
         setSearchEmail('');
-        alert("Permintaan berhasil dikirim. Menunggu verifikasi admin@jejakkarir.com");
+        alert("Permintaan berhasil dikirim. Menunggu verifikasi admin@fokuskarir.web.id");
       } finally {
         setIsProcessing(false);
       }
@@ -59,7 +59,7 @@ const AdminManagement: React.FC<AdminManagementProps> = ({ users, onUpdateMetada
   };
 
   const handleDemote = async (uid: string, email: string) => {
-    if (email === 'admin@jejakkarir.com') {
+    if (email === 'admin@fokuskarir.web.id') {
       alert("Admin utama tidak dapat dicabut aksesnya.");
       return;
     }
@@ -214,7 +214,7 @@ const AdminManagement: React.FC<AdminManagementProps> = ({ users, onUpdateMetada
                   </td>
                   <td className="px-6 py-5">
                     <span className="px-3 py-1 bg-indigo-950 text-indigo-300 rounded-lg text-[9px] font-black uppercase border border-indigo-900/50 flex items-center gap-2 w-fit">
-                      <i className="bi bi-shield-lock-fill"></i> {admin.profile?.email === 'admin@jejakkarir.com' ? 'Owner / Primary' : 'Verified Admin'}
+                      <i className="bi bi-shield-lock-fill"></i> {admin.profile?.email === 'admin@fokuskarir.web.id' ? 'Owner / Primary' : 'Verified Admin'}
                     </span>
                   </td>
                   <td className="px-6 py-5 text-center">
@@ -224,7 +224,7 @@ const AdminManagement: React.FC<AdminManagementProps> = ({ users, onUpdateMetada
                     </span>
                   </td>
                   <td className="px-10 py-5 text-right">
-                    {admin.profile?.email !== 'admin@jejakkarir.com' ? (
+                    {admin.profile?.email !== 'admin@fokuskarir.web.id' ? (
                       <button 
                         onClick={() => handleDemote(admin.uid!, admin.profile.email)}
                         className="px-4 py-2 bg-rose-50 text-rose-500 font-black rounded-xl text-[9px] uppercase tracking-widest hover:bg-rose-500 hover:text-white transition-all"

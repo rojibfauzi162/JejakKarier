@@ -1,36 +1,33 @@
 
-# Panduan Aktivasi Google Authentication (FokusKarir)
+# Panduan Aktivasi Google Authentication (FokusKarir) - Domain Kustom
 
-Agar fitur "Masuk dengan Google" berfungsi, Anda perlu mengaktifkan penyedia Google di Firebase Console dan mengonfigurasi OAuth di Google Cloud Console.
+Agar fitur "Masuk dengan Google" berfungsi pada domain **fokuskarir.web.id**, Anda perlu melakukan konfigurasi berikut:
 
-### 1. Aktifkan Google di Firebase Console
+### 1. Masukkan Domain ke Firebase (Authorized Domains)
 1. Buka [Firebase Console](https://console.firebase.google.com/).
 2. Pilih proyek **jejakkarir-11379**.
-3. Klik menu **Build** > **Authentication** di sidebar kiri.
-4. Klik tab **Sign-in method**.
-5. Klik **Add new provider** dan pilih **Google**.
-6. Aktifkan toggle **Enable**.
-7. Isi **Project public-facing name** (contoh: FokusKarir).
-8. Pilih **Project support email** (email Anda).
-9. Klik **Save**.
+3. Navigasi ke **Build** > **Authentication** > **Settings**.
+4. Di bagian **Authorized domains**, klik **Add domain**.
+5. Masukkan: `fokuskarir.web.id`.
 
-### 2. Konfigurasi di Google Cloud Console (OAuth Screen)
-Jika status verifikasi belum selesai, Anda mungkin perlu mengatur layar persetujuan OAuth:
-1. Buka [Google Cloud Console](https://console.cloud.google.com/).
+### 2. Konfigurasi di Google Cloud Console (Credentials)
+1. Buka [Google Cloud Console Credentials](https://console.cloud.google.com/apis/credentials).
 2. Pastikan proyek yang dipilih adalah **jejakkarir-11379**.
-3. Buka menu **APIs & Services** > **OAuth consent screen**.
-4. Pilih **User Type: External** dan klik **Create**.
-5. Isi informasi aplikasi yang wajib:
-   - **App name**: FokusKarir
-   - **User support email**: Email Anda
-   - **Developer contact info**: Email Anda
-6. Klik **Save and Continue** sampai selesai.
+3. Di bawah **OAuth 2.0 Client IDs**, klik ikon pensil (Edit) pada **Web client (auto-created by Google Service)**.
+4. Pada bagian **Authorized JavaScript origins**, klik **ADD URI** dan masukkan:
+   - `https://fokuskarir.web.id`
+5. Pada bagian **Authorized redirect URIs**, klik **ADD URI** dan masukkan:
+   - `https://fokuskarir.web.id/__/auth/handler`
+   - *Catatan: URI default `https://jejakkarir-11379.firebaseapp.com/__/auth/handler` harus tetap ada.*
+6. Klik **SAVE**.
 
-### 3. Masukkan Domain Terorisasi (Authorized Domains)
-1. Kembali ke **Firebase Console** > **Authentication** > **Settings**.
-2. Pilih menu **Authorized domains** di sebelah kanan.
-3. Pastikan domain tempat Anda men-deploy aplikasi (misal: `localhost`, `vercel.app`, atau domain kustom Anda) sudah terdaftar di sana.
-4. Jika belum, klik **Add domain**.
+### 3. Client ID for Web Application
+Firebase mengelola Client ID ini secara otomatis. Jika Anda membutuhkannya untuk integrasi manual:
+- **Client ID** dapat ditemukan di halaman edit Credentials di atas (sebelah kanan atas).
+- **Client Secret** juga ada di halaman yang sama (namun Firebase sudah mengurusnya di sisi server).
 
-### 4. Selesai
-Tombol Google di aplikasi FokusKarir sekarang siap digunakan. Sistem akan secara otomatis membuat akun (pendaftaran) jika email Google tersebut belum terdaftar, atau masuk (login) jika sudah pernah digunakan.
+### 4. Verifikasi Domain di Search Console (Opsional tapi Disarankan)
+Jika Google meminta verifikasi kepemilikan domain untuk OAuth, Anda harus mendaftarkan domain tersebut di [Google Search Console](https://search.google.com/search-console).
+
+### 5. Selesai
+Setelah disimpan, perubahan ini mungkin memerlukan waktu 5-10 menit untuk propagasi global. Sekarang login Google akan berfungsi normal di domain utama Anda.

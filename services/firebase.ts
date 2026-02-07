@@ -7,7 +7,8 @@ import { AppData, AiConfig, SubscriptionProduct, AccountStatus, MayarConfig, Leg
 // KONFIGURASI FIREBASE
 const firebaseConfig = {
   apiKey: "AIzaSyCDvX0tJX24etCFWS9D-IG9B3_BV6xFGEk",
-  authDomain: "jejakkarir-11379.firebaseapp.com",
+  // Menggunakan domain kustom untuk authDomain jika sudah terhubung ke Hosting
+  authDomain: "fokuskarir.web.id", 
   projectId: "jejakkarir-11379",
   storageBucket: "jejakkarir-11379.firebasestorage.app",
   messagingSenderId: "1099213790353",
@@ -21,6 +22,10 @@ export const db = getFirestore(app);
 
 // Provider Google Auth
 const googleProvider = new GoogleAuthProvider();
+// Memaksa prompt pemilihan akun setiap kali login (opsional)
+googleProvider.setCustomParameters({
+  prompt: 'select_account'
+});
 
 /**
  * Fungsi Login/Register dengan Google

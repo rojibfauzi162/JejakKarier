@@ -136,7 +136,7 @@ const PublicReportView: React.FC<PublicReportViewProps> = ({ data, contextFilter
            ) : insightData ? (
              <div className="bg-white p-10 lg:p-14 rounded-[4rem] shadow-xl border border-white animate-in zoom-in duration-500 space-y-12">
                 <div className="space-y-4 text-center md:text-left">
-                   <h3 className="text-4xl font-black text-slate-900 tracking-tighter uppercase leading-none">{insightData.title}</h3>
+                   <h3 className="text-4xl font-black text-slate-900 tracking-tighter uppercase leading-none break-words">{insightData.title}</h3>
                    <p className="text-lg text-slate-500 italic leading-relaxed">"{insightData.summary}"</p>
                 </div>
 
