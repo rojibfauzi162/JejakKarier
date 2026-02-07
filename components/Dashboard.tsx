@@ -122,61 +122,15 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenNotif, on
       
       {/* MOBILE APP INTERFACE */}
       <div className="block lg:hidden space-y-6 bg-white min-h-screen">
-        {/* NEW ENHANCED MOBILE HEADER */}
-        <header className="px-6 pt-4 pb-2 flex items-center justify-between sticky top-0 bg-white/80 backdrop-blur-md z-[110] border-b border-slate-50">
+        {/* MODIFIED HEADER: Remove Actions, Keep Welcome only for Dashboard Context */}
+        <header className="px-2 pt-2 pb-4 flex items-center justify-between">
            <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-full border-2 border-slate-100 overflow-hidden shadow-sm">
                  {data.profile.photoUrl ? <img src={data.profile.photoUrl} alt="User" className="w-full h-full object-cover" /> : <div className="w-full h-full bg-slate-100 flex items-center justify-center text-xl"><i className="bi bi-person"></i></div>}
               </div>
               <div>
-                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Good Morning 👋</p>
-                 <h2 className="text-lg font-black text-slate-900 tracking-tight leading-none">{data.profile.name.split(' ')[0]}</h2>
-              </div>
-           </div>
-           <div className="flex gap-3">
-              {/* Notification with Badge Count */}
-              <button 
-                onClick={() => reminders.length > 0 ? setShowReminderModal(true) : onOpenNotif?.()} 
-                className={`w-10 h-10 rounded-full border border-slate-100 flex items-center justify-center shadow-sm relative transition-colors ${reminders.length > 0 ? 'text-indigo-600 bg-indigo-50' : 'text-slate-400'}`}
-              >
-                <i className={`bi ${reminders.length > 0 ? 'bi-bell-fill' : 'bi-bell'}`}></i>
-                {reminders.length > 0 && (
-                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-rose-500 text-white text-[9px] font-black rounded-full flex items-center justify-center px-1 border-2 border-white animate-in zoom-in duration-300">
-                    {reminders.length}
-                  </span>
-                )}
-              </button>
-
-              {/* Profile Shortcut with Dropdown */}
-              <div className="relative" ref={dropdownRef}>
-                <button 
-                  onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)} 
-                  className={`w-10 h-10 rounded-full border border-slate-100 flex items-center justify-center shadow-sm text-lg transition-all ${isProfileDropdownOpen ? 'bg-slate-900 text-white border-slate-900' : 'text-slate-400'}`}
-                >
-                  <i className="bi bi-person-circle"></i>
-                </button>
-                
-                {isProfileDropdownOpen && (
-                  <div className="absolute right-0 mt-3 w-48 bg-white/95 backdrop-blur-xl border border-slate-100 rounded-[1.5rem] shadow-2xl p-2 animate-in slide-in-from-top-2 duration-300 z-[120]">
-                    <div className="p-3 border-b border-slate-50 mb-1">
-                        <p className="text-[10px] font-black text-slate-900 leading-none truncate">{data.profile.name}</p>
-                        <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-1">User Account</p>
-                    </div>
-                    <button onClick={() => { onNavigate?.('profile'); setIsProfileDropdownOpen(false); }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 transition-all text-left">
-                        <i className="bi bi-person-circle text-sm"></i>
-                        <span className="text-[10px] font-black uppercase tracking-widest">Profil Saya</span>
-                    </button>
-                    <button onClick={() => { onNavigate?.('settings'); setIsProfileDropdownOpen(false); }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 transition-all text-left">
-                        <i className="bi bi-gear-fill text-sm"></i>
-                        <span className="text-[10px] font-black uppercase tracking-widest">Pengaturan</span>
-                    </button>
-                    <div className="h-px bg-slate-50 my-1 mx-2"></div>
-                    <button onClick={() => { if(onLogout) onLogout(); setIsProfileDropdownOpen(false); }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-rose-50 text-rose-500 transition-all text-left">
-                        <i className="bi bi-box-arrow-right text-sm"></i>
-                        <span className="text-[10px] font-black uppercase tracking-widest">Logout</span>
-                    </button>
-                  </div>
-                )}
+                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1.5">Good Morning 👋</p>
+                 <h2 className="text-xl font-black text-slate-900 tracking-tight leading-none">{data.profile.name.split(' ')[0]}</h2>
               </div>
            </div>
         </header>

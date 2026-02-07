@@ -379,48 +379,61 @@ const App: React.FC = () => {
     <div className="min-h-screen bg-slate-50 flex flex-col lg:flex-row overflow-x-hidden">
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} onLogout={() => auth.signOut()} isAdmin={isAdmin} />
       
-      <main className="flex-1 lg:ml-64 p-4 lg:p-8">
+      <main className="flex-1 lg:ml-64">
         {/* PT-6 Wrapper for content to add space from header in mobile */}
-        <div className={`${!isAdmin ? 'pt-2 lg:pt-0' : ''}`}>
-          {/* Upgrade Modal Component */}
-          {isUpgradeModalOpen && (
-            <UpgradeModal 
-              products={publicProducts} 
-              onClose={() => setIsUpgradeModalOpen(false)} 
-              currentPlan={data.plan}
+        <div className={`${!isAdmin ? 'pt-0' : 'p-4 lg:p-8'}`}>
+          {/* Mobile Global Header for User role - ALWAYS VISIBLE */}
+          {!isAdmin && (
+            <MobileHeader 
+              profile={data.profile} 
+              notificationCount={activeAlerts.length} 
+              onNavigate={handleNavigate}
+              activeTab={activeTab}
+              alerts={activeAlerts}
             />
           )}
-          
-          {/* Header Desktop */}
-          <div className="hidden lg:flex items-center justify-between mb-8">
-             <div>
-                <h2 className="text-xl font-black text-slate-900 tracking-tight uppercase">{activeTab.replace('_', ' ')}</h2>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">FokusKarir Control Center</p>
-             </div>
-             <div className="flex items-center gap-6">
-                {activeAlerts.length > 0 && (
-                  <div className="flex -space-x-2">
-                     {activeAlerts.slice(0, 3).map(alert => (
-                       <div key={alert.id} className={`w-8 h-8 rounded-full bg-${alert.color}-50 text-${alert.color}-600 border-2 border-white flex items-center justify-center text-xs shadow-sm cursor-pointer`} title={alert.text} onClick={() => handleNavigate(alert.target)}>
-                          <i className={`bi ${alert.icon}`}></i>
-                       </div>
-                     ))}
-                  </div>
-                )}
-                <div className="h-8 w-px bg-slate-200"></div>
-                <div className="flex items-center gap-3">
-                   <div className="text-right">
-                      <p className="text-[10px] font-black text-slate-900 leading-none">{data.profile.name}</p>
-                      <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-1">{data.plan} Member</p>
-                   </div>
-                   <div className="w-10 h-10 rounded-full bg-slate-200 overflow-hidden border-2 border-white shadow-sm">
-                      {data.profile.photoUrl ? <img src={data.profile.photoUrl} className="w-full h-full object-cover" alt="User profile" /> : <div className="w-full h-full flex items-center justify-center text-slate-400"><i className="bi bi-person"></i></div>}
-                   </div>
-                </div>
-             </div>
-          </div>
 
-          {renderContent()}
+          <div className={`${!isAdmin ? 'p-4 lg:p-8 pt-6' : ''}`}>
+            {/* Upgrade Modal Component */}
+            {isUpgradeModalOpen && (
+              <UpgradeModal 
+                products={publicProducts} 
+                onClose={() => setIsUpgradeModalOpen(false)} 
+                currentPlan={data.plan}
+              />
+            )}
+            
+            {/* Header Desktop */}
+            <div className="hidden lg:flex items-center justify-between mb-8">
+               <div>
+                  <h2 className="text-xl font-black text-slate-900 tracking-tight uppercase">{activeTab.replace('_', ' ')}</h2>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">FokusKarir Control Center</p>
+               </div>
+               <div className="flex items-center gap-6">
+                  {activeAlerts.length > 0 && (
+                    <div className="flex -space-x-2">
+                       {activeAlerts.slice(0, 3).map(alert => (
+                         <div key={alert.id} className={`w-8 h-8 rounded-full bg-${alert.color}-50 text-${alert.color}-600 border-2 border-white flex items-center justify-center text-xs shadow-sm cursor-pointer`} title={alert.text} onClick={() => handleNavigate(alert.target)}>
+                            <i className={`bi ${alert.icon}`}></i>
+                         </div>
+                       ))}
+                    </div>
+                  )}
+                  <div className="h-8 w-px bg-slate-200"></div>
+                  <div className="flex items-center gap-3">
+                     <div className="text-right">
+                        <p className="text-[10px] font-black text-slate-900 leading-none">{data.profile.name}</p>
+                        <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-1">{data.plan} Member</p>
+                     </div>
+                     <div className="w-10 h-10 rounded-full bg-slate-200 overflow-hidden border-2 border-white shadow-sm">
+                        {data.profile.photoUrl ? <img src={data.profile.photoUrl} className="w-full h-full object-cover" alt="User profile" /> : <div className="w-full h-full flex items-center justify-center text-slate-400"><i className="bi bi-person"></i></div>}
+                     </div>
+                  </div>
+               </div>
+            </div>
+
+            {renderContent()}
+          </div>
         </div>
       </main>
 
