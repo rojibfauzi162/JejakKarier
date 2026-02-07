@@ -380,7 +380,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard', user
                                 type="date" 
                                 className="w-full px-4 py-2.5 rounded-xl border text-xs font-bold bg-slate-50" 
                                 value={editingUser.expiryDate ? editingUser.expiryDate.split('T')[0] : ''}
-                                onChange={e => setEditingUser({ ...editingUser, expiryDate: e.target.value ? new Date(e.target.value).toISOString() : null })}
+                                onChange={e => setEditingUser({ ...editingUser, expiryDate: e.target.value ? new Date(e.target.value).toISOString() : undefined })}
                             />
                         </div>
                     </div>

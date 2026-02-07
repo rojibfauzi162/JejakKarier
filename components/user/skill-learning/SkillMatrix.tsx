@@ -197,7 +197,7 @@ const SkillMatrix: React.FC<SkillMatrixProps> = ({ skills, onAddSkill, onUpdateS
              <h3 className="text-2xl font-black text-slate-900 uppercase mb-8">{editingItem ? 'Edit Skill' : 'Tambah Skill Baru'}</h3>
              <SkillForm 
                initialData={editingItem} 
-               onSubmit={(data) => {
+               onSubmit={(data: any) => {
                  if (editingItem) onUpdateSkill({ ...editingItem, ...data } as Skill);
                  else onAddSkill({ ...data, id: Math.random().toString(36).substr(2,9) } as Skill);
                  setIsFormOpen(false);

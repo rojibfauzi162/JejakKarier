@@ -53,7 +53,7 @@ const AppsHub: React.FC<AppsHubProps> = ({ onNavigate }) => {
             {cat.items.map((item, i) => (
               <button 
                 key={i} 
-                onClick={() => onNavigate(item.id, item.sub)}
+                onClick={() => onNavigate(item.id, (item as any).sub)}
                 className="flex flex-col items-center gap-3 active:scale-90 transition-all group"
               >
                 <div className={`w-16 h-16 rounded-[1.75rem] flex items-center justify-center text-2xl shadow-sm border border-black/5 transition-all group-hover:shadow-lg ${item.color}`}>

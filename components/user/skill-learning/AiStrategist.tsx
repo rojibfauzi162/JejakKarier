@@ -20,6 +20,7 @@ const AiStrategist: React.FC<AiStrategistProps> = ({
   const [aiStatusMessage, setAiStatusMessage] = useState('');
   const [aiLang, setAiLang] = useState<'id' | 'en'>('id');
   const [aiResults, setAiResults] = useState<any>(data?.aiStrategies && data.aiStrategies.length > 0 ? data.aiStrategies[0] : null);
+  const [showHistoryList, setShowHistoryList] = useState(false);
 
   const [confirmation, setConfirmation] = useState<{
     type: 'todo' | 'training' | 'cert';
@@ -27,15 +28,17 @@ const AiStrategist: React.FC<AiStrategistProps> = ({
     meta?: string;
   } | null>(null);
 
-  // Helper untuk merender data mentah dari AI secara aman guna menghindari React Error #31
+  // Helper yang lebih cerdas untuk merender data mentah dari AI
   const safeRender = (val: any, fallback: string = ""): string => {
-    if (val === null || val === undefined) return fallback;
+    if (val === null || val === undefined || val === "") return fallback;
     if (typeof val === 'string' || typeof val === 'number') return String(val);
     if (typeof val === 'object') {
       if (val.name) return String(val.name);
       if (val.text) return String(val.text);
       if (val.label) return String(val.label);
       if (val.major) return String(val.major);
+      if (val.content) return String(val.content);
+      // Jika objek kosong atau tidak dikenal, gunakan fallback
       return fallback;
     }
     return fallback;
@@ -47,7 +50,7 @@ const AiStrategist: React.FC<AiStrategistProps> = ({
     
     const progressInterval = setInterval(() => {
       setAiProgress(prev => {
-        if (prev >= 95) return prev;
+        if (prev >= 98) return prev;
         return prev + Math.random() * 5;
       });
     }, 1200);
@@ -70,7 +73,7 @@ const AiStrategist: React.FC<AiStrategistProps> = ({
         
         setTimeout(() => {
           setIsAiAnalyzing(false);
-          showToast("Strategi Karir Baru Berhasil Disusun! 🧠", 'success');
+          showToast(aiLang === 'id' ? "Strategi Karir Baru Berhasil Disusun! 🧠" : "New Career Strategy Successfully Generated! 🧠", 'success');
         }, 800);
       } else {
         throw new Error("Data AI kosong");
@@ -93,7 +96,8 @@ const AiStrategist: React.FC<AiStrategistProps> = ({
       onAddTraining({ id: Math.random().toString(36).substr(2, 9), name: safeRender(item.name), provider: safeRender(item.provider), cost: 0, date: new Date().toISOString().split('T')[0], topic: safeRender(item.detail), status: TrainingStatus.PLANNED, link: '', notes: safeRender(item.priceRange), progress: 0, deadline: '', priority: SkillPriority.MEDIUM });
       showToast("Training dicatat! 📖");
     } else if (type === 'cert') {
-      onAddCert({ id: Math.random().toString(36).substr(2, 9), name: safeRender(item.name), issuer: safeRender(item.provider), date: '', expiryDate: '', isActive: false, relatedSkill: safeRender(item.detail), fileLink: '', status: TrainingStatus.PLANNED });
+      // Fix: Removed non-existent 'provider' property from Certification object literal
+      onAddCert({ id: Math.random().toString(36).substr(2, 9), name: safeRender(item.name), date: '', expiryDate: '', isActive: false, relatedSkill: safeRender(item.detail), fileLink: '', status: TrainingStatus.PLANNED, issuer: safeRender(item.provider) });
       showToast("Certification dicatat! 📜");
     }
     setConfirmation(null);
@@ -107,7 +111,7 @@ const AiStrategist: React.FC<AiStrategistProps> = ({
               <div className="text-center">
                  <div className="w-20 h-20 bg-indigo-50 text-indigo-600 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-inner"><i className="bi bi-question-lg text-3xl"></i></div>
                  <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight mb-4">Konfirmasi</h3>
-                 <p className="text-slate-400 font-bold text-xs uppercase tracking-widest leading-relaxed mb-10">Tambahkan ke Rencana Anda?</p>
+                 <p className="text-slate-400 font-bold text-xs uppercase tracking-widest leading-relaxed mb-10">Tambahkan langkah mikro ini ke Rencana Harian Anda?</p>
                  <div className="flex gap-4">
                     <button onClick={() => setConfirmation(null)} className="flex-1 py-4 bg-slate-50 text-slate-400 font-black rounded-2xl uppercase text-[10px] tracking-widest">Batal</button>
                     <button onClick={executeAddAction} className="flex-[2] py-4 bg-indigo-600 text-white font-black rounded-2xl uppercase text-[10px] tracking-widest shadow-xl hover:bg-indigo-700 transition-all">Ya, Tambahkan!</button>
@@ -121,17 +125,27 @@ const AiStrategist: React.FC<AiStrategistProps> = ({
         <div className="relative z-10">
           <div className="flex justify-between items-start mb-10">
             <div className="w-20 h-20 bg-indigo-600 rounded-[2.5rem] flex items-center justify-center text-4xl shadow-[0_0_50px_rgba(79,70,229,0.4)]">🧠</div>
-            <div className="flex gap-2 bg-white/5 p-1.5 rounded-2xl border border-white/10 backdrop-blur-md">
-              <button onClick={() => setAiLang('id')} className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${aiLang === 'id' ? 'bg-white text-slate-900 shadow-xl' : 'text-slate-400 hover:text-white'}`}>ID</button>
-              <button onClick={() => setAiLang('en')} className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${aiLang === 'en' ? 'bg-white text-slate-900 shadow-xl' : 'text-slate-400 hover:text-white'}`}>EN</button>
+            <div className="flex flex-col items-end gap-3">
+               <div className="flex gap-2 bg-white/5 p-1.5 rounded-2xl border border-white/10 backdrop-blur-md">
+                 <button onClick={() => setAiLang('id')} className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${aiLang === 'id' ? 'bg-white text-slate-900 shadow-xl' : 'text-slate-400 hover:text-white'}`}>ID</button>
+                 <button onClick={() => setAiLang('en')} className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${aiLang === 'en' ? 'bg-white text-slate-900 shadow-xl' : 'text-slate-400 hover:text-white'}`}>EN</button>
+               </div>
+               {data.aiStrategies && data.aiStrategies.length > 0 && (
+                 <button 
+                  onClick={() => setShowHistoryList(!showHistoryList)}
+                  className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-[9px] font-black uppercase tracking-widest text-slate-400 hover:bg-white/10 transition-all"
+                 >
+                   {showHistoryList ? 'Tutup Riwayat' : `Lihat Riwayat (${data.aiStrategies.length})`}
+                 </button>
+               )}
             </div>
           </div>
           <h3 className="text-3xl lg:text-4xl font-black tracking-tighter mb-6 uppercase leading-none">AI Qualification Strategist</h3>
-          <p className="text-slate-400 text-base lg:text-lg max-w-2xl leading-relaxed font-medium">Asisten cerdas untuk mengukur skor kesiapan dan merekomendasikan langkah mikro strategis.</p>
+          <p className="text-slate-400 text-base lg:text-lg max-w-2xl leading-relaxed font-medium">Sistem analisis kompetensi berbasis AI untuk memetakan kesiapan karier dan rekomendasi akselerasi kualifikasi.</p>
           {isAiAnalyzing && (
             <div className="mt-10 space-y-6">
                <div className="flex justify-between items-end mb-2">
-                  <p className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-400 animate-pulse">Menghitung Strategi...</p>
+                  <p className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-400 animate-pulse">Menghitung Strategi Karir...</p>
                   <p className="text-2xl font-black text-white">{Math.round(aiProgress)}%</p>
                </div>
                <div className="w-full h-3 bg-white/5 rounded-full overflow-hidden border border-white/10">
@@ -139,19 +153,47 @@ const AiStrategist: React.FC<AiStrategistProps> = ({
                </div>
             </div>
           )}
-          <div className="mt-10"><button onClick={handleRunAiStrategist} disabled={isAiAnalyzing} className="px-12 py-5 bg-indigo-600 text-white font-black rounded-[2rem] uppercase text-[11px] shadow-xl hover:bg-indigo-500 active:scale-95 disabled:opacity-50 transition-all">{isAiAnalyzing ? 'MEMPROSES...' : 'UPDATE STRATEGI KARIR'}</button></div>
+          <div className="mt-10 flex flex-wrap gap-4">
+            <button onClick={handleRunAiStrategist} disabled={isAiAnalyzing} className="px-12 py-5 bg-indigo-600 text-white font-black rounded-[2rem] uppercase text-[11px] shadow-xl hover:bg-indigo-500 active:scale-95 disabled:opacity-50 transition-all">{isAiAnalyzing ? 'SEDANG MENGANALISIS...' : 'UPDATE STRATEGI KARIR'}</button>
+          </div>
         </div>
       </div>
+
+      {/* HISTORY LIST UI */}
+      {showHistoryList && data.aiStrategies && data.aiStrategies.length > 0 && (
+        <div className="bg-white p-8 lg:p-10 rounded-[3.5rem] border border-slate-100 shadow-sm animate-in slide-in-from-top-4 duration-500">
+           <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.4em] mb-8">Riwayat Generate Strategi</h4>
+           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {data.aiStrategies.slice().sort((a,b) => b.version - a.version).map((strat, idx) => (
+                <button 
+                  key={idx} 
+                  onClick={() => { setAiResults(strat); setShowHistoryList(false); }}
+                  className={`p-6 rounded-[2rem] border-2 text-left transition-all ${aiResults?.version === strat.version ? 'bg-indigo-50 border-indigo-500 shadow-lg' : 'bg-slate-50 border-slate-100 hover:bg-white hover:border-slate-200'}`}
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <span className="px-3 py-1 bg-slate-900 text-white text-[8px] font-black rounded-full uppercase tracking-widest">v{strat.version}</span>
+                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">{strat.language === 'id' ? 'Bahasa: ID' : 'Lang: EN'}</span>
+                  </div>
+                  <p className="text-xs font-black text-slate-800 uppercase tracking-tighter truncate mb-1">{strat.targetGoal}</p>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{new Date(strat.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+                </button>
+              ))}
+           </div>
+        </div>
+      )}
 
       {aiResults && !isAiAnalyzing && (
         <div className="space-y-10 animate-in zoom-in duration-700">
            {/* NEXT SMALL ACTIONS */}
            <div className="bg-white p-10 lg:p-14 rounded-[4rem] shadow-sm border border-slate-100 text-center">
-              <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.4em] mb-12">Langkah Cepat (Apa yang harus kamu lakukan minggu ini)</h4>
+              <div className="flex flex-col items-center mb-12">
+                <span className="px-4 py-1.5 bg-slate-900 text-white rounded-full text-[9px] font-black uppercase tracking-widest mb-4 shadow-xl">Versi {aiResults.version} • {new Date(aiResults.date).toLocaleDateString('id-ID')}</span>
+                <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.4em]">Langkah Mikro (Action Items)</h4>
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                 <ActionCard timeframe="MINGGU INI" action={safeRender(aiResults.immediateActions?.weekly)} color="rose" icon="🗓️" onPlan={() => setConfirmation({ type: 'todo', item: aiResults.immediateActions?.weekly })} />
-                 <ActionCard timeframe="BULAN INI" action={safeRender(aiResults.immediateActions?.monthly)} color="indigo" icon="🗓️" onPlan={() => setConfirmation({ type: 'todo', item: aiResults.immediateActions?.monthly })} />
-                 <ActionCard timeframe="BULAN DEPAN" action={safeRender(aiResults.immediateActions?.nextMonth)} color="emerald" icon="🚀" onPlan={() => setConfirmation({ type: 'todo', item: aiResults.immediateActions?.nextMonth })} />
+                 <ActionCard timeframe="MINGGU INI" action={safeRender(aiResults.immediateActions?.weekly, "Analisis detail segera hadir...")} color="rose" icon="🗓️" onPlan={() => setConfirmation({ type: 'todo', item: aiResults.immediateActions?.weekly })} />
+                 <ActionCard timeframe="BULAN INI" action={safeRender(aiResults.immediateActions?.monthly, "Menyusun strategi bulan ini...")} color="indigo" icon="🗓️" onPlan={() => setConfirmation({ type: 'todo', item: aiResults.immediateActions?.monthly })} />
+                 <ActionCard timeframe="BULAN DEPAN" action={safeRender(aiResults.immediateActions?.nextMonth, "Target strategis bulan depan...")} color="emerald" icon="🚀" onPlan={() => setConfirmation({ type: 'todo', item: aiResults.immediateActions?.nextMonth })} />
               </div>
            </div>
 
@@ -165,17 +207,16 @@ const AiStrategist: React.FC<AiStrategistProps> = ({
                       <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 100 100"><circle cx="50" cy="50" r="43" fill="transparent" stroke="currentColor" strokeWidth="14" className="text-indigo-600" strokeDasharray="270.17" strokeDashoffset={270.17 - (270.17 * (Number(aiResults.readinessScore) || 0) / 100)} strokeLinecap="round" /></svg>
                    </div>
                 </div>
-                <h4 className="text-[11px] font-black text-indigo-600 uppercase tracking-[0.3em] mb-2">Skor Kesiapan Kerja</h4>
-                <p className="text-[10px] font-black text-slate-900 uppercase tracking-tight mb-2">Untuk Posisi Target:</p>
-                <p className="text-base font-black text-indigo-600 uppercase tracking-tighter leading-tight bg-indigo-50 px-4 py-2 rounded-xl border border-indigo-100">{safeRender(aiResults.targetGoal || data.profile.shortTermTarget)}</p>
-                <p className="text-[8px] text-slate-400 font-bold uppercase max-w-[200px] leading-relaxed mt-4">(Seberapa siap kamu dipromosikan atau diterima kerja di posisi ini)</p>
+                <h4 className="text-[11px] font-black text-indigo-600 uppercase tracking-[0.3em] mb-2">Skor Kesiapan Karier</h4>
+                <p className="text-[10px] font-black text-slate-900 uppercase tracking-tight mb-2">TARGET POSISI:</p>
+                <p className="text-base font-black text-indigo-600 uppercase tracking-tighter leading-tight bg-indigo-50 px-4 py-2 rounded-xl border border-indigo-100">{safeRender(aiResults.targetGoal || data.profile.shortTermTarget || "Posisi Target")}</p>
              </div>
 
              {/* EXECUTIVE ANALYSIS */}
              <div className="lg:col-span-8 bg-white p-10 rounded-[3.5rem] shadow-sm border border-slate-100 h-full flex flex-col justify-center">
-                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] mb-8">Analisis Peluang Karir (Prediksi AI tentang masa depanmu)</h4>
-                <p className="text-base text-slate-600 leading-relaxed font-medium italic">"{safeRender(aiResults.scoreExplanation || 'AI sedang menganalisis potensi Anda...')}"</p>
-                <div className="mt-8 p-6 bg-indigo-50 rounded-[2rem] border border-indigo-100 text-sm font-black text-indigo-900 italic">"{safeRender(aiResults.motivation || 'Teruslah melangkah, masa depan Anda cerah!')}"</div>
+                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] mb-8">Analisis Strategis & Peluang</h4>
+                <p className="text-base text-slate-600 leading-relaxed font-medium italic">"{safeRender(aiResults.scoreExplanation, "AI sedang merumuskan analisis kualifikasi mendalam untuk profil Anda...")}"</p>
+                <div className="mt-8 p-6 bg-indigo-50 rounded-[2rem] border border-indigo-100 text-sm font-black text-indigo-900 italic">"{safeRender(aiResults.motivation, "Setiap langkah kecil yang terdokumentasi adalah bukti nyata kemajuan karier Anda.")}"</div>
              </div>
            </div>
 
@@ -184,18 +225,18 @@ const AiStrategist: React.FC<AiStrategistProps> = ({
               <div className="bg-white p-8 lg:p-10 rounded-[3.5rem] border border-slate-100 shadow-sm flex items-start gap-6">
                  <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-[1.75rem] flex items-center justify-center text-3xl shadow-inner shrink-0">⏳</div>
                  <div>
-                    <h4 className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-3">Standard Pengalaman Kerja</h4>
-                    <p className="text-sm font-black text-slate-800 leading-relaxed uppercase">{safeRender(aiResults.experiencePrerequisites || "Minimal 2-3 tahun di posisi terkait")}</p>
+                    <h4 className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-3">Prasyarat Pengalaman</h4>
+                    <p className="text-sm font-black text-slate-800 leading-relaxed uppercase">{safeRender(aiResults.experiencePrerequisites, "Standard industri sedang dikalkulasi...")}</p>
                  </div>
               </div>
               <div className="bg-white p-8 lg:p-10 rounded-[3.5rem] border border-slate-100 shadow-sm flex items-start gap-6">
                  <div className="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-[1.75rem] flex items-center justify-center text-3xl shadow-inner shrink-0">🎓</div>
                  <div>
-                    <h4 className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-3">Saran Pendidikan Formal</h4>
+                    <h4 className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-3">Pendidikan Yang Relevan</h4>
                     <p className="text-sm font-black text-slate-800 leading-relaxed uppercase">
-                      {safeRender(aiResults.educationRecommendation?.strata || "Minimal Sarjana (S1)")} - {safeRender(aiResults.educationRecommendation?.major || aiResults.relevantEducation || "Jurusan Spesifik")}
+                      {safeRender(aiResults.educationRecommendation?.strata, "Gelar")} - {safeRender(aiResults.educationRecommendation?.major || aiResults.relevantEducation, "Jurusan")}
                     </p>
-                    <p className="text-[10px] text-slate-400 font-bold mt-2 italic">"{safeRender(aiResults.educationRecommendation?.detail || "Kualifikasi akademik yang direkomendasikan untuk menunjang daya saing Anda.")}"</p>
+                    <p className="text-[10px] text-slate-400 font-bold mt-2 italic">"{safeRender(aiResults.educationRecommendation?.detail, "Mendukung daya saing profesional di target pasar.")}"</p>
                  </div>
               </div>
            </div>
@@ -203,75 +244,75 @@ const AiStrategist: React.FC<AiStrategistProps> = ({
            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
               {/* STRATEGIC RECOMMENDATIONS */}
               <div className="bg-white p-10 rounded-[3.5rem] shadow-sm border border-slate-100">
-                 <h4 className="text-[10px] font-black text-indigo-600 uppercase tracking-[0.4em] mb-8">Kursus & Sertifikasi Yang Disarankan AI</h4>
+                 <h4 className="text-[10px] font-black text-indigo-600 uppercase tracking-[0.4em] mb-8">Rekomendasi Kursus & Sertifikasi</h4>
                  <div className="space-y-8">
                     <div>
-                       <p className="text-[9px] font-black text-slate-400 uppercase mb-4 flex items-center gap-2"><span className="w-1.5 h-1.5 bg-indigo-500 rounded-full"></span>PELATIHAN (TRAINING)</p>
+                       <p className="text-[9px] font-black text-slate-400 uppercase mb-4 flex items-center gap-2"><span className="w-1.5 h-1.5 bg-indigo-500 rounded-full"></span>PELATIHAN STRATEGIS</p>
                        {Array.isArray(aiResults.recommendations?.trainings) && aiResults.recommendations.trainings.length > 0 ? aiResults.recommendations.trainings.map((t: AiRecommendation, i: number) => (
                          <RecommendationCard key={i} item={t} type="training" onPlan={() => setConfirmation({ type: 'training', item: t })} color="indigo" safeRender={safeRender} />
-                       )) : <p className="text-[10px] text-slate-400 italic">Tidak ada rekomendasi pelatihan saat ini.</p>}
+                       )) : <p className="text-[10px] text-slate-400 italic">Rekomendasi pelatihan sedang disiapkan...</p>}
                     </div>
                     <div>
-                       <p className="text-[9px] font-black text-slate-400 uppercase mb-4 flex items-center gap-2"><span className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>SERTIFIKASI (CERTIFICATION)</p>
+                       <p className="text-[9px] font-black text-slate-400 uppercase mb-4 flex items-center gap-2"><span className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>SERTIFIKASI PROFESI</p>
                        {Array.isArray(aiResults.recommendations?.certifications) && aiResults.recommendations.certifications.length > 0 ? aiResults.recommendations.certifications.map((c: AiRecommendation, i: number) => (
                          <RecommendationCard key={i} item={c} type="cert" onPlan={() => setConfirmation({ type: 'cert', item: c })} color="emerald" safeRender={safeRender} />
-                       )) : <p className="text-[10px] text-slate-400 italic">Tidak ada rekomendasi sertifikasi saat ini.</p>}
+                       )) : <p className="text-[10px] text-slate-400 italic">Rekomendasi sertifikasi sedang disiapkan...</p>}
                     </div>
                  </div>
               </div>
 
               {/* CRITICAL GAPS */}
               <div className="bg-white p-10 rounded-[3.5rem] shadow-sm border border-slate-100 h-full">
-                 <h4 className="text-[10px] font-black text-rose-500 uppercase tracking-[0.4em] mb-8">Skill yang Masih Kurang (Celah yang harus segera kamu tutup)</h4>
+                 <h4 className="text-[10px] font-black text-rose-500 uppercase tracking-[0.4em] mb-8">Identifikasi Skill Gap Kritis</h4>
                  <div className="space-y-6">
                     {Array.isArray(aiResults.criticalGaps) && aiResults.criticalGaps.length > 0 ? aiResults.criticalGaps.map((gap: any, i: number) => (
                       <div key={i} className="p-6 bg-rose-50/40 rounded-[2.5rem] border border-rose-100">
-                        <div className="flex justify-between mb-3"><p className="font-black text-slate-800 text-sm uppercase">{safeRender(gap.skill)}</p><span className="px-3 py-1 bg-rose-600 text-white text-[8px] font-black rounded-full uppercase">{safeRender(gap.priority)}</span></div>
-                        <p className="text-[12px] text-slate-600 leading-relaxed font-bold italic opacity-70">"{safeRender(gap.why)}"</p>
+                        <div className="flex justify-between mb-3"><p className="font-black text-slate-800 text-sm uppercase">{safeRender(gap.skill, "Kompetensi")}</p><span className="px-3 py-1 bg-rose-600 text-white text-[8px] font-black rounded-full uppercase">{safeRender(gap.priority, "High")}</span></div>
+                        <p className="text-[12px] text-slate-600 leading-relaxed font-bold italic opacity-70">"{safeRender(gap.why, "Area ini memerlukan penguatan untuk mencapai standard industri.")}"</p>
                       </div>
-                    )) : <p className="text-[10px] text-slate-400 italic p-6">Selamat! Tidak ada gap kritis yang terdeteksi.</p>}
+                    )) : <p className="text-[10px] text-slate-400 italic p-6">Menganalisis celah kompetensi...</p>}
                  </div>
               </div>
            </div>
 
            {/* EXPERIENCE ROADMAP PREREQUISITES */}
            <div className="bg-white p-10 lg:p-14 rounded-[4rem] shadow-sm border border-slate-100">
-              <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.4em] mb-12">Peta Jalan Pengalaman Kerja (Jalur Posisi & Durasi)</h4>
+              <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.4em] mb-12">Peta Jalan Pengalaman Karier</h4>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative">
                  {Array.isArray(aiResults.experienceRoadmap) && aiResults.experienceRoadmap.length > 0 ? aiResults.experienceRoadmap.map((step: any, i: number) => (
                    <div key={i} className="relative pl-14 group">
                       <div className="absolute left-0 top-0 w-10 h-10 bg-slate-900 text-white rounded-2xl flex items-center justify-center font-black text-sm shadow-xl group-hover:scale-110 transition-transform">{i + 1}</div>
-                      <h5 className="text-sm font-black text-slate-800 uppercase tracking-tight mb-2">{safeRender(step.position)}</h5>
+                      <h5 className="text-sm font-black text-slate-800 uppercase tracking-tight mb-2">{safeRender(step.position, "Posisi")}</h5>
                       <div className="flex flex-wrap gap-2 mb-3">
-                        <span className="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-lg text-[9px] font-black uppercase border border-indigo-100">Bidang: {safeRender(step.field || 'Relevan')}</span>
-                        <span className="px-3 py-1 bg-slate-100 text-slate-500 rounded-lg text-[9px] font-black uppercase border border-slate-200">Durasi: {safeRender(step.duration)}</span>
+                        <span className="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-lg text-[9px] font-black uppercase border border-indigo-100">B: {safeRender(step.field || 'Relevan')}</span>
+                        <span className="px-3 py-1 bg-slate-100 text-slate-500 rounded-lg text-[9px] font-black uppercase border border-slate-200">D: {safeRender(step.duration)}</span>
                       </div>
-                      <p className="text-[11px] text-slate-500 leading-relaxed font-medium italic">"Fokus: {safeRender(step.focus)}"</p>
+                      <p className="text-[11px] text-slate-500 leading-relaxed font-medium italic">"Fokus: {safeRender(step.focus, "Target Kompetensi")}"</p>
                    </div>
                  )) : (
-                   <div className="col-span-full py-10 text-center text-slate-400 italic">Analisis roadmap pengalaman sedang disinkronkan...</div>
+                   <div className="col-span-full py-10 text-center text-slate-400 italic">Membangun peta jalan pengalaman...</div>
                  )}
               </div>
            </div>
 
            {/* ROADMAP DETAILED STEPS */}
            <div className="bg-white p-10 lg:p-14 rounded-[4rem] shadow-sm border border-slate-100">
-              <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.4em] mb-12">Langkah Mikro Strategis (Urutan Eksekusi)</h4>
+              <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.4em] mb-12">Detail Rencana Eksekusi</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                  {Array.isArray(aiResults.roadmapSteps) && aiResults.roadmapSteps.length > 0 ? aiResults.roadmapSteps.map((step: any, i: number) => (
                    <div key={i} className="relative pl-14">
                       <div className="absolute left-0 top-0 w-10 h-10 bg-slate-900 text-white rounded-2xl flex items-center justify-center font-black text-sm shadow-xl">{i + 1}</div>
-                      <h5 className="text-sm font-black text-slate-800 uppercase tracking-tight mb-2">{safeRender(step.title)}</h5>
-                      <p className="text-[11px] text-slate-500 leading-relaxed font-medium">{safeRender(step.detail)}</p>
+                      <h5 className="text-sm font-black text-slate-800 uppercase tracking-tight mb-2">{safeRender(step.title, "Langkah")}</h5>
+                      <p className="text-[11px] text-slate-500 leading-relaxed font-medium">{safeRender(step.detail, "Keterangan teknis langkah strategis.")}</p>
                    </div>
-                 )) : <p className="col-span-full text-center text-slate-400 italic">Menyusun langkah mikro...</p>}
+                 )) : <p className="col-span-full text-center text-slate-400 italic">Merumuskan urutan eksekusi...</p>}
               </div>
            </div>
 
            {/* EXECUTIVE SUMMARY CONCLUSION */}
            <div className="bg-indigo-600 p-10 lg:p-14 rounded-[4rem] shadow-2xl text-white">
               <h4 className="text-[11px] font-black text-white/50 uppercase tracking-[0.4em] mb-8 text-center">KESIMPULAN STRATEGIS</h4>
-              <p className="text-lg lg:text-xl font-bold leading-relaxed text-center max-w-4xl mx-auto italic">"{safeRender(aiResults.executiveSummary || 'Strategi karier Anda telah siap untuk dieksekusi.')}"</p>
+              <p className="text-lg lg:text-xl font-bold leading-relaxed text-center max-w-4xl mx-auto italic">"{safeRender(aiResults.executiveSummary, "Hasil kalibrasi AI menunjukkan potensi optimalisasi pada portofolio Anda untuk akselerasi karier.")}"</p>
            </div>
         </div>
       )}
@@ -286,7 +327,7 @@ const ActionCard = ({ timeframe, action, color, icon, onPlan }: any) => {
     <div className={`p-8 rounded-[3rem] border-2 group hover:shadow-2xl transition-all ${colors[color]}`}>
        <div className="w-14 h-14 rounded-2xl bg-white flex items-center justify-center text-2xl shadow-inner mb-6 group-hover:scale-110 transition-transform">{icon}</div>
        <p className="text-[10px] font-black uppercase tracking-[0.3em] mb-4 opacity-70">{timeframe}</p>
-       <p className="text-xs font-bold leading-relaxed flex-1 mb-8">{action || "Memproses..."}</p>
+       <p className="text-xs font-bold leading-relaxed flex-1 mb-8">{action}</p>
        <button onClick={onPlan} className={`w-full py-4 text-white text-[9px] font-black uppercase rounded-2xl transition-all tracking-widest ${btns[color]}`}>+ Add to Daily Plan 🚀</button>
     </div>
   );
@@ -298,10 +339,10 @@ const RecommendationCard = ({ item, onPlan, color, safeRender }: any) => {
   return (
     <div className={`p-6 rounded-[2.5rem] border group hover:shadow-lg transition-all duration-500 flex flex-col mb-4 ${colors[color]}`}>
       <div className="flex-1 mb-4">
-          <p className="text-xs font-black text-slate-800 uppercase tracking-tight leading-snug">{safeRender(item.name)}</p>
+          <p className="text-xs font-black text-slate-800 uppercase tracking-tight leading-snug">{safeRender(item.name, "Item Rekomendasi")}</p>
           <div className="flex flex-wrap gap-4 mt-3">
-            <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">📅 {safeRender(item.schedule)}</span>
-            <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">💰 {safeRender(item.priceRange)}</span>
+            <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">📅 {safeRender(item.schedule, "Kapanpun")}</span>
+            <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">💰 {safeRender(item.priceRange, "Varying")}</span>
           </div>
       </div>
       <button onClick={onPlan} className={`w-full py-3 text-white text-[9px] font-black uppercase rounded-xl shadow-lg active:scale-95 transition-all tracking-widest ${btns[color]}`}>Tambahkan ke Plan</button>

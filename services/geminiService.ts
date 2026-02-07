@@ -10,7 +10,7 @@ async function callAI(prompt: string, schema?: any) {
   let config: AiConfig | null = cachedAiConfig;
   const now = Date.now();
 
-  // Refresh config setiap 1 minute (Mencegah hang jika Firestore permission denied berulang kali)
+  // Refresh config setiap 1 menit
   if (!config || (now - lastConfigFetch > 60000)) {
     try {
       const fetchedConfig = await getAiConfig();
@@ -30,9 +30,16 @@ async function callAI(prompt: string, schema?: any) {
     const timeoutId = setTimeout(() => controller.abort(), 60000); 
 
     const targetModel = config.modelName || "google/gemini-2.0-flash-exp:free";
-    
-    // SAFETY CAP: Jangan biarkan maxTokens melebihi 8192 untuk menghindari error overflow 400 di OpenRouter.
     const safeMaxTokens = Math.min(Number(config.maxTokens) || 4096, 8192);
+
+    // Perbaikan: Masukkan instruksi struktur JSON langsung ke prompt untuk OpenRouter
+    const enrichedPrompt = schema 
+      ? `${prompt}\n\nSTRICT REQUIREMENT: Respond ONLY with a valid JSON object matching this structure: ${JSON.stringify(schema)}. Ensure all fields are filled with meaningful, descriptive content. Do not return empty strings for required analysis fields. EVERYTHING MUST BE IN THE REQUESTED LANGUAGE.`
+      : prompt;
+
+    const systemMessage = schema
+      ? "You are a senior career path strategist. Your output MUST be a valid, minified JSON object. No conversational text, no markdown code blocks, just the raw JSON."
+      : "You are a helpful career assistant.";
 
     try {
       const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -46,11 +53,11 @@ async function callAI(prompt: string, schema?: any) {
         body: JSON.stringify({
           model: targetModel,
           messages: [
-            { role: "system", content: schema ? "You are a senior career path analyst. Return ONLY raw JSON. No markdown blocks. Values for all fields MUST be plain strings or numbers. Do NOT return objects inside string fields." : "You are a helpful career assistant." },
-            { role: "user", content: prompt }
+            { role: "system", content: systemMessage },
+            { role: "user", content: enrichedPrompt }
           ],
           max_tokens: safeMaxTokens,
-          response_format: schema ? { type: "json_object" } : undefined
+          response_format: { type: "json_object" }
         }),
         signal: controller.signal
       });
@@ -65,9 +72,18 @@ async function callAI(prompt: string, schema?: any) {
         }
 
         let text = json.choices[0].message?.content || "";
+        
         if (schema) {
-          const jsonMatch = text.match(/\{[\s\S]*\}/);
-          return jsonMatch ? JSON.parse(jsonMatch[0]) : JSON.parse(text);
+          // Robust Cleaning: Hapus blok markdown jika AI tetap menyertakannya
+          const cleanJson = text.replace(/```json\n?|```/g, "").trim();
+          try {
+            return JSON.parse(cleanJson);
+          } catch (e) {
+            // Fallback: Cari kurung kurawal pertama dan terakhir
+            const match = cleanJson.match(/\{[\s\S]*\}/);
+            if (match) return JSON.parse(match[0]);
+            throw new Error("AI returned invalid JSON format");
+          }
         }
         return text;
       } else {
@@ -82,7 +98,7 @@ async function callAI(prompt: string, schema?: any) {
     }
   }
 
-  // FALLBACK KE NATIVE SDK (Jika Firestore Key tidak ditemukan/akses ditolak)
+  // FALLBACK KE NATIVE SDK
   if (!process.env.API_KEY && (!config || !config.openRouterKey)) {
     throw new Error("Layanan AI Belum Dikonfigurasi. Silakan hubungi Superadmin untuk setting API Key.");
   }
@@ -90,17 +106,20 @@ async function callAI(prompt: string, schema?: any) {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
+      model: 'gemini-2.0-flash-exp', // Gunakan model stabil terbaru
       contents: prompt,
       config: schema ? { responseMimeType: "application/json", responseSchema: schema } : undefined
     });
+    
     if (response.usageMetadata && auth.currentUser) {
       recordAiTokens(auth.currentUser.uid, response.usageMetadata.totalTokenCount || 0);
     }
+    
     let text = response.text?.trim() || '';
     if (schema) {
-      const jsonMatch = text.match(/\{[\s\S]*\}/);
-      return jsonMatch ? JSON.parse(jsonMatch[0]) : JSON.parse(text);
+      const cleanJson = text.replace(/```json\n?|```/g, "").trim();
+      const match = cleanJson.match(/\{[\s\S]*\}/);
+      return match ? JSON.parse(match[0]) : JSON.parse(cleanJson);
     }
     return text;
   } catch (error: any) {
@@ -110,36 +129,33 @@ async function callAI(prompt: string, schema?: any) {
 }
 
 export async function generateProfileBio(data: AppData) {
-  const prompt = `
-    GENERATE A PROFESSIONAL CAREER BIO
-    NAME: ${data.profile.name}
-    POSITION: ${data.profile.currentPosition}
-    SUMMARY: ${data.workExperiences.map(w => w.position).join(', ')}
-    Make it 2-3 high-impact sentences in Bahasa Indonesia. Focus on professional value.
-  `;
+  const prompt = `GENERATE A PROFESSIONAL CAREER BIO for ${data.profile.name}. POSITION: ${data.profile.currentPosition}. Make it 2 sentences in Bahasa Indonesia.`;
   return await callAI(prompt);
 }
 
 export async function analyzeSkillGap(data: AppData, lang: 'id' | 'en' = 'id') {
-  // Hanya kirim data yang sangat relevan untuk analisis kualifikasi (Menghemat token & mencegah error)
   const slimData = {
     profile: data.profile,
     skills: data.skills.map(s => ({ name: s.name, level: s.currentLevel, status: s.status })),
     workExperiences: data.workExperiences.map(w => ({ position: w.position, company: w.company, duration: w.duration }))
   };
 
+  const languageName = lang === 'id' ? 'BAHASA INDONESIA' : 'ENGLISH';
+
   const prompt = `ANALYZE CAREER QUALIFICATION FOR ${data.profile.name}. 
-  TARGET POSITION: ${data.profile.shortTermTarget}. 
+  TARGET POSITION: ${data.profile.shortTermTarget || data.profile.currentPosition}. 
   USER DATA: ${JSON.stringify(slimData)}. 
   
-  SANGAT PENTING (INSTRUKSI WAJIB):
-  1. Identifikasi NAMA JURUSAN PENDIDIKAN DAN JENJANG (STRATA) yang sangat spesifik yang dibutuhkan di industri untuk posisi target tersebut. (Contoh: 'S1 Akuntansi', 'S2 Hukum Bisnis', 'D3 Teknik Informatika').
-  2. DILARANG KERAS MENGGUNAKAN TEKS PLACEHOLDER SEPERTI 'JURUSAN RELEVAN', 'SESUAI POSISI', ATAU 'BIDANG TERKAIT'. Tuliskan nama jurusan akademis yang nyata.
-  3. Berikan alasan (detail) yang kuat kenapa jurusan tersebut direkomendasikan.
-  4. Jabarkan roadmap pengalaman kerja (experienceRoadmap) yang spesifik (misal: '2 tahun sebagai Junior Auditor').
-  5. Pastikan semua field terisi teks deskriptif, bukan string kosong.
+  REQUIRED OUTPUT LANGUAGE: ${languageName}.
+  MANDATORY: ALL string values in the JSON output MUST be in ${languageName}.
   
-  LANG: ${lang}`;
+  1. Detailed readiness score (0-100).
+  2. Professional explanation of the score.
+  3. SPECIFIC education recommendations (e.g. "S1 Akuntansi", not just "Relevant Degree").
+  4. At least 3 training and 3 certification names that are popular in the industry right now.
+  5. 3 immediate micro-actions for this week, this month, and next month.
+  
+  MANDATORY: Provide high-quality content for every single field. Do not use placeholders. Ensure Indonesian terms are used if language is set to ID.`;
   
   const schema = {
     type: Type.OBJECT,
