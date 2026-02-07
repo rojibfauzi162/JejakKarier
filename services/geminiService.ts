@@ -10,7 +10,7 @@ async function callAI(prompt: string, schema?: any) {
   let config: AiConfig | null = cachedAiConfig;
   const now = Date.now();
 
-  // Refresh config setiap 1 menit (Mencegah hang jika Firestore permission denied berulang kali)
+  // Refresh config setiap 1 minute (Mencegah hang jika Firestore permission denied berulang kali)
   if (!config || (now - lastConfigFetch > 60000)) {
     try {
       const fetchedConfig = await getAiConfig();
@@ -46,7 +46,7 @@ async function callAI(prompt: string, schema?: any) {
         body: JSON.stringify({
           model: targetModel,
           messages: [
-            { role: "system", content: schema ? "You are a professional career qualification analyst. Return ONLY raw JSON. No markdown blocks." : "You are a helpful career assistant." },
+            { role: "system", content: schema ? "You are a senior career path analyst. Return ONLY raw JSON. No markdown blocks. Values for all fields MUST be plain strings or numbers. Do NOT return objects inside string fields." : "You are a helpful career assistant." },
             { role: "user", content: prompt }
           ],
           max_tokens: safeMaxTokens,
@@ -83,12 +83,10 @@ async function callAI(prompt: string, schema?: any) {
   }
 
   // FALLBACK KE NATIVE SDK (Jika Firestore Key tidak ditemukan/akses ditolak)
-  // Fix: Obtained API key exclusively from environment variable process.env.API_KEY
   if (!process.env.API_KEY && (!config || !config.openRouterKey)) {
     throw new Error("Layanan AI Belum Dikonfigurasi. Silakan hubungi Superadmin untuk setting API Key.");
   }
 
-  // Fix: Always use const ai = new GoogleGenAI({apiKey: process.env.API_KEY});
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   try {
     const response = await ai.models.generateContent({
@@ -99,7 +97,6 @@ async function callAI(prompt: string, schema?: any) {
     if (response.usageMetadata && auth.currentUser) {
       recordAiTokens(auth.currentUser.uid, response.usageMetadata.totalTokenCount || 0);
     }
-    // Fix: Access .text property directly (not a method)
     let text = response.text?.trim() || '';
     if (schema) {
       const jsonMatch = text.match(/\{[\s\S]*\}/);
@@ -124,7 +121,26 @@ export async function generateProfileBio(data: AppData) {
 }
 
 export async function analyzeSkillGap(data: AppData, lang: 'id' | 'en' = 'id') {
-  const prompt = `ANALYZE CAREER GAP FOR ${data.profile.name}. TARGET: ${data.profile.shortTermTarget}. DATA: ${JSON.stringify(data.skills)}. LANG: ${lang}`;
+  // Hanya kirim data yang sangat relevan untuk analisis kualifikasi (Menghemat token & mencegah error)
+  const slimData = {
+    profile: data.profile,
+    skills: data.skills.map(s => ({ name: s.name, level: s.currentLevel, status: s.status })),
+    workExperiences: data.workExperiences.map(w => ({ position: w.position, company: w.company, duration: w.duration }))
+  };
+
+  const prompt = `ANALYZE CAREER QUALIFICATION FOR ${data.profile.name}. 
+  TARGET POSITION: ${data.profile.shortTermTarget}. 
+  USER DATA: ${JSON.stringify(slimData)}. 
+  
+  SANGAT PENTING (INSTRUKSI WAJIB):
+  1. Identifikasi NAMA JURUSAN PENDIDIKAN DAN JENJANG (STRATA) yang sangat spesifik yang dibutuhkan di industri untuk posisi target tersebut. (Contoh: 'S1 Akuntansi', 'S2 Hukum Bisnis', 'D3 Teknik Informatika').
+  2. DILARANG KERAS MENGGUNAKAN TEKS PLACEHOLDER SEPERTI 'JURUSAN RELEVAN', 'SESUAI POSISI', ATAU 'BIDANG TERKAIT'. Tuliskan nama jurusan akademis yang nyata.
+  3. Berikan alasan (detail) yang kuat kenapa jurusan tersebut direkomendasikan.
+  4. Jabarkan roadmap pengalaman kerja (experienceRoadmap) yang spesifik (misal: '2 tahun sebagai Junior Auditor').
+  5. Pastikan semua field terisi teks deskriptif, bukan string kosong.
+  
+  LANG: ${lang}`;
+  
   const schema = {
     type: Type.OBJECT,
     properties: {
@@ -134,11 +150,15 @@ export async function analyzeSkillGap(data: AppData, lang: 'id' | 'en' = 'id') {
       criticalGaps: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { skill: { type: Type.STRING }, priority: { type: Type.STRING }, why: { type: Type.STRING } } } },
       immediateActions: { type: Type.OBJECT, properties: { weekly: { type: Type.STRING }, monthly: { type: Type.STRING }, nextMonth: { type: Type.STRING } } },
       roadmapSteps: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { title: { type: Type.STRING }, detail: { type: Type.STRING } } } },
+      experienceRoadmap: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { position: { type: Type.STRING }, field: { type: Type.STRING }, duration: { type: Type.STRING }, focus: { type: Type.STRING } } } },
+      educationRecommendation: { type: Type.OBJECT, properties: { strata: { type: Type.STRING }, major: { type: Type.STRING }, detail: { type: Type.STRING } } },
       recommendations: { type: Type.OBJECT, properties: { trainings: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { name: { type: Type.STRING }, provider: { type: Type.STRING }, detail: { type: Type.STRING }, schedule: { type: Type.STRING }, priceRange: { type: Type.STRING } } } }, certifications: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { name: { type: Type.STRING }, provider: { type: Type.STRING }, detail: { type: Type.STRING }, schedule: { type: Type.STRING }, priceRange: { type: Type.STRING } } } } } },
       motivation: { type: Type.STRING },
-      executiveSummary: { type: Type.STRING }
+      executiveSummary: { type: Type.STRING },
+      experiencePrerequisites: { type: Type.STRING },
+      relevantEducation: { type: Type.STRING }
     },
-    required: ["targetGoal", "readinessScore", "scoreExplanation", "criticalGaps", "immediateActions", "roadmapSteps", "recommendations", "motivation", "executiveSummary"]
+    required: ["targetGoal", "readinessScore", "scoreExplanation", "criticalGaps", "immediateActions", "roadmapSteps", "experienceRoadmap", "educationRecommendation", "recommendations", "motivation", "executiveSummary", "experiencePrerequisites", "relevantEducation"]
   };
   return await callAI(prompt, schema);
 }

@@ -1,8 +1,12 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
-import { AppData, Skill, Training, Certification, SkillStatus, SkillCategory, SkillPriority, TrainingStatus, AiStrategy, AiRecommendation, ToDoTask } from '../../types';
-import { analyzeSkillGap } from '../../services/geminiService';
-import { auth } from '../../services/firebase';
+import React, { useState, useEffect } from 'react';
+import { AppData, Skill, Training, Certification, AiStrategy, ToDoTask } from '../../types';
+
+// Import sub-components from organized folder structure
+import SkillMatrix from './skill-learning/SkillMatrix';
+import TrainingHistory from './skill-learning/TrainingHistory';
+import CertificationModule from './skill-learning/Certification';
+import AiStrategist from './skill-learning/AiStrategist';
 
 interface SkillTrackerProps {
   data?: AppData;
@@ -20,51 +24,91 @@ interface SkillTrackerProps {
   onDeleteCert: (id: string) => void;
   onAddTodo?: (t: ToDoTask) => void;
   onSaveStrategy?: (strategy: AiStrategy) => void;
+  showToast: (m: string, t?: 'success' | 'error' | 'info') => void;
+  initialSubTab?: 'skills' | 'learning' | 'certs' | 'ai';
+  // Added onUpgrade prop to fix type error in App.tsx line 347
+  onUpgrade?: () => void;
 }
 
-const SkillTracker: React.FC<SkillTrackerProps> = ({ 
-  data, skills, trainings, certs, 
-  onAddSkill, onUpdateSkill, onDeleteSkill,
-  onAddTraining, onUpdateTraining, onDeleteTraining,
-  onAddCert, onUpdateCert, onDeleteCert,
-  onAddTodo,
-  onSaveStrategy
-}) => {
-  const [activeSubTab, setActiveSubTab] = useState<'skills' | 'learning' | 'certs' | 'ai'>('skills');
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingItem, setEditingItem] = useState<any>(null);
+const SkillTracker: React.FC<SkillTrackerProps> = (props) => {
+  const [activeSubTab, setActiveSubTab] = useState<'skills' | 'learning' | 'certs' | 'ai'>(props.initialSubTab || 'skills');
 
-  const openAddForm = () => {
-    setEditingItem(null);
-    setIsFormOpen(true);
-  };
-
-  const getStatusStyle = (status: SkillStatus) => {
-    switch(status) {
-      case SkillStatus.ACHIEVED: return 'bg-emerald-50 text-emerald-600 border-emerald-100';
-      case SkillStatus.ON_PROGRESS: return 'bg-blue-50 text-blue-600 border-blue-100';
-      case SkillStatus.GAP: return 'bg-slate-50 text-slate-400 border-slate-200';
-      default: return 'bg-slate-50 text-slate-400';
+  // Sync sub-tab if initialSubTab prop changes (navigated from apps hub)
+  useEffect(() => {
+    if (props.initialSubTab) {
+      setActiveSubTab(props.initialSubTab);
     }
-  };
+  }, [props.initialSubTab]);
 
   return (
     <div className="space-y-8 animate-in fade-in duration-700 pb-16">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <h2 className="text-3xl font-black text-slate-900 tracking-tight">Growth & Intelligence</h2>
-        <div className="flex bg-white p-1 rounded-2xl shadow-sm border border-slate-100">
-           {['skills', 'learning', 'certs', 'ai'].map(tab => (
-             <button key={tab} onClick={() => setActiveSubTab(tab as any)} className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeSubTab === tab ? 'bg-slate-900 text-white shadow-md' : 'text-slate-400 hover:text-slate-600'}`}>{tab}</button>
-           ))}
+        <div className="w-full">
+          <h2 className="text-3xl font-black text-slate-900 tracking-tight">Growth & Intelligence</h2>
+          <div className="relative mt-5">
+            <div className="grid grid-cols-2 lg:flex gap-3 overflow-hidden lg:overflow-x-auto pb-4 -mx-4 px-4 no-scrollbar lg:mx-0 lg:px-0">
+              <SubTabButton active={activeSubTab === 'skills'} onClick={() => setActiveSubTab('skills')} label="Skill Matrix" icon="🎯" />
+              <SubTabButton active={activeSubTab === 'learning'} onClick={() => setActiveSubTab('learning')} label="Training History" icon="📖" />
+              <SubTabButton active={activeSubTab === 'certs'} onClick={() => setActiveSubTab('certs')} label="Certification" icon="📜" />
+              <SubTabButton active={activeSubTab === 'ai'} onClick={() => setActiveSubTab('ai')} label="AI Strategist" icon="🧠" />
+            </div>
+          </div>
         </div>
       </header>
-      
-      <div className="bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden">
-        {/* Skill list would go here */}
-        <div className="p-20 text-center text-slate-400 italic">Matriks kompetensi Anda ditampilkan di sini.</div>
+
+      {/* Render selected sub-module */}
+      <div className="animate-in fade-in duration-500">
+        {activeSubTab === 'skills' && (
+          <SkillMatrix 
+            skills={props.skills} 
+            onAddSkill={props.onAddSkill} 
+            onUpdateSkill={props.onUpdateSkill} 
+            onDeleteSkill={props.onDeleteSkill} 
+            showToast={props.showToast}
+            // Pass onUpgrade and appData to SkillMatrix for limit checks
+            onUpgrade={props.onUpgrade}
+            appData={props.data}
+          />
+        )}
+        {activeSubTab === 'learning' && (
+          <TrainingHistory 
+            trainings={props.trainings} 
+            onAddTraining={props.onAddTraining} 
+            onUpdateTraining={props.onUpdateTraining} 
+            onDeleteTraining={props.onDeleteTraining} 
+            showToast={props.showToast}
+          />
+        )}
+        {activeSubTab === 'certs' && (
+          <CertificationModule 
+            certs={props.certs} 
+            skills={props.skills}
+            onAddCert={props.onAddCert} 
+            onUpdateCert={props.onUpdateCert} 
+            onDeleteCert={props.onDeleteCert} 
+            showToast={props.showToast}
+          />
+        )}
+        {activeSubTab === 'ai' && props.data && (
+          <AiStrategist 
+            data={props.data}
+            onSaveStrategy={props.onSaveStrategy}
+            onAddTodo={props.onAddTodo}
+            onAddTraining={props.onAddTraining}
+            onAddCert={props.onAddCert}
+            showToast={props.showToast}
+          />
+        )}
       </div>
     </div>
   );
 };
+
+const SubTabButton: React.FC<{ active: boolean; onClick: () => void; label: string; icon: string }> = ({ active, onClick, label, icon }) => (
+  <button onClick={onClick} className={`flex items-center gap-2 px-4 md:px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border shrink-0 ${ active ? 'bg-slate-900 text-white border-slate-900 shadow-xl' : 'text-slate-400 hover:bg-white bg-slate-50/50 border-slate-100' }`}>
+    <span className="text-base">{icon}</span>
+    <span className="whitespace-nowrap">{label}</span>
+  </button>
+);
 
 export default SkillTracker;

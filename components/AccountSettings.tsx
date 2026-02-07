@@ -17,6 +17,7 @@ const AccountSettings: React.FC<AccountSettingsProps> = ({ role, reminderConfig,
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ text: string, type: 'success' | 'error' } | null>(null);
+  const [showLogoutModal, setShowLogoutModal] = useState(false); // State modal logout
 
   // Legal Content Management (Superadmin Only)
   const isSuperadmin = role === UserRole.SUPERADMIN;
@@ -141,6 +142,10 @@ const AccountSettings: React.FC<AccountSettingsProps> = ({ role, reminderConfig,
            </div>
 
            <div className="space-y-6">
+              <TimezoneSelector 
+                value={reminderConfig.timezone || 'Asia/Jakarta'} 
+                onChange={(val: string) => updateReminderValue('timezone', val)} 
+              />
               <ReminderTimeSelector 
                 label="Check-in Aktivitas Kerja" 
                 sub="Ingatkan jika log harian kosong setelah jam ini."
@@ -240,10 +245,81 @@ const AccountSettings: React.FC<AccountSettingsProps> = ({ role, reminderConfig,
                  <h4 className="text-xs font-black text-indigo-400 uppercase tracking-[0.3em] mb-2">Informasi Akun</h4>
                  <p className="text-[10px] text-slate-500 uppercase font-bold">Terdaftar Pada: <span className="text-white ml-2">{user?.metadata.creationTime}</span></p>
               </div>
-              <button onClick={() => auth.signOut()} className="px-10 py-4 bg-white/5 border border-white/10 text-rose-500 font-black rounded-2xl text-[10px] uppercase tracking-widest hover:bg-rose-500 hover:text-white transition-all duration-500">Logout Semua Sesi</button>
+              <button onClick={() => setShowLogoutModal(true)} className="px-10 py-4 bg-white/5 border border-white/10 text-rose-500 font-black rounded-2xl text-[10px] uppercase tracking-widest hover:bg-rose-500 hover:text-white transition-all duration-500">Logout Semua Sesi</button>
            </div>
         </section>
       </div>
+
+      {/* Modal Konfirmasi Logout Settings */}
+      {showLogoutModal && (
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" onClick={() => setShowLogoutModal(false)}></div>
+          <div className="relative bg-white w-full max-w-sm rounded-[2.5rem] p-8 lg:p-10 shadow-2xl animate-in zoom-in duration-300">
+            <div className="text-center mb-8">
+              <div className="w-16 h-16 bg-rose-50 text-rose-500 rounded-3xl flex items-center justify-center mx-auto mb-4 text-2xl shadow-inner">
+                <i className="bi bi-door-open-fill"></i>
+              </div>
+              <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Keluar Sesi?</h3>
+              <p className="text-slate-400 text-xs font-bold leading-relaxed mt-2 uppercase tracking-widest">Apakah Anda yakin ingin mengakhiri sesi kerja saat ini?</p>
+            </div>
+            <div className="flex gap-4">
+              <button 
+                onClick={() => setShowLogoutModal(false)} 
+                className="flex-1 py-4 bg-slate-50 text-slate-400 font-black rounded-2xl uppercase text-[10px] tracking-widest hover:bg-slate-100 transition-all"
+              >
+                Batal
+              </button>
+              <button 
+                onClick={() => { setShowLogoutModal(false); auth.signOut(); }} 
+                className="flex-[2] py-4 bg-rose-600 text-white font-black rounded-2xl uppercase text-[10px] tracking-widest shadow-xl shadow-rose-100 hover:bg-rose-700 active:scale-95 transition-all"
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const TimezoneSelector = ({ value, onChange }: { value: string, onChange: (val: string) => void }) => {
+  const timezones = [
+    { value: 'Asia/Jakarta', label: 'WIB (Jakarta) - UTC+7' },
+    { value: 'Asia/Makassar', label: 'WITA (Makassar) - UTC+8' },
+    { value: 'Asia/Jayapura', label: 'WIT (Jayapura) - UTC+9' },
+    { value: 'Asia/Bangkok', label: 'Bangkok, Hanoi - UTC+7' },
+    { value: 'Asia/Singapore', label: 'Singapore - UTC+8' },
+    { value: 'Asia/Kuala_Lumpur', label: 'Kuala Lumpur - UTC+8' },
+    { value: 'Asia/Tokyo', label: 'Tokyo, Japan - UTC+9' },
+    { value: 'Asia/Seoul', label: 'Seoul, Korea - UTC+9' },
+    { value: 'Asia/Dubai', label: 'Dubai, UAE - UTC+4' },
+    { value: 'Asia/Riyadh', label: 'Riyadh, SA - UTC+3' },
+    { value: 'Europe/London', label: 'London, UK - UTC+0/1' },
+    { value: 'Europe/Paris', label: 'Paris, France - UTC+1/2' },
+    { value: 'Europe/Berlin', label: 'Berlin, Germany - UTC+1/2' },
+    { value: 'America/New_York', label: 'New York, US - UTC-5/4' },
+    { value: 'America/Chicago', label: 'Chicago, US - UTC-6/5' },
+    { value: 'America/Los_Angeles', label: 'Los Angeles, US - UTC-8/7' },
+    { value: 'Australia/Sydney', label: 'Sydney, AU - UTC+10/11' },
+    { value: 'UTC', label: 'UTC (Coordinated Universal Time)' }
+  ];
+
+  return (
+    <div className="flex items-center justify-between p-5 rounded-3xl bg-slate-50 border border-slate-100 group hover:border-indigo-200 transition-all">
+       <div className="flex-1">
+          <p className="text-xs font-black uppercase text-slate-700 tracking-tight">Zona Waktu Lokal</p>
+          <p className="text-[9px] font-bold text-slate-400 mt-0.5 uppercase tracking-widest leading-none">Menyesuaikan jadwal protokol pengingat harian.</p>
+       </div>
+       <div className="ml-4 shrink-0">
+          <select 
+            value={value} 
+            onChange={e => onChange(e.target.value)}
+            className="px-4 py-2 bg-white rounded-xl border border-slate-200 text-xs font-black text-indigo-600 shadow-sm focus:ring-4 focus:ring-indigo-500/5 outline-none cursor-pointer"
+          >
+            {timezones.map(tz => <option key={tz.value} value={tz.value}>{tz.label}</option>)}
+          </select>
+       </div>
     </div>
   );
 };

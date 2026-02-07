@@ -165,6 +165,7 @@ export interface Skill {
   priority: SkillPriority;
   lastUsed: string;
   actionPlan: string;
+  isRelevant?: boolean;
 }
 
 export interface Training {
@@ -181,6 +182,7 @@ export interface Training {
   deadline: string;
   priority: SkillPriority;
   certLink?: string;
+  category?: string;
 }
 
 export interface Certification {
@@ -195,6 +197,9 @@ export interface Certification {
   status?: TrainingStatus;
   deadline?: string;
   certNumber?: string;
+  cost?: number;
+  progress?: number;
+  category?: string;
 }
 
 export interface CareerPath {
@@ -333,7 +338,7 @@ export interface AiStrategy {
   criticalGaps: { skill: string; why: string; priority: string }[];
   immediateActions: { weekly: string; monthly: string; nextMonth: string };
   roadmapSteps: { title: string; detail: string }[];
-  experienceRoadmap?: { position: string; duration: string; focus: string }[];
+  experienceRoadmap?: { position: string; field: string; duration: string; focus: string }[];
   recommendations: { 
     trainings: AiRecommendation[]; 
     certifications: AiRecommendation[] 
@@ -341,6 +346,9 @@ export interface AiStrategy {
   motivation: string;
   executiveSummary: string;
   dataFingerprint?: string;
+  experiencePrerequisites?: string;
+  relevantEducation?: string;
+  educationRecommendation?: { strata: string; major: string; detail: string };
 }
 
 export interface AiInsightRecord {
@@ -360,6 +368,7 @@ export interface ReminderConfig {
   dailyLogReminderTime: string;
   reflectionReminderTime: string;
   todoReminderTime: string;
+  timezone: string;
 }
 
 export interface SubscriptionProduct {

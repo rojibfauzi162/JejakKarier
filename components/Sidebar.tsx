@@ -11,6 +11,7 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout, isAdmin }) => {
   const [dailyDropdownOpen, setDailyDropdownOpen] = useState(activeTab === 'daily' || activeTab === 'reports' || activeTab === 'ai_insights' || activeTab === 'work_reflection');
   const [cvDropdownOpen, setCvDropdownOpen] = useState(activeTab === 'cv_generator' || activeTab === 'online_cv');
+  const [showLogoutModal, setShowLogoutModal] = useState(false); // State baru untuk modal logout
   
   // State untuk kontrol kategori utama - Default terbuka untuk Aktivitas & Pengembangan
   const [groupsOpen, setGroupsOpen] = useState<Record<string, boolean>>({
@@ -200,7 +201,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout, is
       {/* Footer Session */}
       <div className="p-6 border-t border-white/5 bg-slate-950/50 backdrop-blur-md">
         <button 
-          onClick={onLogout}
+          onClick={() => setShowLogoutModal(true)}
           className="w-full flex items-center justify-center gap-3 px-4 py-3.5 rounded-2xl bg-rose-50/5 text-rose-500 border border-rose-500/10 hover:bg-rose-500 hover:text-white transition-all duration-500 font-black text-[10px] uppercase tracking-widest group"
         >
           <span className="group-hover:rotate-12 transition-transform text-xs">
@@ -209,6 +210,36 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout, is
           <span>Logout</span>
         </button>
       </div>
+
+      {/* Modal Konfirmasi Logout - Z-INDEX DINAIKKAN KE 6000 AGAR TIDAK TERTUMPUK OVERLAY */}
+      {showLogoutModal && (
+        <div className="fixed inset-0 z-[6000] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" onClick={() => setShowLogoutModal(false)}></div>
+          <div className="relative bg-white w-full max-w-sm rounded-[2.5rem] p-8 lg:p-10 shadow-2xl animate-in zoom-in duration-300">
+            <div className="text-center mb-8">
+              <div className="w-16 h-16 bg-rose-50 text-rose-500 rounded-3xl flex items-center justify-center mx-auto mb-4 text-2xl shadow-inner">
+                <i className="bi bi-door-open-fill"></i>
+              </div>
+              <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Keluar Sesi?</h3>
+              <p className="text-slate-400 text-xs font-bold leading-relaxed mt-2 uppercase tracking-widest">Apakah Anda yakin ingin mengakhiri sesi kerja saat ini?</p>
+            </div>
+            <div className="flex gap-4">
+              <button 
+                onClick={() => setShowLogoutModal(false)} 
+                className="flex-1 py-4 bg-slate-50 text-slate-400 font-black rounded-2xl uppercase text-[10px] tracking-widest hover:bg-slate-100 transition-all"
+              >
+                Batal
+              </button>
+              <button 
+                onClick={() => { setShowLogoutModal(false); onLogout(); }} 
+                className="flex-[2] py-4 bg-rose-600 text-white font-black rounded-2xl uppercase text-[10px] tracking-widest shadow-xl shadow-rose-100 hover:bg-rose-700 active:scale-95 transition-all"
+              >
+                Ya, Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </nav>
   );
 };

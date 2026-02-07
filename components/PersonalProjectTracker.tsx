@@ -1,19 +1,30 @@
 
 import React, { useState, useEffect } from 'react';
-import { PersonalProject, ProjectStatus } from '../types';
+import { PersonalProject, ProjectStatus, AppData, SubscriptionPlan } from '../types';
 
 interface PersonalProjectTrackerProps {
   projects: PersonalProject[];
   onAdd: (p: PersonalProject) => void;
   onUpdate: (p: PersonalProject) => void;
   onDelete: (id: string) => void;
+  appData?: AppData;
+  onUpgrade?: () => void;
 }
 
-const PersonalProjectTracker: React.FC<PersonalProjectTrackerProps> = ({ projects, onAdd, onUpdate, onDelete }) => {
+const PersonalProjectTracker: React.FC<PersonalProjectTrackerProps> = ({ projects, onAdd, onUpdate, onDelete, appData, onUpgrade }) => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<PersonalProject | null>(null);
 
+  // LOGIC LIMITASI - HANYA UNTUK PAKET FREE
+  const limit = appData?.planLimits?.projects || 5;
+  const isLimitReached = appData?.plan === SubscriptionPlan.FREE && limit !== 'unlimited' && projects.length >= Number(limit);
+
   const openAddForm = () => {
+    if (isLimitReached) {
+      alert(`Limit proyek personal Anda (${limit} proyek) telah tercapai. Silakan upgrade paket Anda.`);
+      onUpgrade?.();
+      return;
+    }
     setEditingItem(null);
     setIsFormOpen(true);
   };
@@ -40,6 +51,25 @@ const PersonalProjectTracker: React.FC<PersonalProjectTrackerProps> = ({ project
           + Proyek Baru
         </button>
       </header>
+
+      {/* LIMIT ALERT BAR - HANYA UNTUK USER FREE */}
+      {isLimitReached && appData?.plan === SubscriptionPlan.FREE && (
+        <div className="bg-indigo-50 border-2 border-indigo-100 p-6 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm mx-1">
+           <div className="flex items-center gap-4 text-center md:text-left">
+              <span className="text-3xl">🚀</span>
+              <div>
+                 <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-1">Portofolio Penuh (Paket {appData?.plan})</p>
+                 <p className="text-sm font-bold text-slate-800">Anda telah menggunakan seluruh slot proyek ({projects.length}/{limit}).</p>
+              </div>
+           </div>
+           <button 
+            onClick={onUpgrade}
+            className="px-8 py-3 bg-indigo-600 text-white font-black rounded-2xl text-[10px] uppercase tracking-widest shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95"
+           >
+             Upgrade Kapasitas →
+           </button>
+        </div>
+      )}
 
       {/* Summary Row */}
       <div className="flex w-full md:w-[450px] border-2 border-slate-900 overflow-hidden rounded-2xl shadow-sm">

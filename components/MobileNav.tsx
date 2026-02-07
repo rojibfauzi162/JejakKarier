@@ -18,6 +18,7 @@ interface NavItem {
 
 const MobileNav: React.FC<MobileNavProps> = ({ activeTab, setActiveTab, onLogout, isAdmin }) => {
   const [showDailyMenu, setShowDailyMenu] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false); // State baru untuk modal logout mobile
 
   // Menu untuk User Biasa
   const userItems: NavItem[] = [
@@ -42,7 +43,7 @@ const MobileNav: React.FC<MobileNavProps> = ({ activeTab, setActiveTab, onLogout
 
   const handleMenuClick = (id: string) => {
     if (id === 'logout') {
-      onLogout();
+      setShowLogoutModal(true);
     } else if (id === 'daily_toggle') {
       setShowDailyMenu(!showDailyMenu);
     } else {
@@ -124,6 +125,7 @@ const MobileNav: React.FC<MobileNavProps> = ({ activeTab, setActiveTab, onLogout
               activeTab === 'apps_hub' ? 'text-indigo-600' : 'text-slate-400'
             }`}
           >
+            {/* Fix: Added missing quotes around 'scale-125 -translate-y-1' to resolve variable lookup errors */}
             <div className={`text-2xl transition-transform ${activeTab === 'apps_hub' ? 'scale-125 -translate-y-1' : 'group-active:scale-90'}`}>
                <i className="bi bi-grid-fill"></i>
             </div>
@@ -136,6 +138,36 @@ const MobileNav: React.FC<MobileNavProps> = ({ activeTab, setActiveTab, onLogout
           </button>
         )}
       </nav>
+
+      {/* Modal Konfirmasi Logout Mobile */}
+      {showLogoutModal && (
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center p-6">
+          <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" onClick={() => setShowLogoutModal(false)}></div>
+          <div className="relative bg-white w-full max-w-sm rounded-[2.5rem] p-8 lg:p-10 shadow-2xl animate-in zoom-in duration-300">
+            <div className="text-center mb-8">
+              <div className="w-16 h-16 bg-rose-50 text-rose-500 rounded-3xl flex items-center justify-center mx-auto mb-4 text-2xl shadow-inner">
+                <i className="bi bi-door-open-fill"></i>
+              </div>
+              <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Keluar Sesi?</h3>
+              <p className="text-slate-400 text-xs font-bold leading-relaxed mt-2 uppercase tracking-widest">Apakah Anda yakin ingin mengakhiri sesi kerja saat ini?</p>
+            </div>
+            <div className="flex gap-4">
+              <button 
+                onClick={() => setShowLogoutModal(false)} 
+                className="flex-1 py-4 bg-slate-50 text-slate-400 font-black rounded-2xl uppercase text-[10px] tracking-widest"
+              >
+                Batal
+              </button>
+              <button 
+                onClick={() => { setShowLogoutModal(false); onLogout(); }} 
+                className="flex-[2] py-4 bg-rose-600 text-white font-black rounded-2xl uppercase text-[10px] tracking-widest shadow-xl"
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

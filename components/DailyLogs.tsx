@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { DailyReport } from '../types';
+import { DailyReport, AppData, SubscriptionPlan } from '../types';
 
 interface DailyLogsProps {
   logs: DailyReport[];
@@ -13,6 +13,8 @@ interface DailyLogsProps {
   onDeleteCategory: (cat: string) => void;
   affirmation: string;
   targetDate?: string;
+  appData?: AppData;
+  onUpgrade?: () => void;
 }
 
 type TimeFilter = 'all' | 'today' | '7days' | '30days' | 'quarter' | 'range';
@@ -31,7 +33,7 @@ interface ActivityLine {
   useCustomOutput?: boolean;
 }
 
-const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany, onAdd, onUpdate, onDelete, onAddCategory, onDeleteCategory, affirmation, targetDate }) => {
+const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany, onAdd, onUpdate, onDelete, onAddCategory, onDeleteCategory, affirmation, targetDate, appData, onUpgrade }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingLogId, setEditingLogId] = useState<string | null>(null);
   const [isManageCatsOpen, setIsManageCatsOpen] = useState(false);
@@ -50,6 +52,11 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
   
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
+
+  // LOGIC LIMITASI DATA - HANYA UNTUK PAKET FREE
+  const limit = appData?.planLimits?.dailyLogs || 10;
+  const isLimitReached = appData?.plan === SubscriptionPlan.FREE && limit !== 'unlimited' && logs.length >= (Number(limit));
+  const remaining = limit === 'unlimited' ? Infinity : Number(limit) - logs.length;
 
   const metricChoices = ['Laporan', 'Jam', 'Berkas', 'Persentase (%)', 'Nominal (IDR)', 'Custom'];
 
@@ -103,6 +110,12 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
   };
 
   const handleOpenModal = (log?: DailyReport, asExecute: boolean = false) => {
+    if (!log && isLimitReached) {
+       alert("Limit data harian Anda telah mencapai batas maksimal paket saat ini. Silakan upgrade untuk menambah lebih banyak data.");
+       onUpgrade?.();
+       return;
+    }
+
     setIsExecutingPlan(asExecute);
     if (asExecute && log) {
       setEditingLogId(null);
@@ -378,6 +391,25 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
         </div>
         <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
       </div>
+
+      {/* LIMIT ALERT BAR - HANYA UNTUK USER FREE */}
+      {isLimitReached && appData?.plan === SubscriptionPlan.FREE && (
+        <div className="bg-rose-50 border-2 border-rose-100 p-6 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-6 animate-in slide-in-from-top-2 duration-500 shadow-sm mx-1">
+           <div className="flex items-center gap-4 text-center md:text-left">
+              <span className="text-3xl">⚠️</span>
+              <div>
+                 <p className="text-[10px] font-black text-rose-600 uppercase tracking-widest mb-1">Limitasi Data Paket {appData?.plan}</p>
+                 <p className="text-sm font-bold text-slate-800">Batas maksimal {limit} log telah tercapai. Upgrade ke paket Premium untuk pencatatan tanpa batas.</p>
+              </div>
+           </div>
+           <button 
+            onClick={onUpgrade}
+            className="px-8 py-3 bg-rose-600 text-white font-black rounded-2xl text-[10px] uppercase tracking-widest shadow-xl shadow-rose-100 hover:bg-rose-700 transition-all active:scale-95"
+           >
+             Upgrade Sekarang →
+           </button>
+        </div>
+      )}
 
       {/* Primary Filters - Unified Row */}
       <div className="bg-white p-6 lg:p-10 rounded-[3rem] shadow-sm border border-slate-100 space-y-8">

@@ -12,6 +12,7 @@ const Auth: React.FC<AuthProps> = ({ onBack }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false); // State baru untuk visibility password
   const [name, setName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -32,7 +33,38 @@ const Auth: React.FC<AuthProps> = ({ onBack }) => {
         await updateProfile(userCredential.user, { displayName: name });
       }
     } catch (err: any) {
-      setError(err.message || 'Terjadi kesalahan pada sistem.');
+      let friendlyMessage = 'Terjadi kesalahan saat menghubungi server. Silakan coba lagi.';
+      
+      // Mapping Firebase Error Codes to Human Friendly Indonesian Messages
+      switch (err.code) {
+        case 'auth/invalid-email':
+          friendlyMessage = 'Format alamat email tidak benar. Contoh: nama@email.com';
+          break;
+        case 'auth/user-not-found':
+        case 'auth/wrong-password':
+        case 'auth/invalid-credential':
+          friendlyMessage = 'Email atau Password salah. Periksa kembali data yang Anda masukkan.';
+          break;
+        case 'auth/email-already-in-use':
+          friendlyMessage = 'Email ini sudah terdaftar. Silakan langsung login atau gunakan email lain.';
+          break;
+        case 'auth/weak-password':
+          friendlyMessage = 'Password terlalu lemah. Gunakan minimal 6 karakter.';
+          break;
+        case 'auth/too-many-requests':
+          friendlyMessage = 'Terlalu banyak percobaan masuk yang gagal. Akun Anda dikunci sementara demi keamanan, silakan tunggu beberapa menit.';
+          break;
+        case 'auth/network-request-failed':
+          friendlyMessage = 'Koneksi internet terputus. Pastikan perangkat Anda terhubung ke jaringan.';
+          break;
+        case 'auth/popup-closed-by-user':
+          friendlyMessage = 'Proses masuk dibatalkan karena jendela login ditutup.';
+          break;
+        default:
+          friendlyMessage = err.message || 'Maaf, terjadi kendala saat memproses permintaan Anda.';
+      }
+      
+      setError(friendlyMessage);
     } finally {
       setLoading(false);
     }
@@ -45,9 +77,11 @@ const Auth: React.FC<AuthProps> = ({ onBack }) => {
       await signInWithGoogle();
     } catch (err: any) {
       if (err.code === 'auth/unauthorized-domain') {
-        setError(`Domain ${window.location.hostname} belum terdaftar di Firebase Authorized Domains. Silakan buka Firebase Console > Authentication > Settings > Authorized Domains dan tambahkan domain ini.`);
+        setError(`Domain ${window.location.hostname} belum terdaftar di Firebase Authorized Domains. Silakan hubungi admin.`);
+      } else if (err.code === 'auth/popup-closed-by-user') {
+        setError('Login Google dibatalkan.');
       } else {
-        setError(err.message || 'Gagal login dengan Google.');
+        setError(err.message || 'Gagal masuk dengan Google.');
       }
     } finally {
       setLoading(false);
@@ -131,14 +165,23 @@ const Auth: React.FC<AuthProps> = ({ onBack }) => {
 
           <div className="space-y-1.5">
             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Password</label>
-            <input 
-              type="password"
-              required
-              className="w-full px-5 py-4 rounded-2xl bg-white/5 border border-white/10 text-white outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-bold placeholder:text-slate-600"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
+            <div className="relative">
+              <input 
+                type={showPassword ? 'text' : 'password'}
+                required
+                className="w-full px-5 py-4 rounded-2xl bg-white/5 border border-white/10 text-white outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-bold placeholder:text-slate-600 pr-12"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <button 
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors"
+              >
+                <i className={`bi ${showPassword ? 'bi-eye-slash' : 'bi-eye'} text-lg`}></i>
+              </button>
+            </div>
           </div>
 
           <button 
