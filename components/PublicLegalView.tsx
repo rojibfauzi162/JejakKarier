@@ -16,29 +16,31 @@ const PublicLegalView: React.FC<PublicLegalViewProps> = ({ type, onBack }) => {
   const fetchLegalData = async () => {
     setLoading(true);
     try {
+      // Pastikan fungsi getLegalConfig di firebase.ts merujuk ke dokumen yang benar
       const res = await getLegalConfig();
       if (res) {
         setConfig(res);
       } else {
-        // Fallback jika dokumen tidak ada di Firestore
+        // Fallback jika dokumen tidak ada sama sekali di Firestore
         setConfig({ privacyPolicy: '', termsOfService: '' });
       }
     } catch (err) {
       console.error("Gagal memuat informasi legal:", err);
+      // Fallback state jika terjadi error permission atau network
       setConfig({ privacyPolicy: '', termsOfService: '' });
     } finally {
       setLoading(false);
     }
   };
 
-  // Re-fetch data setiap kali 'type' (privacy/terms) berubah
+  // Trigger pemuatan data saat komponen pertama kali muncul atau saat tipe halaman berubah
   useEffect(() => {
     fetchLegalData();
   }, [type]);
 
   const title = type === 'privacy' ? 'Privacy Policy' : 'Terms of Service';
   
-  // Ambil konten yang sesuai berdasarkan tipe props
+  // Tentukan konten mana yang ditampilkan berdasarkan props 'type'
   const rawContent = type === 'privacy' ? config?.privacyPolicy : config?.termsOfService;
   const safeContent = typeof rawContent === 'string' ? rawContent : '';
 
@@ -114,9 +116,6 @@ const PublicLegalView: React.FC<PublicLegalViewProps> = ({ type, onBack }) => {
                  </div>
                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Data Anda dilindungi oleh protokol keamanan SSL<br/>dan kebijakan privasi terbaru kami.</p>
               </div>
-              <button onClick={() => window.print()} className="text-[10px] font-black uppercase text-indigo-600 hover:underline">
-                Cetak Dokumen
-              </button>
            </div>
         </div>
         

@@ -22,6 +22,10 @@ import MobileNav from './components/MobileNav';
 import Auth from './components/Auth';
 import LandingPage from './components/LandingPage';
 import PublicLegalView from './components/PublicLegalView';
+import WorkReflectionView from './components/WorkReflection';
+import PerformanceReports from './components/PerformanceReports';
+import AiInsightActivity from './components/AiInsightActivity';
+import ToDoList from './components/ToDoList';
 import { auth, getUserData, saveUserData, getProductsCatalog } from './services/firebase';
 import { onAuthStateChanged } from '@firebase/auth';
 
@@ -31,43 +35,36 @@ const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [loading, setLoading] = useState(true);
   
-  // State routing mandiri untuk halaman legal publik menggunakan query param
+  // Deteksi URL path saat inisialisasi untuk mendukung akses langsung (e.g. namadomain.com/privacy)
   const [publicLegalPage, setPublicLegalPage] = useState<'privacy' | 'terms' | null>(() => {
-    const searchParams = new URLSearchParams(window.location.search);
-    const view = searchParams.get('view');
-    if (view === 'privacy' || view === 'terms') return view as 'privacy' | 'terms';
+    const path = window.location.pathname;
+    if (path === '/privacy') return 'privacy';
+    if (path === '/terms') return 'terms';
     return null;
   });
 
-  // Fungsi navigasi yang menggunakan query parameter untuk menghindari error Origin/History di sandbox
+  // Navigasi yang mengubah path URL sesuai permintaan user (namadomain.com/namahalaman)
   const navigateToLegal = (type: 'privacy' | 'terms' | null) => {
     try {
-      const url = new URL(window.location.href);
       if (type) {
-        url.searchParams.set('view', type);
+        window.history.pushState({ type }, '', `/${type}`);
       } else {
-        url.searchParams.delete('view');
+        window.history.pushState({}, '', '/');
       }
-      
-      // Update browser history secara manual agar sinkron
-      window.history.pushState({ type }, '', url.search || '/');
       setPublicLegalPage(type);
     } catch (e) {
-      // Fallback jika PushState dibatasi lingkungan sandbox
+      // Fallback jika lingkungan sandbox membatasi manipulasi path history
       setPublicLegalPage(type);
     }
   };
 
-  // Listener tombol Back/Forward browser
+  // Sinkronisasi navigasi tombol back/forward browser
   useEffect(() => {
     const handlePopState = () => {
-      const searchParams = new URLSearchParams(window.location.search);
-      const view = searchParams.get('view');
-      if (view === 'privacy' || view === 'terms') {
-        setPublicLegalPage(view as 'privacy' | 'terms');
-      } else {
-        setPublicLegalPage(null);
-      }
+      const path = window.location.pathname;
+      if (path === '/privacy') setPublicLegalPage('privacy');
+      else if (path === '/terms') setPublicLegalPage('terms');
+      else setPublicLegalPage(null);
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
@@ -108,7 +105,7 @@ const App: React.FC = () => {
     return () => unsubscribe();
   }, []);
 
-  // PRIORITAS: Tampilkan View Legal Publik jika sedang berada di route legal
+  // Prioritas Render: Jika sedang di route legal publik, abaikan status Auth/Landing
   if (publicLegalPage) {
     return <PublicLegalView type={publicLegalPage} onBack={() => navigateToLegal(null)} />;
   }
@@ -161,6 +158,37 @@ const App: React.FC = () => {
           onAddCategory={(c) => setData({...data, workCategories: [...data.workCategories, c]})} 
           onDeleteCategory={(c) => setData({...data, workCategories: data.workCategories.filter(i => i !== c)})} 
           affirmation={data.affirmations[0]} 
+        />
+      );
+      case 'work_reflection': return (
+        <WorkReflectionView 
+          reflections={data.dailyReflections} 
+          skills={data.skills} 
+          onAdd={(r) => setData({...data, dailyReflections: [...data.dailyReflections, r]})} 
+          onUpdateSkill={(s) => setData({...data, skills: data.skills.map(i => i.id === s.id ? s : i)})} 
+          onAddTodo={(t) => setData({...data, todoList: [...data.todoList, t]})} 
+          onAddAchievement={(a) => setData({...data, achievements: [...data.achievements, a]})} 
+          appData={data} 
+        />
+      );
+      case 'reports': return <PerformanceReports data={data} />;
+      case 'ai_insights': return (
+        <AiInsightActivity 
+          data={data} 
+          onUpdateInsights={(ins) => setData({...data, aiInsights: ins})} 
+          onAddAchievement={(ach) => setData({...data, achievements: [...data.achievements, ach]})} 
+        />
+      );
+      case 'todo_list': return (
+        <ToDoList 
+          tasks={data.todoList} 
+          categories={data.todoCategories} 
+          onAdd={(t) => setData({...data, todoList: [...data.todoList, t]})} 
+          onUpdate={(t) => setData({...data, todoList: data.todoList.map(i => i.id === t.id ? t : i)})} 
+          onDelete={(id) => setData({...data, todoList: data.todoList.filter(i => i.id !== id)})} 
+          onAddCategory={(c) => setData({...data, todoCategories: [...data.todoCategories, c]})} 
+          onUpdateCategory={(o, n) => setData({...data, todoCategories: data.todoCategories.map(i => i === o ? n : i)})} 
+          onDeleteCategory={(c) => setData({...data, todoCategories: data.todoCategories.filter(i => i !== c)})} 
         />
       );
       case 'skills': return (
