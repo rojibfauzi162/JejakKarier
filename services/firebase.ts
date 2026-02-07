@@ -7,8 +7,8 @@ import { AppData, AiConfig, SubscriptionProduct, AccountStatus, MayarConfig, Leg
 // KONFIGURASI FIREBASE
 const firebaseConfig = {
   apiKey: "AIzaSyCDvX0tJX24etCFWS9D-IG9B3_BV6xFGEk",
-  // Menggunakan domain kustom untuk authDomain jika sudah terhubung ke Hosting
-  authDomain: "fokuskarir.web.id", 
+  // PENTING: Gunakan domain default Firebase agar handler autentikasi tidak 404
+  authDomain: "jejakkarir-11379.firebaseapp.com", 
   projectId: "jejakkarir-11379",
   storageBucket: "jejakkarir-11379.firebasestorage.app",
   messagingSenderId: "1099213790353",
