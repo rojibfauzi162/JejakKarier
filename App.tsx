@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { AppData, UserRole, SubscriptionProduct, SubscriptionPlan, AccountStatus, ToDoTask, AiStrategy, Training, Certification, Skill } from './types';
 import { INITIAL_DATA } from './constants';
@@ -112,7 +111,7 @@ const App: React.FC = () => {
         if (userData) {
           setData(userData);
         } else {
-          // Ambil katalog untuk mendapatkan izin modul paket FREE yang dikonfigurasi admin
+          // Ambil katalog untuk mendapatkan izin modul paket paket FREE yang dikonfigurasi admin
           const catalog = await getProductsCatalog();
           const freePlan = catalog?.find(p => p.tier === SubscriptionPlan.FREE);
 
@@ -360,15 +359,15 @@ const App: React.FC = () => {
       case 'online_cv': return withPermission('cv', <OnlineCVBuilder data={data} onUpdateConfig={(c) => setData({...data, onlineCV: c})} />);
       case 'settings': return <AccountSettings role={data.role} reminderConfig={data.reminderConfig} onUpdateReminders={(c) => setData({...data, reminderConfig: c})} />;
       case 'billing': return <Billing data={data} products={publicProducts} />;
-      case 'admin_dashboard': return <AdminPanel initialMode="dashboard" />;
-      case 'admin_users': return <AdminPanel initialMode="users" />;
-      case 'admin_admins': return <AdminPanel initialMode="admin_admins" />;
-      case 'admin_transactions': return <AdminPanel initialMode="admin_transactions" />;
-      case 'admin_ai': return <AdminPanel initialMode="ai" />;
-      case 'admin_products': return <AdminPanel initialMode="products" />;
-      case 'admin_integrations': return <AdminPanel initialMode="integrations" />;
-      case 'admin_settings': return <AdminPanel initialMode="settings" />;
-      case 'admin_health': return <AdminPanel initialMode="health" />;
+      case 'admin_dashboard': return isAdmin ? <AdminPanel initialMode="dashboard" userRole={data.role} /> : <Dashboard data={data} onNavigate={handleNavigate} />;
+      case 'admin_users': return isAdmin ? <AdminPanel initialMode="users" userRole={data.role} /> : <Dashboard data={data} onNavigate={handleNavigate} />;
+      case 'admin_admins': return isAdmin ? <AdminPanel initialMode="admin_admins" userRole={data.role} /> : <Dashboard data={data} onNavigate={handleNavigate} />;
+      case 'admin_transactions': return isAdmin ? <AdminPanel initialMode="admin_transactions" userRole={data.role} /> : <Dashboard data={data} onNavigate={handleNavigate} />;
+      case 'admin_ai': return isAdmin ? <AdminPanel initialMode="ai" userRole={data.role} /> : <Dashboard data={data} onNavigate={handleNavigate} />;
+      case 'admin_products': return isAdmin ? <AdminPanel initialMode="products" userRole={data.role} /> : <Dashboard data={data} onNavigate={handleNavigate} />;
+      case 'admin_integrations': return isAdmin ? <AdminPanel initialMode="integrations" userRole={data.role} /> : <Dashboard data={data} onNavigate={handleNavigate} />;
+      case 'admin_settings': return isAdmin ? <AdminPanel initialMode="settings" userRole={data.role} /> : <Dashboard data={data} onNavigate={handleNavigate} />;
+      case 'admin_health': return isAdmin ? <AdminPanel initialMode="health" userRole={data.role} /> : <Dashboard data={data} onNavigate={handleNavigate} />;
       default: return <Dashboard data={data} onNavigate={handleNavigate} />;
     }
   };
@@ -386,121 +385,51 @@ const App: React.FC = () => {
             currentPlan={data.plan}
           />
         )}
-
-        {/* Toast Notification Container */}
-        {toast && (
-          <div className="fixed top-8 left-1/2 -translate-x-1/2 z-[3000] animate-in slide-in-from-top-4 duration-500">
-             <div className={`px-10 py-4 rounded-[2rem] shadow-2xl border flex items-center gap-4 ${
-               toast.type === 'success' ? 'bg-emerald-600 border-emerald-500 text-white' : 
-               toast.type === 'error' ? 'bg-rose-600 border-rose-500 text-white' : 
-               'bg-blue-600 border-blue-500 text-white'
-             }`}>
-               <span className="text-xl">
-                 {toast.type === 'success' ? '✓' : toast.type === 'error' ? '✕' : 'ℹ'}
-               </span>
-               <span className="font-black text-[10px] uppercase tracking-widest leading-none">{toast.message}</span>
-             </div>
-          </div>
-        )}
-
-        {/* DESKTOP GLOBAL HEADER - Hanya untuk User */}
-        {!isAdmin && (
-          <header className="hidden lg:flex items-center justify-between mb-8 animate-in fade-in duration-700">
-             <div className="flex-1">
-                <div className="relative max-w-md">
-                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm">🔍</span>
-                   <input type="text" placeholder="Quick Search Hub..." className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-white border border-slate-100 text-[11px] font-bold outline-none focus:ring-4 focus:ring-indigo-500/5 shadow-sm transition-all" />
-                </div>
-             </div>
-
-             <div className="flex items-center gap-6">
-                {/* Notifications Engine */}
-                <div className="relative">
-                   <button 
-                    onClick={() => { setIsNotifOpen(!isNotifOpen); setIsProfileOpen(false); }}
-                    className="w-11 h-11 bg-white rounded-xl flex items-center justify-center text-slate-400 hover:text-indigo-600 border border-slate-100 shadow-sm transition-all relative group"
-                   >
-                      <i className="bi bi-bell text-lg"></i>
-                      {activeAlerts.length > 0 && (
-                        <span className="absolute -top-1 -right-1 w-5 h-5 bg-rose-600 text-white text-[9px] font-black rounded-full border-2 border-white flex items-center justify-center shadow-lg animate-bounce">
-                           {activeAlerts.length}
-                        </span>
-                      )}
-                   </button>
-                   
-                   {isNotifOpen && (
-                     <div className="absolute right-0 top-full mt-3 w-72 bg-white border border-slate-100 rounded-3xl shadow-[0_30px_60px_-15px_rgba(0,0,0,0.15)] p-4 z-[110] animate-in slide-in-from-top-2">
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 px-2">Notifikasi Intelligence</p>
-                        <div className="space-y-2">
-                           {activeAlerts.length > 0 ? activeAlerts.map(alert => (
-                             <button 
-                              key={alert.id}
-                              onClick={() => { setActiveTab(alert.target); setIsNotifOpen(false); }}
-                              className="w-full text-left p-4 rounded-2xl bg-slate-50 hover:bg-indigo-50/50 transition-all border border-transparent hover:border-indigo-100 flex items-center gap-4 group"
-                             >
-                                <div className={`w-10 h-10 rounded-xl bg-white flex items-center justify-center text-xl shadow-sm border border-slate-100 text-${alert.color}-500`}>
-                                   <i className={`bi ${alert.icon}`}></i>
-                                </div>
-                                <div className="flex-1 overflow-hidden">
-                                   <p className="text-[11px] font-black text-slate-800 leading-tight">{alert.text}</p>
-                                   <p className="text-[9px] font-bold text-slate-400 uppercase mt-0.5">Selesaikan Segera →</p>
-                                </div>
-                             </button>
-                           )) : (
-                             <div className="py-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200">
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Semua Tugas Beres! ✨</p>
-                             </div>
-                           )}
-                        </div>
+        
+        {/* Header Desktop */}
+        <div className="hidden lg:flex items-center justify-between mb-8">
+           <div>
+              <h2 className="text-xl font-black text-slate-900 tracking-tight uppercase">{activeTab.replace('_', ' ')}</h2>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">FokusKarir Control Center</p>
+           </div>
+           <div className="flex items-center gap-6">
+              {activeAlerts.length > 0 && (
+                <div className="flex -space-x-2">
+                   {activeAlerts.slice(0, 3).map(alert => (
+                     <div key={alert.id} className={`w-8 h-8 rounded-full bg-${alert.color}-50 text-${alert.color}-600 border-2 border-white flex items-center justify-center text-xs shadow-sm cursor-pointer`} title={alert.text} onClick={() => handleNavigate(alert.target)}>
+                        <i className={`bi ${alert.icon}`}></i>
                      </div>
-                   )}
+                   ))}
                 </div>
-
-                {/* Profile Choice Dropdown */}
-                <div className="relative">
-                   <button 
-                    onClick={() => { setIsProfileOpen(!isProfileOpen); setIsNotifOpen(false); }}
-                    className="flex items-center gap-3 p-1.5 pr-4 bg-white border border-slate-100 rounded-2xl shadow-sm hover:shadow-md transition-all group"
-                   >
-                      <div className="w-9 h-9 bg-slate-100 rounded-xl overflow-hidden border-2 border-white shadow-inner">
-                        {data.profile.photoUrl ? (
-                          <img src={data.profile.photoUrl} className="w-full h-full object-cover" alt="User" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-slate-400 font-black text-xs uppercase">{data.profile.name.charAt(0)}</div>
-                        )}
-                      </div>
-                      <div className="text-left">
-                        <p className="text-[10px] font-black text-slate-900 uppercase leading-none mb-1 group-hover:text-indigo-600 transition-colors">{data.profile.name}</p>
-                        <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest leading-none">{data.plan} Tier</p>
-                      </div>
-                      <i className={`bi bi-chevron-down text-[10px] text-slate-300 transition-transform duration-300 ${isProfileOpen ? 'rotate-180 text-indigo-500' : ''}`}></i>
-                   </button>
-
-                   {isProfileOpen && (
-                     <div className="absolute right-0 top-full mt-3 w-60 bg-white border border-slate-100 rounded-3xl shadow-[0_30px_60px_-15px_rgba(0,0,0,0.15)] p-2 z-[110] animate-in slide-in-from-top-2">
-                        <button onClick={() => { setActiveTab('profile'); setIsProfileOpen(false); }} className="w-full flex items-center gap-3 px-4 py-3 text-[10px] font-black uppercase text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 rounded-2xl transition-all">
-                           <i className="bi bi-person-circle text-sm opacity-50"></i> Lihat Profil Saya
-                        </button>
-                        <button onClick={() => { setActiveTab('settings'); setIsProfileOpen(false); }} className="w-full flex items-center gap-3 px-4 py-3 text-[10px] font-black uppercase text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 rounded-2xl transition-all">
-                           <i className="bi bi-gear text-sm opacity-50"></i> Pengaturan Akun
-                        </button>
-                        <button onClick={() => { setActiveTab('billing'); setIsProfileOpen(false); }} className="w-full flex items-center gap-3 px-4 py-3 text-[10px] font-black uppercase text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 rounded-2xl transition-all">
-                           <i className="bi bi-credit-card text-sm opacity-50"></i> Billing & Plan
-                        </button>
-                        <div className="h-px bg-slate-50 my-1 mx-3"></div>
-                        <button onClick={() => auth.signOut()} className="w-full flex items-center gap-3 px-4 py-3 text-[10px] font-black uppercase text-rose-600 hover:bg-rose-50 rounded-2xl transition-all">
-                           <i className="bi bi-box-arrow-right text-sm opacity-50"></i> Keluar Sesi
-                        </button>
-                     </div>
-                   )}
-                </div>
-             </div>
-          </header>
-        )}
+              )}
+              <div className="h-8 w-px bg-slate-200"></div>
+              <div className="flex items-center gap-3">
+                 <div className="text-right">
+                    <p className="text-[10px] font-black text-slate-900 leading-none">{data.profile.name}</p>
+                    <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-1">{data.plan} Member</p>
+                 </div>
+                 <div className="w-10 h-10 rounded-full bg-slate-200 overflow-hidden border-2 border-white shadow-sm">
+                    {data.profile.photoUrl ? <img src={data.profile.photoUrl} className="w-full h-full object-cover" alt="User profile" /> : <div className="w-full h-full flex items-center justify-center text-slate-400"><i className="bi bi-person"></i></div>}
+                 </div>
+              </div>
+           </div>
+        </div>
 
         {renderContent()}
       </main>
+
+      {/* Mobile Navigation */}
       <MobileNav activeTab={activeTab} setActiveTab={handleNavigate} onLogout={() => auth.signOut()} isAdmin={isAdmin} />
+
+      {/* Toast Notification */}
+      {toast && (
+        <div className={`fixed top-4 right-4 z-[6000] px-6 py-3 rounded-2xl shadow-2xl border text-white font-black text-[10px] uppercase tracking-widest animate-in slide-in-from-right-4 ${
+          toast.type === 'success' ? 'bg-emerald-600 border-emerald-500' : 
+          toast.type === 'error' ? 'bg-rose-600 border-rose-500' : 'bg-blue-600 border-blue-500'
+        }`}>
+          {toast.message}
+        </div>
+      )}
     </div>
   );
 };

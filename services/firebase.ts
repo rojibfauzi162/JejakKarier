@@ -2,7 +2,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, signInWithPopup } from '@firebase/auth';
 import { getFirestore, doc, setDoc, getDoc, collection, getDocs, updateDoc, increment, query, where, limit } from "firebase/firestore";
-import { AppData, AiConfig, SubscriptionProduct, AccountStatus, MayarConfig, LegalConfig } from "../types";
+import { AppData, AiConfig, SubscriptionProduct, AccountStatus, MayarConfig, LegalConfig, UserRole } from "../types";
 
 // KONFIGURASI FIREBASE
 const firebaseConfig = {
@@ -71,6 +71,10 @@ export const getAllUsers = async (): Promise<AppData[]> => {
       uid: doc.id
     }));
   } catch (error: any) {
+    // Hindari log berisik jika errornya adalah masalah izin (permission denied)
+    if (error.code === 'permission-denied') {
+      return [];
+    }
     console.error("Admin: Error fetching all users:", error);
     throw error;
   }
@@ -80,8 +84,14 @@ export const updateAdminMetadata = async (uid: string, fields: Partial<AppData>)
   try {
     if (!uid) throw new Error("Valid UID required");
     const userRef = doc(db, "users", uid);
+    
+    // Sanitasi: Hapus semua key yang bernilai undefined karena Firestore tidak mendukungnya
+    const cleanFields = Object.fromEntries(
+      Object.entries(fields).filter(([_, v]) => v !== undefined)
+    );
+
     await updateDoc(userRef, {
-      ...fields,
+      ...cleanFields,
       updatedAt: new Date().toISOString()
     });
   } catch (error) {
@@ -121,7 +131,10 @@ export const getAiConfig = async (): Promise<AiConfig | null> => {
       return docSnap.data() as AiConfig;
     }
   } catch (error: any) {
-    console.warn("[FIREBASE] Config AI belum disetel atau akses dibatasi:", error.message);
+    // Sembunyikan error log jika masalahnya hanya izin akses (biasa terjadi pada user non-admin)
+    if (error.code !== 'permission-denied') {
+      console.warn("[FIREBASE] Config AI error:", error.message);
+    }
   }
   return null;
 };
@@ -148,7 +161,9 @@ export const getLegalConfig = async (): Promise<LegalConfig | null> => {
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) return docSnap.data() as LegalConfig;
   } catch (e: any) {
-    console.warn("[FIREBASE] Legal config error:", e.message);
+    if (e.code !== 'permission-denied') {
+      console.warn("[FIREBASE] Legal config error:", e.message);
+    }
   }
   // Selalu return objek default agar UI tidak error saat loading
   return { privacyPolicy: '', termsOfService: '' };
@@ -170,7 +185,9 @@ export const getMayarConfig = async (): Promise<MayarConfig | null> => {
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) return docSnap.data() as MayarConfig;
   } catch (e: any) {
-    console.warn("[FIREBASE] Config Mayar belum disetel atau akses dibatasi:", e.message);
+    if (e.code !== 'permission-denied') {
+      console.warn("[FIREBASE] Config Mayar error:", e.message);
+    }
   }
   return null;
 };
@@ -194,7 +211,9 @@ export const getProductsCatalog = async (): Promise<SubscriptionProduct[] | null
     const snap = await getDoc(docRef);
     if (snap.exists()) return snap.data().list;
   } catch (e: any) {
-    console.warn("[FIREBASE] Katalog produk belum disetel atau akses dibatasi:", e.message);
+    if (e.code !== 'permission-denied') {
+      console.warn("[FIREBASE] Katalog produk error:", e.message);
+    }
   }
   return null;
 };

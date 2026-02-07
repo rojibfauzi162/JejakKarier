@@ -17,9 +17,10 @@ import AdminSettings from './AdminSettings';
 
 interface AdminPanelProps {
   initialMode?: 'dashboard' | 'users' | 'products' | 'health' | 'ai' | 'integrations' | 'admin_transactions' | 'admin_admins' | 'settings';
+  userRole?: UserRole;
 }
 
-const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) => {
+const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard', userRole }) => {
   const [users, setUsers] = useState<AppData[]>([]);
   const [loading, setLoading] = useState(true);
   const [isSynced, setIsSynced] = useState(false);
@@ -62,12 +63,22 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
   };
 
   const fetchUsersAndConfig = async (silent = false) => {
+    // Safety check: Jangan lanjutkan jika role user bukan superadmin
+    if (userRole !== UserRole.SUPERADMIN) {
+      setError("Akses Terbatas: Role 'superadmin' tidak ditemukan pada akun Anda.");
+      setLoading(false);
+      return;
+    }
+
     if (!silent) {
         setLoading(true);
         setError(null);
     }
     try {
-      const usersTask = getAllUsers().catch(e => { console.error(e); return [] as AppData[]; });
+      const usersTask = getAllUsers().catch(e => { 
+        if (e.code === 'permission-denied') return [] as AppData[];
+        throw e;
+      });
       const configTask = getAiConfig().catch(e => { console.error(e); return null; });
       const productsTask = getProductsCatalog().catch(e => { console.error(e); return [] as SubscriptionProduct[]; });
 
@@ -84,7 +95,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
     } catch (err: any) {
       console.error(err);
       if (err.message?.includes('permission-denied') || err.code === 'permission-denied') {
-        setError("Firebase Permission Denied. Pastikan role 'superadmin' sudah tersemat.");
+        setError("Firebase Permission Denied. Pastikan role 'superadmin' sudah tersemat di database Firestore.");
       } else {
         setError(err.message || "Gagal mengambil data dari server.");
       }
@@ -147,7 +158,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
   useEffect(() => {
     fetchUsersAndConfig();
     fetchModelsFromOpenRouter();
-  }, [initialMode]);
+  }, [initialMode, userRole]);
 
   useEffect(() => {
     if (aiConfig.openRouterKey) fetchOpenRouterKeyInfo();
@@ -207,6 +218,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
   const handleSaveUserMetadata = async (metadata: Partial<AppData>) => {
     if (!editingUser?.uid) return;
     try {
+      // Pastikan tidak ada undefined yang lolos ke updateAdminMetadata
       await updateAdminMetadata(editingUser.uid, metadata);
       triggerToast("Berhasil update user! ✅");
       fetchUsersAndConfig(true);
@@ -368,7 +380,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard' }) =>
                                 type="date" 
                                 className="w-full px-4 py-2.5 rounded-xl border text-xs font-bold bg-slate-50" 
                                 value={editingUser.expiryDate ? editingUser.expiryDate.split('T')[0] : ''}
-                                onChange={e => setEditingUser({ ...editingUser, expiryDate: e.target.value ? new Date(e.target.value).toISOString() : undefined })}
+                                onChange={e => setEditingUser({ ...editingUser, expiryDate: e.target.value ? new Date(e.target.value).toISOString() : null })}
                             />
                         </div>
                     </div>
