@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { AppData, UserRole, SubscriptionProduct, SubscriptionPlan, AccountStatus, ToDoTask, AiStrategy, Training, Certification, Skill } from './types';
 import { INITIAL_DATA } from './constants';
 import Sidebar from './components/Sidebar';
@@ -29,6 +28,7 @@ import AiInsightActivity from './components/AiInsightActivity';
 import ToDoList from './components/ToDoList';
 import AppsHub from './components/user/AppsHub';
 import UpgradeModal from './components/user/UpgradeModal';
+import MobileStats from './components/user/MobileStats';
 import { auth, getUserData, saveUserData, getProductsCatalog } from './services/firebase';
 import { onAuthStateChanged } from '@firebase/auth';
 
@@ -46,6 +46,7 @@ const App: React.FC = () => {
   // States for Desktop Header Interactions
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const desktopNotifRef = useRef<HTMLDivElement>(null);
 
   // Deteksi URL path saat inisialisasi untuk mendukung akses langsung (e.g. namadomain.com/privacy)
   const [publicLegalPage, setPublicLegalPage] = useState<'privacy' | 'terms' | null>(() => {
@@ -94,6 +95,17 @@ const App: React.FC = () => {
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  // Close desktop notification on click outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (desktopNotifRef.current && !desktopNotifRef.current.contains(event.target as Node)) {
+        setIsNotifOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const [showAuth, setShowAuth] = useState(false);
@@ -176,8 +188,22 @@ const App: React.FC = () => {
   }
 
   if (loading) return (
-    <div className="h-screen w-full flex items-center justify-center bg-white font-black text-slate-400 uppercase tracking-[0.3em] animate-pulse">
-       Initializing Gateway...
+    <div className="h-screen w-full bg-white flex flex-col items-center justify-center relative overflow-hidden font-sans">
+      <div className="absolute top-1/4 left-1/4 w-[40rem] h-[40rem] bg-indigo-50/50 rounded-full blur-[100px] animate-pulse"></div>
+      <div className="absolute bottom-1/4 right-1/4 w-[35rem] h-[35rem] bg-blue-50/50 rounded-full blur-[100px] animate-pulse delay-700"></div>
+      <div className="relative flex flex-col items-center gap-12 text-center animate-in fade-in zoom-in duration-700">
+        <div className="w-24 h-24 bg-indigo-600 rounded-[2.2rem] flex items-center justify-center text-white text-4xl font-black shadow-[0_30px_60px_-15px_rgba(79,70,229,0.4)] animate-bounce">F</div>
+        <div className="space-y-4">
+           <div className="space-y-1">
+              <h2 className="text-xl font-black text-slate-900 tracking-[0.25em] uppercase leading-none">Sedang Memuat...</h2>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.35em] leading-none">Menyiapkan Dasbor Karir Anda</p>
+           </div>
+           <div className="w-64 h-1.5 bg-slate-100 rounded-full overflow-hidden mx-auto border border-white shadow-inner">
+              <div className="h-full bg-indigo-600 rounded-full w-full animate-loading-bar origin-left"></div>
+           </div>
+        </div>
+      </div>
+      <div className="absolute bottom-12 left-1/2 -translate-x-1/2 text-[9px] font-bold text-slate-300 uppercase tracking-[0.4em]">FokusKarir v2.0 • Intelligent Systems</div>
     </div>
   );
   
@@ -267,8 +293,9 @@ const App: React.FC = () => {
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'dashboard': return <Dashboard data={data} onNavigate={handleNavigate} onLogout={() => auth.signOut()} />;
+      case 'dashboard': return <Dashboard data={data} onNavigate={handleNavigate} />;
       case 'apps_hub': return <AppsHub onNavigate={handleNavigate} />;
+      case 'mobile_stats': return <MobileStats data={data} />;
       case 'profile': return (
         <ProfileView 
           profile={data.profile} 
@@ -362,16 +389,16 @@ const App: React.FC = () => {
       case 'settings': return <AccountSettings role={data.role} reminderConfig={data.reminderConfig} onUpdateReminders={(c) => setData({...data, reminderConfig: c})} />;
       case 'billing': return <Billing data={data} products={publicProducts} />;
       case 'apps_hub': return <AppsHub onNavigate={handleNavigate} />;
-      case 'admin_dashboard': return isAdmin ? <AdminPanel initialMode="dashboard" userRole={data.role} /> : <Dashboard data={data} onNavigate={handleNavigate} onLogout={() => auth.signOut()} />;
-      case 'admin_users': return isAdmin ? <AdminPanel initialMode="users" userRole={data.role} /> : <Dashboard data={data} onNavigate={handleNavigate} onLogout={() => auth.signOut()} />;
-      case 'admin_admins': return isAdmin ? <AdminPanel initialMode="admin_admins" userRole={data.role} /> : <Dashboard data={data} onNavigate={handleNavigate} onLogout={() => auth.signOut()} />;
-      case 'admin_transactions': return isAdmin ? <AdminPanel initialMode="admin_transactions" userRole={data.role} /> : <Dashboard data={data} onNavigate={handleNavigate} onLogout={() => auth.signOut()} />;
-      case 'admin_ai': return isAdmin ? <AdminPanel initialMode="ai" userRole={data.role} /> : <Dashboard data={data} onNavigate={handleNavigate} onLogout={() => auth.signOut()} />;
-      case 'admin_products': return isAdmin ? <AdminPanel initialMode="products" userRole={data.role} /> : <Dashboard data={data} onNavigate={handleNavigate} onLogout={() => auth.signOut()} />;
-      case 'admin_integrations': return isAdmin ? <AdminPanel initialMode="integrations" userRole={data.role} /> : <Dashboard data={data} onNavigate={handleNavigate} onLogout={() => auth.signOut()} />;
-      case 'admin_settings': return isAdmin ? <AdminPanel initialMode="settings" userRole={data.role} /> : <Dashboard data={data} onNavigate={handleNavigate} onLogout={() => auth.signOut()} />;
-      case 'admin_health': return isAdmin ? <AdminPanel initialMode="health" userRole={data.role} /> : <Dashboard data={data} onNavigate={handleNavigate} onLogout={() => auth.signOut()} />;
-      default: return <Dashboard data={data} onNavigate={handleNavigate} onLogout={() => auth.signOut()} />;
+      case 'admin_dashboard': return isAdmin ? <AdminPanel initialMode="dashboard" userRole={data.role} /> : <Dashboard data={data} onNavigate={handleNavigate} />;
+      case 'admin_users': return isAdmin ? <AdminPanel initialMode="users" userRole={data.role} /> : <Dashboard data={data} onNavigate={handleNavigate} />;
+      case 'admin_admins': return isAdmin ? <AdminPanel initialMode="admin_admins" userRole={data.role} /> : <Dashboard data={data} onNavigate={handleNavigate} />;
+      case 'admin_transactions': return isAdmin ? <AdminPanel initialMode="admin_transactions" userRole={data.role} /> : <Dashboard data={data} onNavigate={handleNavigate} />;
+      case 'admin_ai': return isAdmin ? <AdminPanel initialMode="ai" userRole={data.role} /> : <Dashboard data={data} onNavigate={handleNavigate} />;
+      case 'admin_products': return isAdmin ? <AdminPanel initialMode="products" userRole={data.role} /> : <Dashboard data={data} onNavigate={handleNavigate} />;
+      case 'admin_integrations': return isAdmin ? <AdminPanel initialMode="integrations" userRole={data.role} /> : <Dashboard data={data} onNavigate={handleNavigate} />;
+      case 'admin_settings': return isAdmin ? <AdminPanel initialMode="settings" userRole={data.role} /> : <Dashboard data={data} onNavigate={handleNavigate} />;
+      case 'admin_health': return isAdmin ? <AdminPanel initialMode="health" userRole={data.role} /> : <Dashboard data={data} onNavigate={handleNavigate} />;
+      default: return <Dashboard data={data} onNavigate={handleNavigate} />;
     }
   };
 
@@ -410,15 +437,51 @@ const App: React.FC = () => {
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">FokusKarir Control Center</p>
                </div>
                <div className="flex items-center gap-6">
-                  {activeAlerts.length > 0 && (
-                    <div className="flex -space-x-2">
-                       {activeAlerts.slice(0, 3).map(alert => (
-                         <div key={alert.id} className={`w-8 h-8 rounded-full bg-${alert.color}-50 text-${alert.color}-600 border-2 border-white flex items-center justify-center text-xs shadow-sm cursor-pointer`} title={alert.text} onClick={() => handleNavigate(alert.target)}>
-                            <i className={`bi ${alert.icon}`}></i>
-                         </div>
-                       ))}
-                    </div>
-                  )}
+                  {/* Desktop Notification Center */}
+                  <div className="relative" ref={desktopNotifRef}>
+                     <button 
+                       onClick={() => setIsNotifOpen(!isNotifOpen)}
+                       className={`w-10 h-10 rounded-full flex items-center justify-center transition-all relative border ${isNotifOpen ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg' : 'bg-white text-slate-400 border-slate-100 hover:text-indigo-600 hover:border-indigo-100'}`}
+                     >
+                        <i className={`bi ${isNotifOpen ? 'bi-bell-fill' : 'bi-bell'}`}></i>
+                        {activeAlerts.length > 0 && (
+                          <span className="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white text-[8px] font-black rounded-full flex items-center justify-center border-2 border-white shadow-sm">
+                            {activeAlerts.length}
+                          </span>
+                        )}
+                     </button>
+                     
+                     {isNotifOpen && (
+                        <div className="absolute right-0 mt-3 w-80 bg-white border border-slate-100 rounded-[2.5rem] shadow-2xl p-4 animate-in slide-in-from-top-2 duration-300 z-[120]">
+                           <div className="p-4 border-b border-slate-50 mb-3 flex justify-between items-center">
+                              <h4 className="text-[10px] font-black text-slate-900 uppercase tracking-widest">Pusat Notifikasi</h4>
+                              <span className="px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded-lg text-[8px] font-black uppercase">{activeAlerts.length} Baru</span>
+                           </div>
+                           <div className="space-y-1.5 max-h-[350px] overflow-y-auto no-scrollbar">
+                              {activeAlerts.length > 0 ? activeAlerts.map((alert, i) => (
+                                <button 
+                                  key={alert.id} 
+                                  onClick={() => { handleNavigate(alert.target); setIsNotifOpen(false); }}
+                                  className="w-full flex items-center gap-4 p-4 rounded-[1.75rem] hover:bg-slate-50 transition-all text-left group"
+                                >
+                                   <div className={`w-10 h-10 rounded-2xl bg-${alert.color}-50 text-${alert.color}-600 flex items-center justify-center text-sm shrink-0 border border-${alert.color}-100`}>
+                                      <i className={`bi ${alert.icon}`}></i>
+                                   </div>
+                                   <div className="flex-1 overflow-hidden">
+                                      <p className="text-[11px] font-black text-slate-800 leading-tight group-hover:text-indigo-600 transition-colors">{alert.text}</p>
+                                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter mt-1">Ketuk untuk Selesaikan</p>
+                                   </div>
+                                </button>
+                              )) : (
+                                <div className="py-12 text-center">
+                                   <p className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">Tidak ada notifikasi baru</p>
+                                </div>
+                              )}
+                           </div>
+                        </div>
+                     )}
+                  </div>
+
                   <div className="h-8 w-px bg-slate-200"></div>
                   <div className="flex items-center gap-3">
                      <div className="text-right">
@@ -426,7 +489,7 @@ const App: React.FC = () => {
                         <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-1">{data.plan} Member</p>
                      </div>
                      <div className="w-10 h-10 rounded-full bg-slate-200 overflow-hidden border-2 border-white shadow-sm">
-                        {data.profile.photoUrl ? <img src={data.profile.photoUrl} className="w-full h-full object-cover" alt="User profile" /> : <div className="w-full h-full flex items-center justify-center text-slate-400"><i className="bi bi-person"></i></div>}
+                        {data.profile.photoUrl ? <img src={data.profile.photoUrl} className="w-full h-full object-cover" alt="User profile" /> : <div className="w-full h-full flex items-center justify-center text-slate-400"><i className="bi bi-person-fill"></i></div>}
                      </div>
                   </div>
                </div>

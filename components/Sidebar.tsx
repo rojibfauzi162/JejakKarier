@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 
 interface SidebarProps {
@@ -161,7 +160,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout, is
                           <div className="pl-6 space-y-1 mt-1 animate-in slide-in-from-top-1 duration-300 border-l border-white/5 ml-4">
                             <SubMenuButton id="tour-sidebar-daily" active={activeTab === 'daily'} onClick={() => setActiveTab('daily')} label="Log aktivitas" icon="bi bi-card-text" />
                             <SubMenuButton id="tour-sidebar-work_reflection" active={activeTab === 'work_reflection'} onClick={() => setActiveTab('work_reflection')} label="Refleksi kerja" icon="bi bi-chat-quote" />
-                            <SubMenuButton active={activeTab === 'reports'} onClick={() => setActiveTab('reports')} label="Performa data" icon="bi bi-graph-up" />
+                            <SubMenuButton active={activeTab === 'reports'} onClick={() => setActiveTab('reports')} label="Report work" icon="bi bi-graph-up" />
                             <SubMenuButton active={activeTab === 'ai_insights'} onClick={() => setActiveTab('ai_insights')} label="AI Insight activity" icon="bi bi-cpu" />
                           </div>
                         )}
@@ -215,7 +214,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout, is
       {showLogoutModal && (
         <div className="fixed inset-0 z-[6000] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" onClick={() => setShowLogoutModal(false)}></div>
-          <div className="relative bg-white w-full max-w-sm rounded-[2.5rem] p-8 lg:p-10 shadow-2xl animate-in zoom-in duration-300">
+          <div className="relative bg-white w-full max-sm rounded-[2.5rem] p-8 lg:p-10 shadow-2xl animate-in zoom-in duration-300">
             <div className="text-center mb-8">
               <div className="w-16 h-16 bg-rose-50 text-rose-500 rounded-3xl flex items-center justify-center mx-auto mb-4 text-2xl shadow-inner">
                 <i className="bi bi-door-open-fill"></i>

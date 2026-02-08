@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 
 interface MobileNavProps {
@@ -84,6 +83,20 @@ const MobileNav: React.FC<MobileNavProps> = ({ activeTab, setActiveTab, onLogout
                  <span className="text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity">→</span>
               </button>
 
+              <div className="h-px bg-slate-100 mx-4"></div>
+
+              <button 
+                onClick={() => { setActiveTab('reports'); setShowDailyMenu(false); }}
+                className="flex items-center gap-4 p-4 rounded-3xl hover:bg-blue-50/50 transition-all active:scale-[0.98] group"
+              >
+                 <div className="w-12 h-12 rounded-[1.25rem] bg-blue-600 text-white flex items-center justify-center text-2xl shadow-lg shadow-blue-200 group-hover:scale-110 transition-transform"><i className="bi bi-graph-up"></i></div>
+                 <div className="text-left flex-1">
+                    <p className="text-xs font-black uppercase tracking-widest text-slate-900">Report work</p>
+                    <p className="text-[10px] font-bold text-slate-400">Laporan detail performa</p>
+                 </div>
+                 <span className="text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity">→</span>
+              </button>
+
               {/* Speech Bubble Pointer */}
               <div className="absolute -bottom-2 left-[38%] -translate-x-1/2 w-4 h-4 bg-white border-r border-b border-indigo-100 rotate-45"></div>
            </div>
@@ -95,7 +108,7 @@ const MobileNav: React.FC<MobileNavProps> = ({ activeTab, setActiveTab, onLogout
       {/* Tactile 3D Bottom Nav Bar */}
       <nav className={`bg-white/95 backdrop-blur-xl border-t-2 border-indigo-500/10 ${isAdmin ? 'px-2' : 'px-6'} pt-3 pb-4 flex items-center justify-between shadow-[0_-12px_40px_rgba(0,0,0,0.08)] relative z-10`}>
         {mainItems.map((item) => {
-          const isActive = activeTab === item.id || (item.isSpecial && (activeTab === 'daily' || activeTab === 'work_reflection'));
+          const isActive = activeTab === item.id || (item.isSpecial && (activeTab === 'daily' || activeTab === 'work_reflection' || activeTab === 'reports'));
           return (
             <button
               id={`tour-mobile-${item.id}`}
@@ -125,7 +138,6 @@ const MobileNav: React.FC<MobileNavProps> = ({ activeTab, setActiveTab, onLogout
               activeTab === 'apps_hub' ? 'text-indigo-600' : 'text-slate-400'
             }`}
           >
-            {/* Fix: Added missing quotes around 'scale-125 -translate-y-1' to resolve variable lookup errors */}
             <div className={`text-2xl transition-transform ${activeTab === 'apps_hub' ? 'scale-125 -translate-y-1' : 'group-active:scale-90'}`}>
                <i className="bi bi-grid-fill"></i>
             </div>

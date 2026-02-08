@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { AppData, WorkExperience, Education, Skill, Training, Certification, Achievement } from '../types';
 
@@ -370,10 +369,10 @@ const CVGenerator: React.FC<CVGeneratorProps> = ({ data }) => {
           </div>
         </div>
 
-        {/* Right Preview Area */}
-        <div className="xl:col-span-8 flex justify-center items-start">
-          <div className="sticky top-10 transform scale-[0.6] md:scale-[0.8] lg:scale-[0.9] xl:scale-1 origin-top transition-all duration-700">
-             <div className="bg-slate-200 p-8 rounded-[3rem] shadow-inner border-4 border-white/50">
+        {/* Right Preview Area - Fixed mobile cropping with better scaling */}
+        <div className="xl:col-span-8 flex justify-center items-start overflow-hidden">
+          <div className="sticky top-10 transform scale-[0.42] sm:scale-[0.5] md:scale-[0.8] lg:scale-[0.9] xl:scale-1 origin-top transition-all duration-700 -mb-[50%] sm:-mb-[40%] md:mb-0">
+             <div className="bg-slate-200 p-4 sm:p-8 rounded-[2rem] sm:rounded-[3rem] shadow-inner border-4 border-white/50">
                {renderCV()}
              </div>
           </div>

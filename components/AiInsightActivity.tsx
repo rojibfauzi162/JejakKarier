@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useEffect } from 'react';
 import { AppData, ProjectStatus, TrainingStatus, AiInsightRecord, Achievement, AchievementCategory } from '../types';
 import { generateCareerInsight } from '../services/geminiService';
@@ -234,6 +233,13 @@ const AiInsightActivity: React.FC<AiInsightActivityProps> = ({ data, onUpdateIns
     setAddedAchievementIds(prev => new Set(Array.from(prev).concat(index)));
   };
 
+  const ContextCheckbox = ({ label, active, onClick }: any) => (
+    <button onClick={onClick} className={`w-full flex items-center justify-between p-4 rounded-2xl border transition-all ${active ? 'bg-indigo-50 border-indigo-200 shadow-sm' : 'bg-slate-50 border-slate-100 opacity-60 hover:opacity-100'}`}>
+       <span className={`text-[10px] font-black uppercase tracking-widest ${active ? 'text-indigo-600' : 'text-slate-400'}`}>{label}</span>
+       <div className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center transition-all ${active ? 'bg-indigo-600 border-indigo-600' : 'bg-white border-slate-200'}`}>{active && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}</div>
+    </button>
+  );
+
   return (
     <div className="space-y-8 animate-in fade-in duration-700 pb-20">
       <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
@@ -343,7 +349,7 @@ const AiInsightActivity: React.FC<AiInsightActivityProps> = ({ data, onUpdateIns
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 mb-16">
               <div className="lg:col-span-7 bg-indigo-50/30 p-10 rounded-[3rem] border border-indigo-100 flex flex-col justify-center">
                  <p className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em] mb-6">Executive Summary</p>
-                 <p className="text-[15px] text-slate-700 italic font-medium leading-relaxed">"{insightResult.summary}"</p>
+                 <p className="text-[15px] text-slate-700 italic font-medium leading-relaxed">"{insightResult.summary || 'AI sedang menyusun ringkasan strategis berdasarkan aktivitas Anda...'}"</p>
               </div>
               <div className="lg:col-span-5 bg-slate-50/50 p-8 rounded-[3rem] border border-slate-100">
                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] mb-6 text-center">Snapshot Overview</p>
@@ -438,12 +444,5 @@ const AiInsightActivity: React.FC<AiInsightActivityProps> = ({ data, onUpdateIns
     </div>
   );
 };
-
-const ContextCheckbox = ({ label, active, onClick }: any) => (
-  <button onClick={onClick} className={`w-full flex items-center justify-between p-4 rounded-2xl border transition-all ${active ? 'bg-indigo-50 border-indigo-200 shadow-sm' : 'bg-slate-50 border-slate-100 opacity-60 hover:opacity-100'}`}>
-     <span className={`text-[10px] font-black uppercase tracking-widest ${active ? 'text-indigo-600' : 'text-slate-400'}`}>{label}</span>
-     <div className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center transition-all ${active ? 'bg-indigo-600 border-indigo-600' : 'bg-white border-slate-200'}`}>{active && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}</div>
-  </button>
-);
 
 export default AiInsightActivity;

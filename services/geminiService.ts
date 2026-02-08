@@ -1,4 +1,3 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
 import { AppData, AiConfig, WorkReflection } from "../types";
 import { getAiConfig, auth, recordAiTokens } from "./firebase";
@@ -184,7 +183,20 @@ export async function summarizeMonthlyReview(reviewText: string) {
 }
 
 export async function generateCareerInsight(data: AppData, audience: 'self' | 'supervisor', period: 'weekly' | 'monthly', contexts: string[]) {
-  const prompt = `GENERATE PERFORMANCE INSIGHT for ${audience} period ${period}. DATA: ${JSON.stringify(data.dailyReports.slice(-20))}`;
+  const prompt = `GENERATE A COMPREHENSIVE PERFORMANCE INSIGHT REPORT for user: ${data.profile.name}.
+  CONTEXT: ${contexts.join(', ')}
+  AUDIENCE: ${audience}
+  PERIOD: ${period}
+  
+  ACTIVITY LOG DATA: ${JSON.stringify(data.dailyReports)}
+  
+  STRICT MANDATORY RULES:
+  1. The 'summary' field MUST NOT BE EMPTY. You MUST write a 3-4 sentence professional executive summary of the user's progress and achievements during this period based on the log data.
+  2. If audience is 'supervisor', use formal business language. If 'self', use reflective and motivating language.
+  3. Analyze the metrics and categories in the logs to provide specific insights.
+  4. Detected Achievements section should highlight concretely what was finished.
+  5. LANGUAGE: ALL output fields must be in BAHASA INDONESIA.`;
+  
   const schema = {
     type: Type.OBJECT,
     properties: {

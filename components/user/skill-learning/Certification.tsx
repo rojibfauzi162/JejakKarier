@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { Certification, Skill, TrainingStatus } from '../../../types';
 
@@ -47,12 +46,13 @@ const CertificationModule: React.FC<CertificationProps> = ({ certs, skills, onAd
         </div>
       </div>
 
-      <div className="flex justify-end">
+      <div className="flex justify-end px-1">
         <button onClick={() => { setEditingItem(null); setIsFormOpen(true); }} className="px-6 py-3 bg-slate-900 text-white font-black rounded-2xl text-[10px] uppercase tracking-widest shadow-xl hover:bg-black transition-all">+ Add Cert</button>
       </div>
 
       <div className="bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden">
-        <div className="overflow-x-auto">
+        {/* Desktop Table View */}
+        <div className="hidden lg:block overflow-x-auto">
           <table className="w-full text-left">
             <thead>
               <tr className="bg-slate-50/50 border-b border-slate-100 text-[10px] font-black uppercase tracking-widest text-slate-400">
@@ -97,7 +97,55 @@ const CertificationModule: React.FC<CertificationProps> = ({ certs, skills, onAd
               })}
             </tbody>
           </table>
-          {certs.length === 0 && <div className="py-24 text-center text-slate-400 italic">Belum ada sertifikasi yang direncanakan atau diraih.</div>}
+        </div>
+
+        {/* Mobile Card View */}
+        <div className="lg:hidden p-4 space-y-4">
+           {certs.map(c => {
+             const overdue = isOverdue(c);
+             return (
+               <div key={c.id} className="bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100 space-y-4">
+                  <div className="flex justify-between items-start">
+                     <div className="flex-1 mr-4">
+                        <h4 className="font-black text-slate-800 text-base leading-tight">{c.name}</h4>
+                        <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest mt-1">{c.relatedSkill}</p>
+                     </div>
+                     <div className="flex gap-2">
+                        <button onClick={() => { setEditingItem(c); setIsFormOpen(true); }} className="w-8 h-8 flex items-center justify-center bg-white rounded-lg text-slate-400 shadow-sm border border-slate-100">✎</button>
+                        <button onClick={() => onDeleteCert(c.id)} className="w-8 h-8 flex items-center justify-center bg-white rounded-lg text-slate-400 shadow-sm border border-slate-100">✕</button>
+                     </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                     <div className="space-y-1">
+                        <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Penerbit</p>
+                        <p className="text-[11px] font-bold text-slate-700 truncate">{c.issuer}</p>
+                     </div>
+                     <div className="space-y-1">
+                        <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Status</p>
+                        <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase inline-block border ${
+                          (c.status || TrainingStatus.COMPLETED) === TrainingStatus.COMPLETED ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-amber-50 text-amber-600 border-amber-100'
+                        }`}>{c.status || 'Completed'}</span>
+                     </div>
+                  </div>
+
+                  <div className="space-y-1">
+                     <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">ID / Nomor</p>
+                     <p className="text-[10px] font-mono font-bold text-slate-500 break-all">{c.certNumber || 'Tidak ada nomor'}</p>
+                  </div>
+
+                  <div className="flex justify-between items-center pt-2 border-t border-slate-200/50">
+                     <span className="text-[9px] font-black text-slate-400 uppercase">Deadline / Terbit</span>
+                     <span className={`text-[10px] font-black uppercase ${overdue ? 'text-rose-500' : 'text-slate-600'}`}>
+                        {overdue ? '⚠️ Terlewat' : (c.deadline || c.date || '-')}
+                     </span>
+                  </div>
+               </div>
+             );
+           })}
+           {certs.length === 0 && (
+             <div className="py-20 text-center text-slate-400 italic text-sm">Belum ada data sertifikasi.</div>
+           )}
         </div>
       </div>
 
@@ -187,7 +235,7 @@ const CertForm = ({ initialData, onSubmit, onCancel }: any) => {
         </div>
       </div>
       <div className="flex gap-4 pt-4">
-        <button type="button" onClick={onCancel} className="flex-1 py-4 bg-slate-50 text-slate-400 font-black rounded-2xl uppercase text-[10px]">Batal</button>
+        <button type="button" onClick={onCancel} className="flex-1 py-4 bg-slate-100 text-slate-400 font-black rounded-2xl uppercase text-[10px]">Batal</button>
         <button type="button" onClick={() => onSubmit(form)} className="flex-[2] py-4 bg-slate-900 text-white font-black rounded-2xl uppercase text-[10px] shadow-xl">Simpan Sertifikat</button>
       </div>
     </div>

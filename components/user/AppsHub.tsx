@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 interface AppsHubProps {
@@ -12,9 +11,11 @@ const AppsHub: React.FC<AppsHubProps> = ({ onNavigate }) => {
       items: [
         { id: 'daily', label: 'Daily Work', icon: 'bi-pencil-square', color: 'bg-blue-50 text-blue-600' },
         { id: 'work_reflection', label: 'Refleksi Kerja', icon: 'bi-chat-quote', color: 'bg-rose-50 text-rose-600' },
+        { id: 'reports', label: 'Report work', icon: 'bi-graph-up', color: 'bg-blue-50 text-blue-600' },
         { id: 'todo_list', label: 'Langkah Pengembangan', icon: 'bi-check2-square', color: 'bg-indigo-50 text-indigo-600' },
-        { id: 'reports', label: 'Performa Data', icon: 'bi-bar-chart-line', color: 'bg-emerald-50 text-emerald-600' },
+        { id: 'mobile_stats', label: 'Data Statistik', icon: 'bi-bar-chart-line', color: 'bg-emerald-50 text-emerald-600' },
         { id: 'ai_insights', label: 'AI Insights', icon: 'bi-cpu', color: 'bg-purple-50 text-purple-600' },
+        { id: 'reviews', label: 'Monthly Review', icon: 'bi-calendar-check', color: 'bg-amber-50 text-amber-600' },
       ]
     },
     {
@@ -30,11 +31,19 @@ const AppsHub: React.FC<AppsHubProps> = ({ onNavigate }) => {
       title: "Karir & Portfolio",
       items: [
         { id: 'career', label: 'Career Path', icon: 'bi-rocket-takeoff', color: 'bg-rose-50 text-rose-600' },
+        { id: 'achievements', label: 'Achievements', icon: 'bi-trophy', color: 'bg-amber-50 text-amber-600' },
         { id: 'cv_generator', label: 'PDF Export', icon: 'bi-file-earmark-pdf', color: 'bg-slate-100 text-slate-700' },
         { id: 'online_cv', label: 'Digital Page', icon: 'bi-globe', color: 'bg-blue-50 text-blue-500' },
         { id: 'loker', label: 'Loker Tracker', icon: 'bi-briefcase', color: 'bg-teal-50 text-teal-600' },
         { id: 'projects', label: 'Personal Project', icon: 'bi-tools', color: 'bg-orange-50 text-orange-600' },
         { id: 'networking', label: 'Networking', icon: 'bi-people', color: 'bg-indigo-50 text-indigo-600' },
+      ]
+    },
+    {
+      title: "Akun & Sistem",
+      items: [
+        { id: 'billing', label: 'Billing & Plan', icon: 'bi-credit-card', color: 'bg-slate-100 text-slate-900' },
+        { id: 'settings', label: 'Pengaturan', icon: 'bi-gear', color: 'bg-slate-100 text-slate-600' },
       ]
     }
   ];

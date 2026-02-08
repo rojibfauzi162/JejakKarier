@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { Skill, SkillStatus, SkillCategory, SkillPriority, AppData, SubscriptionPlan } from '../../../types';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
@@ -107,7 +106,7 @@ const SkillMatrix: React.FC<SkillMatrixProps> = ({ skills, onAddSkill, onUpdateS
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(value, name, props) => [`${value} Skill (${props.payload.percent}%)`, name]} />
+                  <Tooltip formatter={(value: any, name: string, props: any) => [`${value} Skill (${props.payload.percent}%)`, name]} />
                   <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase' }} />
                 </PieChart>
               </ResponsiveContainer>
@@ -132,12 +131,13 @@ const SkillMatrix: React.FC<SkillMatrixProps> = ({ skills, onAddSkill, onUpdateS
         </div>
       </div>
 
-      <div className="flex justify-between items-center">
-        <h3 className="text-xl font-black text-slate-900 uppercase">Daftar Kompetensi</h3>
+      <div className="flex justify-between items-center px-1">
+        <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">Daftar Kompetensi</h3>
         <button onClick={openAddForm} className="px-6 py-3 bg-slate-900 text-white font-black rounded-2xl text-[10px] uppercase tracking-widest shadow-xl hover:bg-black transition-all">+ Add Skill</button>
       </div>
 
       <div className="bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden">
+        {/* Desktop Table View */}
         <div className="hidden lg:block overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -164,7 +164,7 @@ const SkillMatrix: React.FC<SkillMatrixProps> = ({ skills, onAddSkill, onUpdateS
                   </td>
                   <td className="px-8 py-6">
                     <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden shadow-inner">
-                      <div className={`h-full transition-all duration-1000 ${skill.currentLevel >= 4 ? 'bg-emerald-500' : 'bg-blue-500'}`} style={{ width: `${(skill.currentLevel / 5) * 100}%` }}></div>
+                      <div className={`h-full transition-all duration-1000 ${skill.currentLevel >= 4 ? 'bg-emerald-500' : skill.currentLevel >= 3 ? 'bg-blue-500' : 'bg-amber-500'}`} style={{ width: `${(skill.currentLevel / 5) * 100}%` }}></div>
                     </div>
                   </td>
                   <td className="px-6 py-6 text-center">
@@ -187,7 +187,44 @@ const SkillMatrix: React.FC<SkillMatrixProps> = ({ skills, onAddSkill, onUpdateS
               ))}
             </tbody>
           </table>
-          {skills.length === 0 && <div className="py-24 text-center text-slate-400 italic">Belum ada skill yang dicatat. Mari mulai bangun portofolio Anda!</div>}
+        </div>
+
+        {/* Mobile Card View - FIXED VISIBILITY */}
+        <div className="lg:hidden p-4 space-y-4">
+           {skills.map(skill => (
+             <div key={skill.id} className="bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100 space-y-4">
+                <div className="flex justify-between items-start">
+                   <div>
+                      <h4 className="font-black text-slate-800 text-base leading-tight">{skill.name}</h4>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">{skill.category}</p>
+                   </div>
+                   <div className="flex gap-2">
+                      <button onClick={() => openEditForm(skill)} className="w-8 h-8 flex items-center justify-center bg-white rounded-lg text-slate-400 hover:text-blue-600 shadow-sm border border-slate-100">✎</button>
+                      <button onClick={() => onDeleteSkill(skill.id)} className="w-8 h-8 flex items-center justify-center bg-white rounded-lg text-slate-400 hover:text-rose-600 shadow-sm border border-slate-100">✕</button>
+                   </div>
+                </div>
+
+                <div className="space-y-2">
+                   <div className="flex justify-between items-center">
+                      <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Mastery Level</span>
+                      <span className="text-xs font-black text-indigo-600">{skill.currentLevel} / 5</span>
+                   </div>
+                   <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+                      <div className={`h-full transition-all duration-1000 ${skill.currentLevel >= 4 ? 'bg-emerald-500' : 'bg-indigo-600'}`} style={{ width: `${(skill.currentLevel/5)*100}%` }}></div>
+                   </div>
+                </div>
+
+                <div className="flex justify-between items-center pt-2 border-t border-slate-200/50">
+                   <span className={`px-3 py-1 rounded-lg text-[8px] font-black uppercase tracking-tighter border ${getStatusStyle(skill.status)}`}>
+                     {getFriendlyStatus(skill.status)}
+                   </span>
+                   {skill.isRelevant && <span className="text-[9px] font-black text-emerald-600 uppercase">Relevan ✨</span>}
+                </div>
+             </div>
+           ))}
+           {skills.length === 0 && (
+             <div className="py-20 text-center text-slate-400 italic text-sm">Belum ada skill yang dicatat.</div>
+           )}
         </div>
       </div>
 

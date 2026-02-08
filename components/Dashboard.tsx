@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { AppData, SkillStatus } from '../types';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
@@ -67,13 +66,32 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenNotif, on
   // State untuk Widget/Pinned Menus - Default 8 menu pertama
   const [pinnedMenuIds, setPinnedMenuIds] = useState<string[]>(() => {
     const saved = localStorage.getItem('jejakkarir_pinned_menus');
-    return saved ? JSON.parse(saved) : ['daily', 'work_reflection', 'todo_list', 'mobile_stats', 'skills', 'career', 'cv_generator', 'projects'];
+    return saved ? JSON.parse(saved) : ['daily', 'work_reflection', 'reports', 'mobile_stats', 'todo_list', 'skills', 'career', 'cv_generator'];
   });
 
   const skillCount = data.skills.length;
   const achievedSkills = data.skills.filter(s => s.status === SkillStatus.ACHIEVED).length;
   const progressPercent = skillCount > 0 ? Math.round((achievedSkills / skillCount) * 100) : 0;
   
+  // Logic: Account Readiness Score (Kesiapan Profil)
+  const calculateAccountReadiness = () => {
+    const profileFields = [
+      data.profile.name,
+      data.profile.phone,
+      data.profile.domicile,
+      data.profile.mainCareer,
+      data.profile.currentPosition,
+      data.profile.description,
+      data.profile.photoUrl
+    ];
+    const filledFields = profileFields.filter(f => f && f.length > 0).length;
+    const hasWork = data.workExperiences.length > 0 ? 1 : 0;
+    const hasEdu = data.educations.length > 0 ? 1 : 0;
+    // Total 9 poin (7 field profil + work exp + education)
+    return Math.round(((filledFields + hasWork + hasEdu) / 9) * 100);
+  };
+  const accountReadiness = calculateAccountReadiness();
+
   // Simple chart data from daily reports
   const chartData = data.dailyReports.slice(-7).map(report => ({
     name: report.date ? new Date(report.date).toLocaleDateString('en-US', { weekday: 'short' }) : '?',
@@ -83,10 +101,12 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenNotif, on
   const allMenuItems = [
     { id: 'daily', label: 'Daily Work', icon: 'bi-pencil-square' },
     { id: 'work_reflection', label: 'Refleksi Kerja', icon: 'bi-chat-quote' },
+    { id: 'reports', label: 'Report work', icon: 'bi-graph-up' },
+    { id: 'mobile_stats', label: 'Data Statistik', icon: 'bi-bar-chart-line' },
     { id: 'todo_list', label: 'Langkah Pengembangan', icon: 'bi-check2-square' },
-    { id: 'mobile_stats', label: 'Performa Data', icon: 'bi-bar-chart-line' },
     { id: 'skills', label: 'Skills & Learning', icon: 'bi-mortarboard' },
     { id: 'career', label: 'Career Path', icon: 'bi-rocket-takeoff' },
+    { id: 'achievements', label: 'Achievements', icon: 'bi-trophy' },
     { id: 'cv_generator', label: 'PDF Export', icon: 'bi-file-earmark-pdf' },
     { id: 'projects', label: 'Personal Project', icon: 'bi-tools' },
     { id: 'networking', label: 'Networking', icon: 'bi-people' },
@@ -94,6 +114,8 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenNotif, on
     { id: 'loker', label: 'Loker Tracker', icon: 'bi-briefcase' },
     { id: 'online_cv', label: 'Digital Page', icon: 'bi-globe' },
     { id: 'reviews', label: 'Monthly Review', icon: 'bi-calendar-check' },
+    { id: 'billing', label: 'Billing & Plan', icon: 'bi-credit-card' },
+    { id: 'settings', label: 'Pengaturan', icon: 'bi-gear' },
   ];
 
   const togglePin = (id: string) => {
@@ -139,7 +161,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenNotif, on
         {showReminderModal && reminders.length > 0 && (
           <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 animate-in fade-in duration-300">
              <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm" onClick={() => setShowReminderModal(false)}></div>
-             <div className="relative bg-white w-full max-w-sm rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in duration-500">
+             <div className="relative bg-white w-full max-sm rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in duration-500">
                 <div className="p-8 bg-indigo-600 text-white text-center">
                    <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4">🔔</div>
                    <h3 className="text-xl font-black uppercase tracking-tight">Jangan Terlewat!</h3>
@@ -166,13 +188,26 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenNotif, on
           </div>
         )}
 
-        <div className="px-6">
+        <div className="px-6 space-y-4">
+           {/* Skill Readiness Card */}
            <div className="bg-gradient-to-br from-indigo-600 to-blue-500 p-8 rounded-[2.5rem] shadow-2xl shadow-indigo-200 text-white relative overflow-hidden group">
               <div className="relative z-10">
                  <p className="text-4xl font-black tracking-tighter mb-2">{progressPercent}% <span className="text-sm font-bold uppercase tracking-widest opacity-80 block">Skill Readiness Score</span></p>
                  <p className="text-xs font-medium opacity-90 leading-relaxed max-w-[200px]">"{currentAffirmation}"</p>
               </div>
               <div className="absolute right-6 top-1/2 -translate-y-1/2 text-7xl opacity-20 transform rotate-12 group-hover:scale-110 transition-transform duration-700"><i className="bi bi-gem"></i></div>
+           </div>
+           
+           {/* Account Completion Card - NEW */}
+           <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                 <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center text-xl"><i className="bi bi-person-check"></i></div>
+                 <div>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Account Readiness</p>
+                    <p className="text-lg font-black text-slate-800 leading-none">{accountReadiness}% Profil Lengkap</p>
+                 </div>
+              </div>
+              <button onClick={() => onNavigate?.('profile')} className="text-[9px] font-black text-blue-600 uppercase tracking-widest border-b border-blue-600/30">Lengkapi</button>
            </div>
         </div>
 
@@ -205,7 +240,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenNotif, on
            </div>
         </div>
 
-        {/* RESTORASI: Recent Activity List di Mobile */}
+        {/* Recent Activity List */}
         <div className="px-6 space-y-4 pb-12">
            <div className="flex justify-between items-center px-1">
               <h3 className="text-base font-black text-slate-900 uppercase tracking-tight">Recent Activity</h3>
@@ -274,7 +309,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenNotif, on
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
           <MetricCard title="Produktivitas" value={data.dailyReports.length > 0 ? data.dailyReports[data.dailyReports.length - 1].metricValue : 0} subtitle={`${data.dailyReports.length > 0 ? data.dailyReports[data.dailyReports.length - 1].metricLabel : 'Belum ada data'}`} icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>} color="indigo" />
           <MetricCard title="Progress Skill" value={`${progressPercent}%`} subtitle={`${achievedSkills} / ${skillCount} Skill tercapai`} icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>} color="emerald" />
-          <MetricCard title="Status Akun" value={data.plan} subtitle={data.expiryDate ? `Sisa ${Math.ceil((new Date(data.expiryDate).getTime() - new Date().getTime()) / (1000 * 3600 * 24))} Hari` : 'Aktif Selamanya'} icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>} color="slate" />
+          <MetricCard title="Kesiapan Akun" value={`${accountReadiness}%`} subtitle="Lengkapi profil Anda" icon={<i className="bi bi-person-check-fill"></i>} color="slate" />
           <MetricCard title="Pencapaian" value={data.achievements.length} subtitle="Milestone tervalidasi" icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"></path></svg>} color="amber" />
         </div>
 

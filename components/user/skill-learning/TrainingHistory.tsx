@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { Training, TrainingStatus, SkillPriority } from '../../../types';
 
@@ -38,12 +37,13 @@ const TrainingHistory: React.FC<TrainingHistoryProps> = ({ trainings, onAddTrain
         <StatWidget title="Investment" value={`Rp ${(stats.cost/1000).toFixed(0)}k`} icon="💎" color="purple" />
       </div>
 
-      <div className="flex justify-end">
+      <div className="flex justify-end px-1">
         <button onClick={() => { setEditingItem(null); setIsFormOpen(true); }} className="px-6 py-3 bg-slate-900 text-white font-black rounded-2xl text-[10px] uppercase tracking-widest shadow-xl hover:bg-black transition-all">+ Add Course</button>
       </div>
 
       <div className="bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden">
-        <div className="overflow-x-auto">
+        {/* Desktop Table View */}
+        <div className="hidden lg:block overflow-x-auto">
           <table className="w-full text-left">
             <thead>
               <tr className="bg-slate-50/50 border-b border-slate-100 text-[10px] font-black uppercase tracking-widest text-slate-400">
@@ -97,6 +97,62 @@ const TrainingHistory: React.FC<TrainingHistoryProps> = ({ trainings, onAddTrain
               })}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile Card View */}
+        <div className="lg:hidden p-4 space-y-4">
+           {trainings.map(t => {
+             const overdue = isOverdue(t);
+             return (
+               <div key={t.id} className="bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100 space-y-4">
+                  <div className="flex justify-between items-start">
+                     <div className="flex-1 mr-4">
+                        <h4 className="font-black text-slate-800 text-base leading-tight">{t.name}</h4>
+                        <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mt-1">Rp {t.cost?.toLocaleString('id-ID')}</p>
+                     </div>
+                     <div className="flex gap-2">
+                        <button onClick={() => { setEditingItem(t); setIsFormOpen(true); }} className="w-8 h-8 flex items-center justify-center bg-white rounded-lg text-slate-400 shadow-sm border border-slate-100">✎</button>
+                        <button onClick={() => onDeleteTraining(t.id)} className="w-8 h-8 flex items-center justify-center bg-white rounded-lg text-slate-400 shadow-sm border border-slate-100">✕</button>
+                     </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                     <div className="space-y-1">
+                        <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Platform</p>
+                        <p className="text-[11px] font-bold text-slate-700 truncate">{t.provider}</p>
+                     </div>
+                     <div className="space-y-1">
+                        <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Status</p>
+                        <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase inline-block border ${
+                          t.status === TrainingStatus.COMPLETED ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-amber-50 text-amber-600 border-amber-100'
+                        }`}>{t.status}</span>
+                     </div>
+                  </div>
+
+                  {t.status === TrainingStatus.ON_PROCESS && (
+                    <div className="space-y-2">
+                       <div className="flex justify-between items-center">
+                          <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Progress</span>
+                          <span className="text-[10px] font-black text-blue-600">{t.progress}%</span>
+                       </div>
+                       <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                          <div className="h-full bg-blue-600" style={{ width: `${t.progress}%` }}></div>
+                       </div>
+                    </div>
+                  )}
+
+                  <div className="flex justify-between items-center pt-2 border-t border-slate-200/50">
+                     <span className="text-[9px] font-black text-slate-400 uppercase">Masa Berlaku</span>
+                     <span className={`text-[10px] font-black uppercase ${overdue ? 'text-rose-500' : 'text-slate-600'}`}>
+                        {overdue ? '⚠️ Terlewat' : (t.deadline || 'Bebas')}
+                     </span>
+                  </div>
+               </div>
+             );
+           })}
+           {trainings.length === 0 && (
+             <div className="py-20 text-center text-slate-400 italic text-sm">Belum ada riwayat pelatihan.</div>
+           )}
         </div>
       </div>
 
@@ -204,7 +260,7 @@ const TrainingForm = ({ initialData, onSubmit, onCancel }: any) => {
         </div>
       </div>
       <div className="flex gap-4 pt-4">
-        <button type="button" onClick={onCancel} className="flex-1 py-4 bg-slate-50 text-slate-400 font-black rounded-2xl uppercase text-[10px]">Batal</button>
+        <button type="button" onClick={onCancel} className="flex-1 py-4 bg-slate-100 text-slate-400 font-black rounded-2xl uppercase text-[10px]">Batal</button>
         <button type="button" onClick={() => onSubmit(form)} className="flex-[2] py-4 bg-slate-900 text-white font-black rounded-2xl uppercase text-[10px] shadow-xl">Simpan Data</button>
       </div>
     </div>
