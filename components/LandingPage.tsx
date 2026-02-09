@@ -21,7 +21,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
   const quarterlyPlan = useMemo(() => products?.find(p => p.durationDays >= 85 && p.durationDays <= 100 && p.price > 0), [products]);
   const annualPlan = useMemo(() => products?.find(p => p.durationDays >= 350 && p.price > 0), [products]);
 
-  // Load landing page config for video links
+  // Load landing page config for video links and dashboard images
   useEffect(() => {
     getLandingPageConfig().then(res => {
       if (res) setLandingConfig(res);
@@ -88,6 +88,10 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
       ]
     }
   ];
+
+  // Reliable placeholder images for system mockup
+  const defaultDesktopImg = "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2426&auto=format&fit=crop";
+  const defaultMobileImg = "https://images.unsplash.com/photo-1551650975-87deedd944c3?q=80&w=1974&auto=format&fit=crop";
 
   return (
     <div className="min-h-screen bg-white font-sans text-slate-900 selection:bg-indigo-100 selection:text-indigo-900">
@@ -161,7 +165,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
         </div>
       </section>
 
-      {/* PAIN POINTS SECTION - UPDATED HEADLINE & IMAGE TO INDONESIAN PROFILE */}
+      {/* PAIN POINTS SECTION */}
       <section className="py-24 bg-slate-50 relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-6 lg:px-12 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           <div className="space-y-12">
@@ -202,7 +206,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
           <div className="relative">
              <div className="aspect-[4/5] rounded-[3.5rem] overflow-hidden shadow-2xl border-8 border-white bg-slate-200">
                 <img 
-                  src="https://images.unsplash.com/photo-1543269664-566a597a4a44?q=80&w=800&auto=format&fit=crop" 
+                  src="https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=800&auto=format&fit=crop" 
                   className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" 
                   alt="Indonesian Professional Stressed and Exhausted at Office" 
                 />
@@ -219,7 +223,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
         </div>
       </section>
 
-      {/* INTRO SYSTEM SECTION - REFINED SINKRONISASI GAMBAR */}
+      {/* INTRO SYSTEM SECTION - FIXED SYNCING WITH ADMIN CONFIG */}
       <section className="py-32 bg-white text-center space-y-16 relative overflow-hidden">
         <div className="max-w-4xl mx-auto px-6 space-y-8 relative z-10">
           <div className="inline-block px-4 py-1.5 bg-slate-900 text-white rounded-xl text-[9px] font-black uppercase tracking-[0.3em]">Kenali Teman Karir Baru Anda</div>
@@ -230,28 +234,50 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
           <div className="w-24 h-1.5 bg-indigo-600 mx-auto rounded-full"></div>
         </div>
 
-        {/* SYSTEM MOCKUP / DASHBOARD IMAGES RESPONSIVE FIX */}
+        {/* SYSTEM MOCKUP / DASHBOARD IMAGES FIXED LOGIC TO SYNC WITH ADMIN */}
         <div className="max-w-6xl mx-auto px-6 animate-in slide-in-from-bottom-12 duration-1000">
-           {/* Desktop Only View */}
-           <div className="hidden lg:block relative p-2 bg-slate-200 rounded-[3rem] shadow-inner border-2 border-slate-300">
-              <div className="bg-white rounded-[2.5rem] overflow-hidden shadow-2xl border border-slate-100 min-h-[300px] flex items-center justify-center">
+           {/* Laptop Frame Simulation */}
+           <div className="relative p-2 bg-slate-200 rounded-[3rem] shadow-inner border-2 border-slate-300">
+              <div className="bg-white rounded-[2.5rem] overflow-hidden shadow-2xl border border-slate-100 min-h-[300px] lg:min-h-[500px] relative">
+                 {/* Desktop Screenshot - Forced Key Update for Sync */}
                  <img 
-                    src={landingConfig?.desktopDashboardImg || "https://static.re-chat.com/agent/47596b42-7065-4f7f-a681-420364952002/98a0058b-f41e-4505-ba2e-f78a8767e7c5.png"} 
+                    key={landingConfig?.desktopDashboardImg || 'default-desktop'}
+                    src={landingConfig?.desktopDashboardImg || defaultDesktopImg} 
                     alt="FokusKarir Dashboard Desktop" 
-                    className="w-full h-auto block object-contain"
-                    onError={(e: any) => { e.target.src = "https://static.re-chat.com/agent/47596b42-7065-4f7f-a681-420364952002/98a0058b-f41e-4505-ba2e-f78a8767e7c5.png"; }}
+                    className="w-full h-auto block object-top"
+                    onError={(e: any) => {
+                      e.target.src = defaultDesktopImg;
+                    }}
                  />
+                 
+                 {/* Overlapping Mobile Screenshot - visible on Large screen for premium feel */}
+                 <div className="hidden lg:block absolute bottom-10 right-10 w-[240px] p-2 bg-slate-900 rounded-[3rem] shadow-[0_40px_80px_-20px_rgba(0,0,0,0.5)] border-4 border-slate-800 animate-in slide-in-from-bottom-10 duration-1000 delay-500">
+                    <div className="bg-white rounded-[2.5rem] overflow-hidden aspect-[9/19]">
+                        <img 
+                            key={landingConfig?.mobileDashboardImg || 'default-mobile-overlay'}
+                            src={landingConfig?.mobileDashboardImg || defaultMobileImg} 
+                            alt="FokusKarir Hub Mobile" 
+                            className="w-full h-full object-cover object-top"
+                            onError={(e: any) => {
+                              e.target.src = defaultMobileImg;
+                            }}
+                        />
+                    </div>
+                 </div>
               </div>
            </div>
            
-           {/* Mobile Only View */}
-           <div className="lg:hidden relative max-w-[320px] mx-auto p-1.5 bg-slate-200 rounded-[2.5rem] shadow-inner border border-slate-300">
-              <div className="bg-white rounded-[2.2rem] overflow-hidden shadow-2xl border border-slate-100 min-h-[400px] flex items-center justify-center">
+           {/* Standalone Mobile View for Smaller Screens */}
+           <div className="lg:hidden mt-12 relative max-w-[280px] mx-auto p-1.5 bg-slate-200 rounded-[2.5rem] shadow-inner border border-slate-300">
+              <div className="bg-white rounded-[2.2rem] overflow-hidden shadow-2xl border border-slate-100 aspect-[9/19]">
                  <img 
-                    src={landingConfig?.mobileDashboardImg || "https://static.re-chat.com/agent/47596b42-7065-4f7f-a681-420364952002/d58309a4-ec6a-4933-87f5-a0c49f854b42.png"} 
+                    key={landingConfig?.mobileDashboardImg || 'default-mobile-sm'}
+                    src={landingConfig?.mobileDashboardImg || defaultMobileImg} 
                     alt="FokusKarir Hub Mobile" 
-                    className="w-full h-auto block object-contain"
-                    onError={(e: any) => { e.target.src = "https://static.re-chat.com/agent/47596b42-7065-4f7f-a681-420364952002/d58309a4-ec6a-4933-87f5-a0c49f854b42.png"; }}
+                    className="w-full h-full object-cover object-top"
+                    onError={(e: any) => {
+                      e.target.src = defaultMobileImg;
+                    }}
                  />
               </div>
            </div>
@@ -259,7 +285,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
         <div className="absolute top-1/2 left-0 w-full h-px bg-slate-100 -z-10"></div>
       </section>
 
-      {/* GAIN SECTION - MAPPED TO NEW PAIN POINTS */}
+      {/* GAIN SECTION */}
       <section className="py-24 bg-emerald-50/20">
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
           <div className="text-center max-w-3xl mx-auto space-y-6 mb-16">
@@ -304,7 +330,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
       {/* FEATURE SECTIONS PER CATEGORY */}
       {featureCategories.map((cat, idx) => (
         <section key={cat.id} className={`py-24 ${cat.bg} relative overflow-hidden`}>
-           {/* Decorative elements for context */}
            {idx % 2 !== 0 && (
              <div className="absolute inset-0 z-0 pointer-events-none opacity-40" style={{ backgroundImage: 'radial-gradient(#6366f122 1px, transparent 1px)', backgroundSize: '32px 32px' }}></div>
            )}
@@ -348,7 +373,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
         </section>
       ))}
 
-      {/* WHY CHOOSE US SECTION - MOVED AFTER FEATURES */}
+      {/* WHY CHOOSE US SECTION */}
       <section className="relative pt-24 pb-32">
         <div className="absolute top-0 left-0 right-0 h-[60%] bg-gradient-to-br from-slate-900 to-indigo-950 z-0"></div>
         <div className="max-w-7xl mx-auto px-6 lg:px-12 relative z-10">
