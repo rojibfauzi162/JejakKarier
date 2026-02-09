@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 
 interface SidebarProps {
@@ -10,7 +11,7 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout, isAdmin }) => {
   const [dailyDropdownOpen, setDailyDropdownOpen] = useState(activeTab === 'daily' || activeTab === 'reports' || activeTab === 'ai_insights' || activeTab === 'work_reflection');
   const [cvDropdownOpen, setCvDropdownOpen] = useState(activeTab === 'cv_generator' || activeTab === 'online_cv');
-  const [showLogoutModal, setShowLogoutModal] = useState(false); // State baru untuk modal logout
+  const [showLogoutModal, setShowLogoutModal] = useState(false); // State baru untuk modal logout mobile
   
   // State untuk kontrol kategori utama - Default terbuka untuk Aktivitas & Pengembangan
   const [groupsOpen, setGroupsOpen] = useState<Record<string, boolean>>({
@@ -31,6 +32,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout, is
       items: [
         { id: 'daily_root', label: 'Daily Work', icon: <i className="bi bi-pencil-square"></i>, hasSub: true, type: 'daily' },
         { id: 'todo_list', label: 'Langkah Pengembangan', icon: <i className="bi bi-check2-square"></i> },
+        { id: 'calendar', label: 'Career Calendar', icon: <i className="bi bi-calendar3"></i> }, // NEW MENU
       ]
     },
     {
@@ -158,9 +160,9 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout, is
                         {/* Nested Sub-Sub-Menus */}
                         {item.hasSub && item.type === 'daily' && dailyDropdownOpen && (
                           <div className="pl-6 space-y-1 mt-1 animate-in slide-in-from-top-1 duration-300 border-l border-white/5 ml-4">
-                            <SubMenuButton id="tour-sidebar-daily" active={activeTab === 'daily'} onClick={() => setActiveTab('daily')} label="Log aktivitas" icon="bi bi-card-text" />
+                            <SubMenuButton id="tour-sidebar-daily" active={activeTab === 'daily'} onClick={() => setActiveTab('daily')} label="Tugas Harian" icon="bi bi-card-text" />
                             <SubMenuButton id="tour-sidebar-work_reflection" active={activeTab === 'work_reflection'} onClick={() => setActiveTab('work_reflection')} label="Refleksi kerja" icon="bi bi-chat-quote" />
-                            <SubMenuButton active={activeTab === 'reports'} onClick={() => setActiveTab('reports')} label="Report work" icon="bi bi-graph-up" />
+                            <SubMenuButton active={activeTab === 'reports'} onClick={() => setActiveTab('reports')} label="Laporan pekerjaan" icon="bi bi-graph-up" />
                             <SubMenuButton active={activeTab === 'ai_insights'} onClick={() => setActiveTab('ai_insights')} label="AI Insight activity" icon="bi bi-cpu" />
                           </div>
                         )}
@@ -210,11 +212,11 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout, is
         </button>
       </div>
 
-      {/* Modal Konfirmasi Logout - Z-INDEX DINAIKKAN KE 6000 AGAR TIDAK TERTUMPUK OVERLAY */}
+      {/* Modal Konfirmasi Logout - Perbaikan Centering */}
       {showLogoutModal && (
-        <div className="fixed inset-0 z-[6000] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" onClick={() => setShowLogoutModal(false)}></div>
-          <div className="relative bg-white w-full max-sm rounded-[2.5rem] p-8 lg:p-10 shadow-2xl animate-in zoom-in duration-300">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 overflow-y-auto">
+          <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm" onClick={() => setShowLogoutModal(false)}></div>
+          <div className="relative bg-white w-full max-w-sm rounded-[2.5rem] p-8 lg:p-10 shadow-2xl animate-in zoom-in duration-300">
             <div className="text-center mb-8">
               <div className="w-16 h-16 bg-rose-50 text-rose-500 rounded-3xl flex items-center justify-center mx-auto mb-4 text-2xl shadow-inner">
                 <i className="bi bi-door-open-fill"></i>
@@ -269,7 +271,7 @@ const SidebarStandaloneItem = ({ id, active, onClick, icon, label }: any) => (
     id={id}
     onClick={onClick}
     className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-2xl transition-all duration-300 group ${
-      active ? 'bg-indigo-600/10 text-indigo-400 border border-indigo-500/20' : 'text-slate-500 hover:bg-white/5 hover:text-white border border-transparent'
+      active ? 'bg-indigo-600/10 text-indigo-400 border border-indigo-500/20' : 'text-slate-500 hover:bg-white/5 hover:text-white border-transparent'
     }`}
   >
     <span className="opacity-60 group-hover:opacity-100 transition-opacity text-sm">{icon}</span>

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { AppData, SkillStatus } from '../types';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
@@ -14,6 +15,12 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenNotif, on
   const [isMenuExpanded, setIsMenuExpanded] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   
+  // Expiry & Renewal Logic
+  const expiryDate = data.expiryDate ? new Date(data.expiryDate) : null;
+  const daysRemaining = expiryDate ? Math.ceil((expiryDate.getTime() - new Date().getTime()) / (1000 * 3600 * 24)) : Infinity;
+  const isExpiringSoon = daysRemaining <= 7 && daysRemaining >= 0;
+  const [isRenewalBannerOpen, setIsRenewalBannerOpen] = useState(true);
+
   // State for UI interactions
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [showReminderModal, setShowReminderModal] = useState(false);
@@ -101,7 +108,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenNotif, on
   const allMenuItems = [
     { id: 'daily', label: 'Daily Work', icon: 'bi-pencil-square' },
     { id: 'work_reflection', label: 'Refleksi Kerja', icon: 'bi-chat-quote' },
-    { id: 'reports', label: 'Report work', icon: 'bi-graph-up' },
+    { id: 'reports', label: 'Laporan pekerjaan', icon: 'bi-graph-up' },
     { id: 'mobile_stats', label: 'Data Statistik', icon: 'bi-bar-chart-line' },
     { id: 'todo_list', label: 'Langkah Pengembangan', icon: 'bi-check2-square' },
     { id: 'skills', label: 'Skills & Learning', icon: 'bi-mortarboard' },
@@ -116,6 +123,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenNotif, on
     { id: 'reviews', label: 'Monthly Review', icon: 'bi-calendar-check' },
     { id: 'billing', label: 'Billing & Plan', icon: 'bi-credit-card' },
     { id: 'settings', label: 'Pengaturan', icon: 'bi-gear' },
+    { id: 'calendar', label: 'Career Calendar', icon: 'bi-calendar3' },
   ];
 
   const togglePin = (id: string) => {
@@ -144,8 +152,8 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenNotif, on
       
       {/* MOBILE APP INTERFACE */}
       <div className="block lg:hidden space-y-6 bg-white min-h-screen">
-        {/* MODIFIED HEADER: Remove Actions, Keep Welcome only for Dashboard Context */}
-        <header className="px-2 pt-2 pb-4 flex items-center justify-between">
+        {/* MODIFIED HEADER */}
+        <header className="px-6 pt-2 pb-4 flex items-center justify-between">
            <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-full border-2 border-slate-100 overflow-hidden shadow-sm">
                  {data.profile.photoUrl ? <img src={data.profile.photoUrl} alt="User" className="w-full h-full object-cover" /> : <div className="w-full h-full bg-slate-100 flex items-center justify-center text-xl"><i className="bi bi-person"></i></div>}
@@ -156,6 +164,51 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenNotif, on
               </div>
            </div>
         </header>
+
+        {/* SUBSCRIPTION & EXPIRY INFO BAR (MOBILE) */}
+        <div className="px-6">
+           <div className="bg-slate-50 p-5 rounded-[2rem] border border-slate-100 flex items-center justify-between shadow-sm">
+              <div className="flex items-center gap-3">
+                 <div className="w-10 h-10 bg-indigo-600 text-white rounded-xl flex items-center justify-center text-sm shadow-lg"><i className="bi bi-patch-check-fill"></i></div>
+                 <div>
+                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Paket Aktif</p>
+                    <p className="text-sm font-black text-indigo-600 uppercase">{data.plan}</p>
+                 </div>
+              </div>
+              <div className="text-right">
+                 <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Masa Berlaku</p>
+                 <p className="text-xs font-black text-slate-700">
+                    {data.expiryDate ? new Date(data.expiryDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Selamanya'}
+                 </p>
+              </div>
+           </div>
+        </div>
+
+        {/* EXPIRY RENEWAL ALERT (MOBILE) - Closeable */}
+        {isExpiringSoon && isRenewalBannerOpen && (
+          <div className="px-6 animate-in slide-in-from-top-4 duration-500">
+             <div className="bg-gradient-to-br from-rose-600 to-indigo-600 p-8 rounded-[2.5rem] shadow-xl shadow-rose-200 text-white relative overflow-hidden">
+                <button onClick={() => setIsRenewalBannerOpen(false)} className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-full text-white/60 transition-all font-black text-xs">✕</button>
+                <div className="relative z-10">
+                   <div className="flex items-center gap-3 mb-4">
+                      <span className="text-2xl">⏳</span>
+                      <p className="text-[9px] font-black uppercase tracking-[0.2em] text-rose-100">Masa Aktif Hampir Habis</p>
+                   </div>
+                   <p className="text-sm font-bold leading-tight mb-6">Akses kualifikasi Anda berakhir dalam {daysRemaining} hari. Perpanjang sekarang agar rekam jejak tetap tervalidasi.</p>
+                   
+                   <div className="space-y-3">
+                      <button onClick={() => onNavigate?.('billing')} className="w-full py-3.5 bg-white text-rose-600 rounded-2xl text-[9px] font-black uppercase tracking-widest shadow-xl active:scale-95 transition-all">Perpanjang Paket Sekarang →</button>
+                      <div className="grid grid-cols-3 gap-2">
+                        <button onClick={() => onNavigate?.('billing')} className="py-2 bg-white/10 border border-white/20 rounded-xl text-[8px] font-black uppercase tracking-widest hover:bg-white/20">1 Bulan</button>
+                        <button onClick={() => onNavigate?.('billing')} className="py-2 bg-white/10 border border-white/20 rounded-xl text-[8px] font-black uppercase tracking-widest hover:bg-white/20">3 Bulan</button>
+                        <button onClick={() => onNavigate?.('billing')} className="py-2 bg-white/10 border border-white/20 rounded-xl text-[8px] font-black uppercase tracking-widest hover:bg-white/20">1 Tahun</button>
+                      </div>
+                   </div>
+                </div>
+                <div className="absolute -bottom-10 -right-10 w-48 h-48 bg-white/5 rounded-full blur-3xl"></div>
+             </div>
+          </div>
+        )}
 
         {/* Reminder Modal Popup (Instead of Bars) */}
         {showReminderModal && reminders.length > 0 && (
@@ -198,7 +251,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenNotif, on
               <div className="absolute right-6 top-1/2 -translate-y-1/2 text-7xl opacity-20 transform rotate-12 group-hover:scale-110 transition-transform duration-700"><i className="bi bi-gem"></i></div>
            </div>
            
-           {/* Account Completion Card - NEW */}
+           {/* Account Completion Card */}
            <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm flex items-center justify-between">
               <div className="flex items-center gap-4">
                  <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center text-xl"><i className="bi bi-person-check"></i></div>
@@ -226,7 +279,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenNotif, on
                     <div className={`w-16 h-16 rounded-[1.75rem] flex items-center justify-center border border-indigo-500/20 bg-indigo-600/5 text-indigo-600 text-2xl transition-all shadow-sm ${isEditMode ? 'opacity-40 grayscale' : ''}`}>
                        <i className={`bi ${item.icon}`}></i>
                     </div>
-                    <span className="text-[9px] font-black text-slate-800 uppercase tracking-tighter text-center leading-tight">{item.label}</span>
+                    <span className="text-[9px] font-black text-slate-700 uppercase tracking-tighter text-center leading-tight">{item.label}</span>
                   </button>
                   {isEditMode && <button onClick={() => togglePin(item.id)} className={`absolute -top-2 -right-2 w-8 h-8 rounded-full border-2 flex items-center justify-center text-xs shadow-lg transition-all ${pinnedMenuIds.includes(item.id) ? 'bg-rose-50 border-white text-white' : 'bg-emerald-50 border-white text-white'}`}><i className={`bi ${pinnedMenuIds.includes(item.id) ? 'bi-dash-lg' : 'bi-plus-lg'}`}></i></button>}
                 </div>

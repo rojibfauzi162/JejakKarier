@@ -1,5 +1,6 @@
+
 import React, { useState, useMemo } from 'react';
-import { Certification, Skill, TrainingStatus } from '../../../types';
+import { Certification, Skill, TrainingStatus, CareerEvent, EventType, ImportanceLevel } from '../../../types';
 
 interface CertificationProps {
   certs: Certification[];
@@ -8,11 +9,18 @@ interface CertificationProps {
   onUpdateCert: (c: Certification) => void;
   onDeleteCert: (id: string) => void;
   showToast: (m: string, t?: 'success' | 'error' | 'info') => void;
+  onAddCalendarEvent?: (e: CareerEvent) => void;
 }
 
-const CertificationModule: React.FC<CertificationProps> = ({ certs, skills, onAddCert, onUpdateCert, onDeleteCert, showToast }) => {
+const CertificationModule: React.FC<CertificationProps> = ({ certs, skills, onAddCert, onUpdateCert, onDeleteCert, showToast, onAddCalendarEvent }) => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Certification | null>(null);
+  
+  // Scheduling Modal State
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+  const [schedulingItem, setSchedulingItem] = useState<Certification | null>(null);
+  const [scheduleDate, setScheduleDate] = useState(new Date().toISOString().split('T')[0]);
+  const [scheduleTime, setScheduleTime] = useState('09:00');
 
   const stats = useMemo(() => {
     const total = certs.length;
@@ -25,6 +33,35 @@ const CertificationModule: React.FC<CertificationProps> = ({ certs, skills, onAd
        return new Date(c.deadline) < new Date();
     }
     return false;
+  };
+
+  const openScheduleModal = (c: Certification) => {
+    setSchedulingItem(c);
+    setIsScheduleModalOpen(true);
+  };
+
+  const handlePushToCalendar = () => {
+    if (!onAddCalendarEvent || !schedulingItem) return;
+    
+    const eventId = Math.random().toString(36).substr(2, 9);
+    const newEvent: CareerEvent = {
+      id: eventId,
+      title: `Certification Target: ${schedulingItem.name}`,
+      type: EventType.CERTIFICATION,
+      date: scheduleDate,
+      time: scheduleTime,
+      importance: ImportanceLevel.HIGH,
+      notes: `Penerbit: ${schedulingItem.issuer}\nSkill Terkait: ${schedulingItem.relatedSkill}\nStatus: ${schedulingItem.status || 'Completed'}\nNomor: ${schedulingItem.certNumber || '-'}`,
+      relatedId: schedulingItem.id
+    };
+
+    onAddCalendarEvent(newEvent);
+    // Update Cert to track it's scheduled
+    onUpdateCert({ ...schedulingItem, calendarEventId: eventId });
+
+    setIsScheduleModalOpen(false);
+    setSchedulingItem(null);
+    alert(`Target sertifikasi "${newEvent.title}" berhasil dijadwalkan.`);
   };
 
   return (
@@ -60,12 +97,13 @@ const CertificationModule: React.FC<CertificationProps> = ({ certs, skills, onAd
                 <th className="px-6 py-5">Penerbit & Nomor</th>
                 <th className="px-6 py-5 text-center">Status</th>
                 <th className="px-6 py-5 text-center">Deadline Target</th>
-                <th className="px-8 py-5 text-right">Aksi</th>
+                <th className="px-8 py-5 text-right">Aksi / Kalender</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
               {certs.map(c => {
                 const overdue = isOverdue(c);
+                const isSchedulable = c.status === TrainingStatus.PLANNED && !c.calendarEventId;
                 return (
                   <tr key={c.id} className="group hover:bg-slate-50/50 transition-colors">
                     <td className="px-8 py-6">
@@ -87,9 +125,23 @@ const CertificationModule: React.FC<CertificationProps> = ({ certs, skills, onAd
                        </p>
                     </td>
                     <td className="px-8 py-6 text-right">
-                      <div className="flex justify-end gap-2">
-                        <button onClick={() => { setEditingItem(c); setIsFormOpen(true); }} className="p-2 text-slate-400 hover:text-blue-600 transition-all">✎</button>
-                        <button onClick={() => { onDeleteCert(c.id); showToast("Sertifikat dihapus.", "info"); }} className="p-2 text-slate-400 hover:text-rose-600 transition-all">✕</button>
+                      <div className="flex justify-end gap-2 items-center">
+                        {isSchedulable && (
+                          <button 
+                            onClick={() => openScheduleModal(c)}
+                            className="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl hover:bg-indigo-600 hover:text-white transition-all shadow-sm border border-indigo-100"
+                            title="Jadwalkan ke Kalender"
+                          >
+                            <i className="bi bi-calendar-plus"></i>
+                          </button>
+                        )}
+                        {c.calendarEventId && (
+                           <div className="p-2.5 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-xl" title="Sudah Dijadwalkan">
+                             <i className="bi bi-calendar-check-fill"></i>
+                           </div>
+                        )}
+                        <button onClick={() => { setEditingItem(c); setIsFormOpen(true); }} className="p-2.5 text-slate-400 hover:text-blue-600 transition-all">✎</button>
+                        <button onClick={() => { onDeleteCert(c.id); showToast("Sertifikat dihapus.", "info"); }} className="p-2.5 text-slate-400 hover:text-rose-600 transition-all">✕</button>
                       </div>
                     </td>
                   </tr>
@@ -103,6 +155,7 @@ const CertificationModule: React.FC<CertificationProps> = ({ certs, skills, onAd
         <div className="lg:hidden p-4 space-y-4">
            {certs.map(c => {
              const overdue = isOverdue(c);
+             const isSchedulable = c.status === TrainingStatus.PLANNED && !c.calendarEventId;
              return (
                <div key={c.id} className="bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100 space-y-4">
                   <div className="flex justify-between items-start">
@@ -111,6 +164,12 @@ const CertificationModule: React.FC<CertificationProps> = ({ certs, skills, onAd
                         <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest mt-1">{c.relatedSkill}</p>
                      </div>
                      <div className="flex gap-2">
+                        {isSchedulable && (
+                          <button onClick={() => openScheduleModal(c)} className="w-8 h-8 flex items-center justify-center bg-white rounded-lg text-indigo-600 shadow-sm border border-indigo-50">
+                             <i className="bi bi-calendar-plus"></i>
+                          </button>
+                        )}
+                        {c.calendarEventId && <span className="w-8 h-8 flex items-center justify-center text-emerald-600"><i className="bi bi-calendar-check-fill"></i></span>}
                         <button onClick={() => { setEditingItem(c); setIsFormOpen(true); }} className="w-8 h-8 flex items-center justify-center bg-white rounded-lg text-slate-400 shadow-sm border border-slate-100">✎</button>
                         <button onClick={() => onDeleteCert(c.id)} className="w-8 h-8 flex items-center justify-center bg-white rounded-lg text-slate-400 shadow-sm border border-slate-100">✕</button>
                      </div>
@@ -143,11 +202,42 @@ const CertificationModule: React.FC<CertificationProps> = ({ certs, skills, onAd
                </div>
              );
            })}
-           {certs.length === 0 && (
-             <div className="py-20 text-center text-slate-400 italic text-sm">Belum ada data sertifikasi.</div>
-           )}
         </div>
       </div>
+
+      {/* SCHEDULE CONFIRMATION MODAL */}
+      {isScheduleModalOpen && schedulingItem && (
+        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md flex items-center justify-center z-[2000] p-4">
+           <div className="bg-white w-full max-w-md rounded-[3rem] shadow-2xl p-10 animate-in zoom-in duration-300">
+              <div className="text-center mb-8">
+                 <div className="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl shadow-inner">
+                    <i className="bi bi-calendar-event"></i>
+                 </div>
+                 <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Jadwalkan Sertifikasi</h3>
+                 <p className="text-slate-400 text-xs font-bold leading-relaxed mt-2 uppercase tracking-widest">Pilih tanggal target pencapaian:</p>
+                 <p className="font-black text-indigo-600 text-sm mt-1">{schedulingItem.name}</p>
+              </div>
+
+              <div className="space-y-6">
+                 <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Pilih Tanggal</label>
+                       <input type="date" className="w-full px-5 py-3 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs" value={scheduleDate} onChange={e => setScheduleDate(e.target.value)} />
+                    </div>
+                    <div className="space-y-1.5">
+                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Pilih Jam</label>
+                       <input type="time" className="w-full px-5 py-3 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs" value={scheduleTime} onChange={e => setScheduleTime(e.target.value)} />
+                    </div>
+                 </div>
+
+                 <div className="flex gap-4 pt-4">
+                    <button type="button" onClick={() => setIsScheduleModalOpen(false)} className="flex-1 py-4 bg-slate-50 text-slate-400 font-black rounded-2xl uppercase text-[10px] tracking-widest">Batal</button>
+                    <button type="button" onClick={handlePushToCalendar} className="flex-[2] py-4 bg-indigo-600 text-white font-black rounded-2xl uppercase text-[10px] shadow-xl shadow-indigo-100 hover:bg-indigo-700 active:scale-95 transition-all">Konfirmasi Jadwal</button>
+                 </div>
+              </div>
+           </div>
+        </div>
+      )}
 
       {isFormOpen && (
         <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md flex items-center justify-center z-[1000] p-4">

@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { AppData, Skill, Training, Certification, AiStrategy, ToDoTask } from '../../types';
+import { AppData, Skill, Training, Certification, AiStrategy, ToDoTask, CareerEvent } from '../../types';
 
 // Import sub-components from organized folder structure
 import SkillMatrix from './skill-learning/SkillMatrix';
@@ -26,8 +26,8 @@ interface SkillTrackerProps {
   onSaveStrategy?: (strategy: AiStrategy) => void;
   showToast: (m: string, t?: 'success' | 'error' | 'info') => void;
   initialSubTab?: 'skills' | 'learning' | 'certs' | 'ai';
-  // Added onUpgrade prop to fix type error in App.tsx line 347
   onUpgrade?: () => void;
+  onAddCalendarEvent?: (e: CareerEvent) => void;
 }
 
 const SkillTracker: React.FC<SkillTrackerProps> = (props) => {
@@ -65,7 +65,6 @@ const SkillTracker: React.FC<SkillTrackerProps> = (props) => {
             onUpdateSkill={props.onUpdateSkill} 
             onDeleteSkill={props.onDeleteSkill} 
             showToast={props.showToast}
-            // Pass onUpgrade and appData to SkillMatrix for limit checks
             onUpgrade={props.onUpgrade}
             appData={props.data}
           />
@@ -77,6 +76,7 @@ const SkillTracker: React.FC<SkillTrackerProps> = (props) => {
             onUpdateTraining={props.onUpdateTraining} 
             onDeleteTraining={props.onDeleteTraining} 
             showToast={props.showToast}
+            onAddCalendarEvent={props.onAddCalendarEvent}
           />
         )}
         {activeSubTab === 'certs' && (
@@ -87,6 +87,7 @@ const SkillTracker: React.FC<SkillTrackerProps> = (props) => {
             onUpdateCert={props.onUpdateCert} 
             onDeleteCert={props.onDeleteCert} 
             showToast={props.showToast}
+            onAddCalendarEvent={props.onAddCalendarEvent}
           />
         )}
         {activeSubTab === 'ai' && props.data && (

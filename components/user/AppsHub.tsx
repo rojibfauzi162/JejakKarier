@@ -1,3 +1,4 @@
+
 import React from 'react';
 
 interface AppsHubProps {
@@ -10,8 +11,9 @@ const AppsHub: React.FC<AppsHubProps> = ({ onNavigate }) => {
       title: "Harian & Performa",
       items: [
         { id: 'daily', label: 'Daily Work', icon: 'bi-pencil-square', color: 'bg-blue-50 text-blue-600' },
+        { id: 'calendar', label: 'Calendar', icon: 'bi-calendar3', color: 'bg-indigo-50 text-indigo-600' }, // NEW ITEM
         { id: 'work_reflection', label: 'Refleksi Kerja', icon: 'bi-chat-quote', color: 'bg-rose-50 text-rose-600' },
-        { id: 'reports', label: 'Report work', icon: 'bi-graph-up', color: 'bg-blue-50 text-blue-600' },
+        { id: 'reports', label: 'Laporan pekerjaan', icon: 'bi-graph-up', color: 'bg-blue-50 text-blue-600' },
         { id: 'todo_list', label: 'Langkah Pengembangan', icon: 'bi-check2-square', color: 'bg-indigo-50 text-indigo-600' },
         { id: 'mobile_stats', label: 'Data Statistik', icon: 'bi-bar-chart-line', color: 'bg-emerald-50 text-emerald-600' },
         { id: 'ai_insights', label: 'AI Insights', icon: 'bi-cpu', color: 'bg-purple-50 text-purple-600' },
@@ -68,7 +70,7 @@ const AppsHub: React.FC<AppsHubProps> = ({ onNavigate }) => {
                 <div className={`w-16 h-16 rounded-[1.75rem] flex items-center justify-center text-2xl shadow-sm border border-black/5 transition-all group-hover:shadow-lg ${item.color}`}>
                   <i className={`bi ${item.icon}`}></i>
                 </div>
-                <span className="text-[9px] font-black text-slate-700 uppercase tracking-tighter text-center leading-tight max-w-[70px]">
+                <span className="text-[9px] font-black text-slate-700 uppercase tracking-tighter text-center leading-tight">
                   {item.label}
                 </span>
               </button>

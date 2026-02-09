@@ -14,6 +14,12 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenNotif }) 
   const [isMenuExpanded, setIsMenuExpanded] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   
+  // Logic: Expiry & Renewal Alert (Minimal seminggu sebelum)
+  const expiryDate = data.expiryDate ? new Date(data.expiryDate) : null;
+  const daysRemaining = expiryDate ? Math.ceil((expiryDate.getTime() - new Date().getTime()) / (1000 * 3600 * 24)) : Infinity;
+  const isExpiringSoon = daysRemaining <= 7 && daysRemaining >= 0;
+  const [showRenewalAlert, setShowRenewalAlert] = useState(true);
+
   // Fitur Tour Dinonaktifkan sementara untuk kebersihan UI (Sesuai Request)
   const [tourStep, setTourStep] = useState(0);
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
@@ -47,7 +53,8 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenNotif }) 
   // State untuk Widget/Pinned Menus - Default 8 menu pertama
   const [pinnedMenuIds, setPinnedMenuIds] = useState<string[]>(() => {
     const saved = localStorage.getItem('jejakkarir_pinned_menus');
-    return saved ? JSON.parse(saved) : ['daily', 'work_reflection', 'todo_list', 'mobile_stats', 'skills', 'career', 'cv_generator', 'projects'];
+    // Swap 'projects' with 'calendar' for better visibility in main hub
+    return saved ? JSON.parse(saved) : ['daily', 'work_reflection', 'todo_list', 'mobile_stats', 'skills', 'career', 'cv_generator', 'calendar'];
   });
 
   const skillCount = data.skills.length;
@@ -68,6 +75,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenNotif }) 
     { id: 'skills', label: 'Skills & Learning', icon: 'bi-mortarboard' },
     { id: 'career', label: 'Career Path', icon: 'bi-rocket-takeoff' },
     { id: 'cv_generator', label: 'PDF Export', icon: 'bi-file-earmark-pdf' },
+    { id: 'calendar', label: 'Calendar', icon: 'bi-calendar3' }, // ADDED CALENDAR
     { id: 'projects', label: 'Personal Project', icon: 'bi-tools' },
     { id: 'networking', label: 'Networking', icon: 'bi-people' },
     { id: 'ai_insights', label: 'AI Insight activity', icon: 'bi-cpu' },
@@ -143,6 +151,45 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenNotif }) 
               <button onClick={() => onNavigate?.('profile')} className="w-10 h-10 rounded-full border border-slate-100 flex items-center justify-center shadow-sm text-lg text-slate-400"><i className="bi bi-person-circle"></i></button>
            </div>
         </header>
+
+        {/* SUBSCRIPTION INFO MINI BAR (MOBILE) */}
+        <div className="px-6">
+           <div className="bg-slate-50 p-4 rounded-[2rem] border border-slate-100 flex items-center justify-between shadow-sm">
+              <div className="flex items-center gap-3">
+                 <div className="w-8 h-8 bg-indigo-600 text-white rounded-lg flex items-center justify-center text-xs shadow-lg"><i className="bi bi-patch-check-fill"></i></div>
+                 <div>
+                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Paket Sekarang</p>
+                    <p className="text-xs font-black text-indigo-600 uppercase tracking-tighter">{data.plan}</p>
+                 </div>
+              </div>
+              <div className="text-right">
+                 <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Masa Berlaku</p>
+                 <p className="text-xs font-black text-slate-700">
+                    {data.expiryDate ? new Date(data.expiryDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Selamanya'}
+                 </p>
+              </div>
+           </div>
+        </div>
+
+        {/* RENEWAL ALERT BANNER (MOBILE) */}
+        {isExpiringSoon && showRenewalAlert && (
+          <div className="px-6 animate-in slide-in-from-top-4 duration-500">
+             <div className="bg-gradient-to-br from-amber-600 to-orange-500 p-6 rounded-[2.5rem] shadow-xl shadow-amber-200 text-white relative overflow-hidden">
+                <button onClick={() => setShowRenewalAlert(false)} className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-full text-white/60 transition-all font-black text-xs">✕</button>
+                <div className="flex gap-5">
+                   <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center text-2xl shrink-0 shadow-inner"><i className="bi bi-hourglass-split"></i></div>
+                   <div className="flex-1 pr-6">
+                      <p className="text-[9px] font-black uppercase tracking-widest text-amber-100 mb-1.5">Masa Aktif Hampir Habis</p>
+                      <p className="text-sm font-bold leading-tight mb-4 tracking-tight">Paket Anda berakhir dalam {daysRemaining} hari. Perpanjang akses kualifikasi Anda sekarang.</p>
+                      <div className="flex flex-wrap gap-2">
+                         <button onClick={() => onNavigate?.('billing')} className="px-4 py-2 bg-white text-amber-600 rounded-xl text-[9px] font-black uppercase tracking-widest shadow-lg active:scale-95 transition-all">Perpanjang →</button>
+                      </div>
+                   </div>
+                </div>
+                <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-white/5 rounded-full blur-2xl"></div>
+             </div>
+          </div>
+        )}
 
         <div className="px-6">
            <div className="bg-gradient-to-br from-indigo-600 to-blue-500 p-8 rounded-[2.5rem] shadow-2xl shadow-indigo-200 text-white relative overflow-hidden group">

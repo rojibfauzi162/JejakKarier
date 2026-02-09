@@ -16,6 +16,7 @@ interface MobileHeaderProps {
 const MobileHeader: React.FC<MobileHeaderProps> = ({ profile, notificationCount, onNavigate, activeTab, alerts = [] }) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false); // State baru untuk modal logout
   const profileRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement>(null);
 
@@ -29,16 +30,16 @@ const MobileHeader: React.FC<MobileHeaderProps> = ({ profile, notificationCount,
         setIsNotifOpen(false);
       }
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    // Menggunakan event 'click' agar interaksi tombol di dalam menu tetap terdeteksi sebelum tertutup
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
-  /* Fix: Call auth.signOut() to properly end the session instead of just reloading */
-  const handleLogout = () => {
-    const confirmLogout = window.confirm("Apakah Anda yakin ingin keluar?");
-    if (confirmLogout) {
-      auth.signOut();
-    }
+  const handleLogoutClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsProfileOpen(false); // Tutup dropdown profil sebelum membuka modal
+    setShowLogoutModal(true); // Aktifkan modal konfirmasi
   };
 
   return (
@@ -59,7 +60,7 @@ const MobileHeader: React.FC<MobileHeaderProps> = ({ profile, notificationCount,
         {/* Notification Bell with Dropdown */}
         <div className="relative" ref={notifRef}>
           <button 
-            onClick={() => { setIsNotifOpen(!isNotifOpen); setIsProfileOpen(false); }}
+            onClick={(e) => { e.stopPropagation(); setIsNotifOpen(!isNotifOpen); setIsProfileOpen(false); }}
             className={`relative w-10 h-10 flex items-center justify-center rounded-full transition-all ${isNotifOpen ? 'bg-indigo-600 text-white shadow-lg' : 'bg-slate-50 text-slate-600 hover:text-indigo-600'}`}
             title="Notifikasi"
           >
@@ -72,7 +73,10 @@ const MobileHeader: React.FC<MobileHeaderProps> = ({ profile, notificationCount,
           </button>
 
           {isNotifOpen && (
-            <div className="absolute right-0 mt-3 w-72 bg-white/95 backdrop-blur-xl border border-slate-100 rounded-[2rem] shadow-2xl p-4 animate-in slide-in-from-top-2 duration-300 z-[120]">
+            <div 
+              onClick={(e) => e.stopPropagation()}
+              className="absolute right-0 mt-3 w-72 bg-white/95 backdrop-blur-xl border border-slate-100 rounded-[2rem] shadow-2xl p-4 animate-in slide-in-from-top-2 duration-300 z-[120]"
+            >
                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 px-2">Pusat Notifikasi</h4>
                <div className="space-y-2 max-h-[300px] overflow-y-auto no-scrollbar">
                   {alerts.length > 0 ? alerts.map((alert, i) => (
@@ -102,7 +106,7 @@ const MobileHeader: React.FC<MobileHeaderProps> = ({ profile, notificationCount,
         {/* Profile Shortcut with Dropdown */}
         <div className="relative" ref={profileRef}>
           <button 
-            onClick={() => { setIsProfileOpen(!isProfileOpen); setIsNotifOpen(false); }}
+            onClick={(e) => { e.stopPropagation(); setIsProfileOpen(!isProfileOpen); setIsNotifOpen(false); }}
             className={`w-10 h-10 rounded-full border-2 overflow-hidden transition-all shadow-sm ${isProfileOpen ? 'border-indigo-500 scale-110 shadow-indigo-100' : (activeTab === 'profile' ? 'border-indigo-500 scale-110' : 'border-white bg-slate-100')}`}
           >
             {profile.photoUrl ? (
@@ -115,7 +119,10 @@ const MobileHeader: React.FC<MobileHeaderProps> = ({ profile, notificationCount,
           </button>
 
           {isProfileOpen && (
-            <div className="absolute right-0 mt-3 w-48 bg-white/95 backdrop-blur-xl border border-slate-100 rounded-[2rem] shadow-2xl p-2 animate-in slide-in-from-top-2 duration-300 z-[120]">
+            <div 
+              onClick={(e) => e.stopPropagation()}
+              className="absolute right-0 mt-3 w-48 bg-white/95 backdrop-blur-xl border border-slate-100 rounded-[2rem] shadow-2xl p-2 animate-in slide-in-from-top-2 duration-300 z-[120]"
+            >
                <div className="p-4 border-b border-slate-50 mb-1">
                   <p className="text-[10px] font-black text-slate-900 leading-none truncate">{profile.name}</p>
                   <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-1">User Account</p>
@@ -136,8 +143,8 @@ const MobileHeader: React.FC<MobileHeaderProps> = ({ profile, notificationCount,
                </button>
                <div className="h-px bg-slate-50 my-1 mx-2"></div>
                <button 
-                onClick={handleLogout}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-rose-50 text-rose-500 transition-all"
+                onClick={handleLogoutClick}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-rose-50 text-rose-500 transition-all active:bg-rose-100"
                >
                   <i className="bi bi-box-arrow-right text-sm"></i>
                   <span className="text-[10px] font-black uppercase tracking-widest">Logout</span>
@@ -146,8 +153,39 @@ const MobileHeader: React.FC<MobileHeaderProps> = ({ profile, notificationCount,
           )}
         </div>
       </div>
+
+      {/* Modal Konfirmasi Logout Mobile - Centering Fix */}
+      {showLogoutModal && (
+        <div className="fixed top-0 left-0 w-screen h-screen z-[9999] flex items-center justify-center p-6">
+          <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm" onClick={() => setShowLogoutModal(false)}></div>
+          <div className="relative bg-white w-full max-w-sm rounded-[2.5rem] p-8 lg:p-10 shadow-2xl animate-in zoom-in duration-300">
+            <div className="text-center mb-8">
+              <div className="w-16 h-16 bg-rose-50 text-rose-500 rounded-3xl flex items-center justify-center mx-auto mb-4 text-2xl shadow-inner">
+                <i className="bi bi-door-open-fill"></i>
+              </div>
+              <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Keluar Sesi?</h3>
+              <p className="text-slate-400 text-xs font-bold leading-relaxed mt-2 uppercase tracking-widest text-center">Apakah Anda yakin ingin mengakhiri sesi kerja saat ini?</p>
+            </div>
+            <div className="flex gap-4">
+              <button 
+                onClick={() => setShowLogoutModal(false)} 
+                className="flex-1 py-4 bg-slate-50 text-slate-400 font-black rounded-2xl uppercase text-[10px] tracking-widest hover:bg-slate-100 transition-all"
+              >
+                Batal
+              </button>
+              <button 
+                onClick={() => { setShowLogoutModal(false); auth.signOut(); }} 
+                className="flex-[2] py-4 bg-rose-600 text-white font-black rounded-2xl uppercase text-[10px] tracking-widest shadow-xl shadow-rose-100 hover:bg-rose-700 active:scale-95 transition-all"
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   );
 };
 
+/* Added export default for MobileHeader to fix "Module has no default export" error in App.tsx */
 export default MobileHeader;

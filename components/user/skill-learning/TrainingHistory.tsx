@@ -1,5 +1,6 @@
+
 import React, { useState, useMemo } from 'react';
-import { Training, TrainingStatus, SkillPriority } from '../../../types';
+import { Training, TrainingStatus, SkillPriority, CareerEvent, EventType, ImportanceLevel } from '../../../types';
 
 interface TrainingHistoryProps {
   trainings: Training[];
@@ -7,11 +8,18 @@ interface TrainingHistoryProps {
   onUpdateTraining: (t: Training) => void;
   onDeleteTraining: (id: string) => void;
   showToast: (m: string, t?: 'success' | 'error' | 'info') => void;
+  onAddCalendarEvent?: (e: CareerEvent) => void;
 }
 
-const TrainingHistory: React.FC<TrainingHistoryProps> = ({ trainings, onAddTraining, onUpdateTraining, onDeleteTraining, showToast }) => {
+const TrainingHistory: React.FC<TrainingHistoryProps> = ({ trainings, onAddTraining, onUpdateTraining, onDeleteTraining, showToast, onAddCalendarEvent }) => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Training | null>(null);
+  
+  // Scheduling Modal State
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+  const [schedulingItem, setSchedulingItem] = useState<Training | null>(null);
+  const [scheduleDate, setScheduleDate] = useState(new Date().toISOString().split('T')[0]);
+  const [scheduleTime, setScheduleTime] = useState('10:00');
 
   const stats = useMemo(() => {
     const total = trainings.length;
@@ -26,6 +34,35 @@ const TrainingHistory: React.FC<TrainingHistoryProps> = ({ trainings, onAddTrain
        return new Date(t.deadline) < new Date();
     }
     return false;
+  };
+
+  const openScheduleModal = (t: Training) => {
+    setSchedulingItem(t);
+    setIsScheduleModalOpen(true);
+  };
+
+  const handlePushToCalendar = () => {
+    if (!onAddCalendarEvent || !schedulingItem) return;
+    
+    const eventId = Math.random().toString(36).substr(2, 9);
+    const newEvent: CareerEvent = {
+      id: eventId,
+      title: `Training: ${schedulingItem.name}`,
+      type: EventType.TRAINING,
+      date: scheduleDate,
+      time: scheduleTime,
+      importance: ImportanceLevel.MEDIUM,
+      notes: `Provider: ${schedulingItem.provider}\nTopic: ${schedulingItem.topic}\nStatus: ${schedulingItem.status}\nBiaya: Rp ${schedulingItem.cost?.toLocaleString()}\nCatatan: ${schedulingItem.notes || '-'}`,
+      relatedId: schedulingItem.id
+    };
+
+    onAddCalendarEvent(newEvent);
+    // Update Training to track it's scheduled
+    onUpdateTraining({ ...schedulingItem, calendarEventId: eventId });
+
+    setIsScheduleModalOpen(false);
+    setSchedulingItem(null);
+    alert(`Pelatihan "${newEvent.title}" berhasil dijadwalkan.`);
   };
 
   return (
@@ -51,12 +88,13 @@ const TrainingHistory: React.FC<TrainingHistoryProps> = ({ trainings, onAddTrain
                 <th className="px-6 py-5">Kategori & Platform</th>
                 <th className="px-6 py-5 text-center">Status & Progres</th>
                 <th className="px-6 py-5 text-center">Masa Berlaku</th>
-                <th className="px-8 py-5 text-right">Aksi</th>
+                <th className="px-8 py-5 text-right">Aksi / Kalender</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
               {trainings.map(t => {
                 const overdue = isOverdue(t);
+                const isSchedulable = t.status === TrainingStatus.PLANNED && !t.calendarEventId;
                 return (
                   <tr key={t.id} className="group hover:bg-slate-50/50 transition-colors">
                     <td className="px-8 py-6">
@@ -87,9 +125,23 @@ const TrainingHistory: React.FC<TrainingHistoryProps> = ({ trainings, onAddTrain
                       </p>
                     </td>
                     <td className="px-8 py-6 text-right">
-                      <div className="flex justify-end gap-2">
-                        <button onClick={() => { setEditingItem(t); setIsFormOpen(true); }} className="p-2 text-slate-400 hover:text-blue-600 transition-all">✎</button>
-                        <button onClick={() => { onDeleteTraining(t.id); showToast("Data pelatihan dihapus.", "info"); }} className="p-2 text-slate-400 hover:text-rose-600 transition-all">✕</button>
+                      <div className="flex justify-end gap-2 items-center">
+                        {isSchedulable && (
+                          <button 
+                            onClick={() => openScheduleModal(t)}
+                            className="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl hover:bg-indigo-600 hover:text-white transition-all shadow-sm border border-indigo-100"
+                            title="Jadwalkan ke Kalender"
+                          >
+                            <i className="bi bi-calendar-plus"></i>
+                          </button>
+                        )}
+                        {t.calendarEventId && (
+                           <div className="p-2.5 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-xl" title="Sudah Dijadwalkan">
+                             <i className="bi bi-calendar-check-fill"></i>
+                           </div>
+                        )}
+                        <button onClick={() => { setEditingItem(t); setIsFormOpen(true); }} className="p-2.5 text-slate-400 hover:text-blue-600 transition-all">✎</button>
+                        <button onClick={() => { onDeleteTraining(t.id); showToast("Data pelatihan dihapus.", "info"); }} className="p-2.5 text-slate-400 hover:text-rose-600 transition-all">✕</button>
                       </div>
                     </td>
                   </tr>
@@ -103,6 +155,7 @@ const TrainingHistory: React.FC<TrainingHistoryProps> = ({ trainings, onAddTrain
         <div className="lg:hidden p-4 space-y-4">
            {trainings.map(t => {
              const overdue = isOverdue(t);
+             const isSchedulable = t.status === TrainingStatus.PLANNED && !t.calendarEventId;
              return (
                <div key={t.id} className="bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100 space-y-4">
                   <div className="flex justify-between items-start">
@@ -111,6 +164,12 @@ const TrainingHistory: React.FC<TrainingHistoryProps> = ({ trainings, onAddTrain
                         <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mt-1">Rp {t.cost?.toLocaleString('id-ID')}</p>
                      </div>
                      <div className="flex gap-2">
+                        {isSchedulable && (
+                          <button onClick={() => openScheduleModal(t)} className="w-8 h-8 flex items-center justify-center bg-white rounded-lg text-indigo-600 shadow-sm border border-indigo-50">
+                             <i className="bi bi-calendar-plus"></i>
+                          </button>
+                        )}
+                        {t.calendarEventId && <span className="w-8 h-8 flex items-center justify-center text-emerald-600"><i className="bi bi-calendar-check-fill"></i></span>}
                         <button onClick={() => { setEditingItem(t); setIsFormOpen(true); }} className="w-8 h-8 flex items-center justify-center bg-white rounded-lg text-slate-400 shadow-sm border border-slate-100">✎</button>
                         <button onClick={() => onDeleteTraining(t.id)} className="w-8 h-8 flex items-center justify-center bg-white rounded-lg text-slate-400 shadow-sm border border-slate-100">✕</button>
                      </div>
@@ -150,11 +209,42 @@ const TrainingHistory: React.FC<TrainingHistoryProps> = ({ trainings, onAddTrain
                </div>
              );
            })}
-           {trainings.length === 0 && (
-             <div className="py-20 text-center text-slate-400 italic text-sm">Belum ada riwayat pelatihan.</div>
-           )}
         </div>
       </div>
+
+      {/* SCHEDULE CONFIRMATION MODAL */}
+      {isScheduleModalOpen && schedulingItem && (
+        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md flex items-center justify-center z-[2000] p-4">
+           <div className="bg-white w-full max-w-md rounded-[3rem] shadow-2xl p-10 animate-in zoom-in duration-300">
+              <div className="text-center mb-8">
+                 <div className="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl shadow-inner">
+                    <i className="bi bi-calendar-event"></i>
+                 </div>
+                 <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Jadwalkan Belajar</h3>
+                 <p className="text-slate-400 text-xs font-bold leading-relaxed mt-2 uppercase tracking-widest">Pilih tanggal untuk aktivitas belajar:</p>
+                 <p className="font-black text-indigo-600 text-sm mt-1">{schedulingItem.name}</p>
+              </div>
+
+              <div className="space-y-6">
+                 <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Pilih Tanggal</label>
+                       <input type="date" className="w-full px-5 py-3 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs" value={scheduleDate} onChange={e => setScheduleDate(e.target.value)} />
+                    </div>
+                    <div className="space-y-1.5">
+                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Pilih Jam</label>
+                       <input type="time" className="w-full px-5 py-3 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs" value={scheduleTime} onChange={e => setScheduleTime(e.target.value)} />
+                    </div>
+                 </div>
+
+                 <div className="flex gap-4 pt-4">
+                    <button type="button" onClick={() => setIsScheduleModalOpen(false)} className="flex-1 py-4 bg-slate-50 text-slate-400 font-black rounded-2xl uppercase text-[10px] tracking-widest">Batal</button>
+                    <button type="button" onClick={handlePushToCalendar} className="flex-[2] py-4 bg-indigo-600 text-white font-black rounded-2xl uppercase text-[10px] shadow-xl shadow-indigo-100 hover:bg-indigo-700 active:scale-95 transition-all">Konfirmasi Jadwal</button>
+                 </div>
+              </div>
+           </div>
+        </div>
+      )}
 
       {isFormOpen && (
         <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md flex items-center justify-center z-[1000] p-4">

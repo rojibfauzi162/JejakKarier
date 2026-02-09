@@ -1,20 +1,28 @@
 
 import React, { useState, useMemo } from 'react';
-import { JobApplication, JobStatus } from '../types';
+import { JobApplication, JobStatus, CareerEvent, EventType, ImportanceLevel } from '../types';
 
 interface JobTrackerProps {
   applications: JobApplication[];
+  careerEvents: CareerEvent[];
   onAdd: (j: JobApplication) => void;
   onUpdate: (j: JobApplication) => void;
   onDelete: (id: string) => void;
+  onAddCalendarEvent?: (e: CareerEvent) => void;
 }
 
 type TimeFilter = 'All' | '1 Day' | '7 Days' | '30 Days' | 'Custom Range';
 
-const JobTracker: React.FC<JobTrackerProps> = ({ applications, onAdd, onUpdate, onDelete }) => {
+const JobTracker: React.FC<JobTrackerProps> = ({ applications, careerEvents, onAdd, onUpdate, onDelete, onAddCalendarEvent }) => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<JobApplication | null>(null);
   
+  // Scheduling Modal State
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+  const [schedulingApp, setSchedulingApp] = useState<JobApplication | null>(null);
+  const [scheduleDate, setScheduleDate] = useState(new Date().toISOString().split('T')[0]);
+  const [scheduleTime, setScheduleTime] = useState('09:00');
+
   // Selection and Bulk Actions
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkStatus, setBulkStatus] = useState<JobStatus>(JobStatus.SUDAH_KIRIM);
@@ -68,6 +76,35 @@ const JobTracker: React.FC<JobTrackerProps> = ({ applications, onAdd, onUpdate, 
     setIsFormOpen(true);
   };
 
+  const openScheduleModal = (app: JobApplication) => {
+    setSchedulingApp(app);
+    setIsScheduleModalOpen(true);
+  };
+
+  const handlePushToCalendar = () => {
+    if (!onAddCalendarEvent || !schedulingApp) return;
+    
+    const eventId = Math.random().toString(36).substr(2, 9);
+    const newEvent: CareerEvent = {
+      id: eventId,
+      title: `Interview/Tes: ${schedulingApp.position}`,
+      type: EventType.INTERVIEW,
+      date: scheduleDate,
+      time: scheduleTime,
+      importance: ImportanceLevel.HIGH,
+      notes: `Perusahaan: ${schedulingApp.company}\nLokasi: ${schedulingApp.location}\nLink: ${schedulingApp.link || '-'}\nCatatan: ${schedulingApp.notes || '-'}`,
+      relatedId: schedulingApp.id
+    };
+
+    onAddCalendarEvent(newEvent);
+    // Update Job to track it's scheduled
+    onUpdate({ ...schedulingApp, calendarEventId: eventId });
+
+    setIsScheduleModalOpen(false);
+    setSchedulingApp(null);
+    alert(`Berhasil dijadwalkan pada ${new Date(scheduleDate).toLocaleDateString('id-ID')} pukul ${scheduleTime}.`);
+  };
+
   const getStatusStyle = (status: JobStatus) => {
     switch(status) {
       case JobStatus.SUDAH_KIRIM: return 'bg-blue-50 text-blue-600 border-blue-200';
@@ -104,7 +141,7 @@ const JobTracker: React.FC<JobTrackerProps> = ({ applications, onAdd, onUpdate, 
     <div className="space-y-6 animate-in fade-in duration-700 pb-24 lg:pb-16">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h2 className="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight">Loker Tracker</h2>
+          <h2 className="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight uppercase">Loker Tracker</h2>
           <p className="text-slate-500 mt-1 font-medium text-xs lg:text-sm">Monitoring status lamaran kerja secara real-time.</p>
         </div>
         <button onClick={openAddForm} className="w-full md:w-auto px-6 py-3.5 bg-emerald-600 text-white font-black rounded-2xl shadow-xl hover:bg-emerald-700 transition-all text-xs uppercase tracking-widest">
@@ -147,26 +184,9 @@ const JobTracker: React.FC<JobTrackerProps> = ({ applications, onAdd, onUpdate, 
         </div>
       </div>
 
-      {/* Bulk Action Bar */}
-      {selectedIds.size > 0 && (
-        <div className="sticky top-4 z-40 bg-slate-900 text-white p-4 rounded-2xl shadow-2xl flex items-center justify-between gap-4 animate-in slide-in-from-top-4 mx-2">
-          <div className="flex items-center gap-2">
-            <span className="bg-emerald-500 text-white w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-black">{selectedIds.size}</span>
-            <p className="text-[10px] font-bold uppercase hidden sm:block">Terpilih</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <select value={bulkStatus} onChange={(e) => setBulkStatus(e.target.value as JobStatus)} className="px-3 py-1.5 rounded-lg bg-slate-800 text-[10px] font-bold outline-none border border-slate-700">
-              {Object.values(JobStatus).map(s => <option key={s} value={s}>{s}</option>)}
-            </select>
-            <button onClick={handleBulkPublish} className="px-4 py-1.5 bg-blue-600 text-white font-black text-[9px] uppercase tracking-widest rounded-lg">Apply</button>
-            <button onClick={() => setSelectedIds(new Set())} className="px-2 py-1 text-slate-400 text-[9px] font-bold uppercase">✕</button>
-          </div>
-        </div>
-      )}
-
       {/* Responsive Content: Table for Desktop, Cards for Mobile */}
       <div className="hidden lg:block bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden overflow-x-auto">
-        <table className="w-full text-left border-collapse min-w-[1000px] table-fixed">
+        <table className="w-full text-left border-collapse min-w-[1100px] table-fixed">
           <thead>
             <tr className="bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest">
               <th className="px-4 py-4 w-12 text-center bg-blue-600 border-r border-white/10">
@@ -177,94 +197,150 @@ const JobTracker: React.FC<JobTrackerProps> = ({ applications, onAdd, onUpdate, 
               <th className="px-6 py-4 w-44 border-r border-white/10">Perusahaan</th>
               <th className="px-6 py-4 w-40 border-r border-white/10">Lokasi</th>
               <th className="px-6 py-4 w-32 border-r border-white/10 text-center">Tgl Lamar</th>
-              <th className="px-6 py-4 w-36 border-r border-white/10">Platform</th>
               <th className="px-6 py-4 w-48 border-r border-white/10 text-center">Status</th>
-              <th className="px-6 py-4 w-36 border-r border-white/10">Link</th>
               <th className="px-6 py-4 w-52">Catatan</th>
+              <th className="px-8 py-4 w-36 text-right">Aksi</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {filteredApplications.map((app, index) => (
-              <tr key={app.id} className={`hover:bg-slate-50 transition-colors group ${selectedIds.has(app.id) ? 'bg-blue-50/50' : ''}`}>
-                <td className="px-4 py-5 text-center border-r border-slate-100">
-                  <input type="checkbox" checked={selectedIds.has(app.id)} onChange={() => toggleSelect(app.id)} className="w-4 h-4 rounded" />
-                </td>
-                <td className="px-6 py-5 text-center font-bold text-slate-400 bg-slate-50/30 border-r border-slate-100">{index + 1}</td>
-                <td className="px-6 py-5 font-black text-slate-800 text-sm border-r border-slate-100 truncate">{app.position}</td>
-                <td className="px-6 py-5 font-bold text-slate-600 text-sm border-r border-slate-100 truncate">{app.company}</td>
-                <td className="px-6 py-5 text-xs text-slate-500 font-medium border-r border-slate-100 truncate">{app.location}</td>
-                <td className="px-6 py-5 text-center text-[10px] font-bold text-slate-400 border-r border-slate-100">{app.appliedDate}</td>
-                <td className="px-6 py-5 text-xs font-bold text-slate-500 border-r border-slate-100 truncate">{app.appliedVia}</td>
-                <td className="px-6 py-5 text-center border-r border-slate-100">
-                  <div className={`inline-block px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest border whitespace-nowrap min-w-[120px] ${getStatusStyle(app.status)}`}>
-                    {app.status}
-                  </div>
-                </td>
-                <td className="px-6 py-5 border-r border-slate-100">
-                  <a href={app.link.startsWith('http') ? app.link : `https://${app.link}`} target="_blank" rel="noreferrer" className="text-xs text-blue-500 font-bold hover:underline truncate block">{app.link}</a>
-                </td>
-                <td className="px-6 py-5">
-                  <div className="flex justify-between items-center gap-2">
-                    <p className="text-xs text-slate-500 italic truncate flex-1">{app.notes || '-'}</p>
-                    <div className="flex opacity-100 transition-opacity">
-                      <button onClick={() => openEditForm(app)} className="p-1.5 text-slate-400 hover:text-blue-600">✎</button>
-                      <button onClick={() => onDelete(app.id)} className="p-1.5 text-slate-400 hover:text-rose-600">✕</button>
+            {filteredApplications.map((app, index) => {
+              // FIX: Verifikasi apakah event kalender benar-benar ada di daftar careerEvents menggunakan relatedId
+              const isActuallyScheduled = careerEvents.some(e => e.relatedId === app.id);
+              const isSchedulable = (app.status === JobStatus.PERLU_FOLLOW_UP || app.status === JobStatus.WAWANCARA) && !isActuallyScheduled;
+              
+              return (
+                <tr key={app.id} className={`hover:bg-slate-50 transition-colors group ${selectedIds.has(app.id) ? 'bg-blue-50/50' : ''}`}>
+                  <td className="px-4 py-5 text-center border-r border-slate-100">
+                    <input type="checkbox" checked={selectedIds.has(app.id)} onChange={() => toggleSelect(app.id)} className="w-4 h-4 rounded" />
+                  </td>
+                  <td className="px-6 py-5 text-center font-bold text-slate-400 bg-slate-50/30 border-r border-slate-100">{index + 1}</td>
+                  <td className="px-6 py-5 font-black text-slate-800 text-sm border-r border-slate-100 truncate">{app.position}</td>
+                  <td className="px-6 py-5 font-bold text-slate-600 text-sm border-r border-slate-100 truncate">{app.company}</td>
+                  <td className="px-6 py-5 text-xs text-slate-500 font-medium border-r border-slate-100 truncate">{app.location}</td>
+                  <td className="px-6 py-5 text-center text-[10px] font-bold text-slate-400 border-r border-slate-100">{app.appliedDate}</td>
+                  <td className="px-6 py-5 text-center border-r border-slate-100">
+                    <div className={`inline-block px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest border whitespace-nowrap min-w-[120px] ${getStatusStyle(app.status)}`}>
+                      {app.status}
                     </div>
-                  </div>
-                </td>
-              </tr>
-            ))}
+                  </td>
+                  <td className="px-6 py-5 border-r border-slate-100">
+                    <p className="text-xs text-slate-500 italic truncate">{app.notes || '-'}</p>
+                  </td>
+                  <td className="px-8 py-5 text-right">
+                    <div className="flex justify-end gap-2">
+                      {isSchedulable && (
+                        <button 
+                          onClick={() => openScheduleModal(app)}
+                          className="p-2.5 bg-indigo-50 text-indigo-600 border border-indigo-100 hover:bg-indigo-600 hover:text-white rounded-xl transition-all shadow-sm"
+                          title="Jadwalkan ke Kalender"
+                        >
+                           <i className="bi bi-calendar-plus"></i>
+                        </button>
+                      )}
+                      {isActuallyScheduled && (
+                        <div className="p-2.5 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-xl" title="Sudah Dijadwalkan">
+                          <i className="bi bi-calendar-check-fill"></i>
+                        </div>
+                      )}
+                      <button onClick={() => openEditForm(app)} className="p-2.5 bg-white border border-slate-200 text-slate-400 hover:text-blue-600 rounded-xl shadow-sm transition-all">✎</button>
+                      <button onClick={() => onDelete(app.id)} className="p-2.5 bg-white border border-slate-200 text-slate-400 hover:text-rose-600 rounded-xl shadow-sm transition-all">✕</button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
 
       {/* Mobile Application Cards */}
       <div className="lg:hidden space-y-4">
-        {filteredApplications.map((app) => (
-          <div key={app.id} className="bg-white rounded-[2rem] p-6 border border-slate-100 shadow-sm relative group overflow-hidden">
-            <div className="flex justify-between items-start mb-4">
-              <div className="flex items-center gap-3">
-                <input type="checkbox" checked={selectedIds.has(app.id)} onChange={() => toggleSelect(app.id)} className="w-5 h-5 rounded-lg" />
-                <div>
-                  <h4 className="font-black text-slate-800 text-base">{app.position}</h4>
-                  <p className="text-xs font-bold text-slate-500">{app.company}</p>
+        {filteredApplications.map((app) => {
+          const isActuallyScheduled = careerEvents.some(e => e.relatedId === app.id);
+          const isSchedulable = (app.status === JobStatus.PERLU_FOLLOW_UP || app.status === JobStatus.WAWANCARA) && !isActuallyScheduled;
+          
+          return (
+            <div key={app.id} className="bg-white rounded-[2rem] p-6 border border-slate-100 shadow-sm relative group overflow-hidden">
+              <div className="flex justify-between items-start mb-4">
+                <div className="flex items-center gap-3">
+                  <input type="checkbox" checked={selectedIds.has(app.id)} onChange={() => toggleSelect(app.id)} className="w-5 h-5 rounded-lg" />
+                  <div>
+                    <h4 className="font-black text-slate-800 text-base">{app.position}</h4>
+                    <p className="text-xs font-bold text-slate-500">{app.company}</p>
+                  </div>
+                </div>
+                <div className="flex gap-1">
+                  {isSchedulable && (
+                    <button onClick={() => openScheduleModal(app)} className="p-2 text-indigo-600"><i className="bi bi-calendar-plus"></i></button>
+                  )}
+                  {isActuallyScheduled && <span className="p-2 text-emerald-600"><i className="bi bi-calendar-check-fill"></i></span>}
+                  <button onClick={() => openEditForm(app)} className="p-2 text-slate-300">✎</button>
+                  <button onClick={() => onDelete(app.id)} className="p-2 text-slate-300">✕</button>
                 </div>
               </div>
-              <div className="flex gap-1">
-                <button onClick={() => openEditForm(app)} className="p-2 text-slate-300">✎</button>
-                <button onClick={() => onDelete(app.id)} className="p-2 text-slate-300">✕</button>
-              </div>
-            </div>
 
-            <div className="grid grid-cols-2 gap-4 mb-4">
-              <div className="bg-slate-50 p-3 rounded-2xl">
-                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Lokasi</p>
-                <p className="text-[11px] font-bold text-slate-600">{app.location}</p>
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div className="bg-slate-50 p-3 rounded-2xl">
+                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Lokasi</p>
+                  <p className="text-[11px] font-bold text-slate-600">{app.location}</p>
+                </div>
+                <div className="bg-slate-50 p-3 rounded-2xl">
+                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Tanggal</p>
+                  <p className="text-[11px] font-bold text-slate-600">{app.appliedDate}</p>
+                </div>
               </div>
-              <div className="bg-slate-50 p-3 rounded-2xl">
-                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Tanggal</p>
-                <p className="text-[11px] font-bold text-slate-600">{app.appliedDate}</p>
+
+              <div className="flex items-center justify-between gap-4">
+                <span className={`px-4 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest border ${getStatusStyle(app.status)}`}>
+                  {app.status}
+                </span>
               </div>
-            </div>
 
-            <div className="flex items-center justify-between">
-              <span className={`px-4 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest border ${getStatusStyle(app.status)}`}>
-                {app.status}
-              </span>
-              <a href={app.link.startsWith('http') ? app.link : `https://${app.link}`} target="_blank" rel="noreferrer" className="text-[10px] font-black text-blue-600 uppercase">Apply Link →</a>
+              {app.notes && (
+                <p className="mt-4 text-[10px] text-slate-400 italic border-t border-slate-50 pt-3">
+                  " {app.notes} "
+                </p>
+              )}
             </div>
-
-            {app.notes && (
-              <p className="mt-4 text-[10px] text-slate-400 italic border-t border-slate-50 pt-3">
-                " {app.notes} "
-              </p>
-            )}
-          </div>
-        ))}
-        {filteredApplications.length === 0 && <div className="py-16 text-center text-slate-400 italic font-medium">Kosong.</div>}
+          );
+        })}
       </div>
 
-      {/* MODAL FORM: Tambah & Edit - Fixed Integration */}
+      {/* SCHEDULE CONFIRMATION MODAL */}
+      {isScheduleModalOpen && schedulingApp && (
+        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md flex items-center justify-center z-[1000] p-4">
+           <div className="bg-white w-full max-w-md rounded-[3rem] shadow-2xl p-10 animate-in zoom-in duration-300">
+              <div className="text-center mb-8">
+                 <div className="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl shadow-inner">
+                    <i className="bi bi-calendar-event"></i>
+                 </div>
+                 <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Jadwalkan Event</h3>
+                 <p className="text-slate-400 text-xs font-bold leading-relaxed mt-2 uppercase tracking-widest">Pilih waktu interview/follow-up untuk:</p>
+                 <p className="font-black text-indigo-600 text-sm mt-1">{schedulingApp.position} @ {schedulingApp.company}</p>
+              </div>
+
+              <div className="space-y-6">
+                 <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Pilih Tanggal</label>
+                       <input type="date" className="w-full px-5 py-3 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs" value={scheduleDate} onChange={e => setScheduleDate(e.target.value)} />
+                    </div>
+                    <div className="space-y-1.5">
+                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Pilih Jam</label>
+                       <input type="time" className="w-full px-5 py-3 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs" value={scheduleTime} onChange={e => setScheduleTime(e.target.value)} />
+                    </div>
+                 </div>
+
+                 <div className="flex gap-4 pt-4">
+                    <button type="button" onClick={() => setIsScheduleModalOpen(false)} className="flex-1 py-4 bg-slate-50 text-slate-400 font-black rounded-2xl uppercase text-[10px] tracking-widest">Batal</button>
+                    <button type="button" onClick={handlePushToCalendar} className="flex-[2] py-4 bg-indigo-600 text-white font-black rounded-2xl uppercase text-[10px] shadow-xl shadow-indigo-100 hover:bg-indigo-700 active:scale-95 transition-all">Konfirmasi Jadwal</button>
+                 </div>
+              </div>
+           </div>
+        </div>
+      )}
+
+      {/* MODAL FORM: Tambah & Edit */}
       {isFormOpen && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[500] p-4">
           <div className="bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl p-8 lg:p-10 animate-in zoom-in duration-300 max-h-[90vh] overflow-y-auto">

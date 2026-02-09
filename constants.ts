@@ -1,7 +1,7 @@
 
 import { AppData, SkillStatus, SkillCategory, SkillPriority, TrainingStatus, AchievementCategory, CareerType, CareerStatus, JobStatus, ProjectStatus, UserRole, SubscriptionPlan, AccountStatus } from './types';
 
-// Fix: Added missing properties (role, plan, status, joinedAt, lastLogin, aiUsage, completedAiMilestones) required by AppData type
+// Fix: Added missing properties required by AppData type
 export const INITIAL_DATA: AppData = {
   role: UserRole.USER,
   plan: SubscriptionPlan.FREE,
@@ -48,6 +48,7 @@ export const INITIAL_DATA: AppData = {
   personalProjects: [],
   todoList: [],
   todoCategories: ['Pendukung Kerja', 'Pengembangan Diri', 'Buka Peluang', 'Keseimbangan Hidup'],
+  careerEvents: [], // INITIAL CALENDAR STATE
   affirmations: ["I am capable of achieving my professional goals", "Every challenge is an opportunity to grow"],
   workCategories: ['Operasional', 'Meeting', 'Learning', 'Administratif', 'Lainnya'],
   onlineCV: {

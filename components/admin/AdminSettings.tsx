@@ -1,42 +1,93 @@
 
-import React, { useState, useEffect } from 'react';
-import { LegalConfig } from '../../types';
-import { getLegalConfig, saveLegalConfig } from '../../services/firebase';
+import React, { useState, useEffect, useRef } from 'react';
+import { LegalConfig, LandingPageConfig } from '../../types';
+import { getLegalConfig, saveLegalConfig, getLandingPageConfig, saveLandingPageConfig } from '../../services/firebase';
 
 const AdminSettings: React.FC = () => {
   const [config, setConfig] = useState<LegalConfig>({
     privacyPolicy: '',
     termsOfService: ''
   });
+  const [landingConfig, setLandingConfig] = useState<LandingPageConfig>({
+    videoDemoLinks: {},
+    desktopDashboardImg: '',
+    mobileDashboardImg: ''
+  });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ text: string, type: 'success' | 'error' } | null>(null);
 
+  const desktopFileRef = useRef<HTMLInputElement>(null);
+  const mobileFileRef = useRef<HTMLInputElement>(null);
+
+  const ALL_FEATURES = [
+    { id: 'daily-growth', label: 'Daily Growth Registry' },
+    { id: 'work-reflection', label: 'Work Reflection' },
+    { id: 'perf-insight', label: 'Performance Insights' },
+    { id: 'steps-growth', label: 'Steps of Growth' },
+    { id: 'ai-strategist', label: 'AI Strategist' },
+    { id: 'skill-matrix', label: 'Skill Matrix Tracker' },
+    { id: 'career-roadmap', label: 'Career Roadmap' },
+    { id: 'monthly-review', label: 'Monthly Review' },
+    { id: 'digital-presence', label: 'Digital Presence' },
+    { id: 'cv-export', label: 'One-Click CV Export' },
+    { id: 'job-hunt', label: 'Job Hunt Hub' },
+    { id: 'networking', label: 'Networking Vault' },
+  ];
+
   useEffect(() => {
-    const fetchConfig = async () => {
+    const fetchConfigs = async () => {
       try {
-        const res = await getLegalConfig();
-        if (res) setConfig(res);
+        const [resLegal, resLanding] = await Promise.all([
+          getLegalConfig(),
+          getLandingPageConfig()
+        ]);
+        if (resLegal) setConfig(resLegal);
+        if (resLanding) setLandingConfig(resLanding);
       } catch (e) {
-        console.error("Gagal memuat konfigurasi legal:", e);
+        console.error("Gagal memuat konfigurasi:", e);
       } finally {
         setLoading(false);
       }
     };
-    fetchConfig();
+    fetchConfigs();
   }, []);
 
   const handleSave = async () => {
     setSaving(true);
     setMessage(null);
     try {
-      await saveLegalConfig(config);
-      setMessage({ text: 'Konfigurasi legal berhasil disimpan ke server! ✅', type: 'success' });
+      await Promise.all([
+        saveLegalConfig(config),
+        saveLandingPageConfig(landingConfig)
+      ]);
+      setMessage({ text: 'Seluruh konfigurasi berhasil disimpan ke server! ✅', type: 'success' });
     } catch (e) {
-      setMessage({ text: 'Gagal menyimpan konfigurasi legal. Silakan coba lagi.', type: 'error' });
+      setMessage({ text: 'Gagal menyimpan konfigurasi. Silakan coba lagi.', type: 'error' });
     } finally {
       setSaving(false);
       setTimeout(() => setMessage(null), 5000);
+    }
+  };
+
+  const updateVideoLink = (featureId: string, url: string) => {
+    setLandingConfig(prev => ({
+      ...prev,
+      videoDemoLinks: {
+        ...prev.videoDemoLinks,
+        [featureId]: url
+      }
+    }));
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, field: 'desktopDashboardImg' | 'mobileDashboardImg') => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setLandingConfig(prev => ({ ...prev, [field]: reader.result as string }));
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -60,6 +111,100 @@ const AdminSettings: React.FC = () => {
         </div>
       )}
 
+      {/* SECTION: ASSET VISUAL LANDING PAGE */}
+      <div className="bg-white p-8 lg:p-12 rounded-[3.5rem] shadow-sm border-2 border-indigo-50 space-y-12">
+        <div className="flex items-center gap-6 pb-8 border-b border-slate-50">
+          <div className="w-16 h-16 bg-emerald-600 text-white rounded-[1.75rem] flex items-center justify-center text-3xl shadow-xl">
+            <i className="bi bi-images"></i>
+          </div>
+          <div>
+            <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Visual Sistem Dashboard</h3>
+            <p className="text-slate-400 font-medium text-sm">Update gambar pratinjau sistem untuk laptop dan mobile.</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+           <div className="space-y-4">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Dashboard Desktop (Laptop)</label>
+              
+              {landingConfig.desktopDashboardImg && (
+                <div className="w-full aspect-video rounded-2xl overflow-hidden border-2 border-slate-100 mb-4 bg-slate-50">
+                  <img src={landingConfig.desktopDashboardImg} alt="Preview Desktop" className="w-full h-full object-cover" />
+                </div>
+              )}
+
+              <div className="flex gap-2">
+                <input 
+                  className="flex-1 px-5 py-4 rounded-2xl border border-slate-200 bg-slate-50 font-bold text-xs outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all"
+                  placeholder="Atau masukkan URL gambar..."
+                  value={landingConfig.desktopDashboardImg || ''}
+                  onChange={e => setLandingConfig({...landingConfig, desktopDashboardImg: e.target.value})}
+                />
+                <button 
+                  onClick={() => desktopFileRef.current?.click()}
+                  className="px-6 py-4 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-black transition-all"
+                >
+                  Upload
+                </button>
+              </div>
+              <input type="file" ref={desktopFileRef} className="hidden" accept="image/*" onChange={e => handleImageUpload(e, 'desktopDashboardImg')} />
+           </div>
+
+           <div className="space-y-4">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Dashboard Mobile (HP)</label>
+              
+              {landingConfig.mobileDashboardImg && (
+                <div className="w-40 mx-auto aspect-[9/16] rounded-2xl overflow-hidden border-2 border-slate-100 mb-4 bg-slate-50">
+                  <img src={landingConfig.mobileDashboardImg} alt="Preview Mobile" className="w-full h-full object-cover" />
+                </div>
+              )}
+
+              <div className="flex gap-2">
+                <input 
+                  className="flex-1 px-5 py-4 rounded-2xl border border-slate-200 bg-slate-50 font-bold text-xs outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all"
+                  placeholder="Atau masukkan URL gambar..."
+                  value={landingConfig.mobileDashboardImg || ''}
+                  onChange={e => setLandingConfig({...landingConfig, mobileDashboardImg: e.target.value})}
+                />
+                <button 
+                  onClick={() => mobileFileRef.current?.click()}
+                  className="px-6 py-4 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-black transition-all"
+                >
+                  Upload
+                </button>
+              </div>
+              <input type="file" ref={mobileFileRef} className="hidden" accept="image/*" onChange={e => handleImageUpload(e, 'mobileDashboardImg')} />
+           </div>
+        </div>
+      </div>
+
+      {/* SECTION: VIDEO DEMO CONFIG */}
+      <div className="bg-white p-8 lg:p-12 rounded-[3.5rem] shadow-sm border border-slate-100 space-y-12">
+        <div className="flex items-center gap-6 pb-8 border-b border-slate-50">
+          <div className="w-16 h-16 bg-blue-600 text-white rounded-[1.75rem] flex items-center justify-center text-3xl shadow-xl">
+            <i className="bi bi-play-btn-fill"></i>
+          </div>
+          <div>
+            <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Video Demo Landing Page</h3>
+            <p className="text-slate-400 font-medium text-sm">Kelola tautan video demo (YouTube/Vimeo/Direct) untuk masing-masing fitur.</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+           {ALL_FEATURES.map(f => (
+             <div key={f.id} className="space-y-2">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{f.label}</label>
+                <input 
+                  className="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-slate-50 font-bold text-xs outline-none focus:ring-4 focus:ring-blue-500/5 transition-all"
+                  placeholder="https://www.youtube.com/embed/..."
+                  value={landingConfig.videoDemoLinks?.[f.id] || ''}
+                  onChange={e => updateVideoLink(f.id, e.target.value)}
+                />
+             </div>
+           ))}
+        </div>
+      </div>
+
       <div className="bg-white p-8 lg:p-12 rounded-[3.5rem] shadow-sm border border-slate-100 space-y-12">
         <div className="flex items-center gap-6 pb-8 border-b border-slate-50">
           <div className="w-16 h-16 bg-slate-900 text-white rounded-[1.75rem] flex items-center justify-center text-3xl shadow-xl">
@@ -67,7 +212,7 @@ const AdminSettings: React.FC = () => {
           </div>
           <div>
             <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Pengaturan Legal Publik</h3>
-            <p className="text-slate-400 font-medium text-sm">Kelola konten Kebijakan Privasi dan Syarat Layanan aplikasi.</p>
+            <p className="text-slate-400 font-medium text-sm">Kelola konten Kebijasi Privasi dan Syarat Layanan aplikasi.</p>
           </div>
         </div>
 
@@ -111,7 +256,7 @@ const AdminSettings: React.FC = () => {
             ) : (
               <>
                 <i className="bi bi-cloud-arrow-up-fill text-sm"></i>
-                Update Konten Legal
+                Update Seluruh Pengaturan
               </>
             )}
           </button>
@@ -122,7 +267,7 @@ const AdminSettings: React.FC = () => {
         <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center text-3xl shrink-0"><i className="bi bi-info-circle"></i></div>
         <div className="flex-1 text-center md:text-left">
           <h4 className="text-xl font-black uppercase tracking-tight mb-1">Informasi Pembaruan</h4>
-          <p className="text-xs text-slate-400 leading-relaxed font-medium">Perubahan pada konten ini akan langsung berdampak pada halaman yang dapat diakses publik melalui link di footer landing page. Pastikan konten yang dimasukkan sudah sesuai dengan standar hukum yang berlaku.</p>
+          <p className="text-xs text-slate-400 leading-relaxed font-medium">Perubahan pada konten ini akan langsung berdampak pada landing page publik. Pastikan link video demo fitur sudah dalam format yang benar (misal embed link untuk YouTube) agar dapat diputar langsung di halaman depan.</p>
         </div>
       </div>
     </div>

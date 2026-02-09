@@ -77,6 +77,37 @@ export enum PaymentStatus {
   UNPAID = 'Unpaid'
 }
 
+// NEW ENUMS FOR CALENDAR
+export enum EventType {
+  INTERVIEW = 'Wawancara kerja',
+  TEST = 'Tes / Assessment',
+  TRAINING = 'Training / Kelas',
+  CERTIFICATION = 'Sertifikasi',
+  APPRAISAL = 'Appraisal / Evaluasi',
+  DEADLINE = 'Deadline karier',
+  MEETING = 'Meeting',
+  OTHER = 'Event lain (custom)'
+}
+
+export enum ImportanceLevel {
+  LOW = 'Rendah',
+  MEDIUM = 'Sedang',
+  HIGH = 'Tinggi'
+}
+
+export interface CareerEvent {
+  id: string;
+  title: string;
+  type: EventType;
+  date: string; // ISO YYYY-MM-DD
+  time: string; // HH:mm
+  importance: ImportanceLevel;
+  notes?: string;
+  location?: string;
+  link?: string;
+  relatedId?: string; // ID dari Job, Training, atau Cert
+}
+
 export interface ManualTransaction {
   id: string;
   amount: number;
@@ -183,6 +214,7 @@ export interface Training {
   priority: SkillPriority;
   certLink?: string;
   category?: string;
+  calendarEventId?: string;
 }
 
 export interface Certification {
@@ -200,6 +232,7 @@ export interface Certification {
   cost?: number;
   progress?: number;
   category?: string;
+  calendarEventId?: string;
 }
 
 export interface CareerPath {
@@ -258,6 +291,7 @@ export interface JobApplication {
   status: JobStatus;
   link: string;
   notes: string;
+  calendarEventId?: string;
 }
 
 export interface PersonalProject {
@@ -308,6 +342,13 @@ export interface AiConfig {
 export interface LegalConfig {
   privacyPolicy: string;
   termsOfService: string;
+  updatedAt?: string;
+}
+
+export interface LandingPageConfig {
+  videoDemoLinks: Record<string, string>;
+  desktopDashboardImg?: string;
+  mobileDashboardImg?: string;
   updatedAt?: string;
 }
 
@@ -426,6 +467,7 @@ export interface AppData {
   personalProjects: PersonalProject[];
   todoList: ToDoTask[];
   todoCategories: string[];
+  careerEvents: CareerEvent[]; // NEW ARRAY FOR CALENDAR
   aiInsights?: AiInsightRecord[];
   affirmations: string[];
   workCategories: string[];

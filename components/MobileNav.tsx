@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 
 interface MobileNavProps {
@@ -24,11 +25,10 @@ const MobileNav: React.FC<MobileNavProps> = ({ activeTab, setActiveTab, onLogout
     { id: 'dashboard', label: 'Home', icon: 'bi-house-door' },
     { id: 'daily_toggle', label: 'Daily', icon: 'bi-journal-text', isSpecial: true },
     { id: 'todo_list', label: 'Langkah', icon: 'bi-check2-square' },
-    { id: 'billing', label: 'Billing', icon: 'bi-credit-card' },
+    { id: 'calendar', label: 'Calendar', icon: 'bi-calendar3' }, // REPLACED BILLING WITH CALENDAR
   ];
 
   // Menu Khusus Super Admin
-  // Menambahkan item Integrasi untuk role Admin di mobile
   const adminItems: NavItem[] = [
     { id: 'admin_dashboard', label: 'Admin', icon: 'bi-speedometer2' },
     { id: 'admin_users', label: 'Users', icon: 'bi-people' },
@@ -63,7 +63,7 @@ const MobileNav: React.FC<MobileNavProps> = ({ activeTab, setActiveTab, onLogout
               >
                  <div className="w-12 h-12 rounded-[1.25rem] bg-indigo-600 text-white flex items-center justify-center text-2xl shadow-lg shadow-indigo-200 group-hover:scale-110 transition-transform"><i className="bi bi-pencil-square"></i></div>
                  <div className="text-left flex-1">
-                    <p className="text-xs font-black uppercase tracking-widest text-slate-900">Aktivitas Kerja</p>
+                    <p className="text-xs font-black uppercase tracking-widest text-slate-900">Tugas Harian</p>
                     <p className="text-[10px] font-bold text-slate-400">Log output pekerjaan harian</p>
                  </div>
                  <span className="text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity">→</span>
@@ -91,7 +91,7 @@ const MobileNav: React.FC<MobileNavProps> = ({ activeTab, setActiveTab, onLogout
               >
                  <div className="w-12 h-12 rounded-[1.25rem] bg-blue-600 text-white flex items-center justify-center text-2xl shadow-lg shadow-blue-200 group-hover:scale-110 transition-transform"><i className="bi bi-graph-up"></i></div>
                  <div className="text-left flex-1">
-                    <p className="text-xs font-black uppercase tracking-widest text-slate-900">Report work</p>
+                    <p className="text-xs font-black uppercase tracking-widest text-slate-900">Laporan pekerjaan</p>
                     <p className="text-[10px] font-bold text-slate-400">Laporan detail performa</p>
                  </div>
                  <span className="text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity">→</span>
@@ -151,10 +151,10 @@ const MobileNav: React.FC<MobileNavProps> = ({ activeTab, setActiveTab, onLogout
         )}
       </nav>
 
-      {/* Modal Konfirmasi Logout Mobile */}
+      {/* Modal Konfirmasi Logout Mobile - Perbaikan Centering */}
       {showLogoutModal && (
-        <div className="fixed inset-0 z-[1000] flex items-center justify-center p-6">
-          <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" onClick={() => setShowLogoutModal(false)}></div>
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 lg:p-6 overflow-y-auto">
+          <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm" onClick={() => setShowLogoutModal(false)}></div>
           <div className="relative bg-white w-full max-w-sm rounded-[2.5rem] p-8 lg:p-10 shadow-2xl animate-in zoom-in duration-300">
             <div className="text-center mb-8">
               <div className="w-16 h-16 bg-rose-50 text-rose-500 rounded-3xl flex items-center justify-center mx-auto mb-4 text-2xl shadow-inner">
@@ -166,7 +166,7 @@ const MobileNav: React.FC<MobileNavProps> = ({ activeTab, setActiveTab, onLogout
             <div className="flex gap-4">
               <button 
                 onClick={() => setShowLogoutModal(false)} 
-                className="flex-1 py-4 bg-slate-50 text-slate-400 font-black rounded-2xl uppercase text-[10px] tracking-widest"
+                className="flex-1 py-4 bg-slate-50 text-slate-400 font-black rounded-2xl uppercase text-[10px] tracking-widest hover:bg-slate-100 transition-all"
               >
                 Batal
               </button>
