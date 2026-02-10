@@ -27,7 +27,6 @@ googleProvider.setCustomParameters({
 
 /**
  * Utility to recursively remove undefined values from an object.
- * Firestore does not support 'undefined' values.
  */
 const sanitizeData = (obj: any): any => {
   if (Array.isArray(obj)) {
@@ -44,9 +43,6 @@ const sanitizeData = (obj: any): any => {
   return obj;
 };
 
-/**
- * Fungsi Login/Register dengan Google
- */
 export const signInWithGoogle = async () => {
   try {
     const result = await signInWithPopup(auth, googleProvider);
@@ -79,8 +75,6 @@ export const getUserData = async (uid: string): Promise<AppData | null> => {
   return null;
 };
 
-// --- ADMIN FUNCTIONS ---
-
 export const getAllUsers = async (): Promise<AppData[]> => {
   try {
     const querySnapshot = await getDocs(collection(db, "users"));
@@ -89,10 +83,7 @@ export const getAllUsers = async (): Promise<AppData[]> => {
       uid: doc.id
     }));
   } catch (error: any) {
-    if (error.code === 'permission-denied') {
-      return [];
-    }
-    console.error("Admin: Error fetching all users:", error);
+    if (error.code === 'permission-denied') return [];
     throw error;
   }
 };
@@ -101,10 +92,7 @@ export const updateAdminMetadata = async (uid: string, fields: Partial<AppData>)
   try {
     if (!uid) throw new Error("Valid UID required");
     const userRef = doc(db, "users", uid);
-    
-    // Sanitasi fields sebelum update
     const sanitizedFields = sanitizeData(fields);
-
     await updateDoc(userRef, {
       ...sanitizedFields,
       updatedAt: new Date().toISOString()
@@ -142,13 +130,9 @@ export const getAiConfig = async (): Promise<AiConfig | null> => {
   try {
     const docRef = doc(db, "system_metadata", "ai_configuration");
     const docSnap = await getDoc(docRef);
-    if (docSnap.exists()) {
-      return docSnap.data() as AiConfig;
-    }
+    if (docSnap.exists()) return docSnap.data() as AiConfig;
   } catch (error: any) {
-    if (error.code !== 'permission-denied') {
-      console.warn("[FIREBASE] Config AI error:", error.message);
-    }
+    console.warn("[FIREBASE] Config AI error:", error.message);
   }
   return null;
 };
@@ -157,14 +141,11 @@ export const saveAiConfig = async (config: AiConfig) => {
   try {
     const docRef = doc(db, "system_metadata", "ai_configuration");
     const dataToSave = sanitizeData({
-      openRouterKey: config.openRouterKey || "",
-      modelName: config.modelName || "google/gemini-2.0-flash-exp:free",
-      maxTokens: Math.min(Number(config.maxTokens) || 4096, 8192),
+      ...config,
       updatedAt: new Date().toISOString()
     });
     await setDoc(docRef, dataToSave, { merge: true });
   } catch (error) {
-    console.error("Error saving AI config:", error);
     throw error;
   }
 };
@@ -175,9 +156,7 @@ export const getLegalConfig = async (): Promise<LegalConfig | null> => {
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) return docSnap.data() as LegalConfig;
   } catch (e: any) {
-    if (e.code !== 'permission-denied') {
-      console.warn("[FIREBASE] Legal config error:", e.message);
-    }
+    console.warn("[FIREBASE] Legal config error:", e.message);
   }
   return { privacyPolicy: '', termsOfService: '' };
 };
@@ -188,7 +167,6 @@ export const saveLegalConfig = async (config: LegalConfig) => {
     const sanitized = sanitizeData({ ...config, updatedAt: new Date().toISOString() });
     await setDoc(docRef, sanitized, { merge: true });
   } catch (error) {
-    console.error("Error saving legal config:", error);
     throw error;
   }
 };
@@ -199,9 +177,7 @@ export const getLandingPageConfig = async (): Promise<LandingPageConfig | null> 
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) return docSnap.data() as LandingPageConfig;
   } catch (e: any) {
-    if (e.code !== 'permission-denied') {
-      console.warn("[FIREBASE] Landing config error:", e.message);
-    }
+    console.warn("[FIREBASE] Landing config error:", e.message);
   }
   return { videoDemoLinks: {} };
 };
@@ -212,7 +188,6 @@ export const saveLandingPageConfig = async (config: LandingPageConfig) => {
     const sanitized = sanitizeData({ ...config, updatedAt: new Date().toISOString() });
     await setDoc(docRef, sanitized, { merge: true });
   } catch (error) {
-    console.error("Error saving landing config:", error);
     throw error;
   }
 };
@@ -223,9 +198,7 @@ export const getMayarConfig = async (): Promise<MayarConfig | null> => {
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) return docSnap.data() as MayarConfig;
   } catch (e: any) {
-    if (e.code !== 'permission-denied') {
-      console.warn("[FIREBASE] Config Mayar error:", e.message);
-    }
+    console.warn("[FIREBASE] Config Mayar error:", e.message);
   }
   return null;
 };
@@ -239,7 +212,6 @@ export const saveMayarConfig = async (config: MayarConfig) => {
     });
     await setDoc(docRef, sanitized, { merge: true });
   } catch (error) {
-    console.error("Error saving Mayar config:", error);
     throw error;
   }
 };
@@ -250,9 +222,7 @@ export const getProductsCatalog = async (): Promise<SubscriptionProduct[] | null
     const snap = await getDoc(docRef);
     if (snap.exists()) return snap.data().list;
   } catch (e: any) {
-    if (e.code !== 'permission-denied') {
-      console.warn("[FIREBASE] Katalog produk error:", e.message);
-    }
+    console.warn("[FIREBASE] Katalog produk error:", e.message);
   }
   return null;
 };
@@ -267,40 +237,55 @@ export const saveProductsCatalog = async (products: SubscriptionProduct[]) => {
   }
 };
 
+/**
+ * Memproses aktivasi paket dari webhook Mayar secara otomatis.
+ */
 export const processMayarOrder = async (email: string, mayarProdId: string) => {
   const catalog = await getProductsCatalog();
-  const matchedPlan = catalog?.find(p => p.mayarProductId === mayarProdId);
+  // Pencarian yang lebih fleksibel: Cocokkan ID Produk atau Slug
+  const matchedPlan = catalog?.find(p => p.mayarProductId === mayarProdId || p.id === mayarProdId);
   
   if (!matchedPlan) {
-    console.error("Order Gagal: ID Produk Mayar tidak dikenali.");
+    console.error("Aktivasi Gagal: ID Produk/Slug '" + mayarProdId + "' tidak ditemukan di katalog.");
     return;
   }
 
   const usersRef = collection(db, "users");
-  const q = query(usersRef, where("profile.email", "==", email), limit(1));
+  const q = query(usersRef, where("profile.email", "==", email.toLowerCase().trim()), limit(1));
   const querySnap = await getDocs(q);
 
   if (querySnap.empty) {
-    console.warn("User belum terdaftar. Menunggu registrasi email tersebut.");
+    console.warn("User " + email + " belum terdaftar. Menunggu registrasi.");
     return;
   }
 
   const userDoc = querySnap.docs[0];
+  const userData = userDoc.data() as AppData;
   const userRef = doc(db, "users", userDoc.id);
 
+  // Jika user diblokir, batalkan aktivasi otomatis
+  if (userData.status === AccountStatus.BANNED) {
+     console.error("Aktivasi Ditolak: User dalam status Banned.");
+     return;
+  }
+
   const now = new Date();
-  const expiry = new Date();
-  expiry.setDate(now.getDate() + matchedPlan.durationDays);
+  const currentExpiry = userData.expiryDate ? new Date(userData.expiryDate) : now;
+  
+  // Jika masih aktif, tambahkan durasi ke expiry lama. Jika sudah expired, gunakan 'now' sebagai basis.
+  const baseDate = currentExpiry > now ? currentExpiry : now;
+  const newExpiry = new Date(baseDate);
+  newExpiry.setDate(newExpiry.getDate() + matchedPlan.durationDays);
 
   await updateDoc(userRef, {
     plan: matchedPlan.tier,
     status: AccountStatus.ACTIVE,
     activeFrom: now.toISOString(),
-    expiryDate: expiry.toISOString(),
+    expiryDate: newExpiry.toISOString(),
     planPermissions: matchedPlan.allowedModules,
     planLimits: matchedPlan.limits,
     updatedAt: new Date().toISOString()
   });
 
-  console.log(`Berhasil mengaktifkan paket ${matchedPlan.name} (Mayar) untuk user ${email}`);
+  console.log(`SUKSES: Paket ${matchedPlan.name} aktif untuk ${email} hingga ${newExpiry.toLocaleDateString()}`);
 };

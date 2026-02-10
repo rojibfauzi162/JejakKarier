@@ -21,35 +21,28 @@ const Billing: React.FC<BillingProps> = ({ data, products }) => {
 
   const handlePay = (mayarProdId?: string) => {
     if (!mayarProdId) {
-      alert("ID Produk Mayar belum dikonfigurasi oleh admin.");
+      alert("Metode pembayaran belum dikonfigurasi. Hubungi Admin.");
       return;
     }
-    // Mengarahkan ke link pembayaran Mayar
-    window.open(`https://mayar.link/pl/${mayarProdId}`, '_blank');
+
+    // LOGIK SMART REDIRECT: Mendukung berbagai jenis ID Mayar
+    let finalUrl = mayarProdId;
+    
+    // Jika hanya slug, tentukan prefix berdasarkan format
+    if (!mayarProdId.startsWith('http')) {
+       if (mayarProdId.startsWith('p-')) {
+          // Format Produk Mayar (Headless/Product)
+          finalUrl = `https://mayar.link/p/${mayarProdId}`;
+       } else {
+          // Format Standard Payment Link
+          finalUrl = `https://mayar.link/pl/${mayarProdId}`;
+       }
+    }
+
+    window.open(finalUrl, '_blank');
   };
 
-  // Logic: Filter available upgrades based on current plan
-  const availableUpgrades = products.filter(p => {
-    if (p.price === 0) return false; // Hide free plan from upgrades
-    
-    // Hirarki: Free < Monthly < Quarterly < Annual
-    const currentTier = data.plan;
-    
-    if (currentTier === SubscriptionPlan.FREE) return true; // Show all premium
-    
-    if (currentTier === SubscriptionPlan.PRO) {
-       // Assuming Monthly is PRO, we show Quarterly or Annual if they have longer duration
-       // In our current setup, Monthly, 3 Month, 1 Year are likely all PRO tier with different durations
-       return p.durationDays > (currentProduct?.durationDays || 0);
-    }
-    
-    if (currentTier === SubscriptionPlan.ENTERPRISE) {
-       // Only show renewal for Enterprise or higher tiers
-       return true;
-    }
-
-    return true;
-  });
+  const availableUpgrades = products.filter(p => p.price > 0);
 
   return (
     <div className="space-y-10 animate-in fade-in duration-700 pb-20 px-4 lg:px-0">
@@ -109,7 +102,7 @@ const Billing: React.FC<BillingProps> = ({ data, products }) => {
          <div className="flex flex-col md:flex-row justify-between items-end gap-4 px-2">
             <div>
                <h3 className="text-xl font-black text-slate-900 uppercase">Pilihan Paket Masa Depan</h3>
-               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Pilih paket kualifikasi yang lebih tinggi untuk akselerasi karir Anda.</p>
+               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Upgrade untuk membuka lebih banyak fitur AI & limitasi data.</p>
             </div>
             <p className="text-[9px] font-black text-blue-600 uppercase tracking-widest flex items-center gap-2">
                <span className="w-1.5 h-1.5 bg-blue-600 rounded-full animate-pulse"></span>
@@ -118,35 +111,31 @@ const Billing: React.FC<BillingProps> = ({ data, products }) => {
          </div>
 
          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {availableUpgrades.length > 0 ? availableUpgrades.map(p => {
-              const isAnnual = p.durationDays >= 360;
-              const isCurrentAnnual = (currentProduct?.durationDays || 0) >= 360 && data.plan === p.tier;
-              
-              return (
-                <div key={p.id} className="bg-white p-8 rounded-[3.5rem] border border-slate-100 shadow-sm hover:shadow-xl transition-all flex flex-col group relative overflow-hidden">
-                   <div className="flex-1 space-y-8">
-                      <div>
-                         <div className="flex justify-between items-start mb-4">
-                            <h4 className="text-xl font-black text-slate-900 tracking-tight">{p.name}</h4>
-                            <span className="px-3 py-1 bg-blue-50 text-blue-600 text-[8px] font-black uppercase rounded-lg border border-blue-100">{p.tier}</span>
-                         </div>
-                         
-                         <div className="flex items-baseline gap-2">
-                            <p className="text-3xl font-black text-slate-900">Rp {formatIDR(p.price)}</p>
-                            {p.originalPrice && p.originalPrice > p.price && (
-                              <p className="text-sm font-bold text-rose-400 line-through italic">Rp {formatIDR(p.originalPrice)}</p>
-                            )}
-                         </div>
-                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Akses selama {p.durationDays} Hari</p>
-                      </div>
+            {availableUpgrades.map(p => (
+              <div key={p.id} className="bg-white p-8 rounded-[3.5rem] border border-slate-100 shadow-sm hover:shadow-xl transition-all flex flex-col group relative overflow-hidden">
+                 <div className="flex-1 space-y-8">
+                    <div>
+                       <div className="flex justify-between items-start mb-4">
+                          <h4 className="text-xl font-black text-slate-900 tracking-tight">{p.name}</h4>
+                          <span className="px-3 py-1 bg-blue-50 text-blue-600 text-[8px] font-black uppercase rounded-lg border border-blue-100">{p.tier}</span>
+                       </div>
+                       
+                       <div className="flex items-baseline gap-2">
+                          <p className="text-3xl font-black text-slate-900">Rp {formatIDR(p.price)}</p>
+                          {p.originalPrice && p.originalPrice > p.price && (
+                            <p className="text-sm font-bold text-rose-400 line-through italic">Rp {formatIDR(p.originalPrice)}</p>
+                          )}
+                       </div>
+                       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Akses selama {p.durationDays} Hari</p>
+                    </div>
 
-                      <div className="space-y-3">
-                         <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-50 pb-2">Fitur & Keuntungan</p>
-                         <ul className="space-y-2.5">
-                            {p.allowedModules.slice(0, 5).map(m => (
-                              <li key={m} className="flex items-center gap-3 text-[10px] font-bold text-slate-600">
-                                 <i className="bi bi-check-circle-fill text-emerald-500"></i>
-                                 <span className="uppercase">{m.replace('_', ' ')}</span>
+                    <div className="space-y-3">
+                       <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-50 pb-2">Fitur & Keuntungan</p>
+                       <ul className="space-y-2.5">
+                          {p.allowedModules.slice(0, 5).map(m => (
+                            <li key={m} className="flex items-center gap-3 text-[10px] font-bold text-slate-600">
+                               <i className="bi bi-check-circle-fill text-emerald-500"></i>
+                               <span className="uppercase">{m.replace('_', ' ')}</span>
                             </li>
                           ))}
                           <li className="flex items-center gap-3 text-[10px] font-bold text-slate-600">
@@ -159,27 +148,14 @@ const Billing: React.FC<BillingProps> = ({ data, products }) => {
 
                  <button 
                   onClick={() => handlePay(p.mayarProductId)}
-                  className={`w-full mt-10 py-4 text-white font-black rounded-2xl uppercase text-[10px] tracking-widest shadow-xl transition-all active:scale-95 z-10 ${isAnnual && data.plan === p.tier ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-slate-900 hover:bg-black'}`}
+                  className="w-full mt-10 py-4 bg-slate-900 text-white font-black rounded-2xl uppercase text-[10px] tracking-widest shadow-xl hover:bg-black transition-all active:scale-95 z-10"
                  >
-                    {isAnnual && data.plan === p.tier ? 'Tambah Masa Aktif 1 Tahun Lagi' : (data.plan === p.tier ? 'Perpanjang Paket' : 'Pilih Paket →')}
+                    {data.plan === p.tier ? 'Perpanjang Paket' : 'Pilih Paket →'}
                  </button>
                  
                  <div className="absolute -bottom-12 -right-12 w-32 h-32 bg-slate-50 rounded-full group-hover:bg-indigo-50 transition-colors duration-500"></div>
               </div>
-            );
-            }) : (
-              <div className="col-span-full py-20 text-center bg-white rounded-[3rem] border-2 border-dashed border-slate-100">
-                 <div className="text-4xl mb-4">💎</div>
-                 <p className="text-sm font-black text-slate-800 uppercase tracking-tight">Anda Sudah Berada di Level Tertinggi</p>
-                 <p className="text-[10px] text-slate-400 uppercase tracking-widest mt-2">Seluruh fitur AI dan limitasi sudah terbuka penuh untuk Anda.</p>
-                 <button 
-                  onClick={() => handlePay(currentProduct?.mayarProductId)}
-                  className="mt-8 px-10 py-4 bg-emerald-600 text-white font-black rounded-2xl text-[10px] uppercase tracking-widest shadow-xl shadow-emerald-100"
-                 >
-                    Tambah Masa Aktif {currentProduct?.name || '1 Tahun'} Lagi
-                 </button>
-              </div>
-            )}
+            ))}
          </div>
       </div>
 

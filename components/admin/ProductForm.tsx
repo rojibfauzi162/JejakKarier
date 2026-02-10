@@ -12,7 +12,6 @@ const ProductForm = ({ initialData, onCancel, onSubmit, onDelete }: any) => {
 
   const [discount, setDiscount] = useState<number>(0);
 
-  // Hitung diskon awal jika sedang mengedit data yang sudah ada
   useEffect(() => {
     if (form.price && form.originalPrice && form.originalPrice > form.price) {
       const calculatedDiscount = Math.round(((form.originalPrice - form.price) / form.originalPrice) * 100);
@@ -21,7 +20,7 @@ const ProductForm = ({ initialData, onCancel, onSubmit, onDelete }: any) => {
   }, []);
 
   const tiers = Object.values(SubscriptionPlan);
-  const modules = ['dashboard', 'profile', 'daily', 'skills', 'todo', 'career', 'loker', 'cv', 'networking', 'projects', 'reviews', 'ai_insights'];
+  const modules = ['dashboard', 'profile', 'daily', 'skills', 'todo', 'career', 'loker', 'cv', 'networking', 'projects', 'reviews', 'ai_insights', 'calendar'];
 
   const toggleModule = (m: string) => {
     const currentModules = form.allowedModules || [];
@@ -29,14 +28,6 @@ const ProductForm = ({ initialData, onCancel, onSubmit, onDelete }: any) => {
       ? currentModules.filter((i: string) => i !== m) 
       : [...currentModules, m];
     setForm({...form, allowedModules: next});
-  };
-
-  const formatIDRInput = (num: number) => {
-    return num.toLocaleString('id-ID');
-  };
-
-  const parseIDRInput = (str: string) => {
-    return Number(str.replace(/[^0-9]/g, '')) || 0;
   };
 
   const handlePriceChange = (newPrice: number) => {
@@ -57,6 +48,17 @@ const ProductForm = ({ initialData, onCancel, onSubmit, onDelete }: any) => {
     }
   };
 
+  const testMayarLink = () => {
+    const id = form.mayarProductId;
+    if (!id) return alert("Isi ID Mayar terlebih dahulu.");
+    
+    let url = id;
+    if (!id.startsWith('http')) {
+       url = id.startsWith('p-') ? `https://mayar.link/p/${id}` : `https://mayar.link/pl/${id}`;
+    }
+    window.open(url, '_blank');
+  };
+
   return (
     <form onSubmit={(e) => { e.preventDefault(); onSubmit(form); }} className="space-y-8">
       <div className="grid grid-cols-2 gap-6">
@@ -72,73 +74,68 @@ const ProductForm = ({ initialData, onCancel, onSubmit, onDelete }: any) => {
         </div>
         
         <div className="space-y-2">
-          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Harga Utama (Rp)</label>
+          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Harga (Rp)</label>
           <input 
-            type="text"
-            className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs focus:border-indigo-400 transition-all" 
-            value={formatIDRInput(form.price || 0)} 
-            onChange={e => handlePriceChange(parseIDRInput(e.target.value))} 
+            type="number"
+            className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs focus:border-indigo-400" 
+            value={form.price || 0} 
+            onChange={e => handlePriceChange(Number(e.target.value))} 
             required 
           />
         </div>
 
         <div className="space-y-2">
-          <label className="text-[10px] font-black text-indigo-500 uppercase tracking-widest ml-1">Set Diskon (%)</label>
+          <label className="text-[10px] font-black text-indigo-500 uppercase tracking-widest ml-1">Diskon (%)</label>
           <input 
             type="number"
             min="0"
             max="99"
-            className="w-full px-5 py-4 rounded-2xl bg-indigo-50/30 border border-indigo-100 outline-none font-bold text-xs text-indigo-600 focus:border-indigo-400 transition-all" 
-            placeholder="Misal: 20"
+            className="w-full px-5 py-4 rounded-2xl bg-indigo-50/30 border border-indigo-100 outline-none font-bold text-xs" 
             value={discount || ''} 
             onChange={e => handleDiscountChange(Number(e.target.value))} 
           />
         </div>
 
         <div className="space-y-2 col-span-2">
-          <label className="text-[10px] font-black text-rose-500 uppercase tracking-widest ml-1 italic">Harga Coret / Normal (Rp) - <span className="normal-case opacity-60">Terisi Otomatis</span></label>
+          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 italic">Harga Sebelum Diskon (Otomatis)</label>
           <input 
-            type="text"
-            className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs text-rose-500" 
-            value={formatIDRInput(form.originalPrice || 0)} 
-            onChange={e => setForm({...form, originalPrice: parseIDRInput(e.target.value)})} 
+            type="number"
+            className="w-full px-5 py-4 rounded-2xl bg-slate-100 border border-slate-200 outline-none font-bold text-xs text-rose-500" 
+            value={form.originalPrice || 0} 
+            readOnly
           />
         </div>
 
-        <div className="space-y-2 col-span-2 md:col-span-2">
+        <div className="space-y-2 col-span-2">
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Masa Aktif (Hari)</label>
           <input type="number" className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs" value={form.durationDays} onChange={e => setForm({...form, durationDays: Number(e.target.value)})} required />
         </div>
       </div>
 
       <div className="p-8 bg-blue-50/50 border-2 border-blue-100 rounded-[2.5rem] space-y-6">
-        <div className="flex items-center gap-4">
-          <span className="w-12 h-12 bg-blue-600 text-white rounded-2xl flex items-center justify-center text-xl font-black shadow-lg shadow-blue-200">M</span>
-          <div>
-            <h4 className="text-xs font-black text-blue-900 uppercase tracking-widest">Mayar.id Automation</h4>
-            <p className="text-[9px] font-bold text-blue-400 uppercase tracking-tighter">Sinkronisasi Transaksi & Aktivasi Akun Otomatis</p>
-          </div>
+        <div className="flex justify-between items-center">
+           <div className="flex items-center gap-4">
+              <span className="w-10 h-10 bg-blue-600 text-white rounded-xl flex items-center justify-center font-black">M</span>
+              <p className="text-xs font-black text-blue-900 uppercase">Mayar.id Link / ID</p>
+           </div>
+           <button type="button" onClick={testMayarLink} className="px-4 py-2 bg-white text-blue-600 border border-blue-200 rounded-xl text-[9px] font-black uppercase hover:bg-blue-50 transition-all">Test Link ↗</button>
         </div>
         
-        <div className="space-y-3">
-           <label className="text-[10px] font-black text-slate-600 uppercase tracking-widest ml-1">Mayar Link ID / Slug</label>
-           <input 
-             className="w-full px-6 py-4 rounded-2xl bg-white border-2 border-blue-200 outline-none font-mono text-xs text-blue-600 focus:border-blue-500 transition-all placeholder:text-slate-300" 
-             placeholder="Contoh: p-abcd123 atau slug-link-anda"
-             value={form.mayarProductId || ''} 
-             onChange={e => setForm({...form, mayarProductId: e.target.value})} 
-           />
-           
-           <div className="bg-white/60 p-4 rounded-xl border border-blue-100 space-y-2">
-              <p className="text-[9px] font-black text-blue-800 uppercase tracking-widest flex items-center gap-2">
-                <i className="bi bi-info-circle-fill"></i> CARA MENDAPATKAN ID:
-              </p>
-              <ul className="text-[10px] text-slate-500 space-y-1 font-medium italic list-disc ml-4">
-                <li>Buka Dashboard Mayar &gt; Pilih Link Pembayaran / Produk.</li>
-                <li>ID adalah <b>Slug</b> di akhir URL. (Misal: mayar.id/pl/<b>ABCDE</b> &rarr; Isikan <b>ABCDE</b>).</li>
-                <li>Atau jika menggunakan fitur "Product", gunakan ID yang tertera di URL edit produk.</li>
-              </ul>
-           </div>
+        <input 
+          className="w-full px-6 py-4 rounded-2xl bg-white border-2 border-blue-200 outline-none font-mono text-xs text-blue-600 focus:border-blue-500 transition-all" 
+          placeholder="ID Produk, Slug, atau URL Lengkap"
+          value={form.mayarProductId || ''} 
+          onChange={e => setForm({...form, mayarProductId: e.target.value})} 
+        />
+        
+        <div className="space-y-2">
+           <p className="text-[9px] font-black text-blue-800 uppercase tracking-widest">PANDUAN PEMILIHAN ID:</p>
+           <ul className="text-[10px] text-slate-500 space-y-1 font-medium italic">
+             <li>• <b>Payment Link</b>: Masukkan Slug (misal: <code>ABCDEF</code>) &rarr; Link: <code>mayar.link/pl/ABCDEF</code></li>
+             <li>• <b>Product</b>: Masukkan Slug (misal: <code>p-GXYZ</code>) &rarr; Link: <code>mayar.link/p/p-GXYZ</code></li>
+             <li>• <b>Headless/Custom</b>: Masukkan URL lengkap jika Anda menggunakan link khusus.</li>
+             <li className="text-rose-500 font-bold">• PENTING: Gunakan 'Internal ID' (UUID) jika ingin webhook lebih stabil.</li>
+           </ul>
         </div>
       </div>
 
@@ -155,7 +152,7 @@ const ProductForm = ({ initialData, onCancel, onSubmit, onDelete }: any) => {
                 onChange={e => {
                   const val = Number(e.target.value) || 'unlimited';
                   const currentLimits = form.limits || { dailyLogs: 10, skills: 10, projects: 5, cvExports: 1 };
-                  const nextLimits = { ...currentLimits, [k]: val } as SubscriptionProduct['limits'];
+                  const nextLimits = { ...currentLimits, [k]: val === 0 ? 'unlimited' : val } as SubscriptionProduct['limits'];
                   setForm({ ...form, limits: nextLimits });
                 }} 
               />
@@ -168,7 +165,7 @@ const ProductForm = ({ initialData, onCancel, onSubmit, onDelete }: any) => {
         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Modul Diizinkan</label>
         <div className="flex flex-wrap gap-2">
           {modules.map(m => (
-            <button key={m} type="button" onClick={() => toggleModule(m)} className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase transition-all border ${form.allowedModules?.includes(m) ? 'bg-indigo-600 border-indigo-600 text-white shadow-md' : 'bg-white border-slate-100 text-slate-400 hover:border-indigo-300'}`}>{m}</button>
+            <button key={m} type="button" onClick={() => toggleModule(m)} className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase transition-all border ${form.allowedModules?.includes(m) ? 'bg-indigo-600 border-indigo-600 text-white shadow-md' : 'bg-white border-slate-100 text-slate-400 hover:border-indigo-300'}`}>{m.replace('_', ' ')}</button>
           ))}
         </div>
       </div>
