@@ -1,6 +1,7 @@
 
-import React from 'react';
-import { SubscriptionProduct, SubscriptionPlan } from '../../types';
+import React, { useState, useEffect } from 'react';
+import { SubscriptionProduct, SubscriptionPlan, MayarConfig } from '../../types';
+import { getMayarConfig } from '../../services/firebase';
 
 interface UpgradeModalProps {
   products: SubscriptionProduct[];
@@ -9,14 +10,35 @@ interface UpgradeModalProps {
 }
 
 const UpgradeModal: React.FC<UpgradeModalProps> = ({ products, currentPlan, onClose }) => {
+  const [mayarConfig, setMayarConfig] = useState<MayarConfig | null>(null);
   const premiumProducts = products.filter(p => p.price > 0);
+
+  useEffect(() => {
+    getMayarConfig().then(res => {
+      if (res) setMayarConfig(res);
+    });
+  }, []);
 
   const handlePay = (mayarProdId?: string) => {
     if (!mayarProdId) {
       alert("ID Produk Mayar belum dikonfigurasi oleh admin.");
       return;
     }
-    window.open(`https://mayar.link/pl/${mayarProdId}`, '_blank');
+
+    let finalUrl = mayarProdId;
+    if (!mayarProdId.startsWith('http')) {
+       if (mayarConfig?.subdomain) {
+          finalUrl = `https://${mayarConfig.subdomain}.myr.id/plink/${mayarProdId}`;
+       } else {
+          if (mayarProdId.startsWith('p-')) {
+             finalUrl = `https://mayar.link/p/${mayarProdId}`;
+          } else {
+             finalUrl = `https://mayar.link/pl/${mayarProdId}`;
+          }
+       }
+    }
+
+    window.open(finalUrl, '_blank');
   };
 
   return (

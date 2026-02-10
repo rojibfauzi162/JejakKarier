@@ -1,6 +1,7 @@
 
-import React from 'react';
-import { AppData, SubscriptionProduct, AccountStatus, SubscriptionPlan } from '../../types';
+import React, { useState, useEffect } from 'react';
+import { AppData, SubscriptionProduct, AccountStatus, MayarConfig } from '../../types';
+import { getMayarConfig } from '../../services/firebase';
 
 interface BillingProps {
   data: AppData;
@@ -8,12 +9,19 @@ interface BillingProps {
 }
 
 const Billing: React.FC<BillingProps> = ({ data, products }) => {
+  const [mayarConfig, setMayarConfig] = useState<MayarConfig | null>(null);
   const expiryDate = data.expiryDate ? new Date(data.expiryDate) : null;
   const today = new Date();
   const daysRemaining = expiryDate ? Math.ceil((expiryDate.getTime() - today.getTime()) / (1000 * 3600 * 24)) : Infinity;
   const isExpired = daysRemaining <= 0;
 
   const currentProduct = products.find(p => p.tier === data.plan);
+
+  useEffect(() => {
+    getMayarConfig().then(res => {
+      if (res) setMayarConfig(res);
+    });
+  }, []);
 
   const formatIDR = (num: number) => {
     return num.toLocaleString('id-ID');
@@ -28,14 +36,18 @@ const Billing: React.FC<BillingProps> = ({ data, products }) => {
     // LOGIK SMART REDIRECT: Mendukung berbagai jenis ID Mayar
     let finalUrl = mayarProdId;
     
-    // Jika hanya slug, tentukan prefix berdasarkan format
+    // Jika hanya slug/id (bukan URL), rakit URL-nya
     if (!mayarProdId.startsWith('http')) {
-       if (mayarProdId.startsWith('p-')) {
-          // Format Produk Mayar (Headless/Product)
-          finalUrl = `https://mayar.link/p/${mayarProdId}`;
+       if (mayarConfig?.subdomain) {
+          // Format direct merchant link: https://subdomain.myr.id/plink/slug
+          finalUrl = `https://${mayarConfig.subdomain}.myr.id/plink/${mayarProdId}`;
        } else {
-          // Format Standard Payment Link
-          finalUrl = `https://mayar.link/pl/${mayarProdId}`;
+          // Fallback ke standard redirector mayar.link
+          if (mayarProdId.startsWith('p-')) {
+             finalUrl = `https://mayar.link/p/${mayarProdId}`;
+          } else {
+             finalUrl = `https://mayar.link/pl/${mayarProdId}`;
+          }
        }
     }
 

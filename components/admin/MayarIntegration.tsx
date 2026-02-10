@@ -16,6 +16,7 @@ const WEBHOOK_EVENTS = [
 const MayarIntegration: React.FC = () => {
   const [config, setConfig] = useState<MayarConfig>({ 
     apiKey: '', 
+    subdomain: '',
     webhookSecret: '',
     enabledEvents: ['payment.success'],
     environment: 'sandbox'
@@ -58,7 +59,6 @@ const MayarIntegration: React.FC = () => {
     
     setTesting(true);
     try {
-      // Menggunakan endpoint dari curl yang diberikan user untuk testing
       const response = await fetch('https://api.mayar.id/hl/v1/product?page=1&pageSize=1', {
         method: 'GET',
         headers: {
@@ -77,7 +77,7 @@ const MayarIntegration: React.FC = () => {
     } catch (e: any) {
       alert(`❌ ERROR SISTEM!\n\nTidak dapat menghubungi API Mayar.\n${e.message}\n\nCatatan: Pastikan browser Anda tidak memblokir request karena CORS (Gunakan Extension CORS Unblock jika testing di localhost).`);
     } finally {
-      setTesting(true); // Biarkan tombol tetap menyala sebentar
+      setTesting(true);
       setTimeout(() => setTesting(false), 500);
     }
   };
@@ -143,6 +143,21 @@ const MayarIntegration: React.FC = () => {
                   required
                  />
               </div>
+            </div>
+
+            <div className="space-y-2">
+               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Subdomain Mayar Anda</label>
+               <div className="flex items-center gap-2">
+                  <input 
+                    type="text" 
+                    className="flex-1 px-6 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs focus:border-blue-400 transition-all" 
+                    placeholder="Contoh: drevenlight"
+                    value={config.subdomain || ''}
+                    onChange={e => setConfig({...config, subdomain: e.target.value.trim().toLowerCase()})}
+                  />
+                  <span className="text-sm font-black text-slate-400">.myr.id</span>
+               </div>
+               <p className="text-[9px] text-slate-400 italic mt-1 ml-1">Digunakan untuk merangkai link pembayaran (misal: drevenlight.myr.id/plink/...)</p>
             </div>
 
             <div className="space-y-6">

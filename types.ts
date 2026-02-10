@@ -354,6 +354,7 @@ export interface LandingPageConfig {
 
 export interface MayarConfig {
   apiKey: string;
+  subdomain?: string;
   webhookSecret?: string;
   enabledEvents?: string[];
   environment: 'sandbox' | 'production';
