@@ -1,49 +1,78 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { SubscriptionProduct, LandingPageConfig } from '../types';
-import { getLandingPageConfig } from '../services/firebase';
+import { SubscriptionProduct, LandingPageConfig, MayarConfig } from '../types';
+import { getLandingPageConfig, getMayarConfig, getProductsCatalog } from '../services/firebase';
 
 interface LandingPageProps {
   onStart: () => void;
   onLogin: () => void;
   onShowLegal?: (type: 'privacy' | 'terms') => void;
+  onBuyPlan?: (plan: SubscriptionProduct) => void;
   products?: SubscriptionProduct[];
 }
 
-const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal, products }) => {
+const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal, onBuyPlan, products }) => {
   // Logic: Diubah ke true agar semua fitur tampil otomatis tanpa interaksi user
   const [showAllFeatures, setShowAllFeatures] = useState(true);
   const [landingConfig, setLandingConfig] = useState<LandingPageConfig | null>(null);
+  const [mayarConfig, setMayarConfig] = useState<MayarConfig | null>(null);
   const [activeVideo, setActiveVideo] = useState<string | null>(null);
 
-  // LOGIC: Sync all plans from admin data if available
-  const monthlyPlan = useMemo(() => products?.find(p => p.durationDays >= 25 && p.durationDays <= 35 && p.price > 0), [products]);
-  const quarterlyPlan = useMemo(() => products?.find(p => p.durationDays >= 85 && p.durationDays <= 100 && p.price > 0), [products]);
-  const annualPlan = useMemo(() => products?.find(p => p.durationDays >= 350 && p.price > 0), [products]);
-
-  // Load landing page config for video links and dashboard images
+  // LOGIC: Ambil konfigurasi landing page dari database Firestore
   useEffect(() => {
     getLandingPageConfig().then(res => {
       if (res) setLandingConfig(res);
     });
+    getMayarConfig().then(res => {
+       if (res) setMayarConfig(res);
+    });
   }, []);
 
-  const getDiscountLabel = (plan: any, fallback: string) => {
-    if (plan && plan.originalPrice && plan.originalPrice > plan.price) {
-      const pct = Math.round(((plan.originalPrice - plan.price) / plan.originalPrice) * 100);
-      const nominal = (plan.originalPrice - plan.price).toLocaleString('id-ID');
-      // Tampilkan nominal diskon untuk menarik minat
-      return `Hemat Rp ${nominal} (${pct}%)`;
+  // LOGIC: Filter produk berdasarkan status Aktif dan Tampilkan di Landing Page yang diatur oleh Super Admin
+  // Data diambil dari prop 'products' yang sudah dikelola oleh App.tsx (sinkron dengan Firestore)
+  const paidProducts = useMemo(() => {
+    const list = products || [];
+    
+    // ATURAN SINKRONISASI: Hanya ambil yang AKTIF dan ditandai TAMPIL DI LANDING oleh Super Admin di Product Matrix
+    return list
+      .filter(p => p.isActive !== false && p.showOnLanding === true) 
+      .sort((a, b) => a.price - b.price);
+  }, [products]);
+
+  const formatDurationLabel = (days: number) => {
+    if (days >= 3650) return 'Selamanya';
+    if (days >= 365) return `${Math.floor(days / 365)} Tahun`;
+    if (days >= 30) return `${Math.floor(days / 30)} Bulan`;
+    return `${days} Hari`;
+  };
+
+  const handlePay = (plan?: SubscriptionProduct) => {
+    if (!plan) {
+      alert("Produk ini belum dikonfigurasi di Admin Panel. Silakan hubungi administrator.");
+      return;
     }
-    return fallback;
+
+    if (onBuyPlan) {
+      onBuyPlan(plan);
+    } else {
+      let finalUrl = plan.mayarProductId || plan.id;
+      if (!finalUrl.startsWith('http')) {
+         if (mayarConfig?.subdomain) {
+            finalUrl = `https://${mayarConfig.subdomain}.myr.id/plink/${finalUrl}`;
+         } else {
+            finalUrl = `https://mayar.link/pl/${finalUrl}`;
+         }
+      }
+      window.open(finalUrl, '_blank');
+    }
   };
 
-  const getPriceFormatted = (plan: any, fallback: string) => {
-    return plan ? plan.price.toLocaleString('id-ID') : fallback;
-  };
-
-  const getOriginalPriceFormatted = (plan: any, fallback: string) => {
-    return plan && plan.originalPrice ? plan.originalPrice.toLocaleString('id-ID') : fallback;
+  const getDiscountLabel = (plan: SubscriptionProduct) => {
+    if (plan.originalPrice && plan.originalPrice > plan.price) {
+      const pct = Math.round(((plan.originalPrice - plan.price) / plan.originalPrice) * 100);
+      return `Hemat ${pct}%`;
+    }
+    return "Promo Terbatas";
   };
 
   // CATEGORIZED FEATURES DATA
@@ -59,7 +88,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
         { id: 'ai-reflection', icon: "bi-magic", title: "AI Work Reflection", desc: "Sistem cerdas yang menganalisis pola refleksi Anda untuk memberikan insight emosional dan mental." },
         { id: 'calendar', icon: "bi-calendar3", title: "Career Calendar", desc: "Jadwalkan interview, tenggat sertifikasi, dan evaluasi berkala dalam satu kalender karir terintegrasi." },
         { id: 'perf-insight', icon: "bi-graph-up-arrow", title: "Performance Insights", desc: "Visualisasi tren produktivitas berkala yang memudahkan Anda saat sesi performance review tahunan." },
-        { id: 'steps-growth', icon: "bi-check2-square", title: "Steps of Growth", desc: "Sistem To-Do list cerdas yang memastikan setiap langkah kecil Anda selaras dengan strategi karir jangka panjang." },
+        { id: 'daily-todo', icon: "bi-check2-square", title: "Steps of Growth", desc: "Sistem To-Do list cerdas yang memastikan setiap langkah kecil Anda selaras dengan strategi karir jangka panjang." },
       ]
     },
     {
@@ -89,7 +118,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
     }
   ];
 
-  // Reliable placeholder images for system mockup
   const defaultDesktopImg = "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2426&auto=format&fit=crop";
   const defaultMobileImg = "https://images.unsplash.com/photo-1551650975-87deedd944c3?q=80&w=1974&auto=format&fit=crop";
 
@@ -191,7 +219,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
                 icon="bi-graph-down"
               />
               <PainPointCard 
-                title="Lupa Detail Pencapaian Sendiri" 
+                title="Lupa Detail Pencapaian Own Record" 
                 desc="Saat disuruh menceritakan kontribusi di depan HR atau atasan, pikiran mendadak 'blank' karena tidak ada catatan skill yang tervalidasi." 
                 icon="bi-journal-x"
               />
@@ -223,23 +251,21 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
         </div>
       </section>
 
-      {/* INTRO SYSTEM SECTION - FIXED SYNCING WITH ADMIN CONFIG */}
+      {/* INTRO SYSTEM SECTION */}
       <section className="py-32 bg-white text-center space-y-16 relative overflow-hidden">
         <div className="max-w-4xl mx-auto px-6 space-y-8 relative z-10">
           <div className="inline-block px-4 py-1.5 bg-slate-900 text-white rounded-xl text-[9px] font-black uppercase tracking-[0.3em]">Kenali Teman Karir Baru Anda</div>
           <h2 className="text-4xl lg:text-6xl font-black text-slate-900 uppercase tracking-tight leading-none">Kenalkan, FokusKarir.</h2>
           <p className="text-lg lg:text-2xl text-slate-600 font-medium leading-relaxed italic px-4">
-            "Ngerasa kerjaan berantakan? Tenang, kami bantu beresin! Di FokusKarir, semua usaha harianmu bakal kami sulap jadi portofolio keren yang bikin karier makin melesat. Gak ada lagi progres yang gak kelihatan!"
+            "Semua usaha harianmu bakal kami sulap jadi portofolio keren yang bikin karier makin melesat. Gak ada lagi progres yang gak kelihatan!"
           </p>
           <div className="w-24 h-1.5 bg-indigo-600 mx-auto rounded-full"></div>
         </div>
 
-        {/* SYSTEM MOCKUP / DASHBOARD IMAGES FIXED LOGIC TO SYNC WITH ADMIN */}
+        {/* SYSTEM MOCKUP / DASHBOARD IMAGES */}
         <div className="max-w-6xl mx-auto px-6 animate-in slide-in-from-bottom-12 duration-1000">
-           {/* Laptop Frame Simulation */}
            <div className="relative p-2 bg-slate-200 rounded-[3rem] shadow-inner border-2 border-slate-300">
               <div className="bg-white rounded-[2.5rem] overflow-hidden shadow-2xl border border-slate-100 min-h-[300px] lg:min-h-[500px] relative">
-                 {/* Desktop Screenshot - Forced Key Update for Sync */}
                  <img 
                     key={landingConfig?.desktopDashboardImg || 'default-desktop'}
                     src={landingConfig?.desktopDashboardImg || defaultDesktopImg} 
@@ -249,8 +275,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
                       e.target.src = defaultDesktopImg;
                     }}
                  />
-                 
-                 {/* Overlapping Mobile Screenshot - visible on Large screen for premium feel */}
                  <div className="hidden lg:block absolute bottom-10 right-10 w-[240px] p-2 bg-slate-900 rounded-[3rem] shadow-[0_40px_80px_-20px_rgba(0,0,0,0.5)] border-4 border-slate-800 animate-in slide-in-from-bottom-10 duration-1000 delay-500">
                     <div className="bg-white rounded-[2.5rem] overflow-hidden aspect-[9/19]">
                         <img 
@@ -266,104 +290,32 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
                  </div>
               </div>
            </div>
-           
-           {/* Standalone Mobile View for Smaller Screens */}
-           <div className="lg:hidden mt-12 relative max-w-[280px] mx-auto p-1.5 bg-slate-200 rounded-[2.5rem] shadow-inner border border-slate-300">
-              <div className="bg-white rounded-[2.2rem] overflow-hidden shadow-2xl border border-slate-100 aspect-[9/19]">
-                 <img 
-                    key={landingConfig?.mobileDashboardImg || 'default-mobile-sm'}
-                    src={landingConfig?.mobileDashboardImg || defaultMobileImg} 
-                    alt="FokusKarir Hub Mobile" 
-                    className="w-full h-full object-cover object-top"
-                    onError={(e: any) => {
-                      e.target.src = defaultMobileImg;
-                    }}
-                 />
-              </div>
-           </div>
-        </div>
-        <div className="absolute top-1/2 left-0 w-full h-px bg-slate-100 -z-10"></div>
-      </section>
-
-      {/* GAIN SECTION */}
-      <section className="py-24 bg-emerald-50/20">
-        <div className="max-w-7xl mx-auto px-6 lg:px-12">
-          <div className="text-center max-w-3xl mx-auto space-y-6 mb-16">
-            <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-emerald-600">The Solution</h2>
-            <h3 className="text-3xl lg:text-5xl font-black text-slate-900 uppercase tracking-tight leading-tight">Bangun Masa Depan Berbasis Data</h3>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <GainCard 
-              title="Laporan Otomatis & Terstruktur" 
-              desc="Lupakan rekap manual yang melelahkan. Dapatkan laporan harian hingga bulanan yang tersaji indah dan siap dipresentasikan kapan saja." 
-              icon="bi-lightning-charge-fill"
-            />
-            <GainCard 
-              title="Bukti Kontribusi Terpercaya" 
-              desc="Setiap kontribusi kecil tercatat rapi sebagai bukti kuat kualifikasi profesional Anda, memudahkan Anda saat interview atau nego gaji." 
-              icon="bi-shield-check"
-            />
-            <GainCard 
-              title="Ekosistem Karir Terintegrasi" 
-              desc="Satu tempat untuk semuanya: Agenda, CV Digital, hingga AI Insight. Bangun cerita utuh karier Anda tanpa terpencar di banyak aplikasi." 
-              icon="bi-grid-1x2-fill"
-            />
-          </div>
         </div>
       </section>
 
-      {/* INTRO TO FEATURES */}
-      <section className="pt-24 bg-white">
-        <div className="max-w-7xl mx-auto px-6 lg:px-12 text-center space-y-6">
-          <div className="inline-block px-4 py-1.5 bg-indigo-600 text-white rounded-xl text-[9px] font-black uppercase tracking-[0.3em] shadow-lg shadow-indigo-100">
-            What We Do Best
-          </div>
-          <h2 className="text-4xl lg:text-6xl font-black tracking-tighter text-slate-900 leading-none uppercase">
-            Satu Platform, <br className="hidden md:block" /> <span className="text-indigo-600">Akselerasi Tanpa Batas.</span>
-          </h2>
-          <p className="text-base lg:text-lg text-slate-500 font-medium max-w-2xl mx-auto italic">
-            "Kami mengintegrasikan dokumentasi performa harian dengan sistem pintar untuk merancang masa depan kualifikasi Anda."
-          </p>
-        </div>
-      </section>
-
-      {/* FEATURE SECTIONS PER CATEGORY */}
+      {/* FEATURE SECTIONS */}
       {featureCategories.map((cat, idx) => (
         <section key={cat.id} className={`py-24 ${cat.bg} relative overflow-hidden`}>
-           {idx % 2 !== 0 && (
-             <div className="absolute inset-0 z-0 pointer-events-none opacity-40" style={{ backgroundImage: 'radial-gradient(#6366f122 1px, transparent 1px)', backgroundSize: '32px 32px' }}></div>
-           )}
-           
            <div className="max-w-7xl mx-auto px-6 lg:px-12 space-y-16 relative z-10">
               <div className="px-2 border-l-4 border-indigo-600 pl-6 animate-in slide-in-from-left duration-700">
                  <h3 className="text-2xl lg:text-3xl font-black text-slate-900 uppercase tracking-tight">{cat.name}</h3>
                  <p className="text-sm lg:text-base text-slate-500 font-bold uppercase mt-1 tracking-wide">{cat.desc}</p>
               </div>
-              
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                  {cat.features.map((f) => (
-                   <div 
-                     key={f.id} 
-                     className={`bg-white p-8 lg:p-10 rounded-[3rem] border border-slate-100 shadow-sm hover:shadow-2xl transition-all duration-500 group flex flex-col justify-between hover:-translate-y-2`}
-                   >
+                   <div key={f.id} className="bg-white p-8 lg:p-10 rounded-[3rem] border border-slate-100 shadow-sm hover:shadow-2xl transition-all duration-500 group flex flex-col justify-between hover:-translate-y-2">
                       <div>
-                         <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-2xl mb-8 group-hover:scale-110 transition-transform shadow-inner bg-indigo-50 text-indigo-600 border border-indigo-100`}>
+                         <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl mb-8 group-hover:scale-110 transition-transform shadow-inner bg-indigo-50 text-indigo-600 border border-indigo-100">
                             <i className={`bi ${f.icon}`}></i>
                          </div>
                          <h4 className="text-base lg:text-lg font-black text-slate-900 uppercase tracking-tight mb-4 group-hover:text-indigo-600 transition-colors">{f.title}</h4>
-                         <p className="text-sm lg:text-base text-slate-500 font-medium leading-relaxed mb-10 italic">
-                            "{f.desc}"
-                         </p>
+                         <p className="text-sm lg:text-base text-slate-500 font-medium leading-relaxed mb-10 italic">"{f.desc}"</p>
                       </div>
-                      
-                      <button 
-                        onClick={() => {
+                      <button onClick={() => {
                            const url = landingConfig?.videoDemoLinks?.[f.id];
                            if(url) setActiveVideo(url);
                            else alert("Video demo untuk fitur " + f.title + " sedang disiapkan oleh Admin! 🎬");
-                        }}
-                        className="text-[9px] font-black text-indigo-600 uppercase tracking-[0.2em] hover:text-indigo-800 hover:underline transition-all flex items-center gap-2 group/link"
-                      >
+                        }} className="text-[9px] font-black text-indigo-600 uppercase tracking-[0.2em] hover:text-indigo-800 hover:underline transition-all flex items-center gap-2 group/link">
                          <i className="bi bi-play-fill"></i> Lihat Demo Fitur <span className="group-hover/link:translate-x-1 transition-transform">→</span>
                       </button>
                    </div>
@@ -373,133 +325,106 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
         </section>
       ))}
 
-      {/* WHY CHOOSE US SECTION */}
-      <section className="relative pt-24 pb-32">
-        <div className="absolute top-0 left-0 right-0 h-[60%] bg-gradient-to-br from-slate-900 to-indigo-950 z-0"></div>
-        <div className="max-w-7xl mx-auto px-6 lg:px-12 relative z-10">
-          <div className="text-center mb-16 space-y-4">
-            <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-indigo-400">Keunggulan Kami</h2>
-            <h3 className="text-3xl lg:text-5xl font-black text-white uppercase tracking-tight leading-tight">Kenapa Memilih FokusKarir?</h3>
+      {/* TESTIMONIAL SECTION */}
+      <section className="py-24 bg-slate-50 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6 lg:px-12 space-y-16">
+          <div className="text-center max-w-3xl mx-auto space-y-4">
+             <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-indigo-600">Apa Kata Mereka?</h2>
+             <h3 className="text-3xl lg:text-4xl font-black tracking-tight text-slate-900 uppercase leading-none">Testimoni Profesional</h3>
+             <p className="text-slate-500 font-medium italic">Ribuan profesional telah membuktikan bagaimana data merubah perjalanan karir mereka.</p>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <WhyCard 
-              icon="bi-lightning-charge" 
-              title="Easy to use" 
-              desc="Antarmuka intuitif yang dirancang khusus untuk profesional sibuk. Fokus pada input data, bukan navigasi yang rumit." 
-            />
-            <WhyCard 
-              icon="bi-clock-history" 
-              title="Quick setup" 
-              desc="Hanya butuh 5 menit untuk mulai mendokumentasikan karir Anda. Impor data profil dan biarkan AI kami melakukan sisanya." 
-            />
-            <WhyCard 
-              icon="bi-people" 
-              title="Multi-user support" 
-              desc="Gunakan satu akun untuk berbagai device atau kelola tim profesional Anda dengan dashboard kolaborasi yang kuat." 
-            />
+             <TestimonialCard 
+                name="Budi Santoso" 
+                role="Tax Manager" 
+                quote="Dulu rekap laporan bulanan bikin saya lembur sampai 3 jam. Sejak pakai FokusKarir, semua output harian terekam otomatis. Nego bonus jadi jauh lebih mudah karena ada datanya!" 
+                avatar="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200&auto=format&fit=crop"
+             />
+             <TestimonialCard 
+                name="Siska Amelia" 
+                role="Senior Associate" 
+                quote="AI Strategist-nya gila banget! Dia kasih tau skill apa yang saya kurang buat naik ke level VP. Sekarang roadmap belajar saya jadi lebih jelas dan nggak asal ikut kursus lagi." 
+                avatar="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=200&auto=format&fit=crop"
+             />
+             <TestimonialCard 
+                name="Ahmad Fauzi" 
+                role="Software Engineer" 
+                quote="Dulu CV saya berantakan, sekarang tinggal sekali klik langsung jadi PDF profesional. Landing page portfolio digitalnya juga bikin recruiter kagum waktu interview." 
+                avatar="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=200&auto=format&fit=crop"
+             />
           </div>
         </div>
       </section>
 
-      {/* VIDEO MODAL POPUP */}
-      {activeVideo && (
-        <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 lg:p-12 animate-in fade-in duration-300">
-           <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-sm" onClick={() => setActiveVideo(null)}></div>
-           <div className="relative w-full max-w-5xl aspect-video bg-black rounded-[3rem] overflow-hidden shadow-2xl animate-in zoom-in duration-300 border-4 border-white/10">
-              <button 
-                onClick={() => setActiveVideo(null)} 
-                className="absolute top-6 right-6 w-12 h-12 bg-white/10 hover:bg-white/20 text-white rounded-full flex items-center justify-center z-50 text-xl font-black transition-all backdrop-blur-md"
-              >
-                 ✕
-              </button>
-              <iframe 
-                 src={`${activeVideo}${activeVideo.includes('?') ? '&' : '?'}autoplay=1`}
-                 title="Feature Demo Video"
-                 className="w-full h-full border-none"
-                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                 allowFullScreen
-              ></iframe>
-           </div>
-        </div>
-      )}
-
-      {/* PRICING SECTION */}
+      {/* PRICING SECTION - SINKRON DENGAN ADMIN */}
       <section className="py-20 px-6 lg:px-12 max-w-7xl mx-auto overflow-hidden">
         <div className="text-center max-w-2xl mx-auto space-y-4 mb-16">
           <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-indigo-600">Investasi Karir</h2>
           <h3 className="text-3xl lg:text-4xl font-black tracking-tight text-slate-900 leading-none uppercase">Pilih Paket Masa Depan Anda.</h3>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 relative items-center">
-          <PricingCard 
-            title="Bulanan" 
-            duration="1 Bulan" 
-            originalPrice={getOriginalPriceFormatted(monthlyPlan, "49.000")}
-            price={getPriceFormatted(monthlyPlan, "39.000")} 
-            discount={getDiscountLabel(monthlyPlan, "Hemat 20%")}
-            features={["Unlimited Daily Logs", "Skill Matrix Mapping", "Basic Performance Chart", "Reminder Harian"]}
-            cta="Mulai Berprogres"
-            onStart={onStart}
-          />
-          
-          <PricingCard 
-            title="3 Bulan" 
-            duration="90 Hari" 
-            originalPrice={getOriginalPriceFormatted(quarterlyPlan, "165.000")}
-            price={getPriceFormatted(quarterlyPlan, "99.000")} 
-            discount={getDiscountLabel(quarterlyPlan, "Hemat 40%")}
-            features={["Semua fitur Bulanan", "AI Career Insight", "Strategy Roadmap v2.0", "Priority Support"]}
-            cta="Mulai Berprogres"
-            onStart={onStart}
-          />
-
-          <PricingCard 
-            title="Tahunan" 
-            duration="1 Tahun" 
-            label="Paling Hemat"
-            originalPrice={getOriginalPriceFormatted(annualPlan, "499.000")}
-            price={getPriceFormatted(annualPlan, "149.000")} 
-            discount={getDiscountLabel(annualPlan, "Hemat 70%")}
-            breakdown="Hanya Rp 12rb-an / bulan"
-            features={["Akses Unlimited 1 Tahun", "Personal Landing Page Link", "E-Book Roadmap Karir", "Annual Performance Report"]}
-            highlight={true}
-            cta="Mulai Berprogres"
-            onStart={onStart}
-          />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 items-center">
+          {paidProducts.length > 0 ? (
+            paidProducts.map((p) => {
+              const monthlyPrice = p.durationDays >= 30 ? Math.round(p.price / (p.durationDays / 30)) : null;
+              
+              // LOGIC LABEL: Diganti menjadi "Paling Hemat" untuk item yang di-highlight
+              let badgeLabel = p.isHighlighted ? "Paling Hemat" : undefined;
+              
+              return (
+                <PricingCard 
+                  key={p.id}
+                  title={p.name} 
+                  duration={formatDurationLabel(p.durationDays)} 
+                  label={badgeLabel}
+                  originalPrice={p.originalPrice ? p.originalPrice.toLocaleString('id-ID') : undefined}
+                  price={p.price.toLocaleString('id-ID')} 
+                  monthlyEquivalent={p.durationDays >= 365 ? monthlyPrice : null} // Hanya untuk paket 1 tahun
+                  discount={getDiscountLabel(p)}
+                  limits={p.limits}
+                  moduleCount={p.allowedModules.length}
+                  features={p.allowedModules.map(m => m.replace('_', ' ').toUpperCase())}
+                  cta="Daftar & Checkout"
+                  onPay={() => handlePay(p)}
+                  highlight={p.isHighlighted} 
+                />
+              );
+            })
+          ) : (
+            <div className="col-span-full py-24 text-center bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-200">
+               <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm text-2xl">📦</div>
+               <p className="text-slate-400 font-black uppercase tracking-[0.3em] text-xs">Katalog Produk Kosong</p>
+               <p className="text-slate-300 font-bold text-[10px] uppercase tracking-widest mt-2">Silakan tambahkan produk baru di Admin Panel untuk mengaktifkan section ini.</p>
+            </div>
+          )}
         </div>
-        <p className="text-center text-[9px] font-black text-slate-400 uppercase tracking-widest mt-12 animate-pulse">🔥 Penawaran terbatas: Harga promo khusus bulan ini!</p>
-      </section>
 
-      {/* TESTIMONIALS */}
-      <section className="py-20 bg-slate-950 text-white relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-6 lg:px-12 relative z-10 space-y-12">
-           <div className="flex flex-col md:flex-row justify-between items-end gap-6">
-              <div>
-                <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-indigo-400 mb-4">Suara Profesional</h2>
-                <h3 className="text-3xl lg:text-4xl font-black tracking-tight uppercase leading-none">Kata Mereka Tentang FokusKarir.</h3>
+        {/* SECTION: PREMIUM INCLUSIONS - MENAMPILKAN SELURUH FITUR UNGGULAN */}
+        <div className="mt-24 p-10 lg:p-16 bg-slate-900 rounded-[4rem] text-white shadow-2xl relative overflow-hidden animate-in fade-in duration-1000">
+           <div className="relative z-10">
+              <div className="text-center max-w-3xl mx-auto space-y-6 mb-16">
+                 <h3 className="text-2xl lg:text-4xl font-black uppercase tracking-tight">Semua Paket Premium Termasuk</h3>
+                 <p className="text-slate-400 font-medium italic">Infrastruktur lengkap untuk mengakselerasi kualifikasi profesional Anda tanpa batasan teknis.</p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-12 gap-x-12">
+                 <InclusionItem title="AI Career Strategist" desc="Analisis gap skill mendalam dan rekomendasi roadmap karier otomatis berbasis data pasar terkini." icon="bi-cpu-fill" />
+                 <InclusionItem title="Unlimited Work Tracking" desc="Dokumentasikan setiap aktivitas, output, dan metrik harian tanpa batas kapasitas penyimpanan." icon="bi-infinity" />
+                 <InclusionItem title="Digital Presence Hub" desc="Ubah database karier Anda menjadi landing page portfolio publik yang elegan untuk branding." icon="bi-globe-asia-australia" />
+                 <InclusionItem title="AI Performance Insight" desc="Laporan performa cerdas mingguan dan bulanan yang siap dipresentasikan untuk kenaikan gaji/jabatan." icon="bi-bar-chart-fill" />
+                 <InclusionItem title="One-Click CV Generator" desc="Ekspor data karier Anda menjadi CV PDF profesional dengan berbagai pilihan template modern." icon="bi-file-earmark-pdf-fill" />
+                 <InclusionItem title="Networking & CRM" desc="Kelola database relasi profesional, mentor, dan HR dalam satu tempat yang aman dan privat." icon="bi-people-fill" />
+                 <InclusionItem title="Skill Matrix Dashboard" desc="Visualisasikan penguasaan kompetensi Anda dalam radar chart untuk melihat area pengembangan." icon="bi-bullseye" />
+                 <InclusionItem title="Career Roadmap Tracker" desc="Petakan perjalanan karier Anda dari posisi saat ini hingga jabatan impian dengan target waktu." icon="bi-rocket-takeoff-fill" />
+                 <InclusionItem title="Job Hunt Hub" desc="Pantau status lamaran kerja Anda secara real-time di berbagai perusahaan dalam satu dashboard." icon="bi-briefcase-fill" />
+                 <InclusionItem title="Work Reflection AI" desc="Analisis psikologis harian untuk mendeteksi tingkat kebahagiaan, energi, dan potensi burnout." icon="bi-magic" />
+                 <InclusionItem title="Monthly Strategic Review" desc="Evaluasi bulanan terstruktur untuk memastikan setiap langkah Anda selaras dengan visi karier." icon="bi-calendar-check-fill" />
+                 <InclusionItem title="Career Calendar" desc="Jadwalkan interview, tenggat sertifikasi, dan evaluasi dalam kalender karir yang terintegrasi." icon="bi-calendar3" />
               </div>
            </div>
-
-           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <TestimonialCard 
-                name="Andini" 
-                role="HR Manager, Tech Industry" 
-                quote="FokusKarir membantu tim saya memvalidasi kontribusi individu dengan data objektif saat performance review. Sangat profesional!" 
-              />
-              <TestimonialCard 
-                name="Budi" 
-                role="Senior Software Engineer" 
-                quote="Saya tidak lagi bingung saat harus update CV mendadak. Semua rekam jejak pekerjaan saya sudah rapi terdokumentasi di sini." 
-              />
-              <TestimonialCard 
-                name="Siti" 
-                role="Creative Freelancer" 
-                quote="Fitur Digital Presence Page-nya sangat menolong saat pitching ke klien baru. Kesannya jauh lebih berkelas dibanding PDF biasa." 
-              />
-           </div>
+           <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-600/10 rounded-full blur-[100px] -mr-48 -mt-48"></div>
+           <div className="absolute bottom-0 left-0 w-96 h-96 bg-blue-600/10 rounded-full blur-[100px] -ml-48 -mb-48"></div>
         </div>
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-[120px] -mr-48 -mt-48"></div>
       </section>
 
       {/* FOOTER */}
@@ -511,33 +436,34 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
           </div>
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">© 2025 Intelligent Performance System. Hak Cipta Dilindungi.</p>
           <div className="flex gap-6">
-             <button 
-                onClick={(e) => { e.preventDefault(); onShowLegal?.('privacy'); }}
-                className="text-[10px] font-black uppercase text-slate-400 hover:text-slate-900 transition-colors"
-             >
-                Privacy
-             </button>
-             <button 
-                onClick={(e) => { e.preventDefault(); onShowLegal?.('terms'); }}
-                className="text-[10px] font-black uppercase text-slate-400 hover:text-slate-900 transition-colors"
-             >
-                Terms
-             </button>
-             <button className="text-[10px] font-black uppercase text-slate-400 hover:text-slate-900 transition-colors">Contact</button>
+             <button onClick={() => onShowLegal?.('privacy')} className="text-[10px] font-black uppercase text-slate-400 hover:text-slate-900 transition-colors">Privacy</button>
+             <button onClick={() => onShowLegal?.('terms')} className="text-[10px] font-black uppercase text-slate-400 hover:text-slate-900 transition-colors">Terms</button>
           </div>
         </div>
       </footer>
+
+      {activeVideo && (
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 lg:p-12 animate-in fade-in duration-300">
+           <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-sm" onClick={() => setActiveVideo(null)}></div>
+           <div className="relative w-full max-w-5xl aspect-video bg-black rounded-[3rem] overflow-hidden shadow-2xl animate-in zoom-in duration-300 border-4 border-white/10">
+              <button onClick={() => setActiveVideo(null)} className="absolute top-6 right-6 w-12 h-12 bg-white/10 hover:bg-white/20 text-white rounded-full flex items-center justify-center z-50 text-xl font-black transition-all backdrop-blur-md">✕</button>
+              <iframe src={`${activeVideo}${activeVideo.includes('?') ? '&' : '?'}autoplay=1`} title="Feature Demo Video" className="w-full h-full border-none" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>
+           </div>
+        </div>
+      )}
     </div>
   );
 };
 
-const WhyCard = ({ icon, title, desc }: any) => (
-  <div className="bg-white p-10 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-slate-100 flex flex-col items-center text-center transition-all duration-500 hover:-translate-y-2 group">
-    <div className="w-16 h-16 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-2xl mb-8 border border-indigo-100 group-hover:scale-110 transition-transform">
+const InclusionItem = ({ icon, title, desc }: any) => (
+  <div className="flex gap-6">
+    <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-xl text-indigo-400 shrink-0 shadow-inner group hover:scale-110 transition-transform">
       <i className={`bi ${icon}`}></i>
     </div>
-    <h4 className="text-xl font-black text-slate-900 uppercase tracking-tight mb-4">{title}</h4>
-    <p className="text-sm text-slate-500 leading-relaxed font-medium">"{desc}"</p>
+    <div className="space-y-2">
+      <h4 className="text-sm font-black uppercase tracking-tight text-white leading-none">{title}</h4>
+      <p className="text-xs text-slate-400 leading-relaxed font-medium">{desc}</p>
+    </div>
   </div>
 );
 
@@ -551,20 +477,23 @@ const PainPointCard = ({ icon, title, desc }: any) => (
   </div>
 );
 
-const GainCard = ({ icon, title, desc }: any) => (
-  <div className="bg-white p-8 rounded-[2rem] border border-emerald-100 shadow-sm transition-all duration-500 hover:shadow-lg flex flex-col items-start text-left group">
-    <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl mb-6 border border-emerald-100 group-hover:scale-110 transition-transform">
-      <i className={`bi ${icon}`}></i>
+const TestimonialCard = ({ name, role, quote, avatar }: any) => (
+  <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm transition-all duration-500 hover:shadow-xl hover:-translate-y-2 group">
+    <div className="flex items-center gap-4 mb-6">
+       <img src={avatar} alt={name} className="w-12 h-12 rounded-full object-cover border-2 border-indigo-100" />
+       <div>
+          <h4 className="font-black text-slate-900 text-sm uppercase tracking-tight">{name}</h4>
+          <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest">{role}</p>
+       </div>
     </div>
-    <h4 className="text-lg font-black text-slate-800 uppercase tracking-tight mb-3">{title}</h4>
-    <p className="text-sm lg:text-base text-slate-500 leading-relaxed font-medium">{desc}</p>
+    <p className="text-sm text-slate-500 font-medium leading-relaxed italic">"{quote}"</p>
   </div>
 );
 
-const PricingCard = ({ title, duration, originalPrice, price, discount, features, highlight, cta, onStart, breakdown, label }: any) => (
+const PricingCard = ({ title, duration, originalPrice, price, monthlyEquivalent, discount, features, highlight, cta, onPay, limits, moduleCount, label }: any) => (
   <div className={`p-8 lg:p-10 rounded-[3.5rem] border-2 flex flex-col h-full transition-all duration-700 relative ${highlight ? 'bg-slate-900 text-white border-slate-900 shadow-[0_40px_100px_-20px_rgba(79,70,229,0.3)] scale-105 z-10' : 'bg-white text-slate-900 border-slate-100 hover:border-indigo-100 shadow-sm'}`}>
     {label && (
-      <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-indigo-600 text-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-xl whitespace-nowrap animate-bounce">
+      <div className={`absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-xl whitespace-nowrap animate-bounce ${label === "Paling Hemat" ? 'bg-emerald-600 text-white' : 'bg-indigo-600 text-white'}`}>
         {label}
       </div>
     )}
@@ -574,41 +503,39 @@ const PricingCard = ({ title, duration, originalPrice, price, discount, features
         <span className={`px-2.5 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ${highlight ? 'bg-indigo-600 text-white' : 'bg-indigo-50 text-indigo-600'}`}>{discount}</span>
       </div>
       <h4 className="text-xl font-black uppercase tracking-tight mb-6 leading-none">{title}</h4>
-      <div className="mb-10">
-        {originalPrice ? (
-          <p className={`text-sm font-bold line-through mb-1 ${highlight ? 'text-rose-400' : 'text-rose-500'}`}>Rp {originalPrice}</p>
-        ) : null}
+      <div className="mb-8">
+        {originalPrice && <p className={`text-sm font-bold line-through mb-1 ${highlight ? 'text-rose-400' : 'text-rose-500'}`}>Rp {originalPrice}</p>}
         <span className="text-4xl font-black tracking-tighter">Rp {price}</span>
-        {breakdown && <p className={`text-[10px] font-black mt-1 ${highlight ? 'text-indigo-400' : 'text-indigo-600'}`}>{breakdown}</p>}
-        <p className={`text-[8px] font-bold uppercase mt-2 ${highlight ? 'opacity-40' : 'text-slate-400'}`}>Akses Penuh Selama {duration}</p>
+        {monthlyEquivalent && (
+          <p className={`text-[11px] font-bold mt-2 italic ${highlight ? 'text-indigo-300' : 'text-slate-400'}`}>
+            (Setara Rp {monthlyEquivalent.toLocaleString('id-ID')} / bulan)
+          </p>
+        )}
       </div>
+
+      {/* MODULES HEADER - Diganti menjadi "Benefit Unggulan" dengan limit 4 poin utama */}
+      <div className="flex justify-between items-center mb-4 border-b border-slate-100 pb-2">
+         <p className={`text-[9px] font-black uppercase tracking-widest ${highlight ? 'text-indigo-300' : 'text-indigo-600'}`}>Benefit Unggulan</p>
+         <span className={`text-[8px] font-black px-2 py-0.5 rounded-full ${highlight ? 'bg-white/10 text-white' : 'bg-slate-100 text-slate-400'}`}>TOP PRIORITY</span>
+      </div>
+
       <ul className="space-y-3.5 mb-10">
-        {features.map((f: string, i: number) => (
+        {features.slice(0, 4).map((f: string, i: number) => (
           <li key={i} className="flex items-start gap-3 text-[10px] font-bold tracking-tight">
             <span className={highlight ? 'text-indigo-400' : 'text-indigo-600'}>✓</span>
             <span className={highlight ? 'opacity-80' : 'text-slate-600'}>{f}</span>
           </li>
         ))}
+        {features.length > 4 && (
+           <li className={`text-[9px] font-bold uppercase tracking-widest pl-6 ${highlight ? 'text-indigo-300' : 'text-slate-400'}`}>
+             + {features.length - 4} Fitur Tambahan
+           </li>
+        )}
       </ul>
     </div>
-    <button onClick={onStart} className={`w-full py-4 rounded-[1.75rem] font-black text-[9px] uppercase tracking-widest transition-all active:scale-95 ${highlight ? 'bg-indigo-600 text-white hover:bg-indigo-500 shadow-xl shadow-indigo-600/20' : 'bg-slate-900 text-white hover:bg-black'}`}>
+    <button onClick={onPay} className={`w-full py-4 rounded-[1.75rem] font-black text-[9px] uppercase tracking-widest transition-all active:scale-95 ${highlight ? 'bg-indigo-600 text-white hover:bg-indigo-500 shadow-xl' : 'bg-slate-900 text-white hover:bg-black'}`}>
       {cta}
     </button>
-  </div>
-);
-
-const TestimonialCard = ({ name, role, quote }: any) => (
-  <div className="bg-white/5 backdrop-blur-md p-8 rounded-[2.5rem] border border-white/10 hover:bg-white/10 transition-colors duration-500">
-    <p className="text-base font-medium italic opacity-90 leading-relaxed mb-6">"{quote}"</p>
-    <div className="flex items-center gap-4">
-      <div className="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center font-black text-xs">
-        {name.charAt(0)}
-      </div>
-      <div>
-        <p className="text-[10px] font-black uppercase tracking-widest">{name}</p>
-        <p className="text-[8px] font-bold text-slate-500 uppercase tracking-widest mt-0.5">{role}</p>
-      </div>
-    </div>
   </div>
 );
 

@@ -102,10 +102,12 @@ async function callAI(prompt: string, schema?: any) {
     throw new Error("Layanan AI Belum Dikonfigurasi. Silakan hubungi Superadmin untuk setting API Key.");
   }
 
+  // Correct initialization as per coding guidelines
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-2.0-flash-exp', // Gunakan model stabil terbaru
+      // Use gemini-3-flash-preview for basic text tasks as per guidelines
+      model: 'gemini-3-flash-preview',
       contents: prompt,
       config: schema ? { responseMimeType: "application/json", responseSchema: schema } : undefined
     });
@@ -114,6 +116,7 @@ async function callAI(prompt: string, schema?: any) {
       recordAiTokens(auth.currentUser.uid, response.usageMetadata.totalTokenCount || 0);
     }
     
+    // Correctly access .text property as per guidelines
     let text = response.text?.trim() || '';
     if (schema) {
       const cleanJson = text.replace(/```json\n?|```/g, "").trim();

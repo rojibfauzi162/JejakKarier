@@ -423,6 +423,9 @@ export interface SubscriptionProduct {
   enabledDurations: number[];
   allowedModules: string[];
   mayarProductId?: string;
+  isActive?: boolean;
+  showOnLanding?: boolean;
+  isHighlighted?: boolean;
   limits: {
     dailyLogs: number | 'unlimited';
     skills: number | 'unlimited';

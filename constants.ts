@@ -1,5 +1,5 @@
 
-import { AppData, SkillStatus, SkillCategory, SkillPriority, TrainingStatus, AchievementCategory, CareerType, CareerStatus, JobStatus, ProjectStatus, UserRole, SubscriptionPlan, AccountStatus } from './types';
+import { AppData, SkillStatus, SkillCategory, SkillPriority, TrainingStatus, AchievementCategory, CareerType, CareerStatus, JobStatus, ProjectStatus, UserRole, SubscriptionPlan, AccountStatus, SubscriptionProduct } from './types';
 
 // Fix: Added missing properties required by AppData type
 export const INITIAL_DATA: AppData = {
@@ -76,6 +76,67 @@ export const INITIAL_DATA: AppData = {
   },
   completedAiMilestones: []
 };
+
+export const DEFAULT_PRODUCTS: SubscriptionProduct[] = [
+  { 
+    id: 'p_free', 
+    name: 'Paket Gratisan', 
+    tier: SubscriptionPlan.FREE, 
+    price: 0, 
+    durationDays: 365, 
+    allowedModules: ['dashboard', 'profile', 'daily', 'skills', 'todo'], 
+    limits: { dailyLogs: 3, skills: 2, projects: 2, cvExports: 1 },
+    isActive: true,
+    showOnLanding: false, 
+    isHighlighted: false,
+    enabledDurations: [365]
+  },
+  { 
+    id: 'p_pro_monthly', 
+    name: 'Paket Bulanan', 
+    tier: SubscriptionPlan.PRO, 
+    price: 39000, 
+    originalPrice: 48750, 
+    durationDays: 30, 
+    allowedModules: ['dashboard', 'profile', 'daily', 'skills', 'todo', 'career', 'loker', 'cv', 'networking', 'projects', 'reviews', 'ai_insights', 'calendar'], 
+    limits: { dailyLogs: 'unlimited', skills: 'unlimited', projects: 'unlimited', cvExports: 'unlimited' }, 
+    mayarProductId: 'paket-bulanan-jejakkarir-40840', 
+    isActive: true, 
+    showOnLanding: true, 
+    isHighlighted: false, 
+    enabledDurations: [30] 
+  },
+  { 
+    id: 'p_pro_quarterly', 
+    name: 'Paket 3 Bulanan', 
+    tier: SubscriptionPlan.PRO, 
+    price: 99000, 
+    originalPrice: 165000, 
+    durationDays: 90, 
+    allowedModules: ['dashboard', 'profile', 'daily', 'skills', 'todo', 'career', 'loker', 'cv', 'networking', 'projects', 'reviews', 'ai_insights', 'calendar'], 
+    limits: { dailyLogs: 'unlimited', skills: 'unlimited', projects: 'unlimited', cvExports: 'unlimited' }, 
+    mayarProductId: 'paket-3-bulanan-jejakkarir-40841', 
+    isActive: true, 
+    showOnLanding: true, 
+    isHighlighted: false, 
+    enabledDurations: [90] 
+  },
+  { 
+    id: 'p_pro_yearly', 
+    name: 'Paket Tahunan', 
+    tier: SubscriptionPlan.PRO, 
+    price: 149000, 
+    originalPrice: 496667, 
+    durationDays: 365, 
+    allowedModules: ['dashboard', 'profile', 'daily', 'skills', 'todo', 'career', 'loker', 'cv', 'networking', 'projects', 'reviews', 'ai_insights', 'calendar'], 
+    limits: { dailyLogs: 'unlimited', skills: 'unlimited', projects: 'unlimited', cvExports: 'unlimited' }, 
+    mayarProductId: 'paket-tahunan-jejakkarir-40842', 
+    isActive: true, 
+    showOnLanding: true, 
+    isHighlighted: true, 
+    enabledDurations: [365] 
+  }
+];
 
 export const MONTHS = [
   "January", "February", "March", "April", "May", "June",

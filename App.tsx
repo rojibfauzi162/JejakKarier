@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { AppData, UserRole, SubscriptionProduct, SubscriptionPlan, AccountStatus, ToDoTask, AiStrategy, Training, Certification, Skill, CareerEvent, JobStatus, EventType, ImportanceLevel } from './types';
-import { INITIAL_DATA } from './constants';
+import { INITIAL_DATA, DEFAULT_PRODUCTS } from './constants';
 import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
 import DailyLogs from './components/DailyLogs';
@@ -22,6 +22,7 @@ import MobileNav from './components/MobileNav';
 import MobileHeader from './components/user/MobileHeader';
 import Auth from './components/Auth';
 import LandingPage from './components/LandingPage';
+import Checkout from './components/Checkout';
 import PublicLegalView from './components/PublicLegalView';
 import WorkReflectionView from './components/WorkReflection';
 import PerformanceReports from './components/PerformanceReports';
@@ -41,6 +42,7 @@ const App: React.FC = () => {
   const [skillsSubTab, setSkillsSubTab] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState(true);
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
+  const [checkoutPlan, setCheckoutPlan] = useState<SubscriptionProduct | null>(null);
   
   // Toast System State
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
@@ -106,11 +108,11 @@ const App: React.FC = () => {
   }, []);
 
   const [showAuth, setShowAuth] = useState(false);
-  const [publicProducts, setPublicProducts] = useState<SubscriptionProduct[]>([]);
+  const [publicProducts, setPublicProducts] = useState<SubscriptionProduct[]>(DEFAULT_PRODUCTS);
 
   useEffect(() => {
     getProductsCatalog().then(p => {
-      if (p) setPublicProducts(p);
+      if (p && p.length > 0) setPublicProducts(p);
     });
   }, []);
 
@@ -180,6 +182,10 @@ const App: React.FC = () => {
       <div className="absolute bottom-12 left-1/2 -translate-x-1/2 text-[9px] font-bold text-slate-300 uppercase tracking-[0.4em]">FokusKarir v2.0 • Intelligent Systems</div>
     </div>
   );
+
+  if (checkoutPlan) {
+    return <Checkout plan={checkoutPlan} user={user} onBack={() => setCheckoutPlan(null)} />;
+  }
   
   if (!user) {
     if (showAuth) return <Auth onBack={() => setShowAuth(false)} />;
@@ -188,6 +194,7 @@ const App: React.FC = () => {
         onStart={() => setShowAuth(true)} 
         onLogin={() => setShowAuth(true)} 
         onShowLegal={(type) => navigateToLegal(type)}
+        onBuyPlan={(plan) => setCheckoutPlan(plan)}
         products={publicProducts} 
       />
     );

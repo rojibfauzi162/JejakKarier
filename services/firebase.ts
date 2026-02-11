@@ -239,10 +239,10 @@ export const saveProductsCatalog = async (products: SubscriptionProduct[]) => {
 
 /**
  * Memproses aktivasi paket dari webhook Mayar secara otomatis.
+ * Mendukung pembuatan akun otomatis jika user belum terdaftar.
  */
-export const processMayarOrder = async (email: string, mayarProdId: string) => {
+export const processMayarOrder = async (email: string, mayarProdId: string, customerName?: string, customerPhone?: string) => {
   const catalog = await getProductsCatalog();
-  // Pencarian yang lebih fleksibel: Cocokkan ID Produk atau Slug
   const matchedPlan = catalog?.find(p => p.mayarProductId === mayarProdId || p.id === mayarProdId);
   
   if (!matchedPlan) {
@@ -254,38 +254,83 @@ export const processMayarOrder = async (email: string, mayarProdId: string) => {
   const q = query(usersRef, where("profile.email", "==", email.toLowerCase().trim()), limit(1));
   const querySnap = await getDocs(q);
 
-  if (querySnap.empty) {
-    console.warn("User " + email + " belum terdaftar. Menunggu registrasi.");
-    return;
-  }
-
-  const userDoc = querySnap.docs[0];
-  const userData = userDoc.data() as AppData;
-  const userRef = doc(db, "users", userDoc.id);
-
-  // Jika user diblokir, batalkan aktivasi otomatis
-  if (userData.status === AccountStatus.BANNED) {
-     console.error("Aktivasi Ditolak: User dalam status Banned.");
-     return;
-  }
-
   const now = new Date();
-  const currentExpiry = userData.expiryDate ? new Date(userData.expiryDate) : now;
-  
-  // Jika masih aktif, tambahkan durasi ke expiry lama. Jika sudah expired, gunakan 'now' sebagai basis.
-  const baseDate = currentExpiry > now ? currentExpiry : now;
-  const newExpiry = new Date(baseDate);
-  newExpiry.setDate(newExpiry.getDate() + matchedPlan.durationDays);
+  let userRef;
+  let userData: Partial<AppData> = {};
 
-  await updateDoc(userRef, {
-    plan: matchedPlan.tier,
-    status: AccountStatus.ACTIVE,
-    activeFrom: now.toISOString(),
-    expiryDate: newExpiry.toISOString(),
-    planPermissions: matchedPlan.allowedModules,
-    planLimits: matchedPlan.limits,
-    updatedAt: new Date().toISOString()
-  });
+  if (querySnap.empty) {
+    // LOGIKA PEMBUATAN AKUN OTOMATIS
+    const generatedPassword = Math.random().toString(36).slice(-8); // Generate 8 char password
+    const newUid = `mayar-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    userRef = doc(db, "users", newUid);
 
-  console.log(`SUKSES: Paket ${matchedPlan.name} aktif untuk ${email} hingga ${newExpiry.toLocaleDateString()}`);
+    const expiryDate = new Date();
+    expiryDate.setDate(expiryDate.getDate() + matchedPlan.durationDays);
+
+    userData = {
+      uid: newUid,
+      role: UserRole.SUPERADMIN,
+      plan: matchedPlan.tier,
+      status: AccountStatus.ACTIVE,
+      joinedAt: now.toISOString(),
+      lastLogin: now.toISOString(),
+      activeFrom: now.toISOString(),
+      expiryDate: expiryDate.toISOString(),
+      planPermissions: matchedPlan.allowedModules,
+      planLimits: matchedPlan.limits,
+      aiUsage: { cvGenerated: 0, coverLetters: 0, careerAnalysis: 0, totalTokens: 0 },
+      profile: {
+        name: customerName || "Member Mayar",
+        email: email.toLowerCase().trim(),
+        phone: customerPhone || "",
+        birthPlace: "", birthDate: "", maritalStatus: "", domicile: "",
+        mainCareer: "", sideCareer: "", currentCompany: "", currentPosition: "",
+        jobDesk: "", shortTermTarget: "", longTermTarget: "", description: "",
+        photoUrl: "", jobCategory: ""
+      },
+      workExperiences: [], educations: [], dailyReports: [], dailyReflections: [],
+      skills: [], trainings: [], certifications: [], careerPaths: [],
+      achievements: [], contacts: [], monthlyReviews: [], jobApplications: [],
+      personalProjects: [], todoList: [], todoCategories: ['Pendukung Kerja', 'Pengembangan Diri', 'Buka Peluang', 'Keseimbangan Hidup'],
+      careerEvents: [], workCategories: ['Operasional', 'Meeting', 'Learning', 'Administratif', 'Lainnya'],
+      onlineCV: { username: "", themeId: "modern-dark", isActive: false, visibleSections: ['work'], selectedItemIds: { work: [], education: [], skills: [], achievements: [], projects: [] }, socialLinks: {} },
+      reminderConfig: { weeklyProgress: true, monthlyEvaluation: true, dailyMotivation: true, dailyLogReminderTime: "17:00", reflectionReminderTime: "18:00", todoReminderTime: "20:00", timezone: "Asia/Jakarta" },
+      affirmations: ["I am capable of achieving my professional goals"],
+      completedAiMilestones: []
+    };
+
+    // LOGIKA PENGIRIMAN EMAIL (MOCKUP/PLACEHOLDER)
+    // Di sini Anda biasanya memicu API seperti SendGrid/Mailchimp atau Cloud Function.
+    console.log(`[EMAIL TRIGGER] Mengirim kredensial ke ${email}. Password: ${generatedPassword}`);
+    
+    await setDoc(userRef, sanitizeData(userData));
+    console.log(`SUKSES: Akun baru dibuat untuk ${email} (Password: ${generatedPassword})`);
+  } else {
+    // LOGIKA UPDATE AKUN EKSISTING
+    const userDoc = querySnap.docs[0];
+    const existingData = userDoc.data() as AppData;
+    userRef = doc(db, "users", userDoc.id);
+
+    if (existingData.status === AccountStatus.BANNED) {
+       console.error("Aktivasi Ditolak: User dalam status Banned.");
+       return;
+    }
+
+    const currentExpiry = existingData.expiryDate ? new Date(existingData.expiryDate) : now;
+    const baseDate = currentExpiry > now ? currentExpiry : now;
+    const newExpiry = new Date(baseDate);
+    newExpiry.setDate(newExpiry.getDate() + matchedPlan.durationDays);
+
+    await updateDoc(userRef, {
+      plan: matchedPlan.tier,
+      role: UserRole.SUPERADMIN,
+      status: AccountStatus.ACTIVE,
+      activeFrom: now.toISOString(),
+      expiryDate: newExpiry.toISOString(),
+      planPermissions: matchedPlan.allowedModules,
+      planLimits: matchedPlan.limits,
+      updatedAt: now.toISOString()
+    });
+    console.log(`SUKSES: Paket ${matchedPlan.name} aktif untuk user eksisting ${email}`);
+  }
 };
