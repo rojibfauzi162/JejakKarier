@@ -431,6 +431,15 @@ export interface SubscriptionProduct {
     skills: number | 'unlimited';
     projects: number | 'unlimited';
     cvExports: number | 'unlimited';
+    trainingHistory: number | 'unlimited';
+    certification: number | 'unlimited';
+    careerPath: number | 'unlimited';
+    jobTracker: number | 'unlimited';
+    networking: number | 'unlimited';
+    todoList: number | 'unlimited';
+    workExperience: number | 'unlimited';
+    education: number | 'unlimited';
+    careerCalendar: number | 'unlimited';
   };
 }
 

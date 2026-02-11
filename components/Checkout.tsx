@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { SubscriptionProduct, SubscriptionPlan, MayarConfig } from '../types';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from '@firebase/auth';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, sendEmailVerification } from '@firebase/auth';
 import { auth, signInWithGoogle, getMayarConfig } from '../services/firebase';
 
 interface CheckoutProps {
@@ -17,6 +17,7 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
   const [mayarConfig, setMayarConfig] = useState<MayarConfig | null>(null);
 
   useEffect(() => {
@@ -27,12 +28,17 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setSuccessMsg('');
     try {
       if (isLogin) {
         await signInWithEmailAndPassword(auth, email, password);
       } else {
         const cred = await createUserWithEmailAndPassword(auth, email, password);
         await updateProfile(cred.user, { displayName: name });
+        try {
+          await sendEmailVerification(cred.user);
+          setSuccessMsg('Pendaftaran Berhasil! Link verifikasi telah dikirim ke email Anda.');
+        } catch (e) { console.warn(e); }
       }
     } catch (err: any) {
       setError(err.message);
@@ -171,13 +177,19 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
               </div>
 
               <div className="flex bg-slate-50 p-1 rounded-2xl">
-                <button onClick={() => setIsLogin(false)} className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${!isLogin ? 'bg-white text-slate-900 shadow-md' : 'text-slate-400'}`}>Daftar Baru</button>
-                <button onClick={() => setIsLogin(true)} className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${isLogin ? 'bg-white text-slate-900 shadow-md' : 'text-slate-400'}`}>Sudah Punya Akun</button>
+                <button onClick={() => { setIsLogin(false); setError(''); setSuccessMsg(''); }} className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${!isLogin ? 'bg-white text-slate-900 shadow-md' : 'text-slate-400'}`}>Daftar Baru</button>
+                <button onClick={() => { setIsLogin(true); setError(''); setSuccessMsg(''); }} className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${isLogin ? 'bg-white text-slate-900 shadow-md' : 'text-slate-400'}`}>Sudah Punya Akun</button>
               </div>
 
               {error && (
                 <div className="p-4 bg-rose-50 border border-rose-100 text-rose-600 text-[10px] font-bold rounded-2xl animate-in slide-in-from-top-2">
                   ⚠️ {error}
+                </div>
+              )}
+
+              {successMsg && (
+                <div className="p-4 bg-emerald-50 border border-emerald-100 text-emerald-600 text-[10px] font-bold rounded-2xl animate-in slide-in-from-top-2">
+                  ✅ {successMsg}
                 </div>
               )}
 
@@ -199,7 +211,7 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
 
                 <button 
                   disabled={loading}
-                  className="w-full py-5 bg-slate-900 text-white font-black uppercase tracking-widest rounded-2xl shadow-xl hover:bg-black transition-all active:scale-95 disabled:opacity-50"
+                  className="w-full py-5 bg-slate-900 text-white font-black uppercase tracking-widest rounded-2xl shadow-xl hover:bg-black transition-all active:scale-[0.98] disabled:opacity-50"
                 >
                   {loading ? 'Processing...' : isLogin ? 'Masuk & Bayar' : 'Daftar & Bayar'}
                 </button>

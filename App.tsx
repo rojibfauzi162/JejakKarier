@@ -33,24 +33,52 @@ import UpgradeModal from './components/user/UpgradeModal';
 import MobileStats from './components/user/MobileStats';
 import CareerCalendar from './components/user/CareerCalendar'; 
 import { auth, getUserData, saveUserData, getProductsCatalog } from './services/firebase';
-import { onAuthStateChanged } from '@firebase/auth';
+import { onAuthStateChanged, sendEmailVerification } from '@firebase/auth';
 
 const App: React.FC = () => {
   const [user, setUser] = useState<any>(null);
-  
-  // Fungsi helper untuk mendapatkan template data baru yang bersih (Deep Clone)
   const getCleanInitialData = () => JSON.parse(JSON.stringify(INITIAL_DATA));
-
   const [data, setData] = useState<AppData>(getCleanInitialData());
   const [activeTab, setActiveTab] = useState('dashboard');
   const [skillsSubTab, setSkillsSubTab] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState(true);
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const [checkoutPlan, setCheckoutPlan] = useState<SubscriptionProduct | null>(null);
-  
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const desktopNotifRef = useRef<HTMLDivElement>(null);
+  const [resendingEmail, setResendingEmail] = useState(false);
+  const [hideVerificationReminder, setHideVerificationReminder] = useState(false);
+
+  const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  const handleResendVerification = async () => {
+    if (!auth.currentUser || resendingEmail) return;
+    setResendingEmail(true);
+    try {
+      await sendEmailVerification(auth.currentUser);
+      showToast("Link verifikasi berhasil dikirim ulang! Silakan cek kotak masuk Anda.", "success");
+    } catch (err: any) {
+      showToast(err.message, "error");
+    } finally {
+      setResendingEmail(false);
+    }
+  };
+
+  const handleRefreshUserStatus = async () => {
+    if (auth.currentUser) {
+      await auth.currentUser.reload();
+      setUser({ ...auth.currentUser });
+      if (auth.currentUser.emailVerified) {
+        showToast("Email berhasil diverifikasi!", "success");
+      } else {
+        showToast("Email belum terverifikasi. Cek inbox Anda.", "info");
+      }
+    }
+  };
 
   const [publicLegalPage, setPublicLegalPage] = useState<'privacy' | 'terms' | null>(() => {
     const path = window.location.pathname;
@@ -58,11 +86,6 @@ const App: React.FC = () => {
     if (path === '/terms') return 'terms';
     return null;
   });
-
-  const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 3000);
-  };
 
   const handleNavigate = (tab: string, subTab?: string) => {
     setActiveTab(tab);
@@ -105,77 +128,46 @@ const App: React.FC = () => {
     });
   }, []);
 
-  // AUTH LISTENER: Mengelola transisi antar user dengan aman (Pembersihan State Mutlak)
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (authUser) => {
       setLoading(true);
-      
-      // Langkah 1: Segera kosongkan user dan data lama untuk memutus dependensi persistence
       setUser(null);
       setData(getCleanInitialData());
-
       if (!authUser) {
         setLoading(false);
         return;
       }
-
-      // Langkah 2: Ambil data spesifik untuk user yang baru login
       try {
         const userData = await getUserData(authUser.uid);
-        
         if (userData) {
-          // GATING KEAMANAN: Pastikan data yang dimuat memang milik UID yang sedang login
-          if (userData.uid === authUser.uid) {
-            setData(userData);
-          } else {
-            console.error("Deteksi ketidakcocokan UID! Mencegah polusi data.");
-            setData({ ...getCleanInitialData(), uid: authUser.uid });
-          }
+          if (userData.uid === authUser.uid) setData(userData);
+          else setData({ ...getCleanInitialData(), uid: authUser.uid });
         } else {
-          // Inisialisasi User Baru
           const catalog = await getProductsCatalog();
           const freePlan = catalog?.find(p => p.tier === SubscriptionPlan.FREE);
-
           const newData: AppData = { 
-            ...getCleanInitialData(), 
-            uid: authUser.uid,
-            plan: SubscriptionPlan.FREE, 
-            status: AccountStatus.ACTIVE,
-            joinedAt: new Date().toISOString(),
-            lastLogin: new Date().toISOString(),
+            ...getCleanInitialData(), uid: authUser.uid, plan: SubscriptionPlan.FREE, status: AccountStatus.ACTIVE,
+            joinedAt: new Date().toISOString(), lastLogin: new Date().toISOString(),
             planPermissions: freePlan?.allowedModules || ['dashboard', 'profile', 'daily', 'skills', 'todo'],
             planLimits: freePlan?.limits || { dailyLogs: 10, skills: 10, projects: 5, cvExports: 1 },
-            profile: { 
-              ...INITIAL_DATA.profile, 
-              email: authUser.email || '', 
-              name: authUser.displayName || 'User'
-            }
+            profile: { ...INITIAL_DATA.profile, email: authUser.email || '', name: authUser.displayName || 'User' }
           };
           await saveUserData(authUser.uid, newData);
           setData(newData);
         }
-        
-        // Hanya set user SETELAH data berhasil dimuat/dibersihkan dengan benar
         setUser(authUser);
       } catch (err) {
-        console.error("Gagal memproses login:", err);
-        showToast("Terjadi kesalahan sinkronisasi data.", "error");
+        console.error(err);
+        showToast("Gagal sinkronisasi data.", "error");
       } finally {
         setLoading(false);
       }
     });
-
     return () => unsubscribe();
   }, []);
 
-  // PERSISTENCE LOGIC: Hanya simpan jika UID sinkron (Pencegahan nanang@ -> rojibfauzi@)
   useEffect(() => {
     const persist = async () => {
-      // SECURITY GATE: 
-      // 1. User Auth harus ada
-      // 2. State 'data' harus punya UID yang sama dengan User Auth
-      // 3. Sistem tidak sedang dalam proses loading
-      // 4. State 'data' memiliki UID yang valid (bukan template kosong)
       if (user && data.uid === user.uid && !loading && data.uid) {
         await saveUserData(user.uid, data);
       }
@@ -183,10 +175,7 @@ const App: React.FC = () => {
     persist();
   }, [data, user, loading]);
 
-  if (publicLegalPage) {
-    return <PublicLegalView type={publicLegalPage} onBack={() => navigateToLegal(null)} />;
-  }
-
+  if (publicLegalPage) return <PublicLegalView type={publicLegalPage} onBack={() => navigateToLegal(null)} />;
   if (loading) return (
     <div className="h-screen w-full bg-white flex flex-col items-center justify-center relative overflow-hidden font-sans">
       <div className="absolute top-1/4 left-1/4 w-[40rem] h-[40rem] bg-indigo-50/50 rounded-full blur-[100px] animate-pulse"></div>
@@ -202,39 +191,58 @@ const App: React.FC = () => {
     </div>
   );
 
-  if (checkoutPlan) {
-    return <Checkout plan={checkoutPlan} user={user} onBack={() => setCheckoutPlan(null)} />;
-  }
-  
+  if (checkoutPlan) return <Checkout plan={checkoutPlan} user={user} onBack={() => setCheckoutPlan(null)} />;
   if (!user) {
     if (showAuth) return <Auth onBack={() => setShowAuth(false)} />;
-    return (
-      <LandingPage 
-        onStart={() => setShowAuth(true)} 
-        onLogin={() => setShowAuth(true)} 
-        onShowLegal={(type) => navigateToLegal(type)}
-        onBuyPlan={(plan) => setCheckoutPlan(plan)}
-        products={publicProducts} 
-      />
-    );
+    return <LandingPage onStart={() => setShowAuth(true)} onLogin={() => setShowAuth(true)} onShowLegal={(type) => navigateToLegal(type)} onBuyPlan={(plan) => setCheckoutPlan(plan)} products={publicProducts} />;
   }
 
   const isAdmin = data.role === UserRole.SUPERADMIN;
-
-  const getAlerts = () => {
-    if (isAdmin) return [];
+  const activeAlerts = isAdmin ? [] : (() => {
     const todayStr = new Date().toISOString().split('T')[0];
     const alerts = [];
-    const hasWorkLogs = data.dailyReports.some(l => l.date === todayStr);
-    if (!hasWorkLogs) alerts.push({ id: 'log', text: "Lupa isi Aktivitas Kerja?", target: 'daily', icon: 'bi-pencil-square', color: 'indigo' });
+    if (!data.dailyReports.some(l => l.date === todayStr)) alerts.push({ id: 'log', text: "Lupa isi Aktivitas Kerja?", target: 'daily', icon: 'bi-pencil-square', color: 'indigo' });
     const pendingTodos = data.todoList.filter(t => t.status === 'Pending');
     if (pendingTodos.length > 0) alerts.push({ id: 'todo_p', text: `${pendingTodos.length} Langkah Tertunda`, target: 'todo_list', icon: 'bi-list-check', color: 'blue' });
     return alerts;
-  };
-
-  const activeAlerts = getAlerts();
+  })();
 
   const withPermission = (moduleKey: string, content: React.ReactNode) => {
+    // 1. GLOBAL VERIFICATION LOCK (Bypass if Superadmin)
+    if (user && !user.emailVerified && !isAdmin && moduleKey !== 'settings') {
+      return (
+        <div className="relative min-h-[500px] flex items-center justify-center bg-white rounded-[3rem] p-10 text-center animate-in zoom-in duration-500 border border-slate-100 shadow-sm">
+           <div className="space-y-6">
+              <div className="w-24 h-24 bg-amber-50 text-amber-600 rounded-[2.5rem] flex items-center justify-center text-4xl mx-auto shadow-inner">
+                <i className="bi bi-shield-lock-fill"></i>
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-2xl lg:text-3xl font-black text-slate-900 uppercase tracking-tight">Fitur Terkunci</h3>
+                <p className="text-slate-500 font-medium max-w-sm mx-auto leading-relaxed">
+                  Selesaikan verifikasi email Anda (<span className="font-bold text-indigo-600">{user.email}</span>) untuk membuka akses ke modul <span className="font-black uppercase">{moduleKey.replace('_', ' ')}</span> dan seluruh ekosistem FokusKarir.
+                </p>
+              </div>
+              <div className="flex flex-col sm:flex-row justify-center gap-3 pt-4">
+                 <button 
+                  onClick={handleRefreshUserStatus} 
+                  className="px-8 py-4 bg-slate-100 text-slate-600 font-black rounded-2xl uppercase text-[10px] tracking-widest hover:bg-slate-200 transition-all active:scale-95"
+                 >
+                   Sudah Verifikasi? Cek Status
+                 </button>
+                 <button 
+                  onClick={handleResendVerification} 
+                  disabled={resendingEmail}
+                  className="px-8 py-4 bg-indigo-600 text-white font-black rounded-2xl uppercase text-[10px] tracking-widest shadow-xl shadow-indigo-100 hover:bg-indigo-700 active:scale-95 transition-all disabled:opacity-50"
+                 >
+                   {resendingEmail ? 'Mengirim...' : 'Kirim Ulang Link Email'}
+                 </button>
+              </div>
+           </div>
+        </div>
+      );
+    }
+
+    // 2. SUBSCRIPTION PLAN LOGIC
     if (isAdmin || data.plan !== SubscriptionPlan.FREE) return content;
     const permissions = data.planPermissions || [];
     if (['dashboard', 'profile', 'apps_hub', 'billing', 'settings', 'calendar'].includes(moduleKey)) return content;
@@ -255,37 +263,22 @@ const App: React.FC = () => {
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'dashboard': return <Dashboard data={data} onNavigate={handleNavigate} />;
-      case 'apps_hub': return <AppsHub onNavigate={handleNavigate} />;
-      case 'mobile_stats': return <MobileStats data={data} />;
-      case 'profile': return (
-        <ProfileView 
-          profile={data.profile} 
-          workExperiences={data.workExperiences} 
-          educations={data.educations} 
-          onUpdateProfile={(p) => setData(prev => ({...prev, profile: p}))} 
-          onAddWork={(w) => setData(prev => ({...prev, workExperiences: [...prev.workExperiences, w]}))} 
-          onUpdateWork={(w) => setData(prev => ({...prev, workExperiences: prev.workExperiences.map(i => i.id === w.id ? w : i)}))} 
-          onDeleteWork={(id) => setData(prev => ({...prev, workExperiences: prev.workExperiences.filter(i => i.id !== id)}))} 
-          onAddEducation={(e) => setData(prev => ({...prev, educations: [...prev.educations, e]}))} 
-          onUpdateEducation={(e) => setData(prev => ({...prev, educations: prev.educations.map(i => i.id === e.id ? e : i)}))} 
-          onDeleteEducation={(id) => setData(prev => ({...prev, educations: prev.educations.filter(e => e.id !== id)}))} 
-          appData={data} 
-        />
-      );
-      case 'daily': return withPermission('daily', (
-        <DailyLogs 
-          logs={data.dailyReports} 
-          categories={data.workCategories} 
-          onAdd={(l) => setData(prev => ({...prev, dailyReports: [...prev.dailyReports, l]}))} 
-          onUpdate={(l) => setData(prev => ({...prev, dailyReports: prev.dailyReports.map(i => i.id === l.id ? l : i)}))} 
-          onDelete={(id) => setData(prev => ({...prev, dailyReports: prev.dailyReports.filter(i => i.id !== id)}))} 
-          onAddCategory={(c) => setData(prev => ({...prev, workCategories: [...prev.workCategories, c]}))} 
-          onDeleteCategory={(c) => setData(prev => ({...prev, workCategories: prev.workCategories.filter(i => i !== c)}))} 
-          affirmation={data.affirmations[0]} 
-          appData={data}
-        />
-      ));
+      case 'dashboard': return withPermission('dashboard', <Dashboard data={data} onNavigate={handleNavigate} />);
+      // ADMIN TAB ROUTING RESTORATION
+      case 'admin_dashboard': return <AdminPanel initialMode="dashboard" userRole={data.role} />;
+      case 'admin_users': return <AdminPanel initialMode="users" userRole={data.role} />;
+      case 'admin_admins': return <AdminPanel initialMode="admin_admins" userRole={data.role} />;
+      case 'admin_transactions': return <AdminPanel initialMode="admin_transactions" userRole={data.role} />;
+      case 'admin_ai': return <AdminPanel initialMode="ai" userRole={data.role} />;
+      case 'admin_products': return <AdminPanel initialMode="products" userRole={data.role} />;
+      case 'admin_integrations': return <AdminPanel initialMode="integrations" userRole={data.role} />;
+      case 'admin_settings': return <AdminPanel initialMode="settings" userRole={data.role} />;
+      case 'admin_health': return <AdminPanel initialMode="health" userRole={data.role} />;
+      
+      case 'apps_hub': return withPermission('apps_hub', <AppsHub onNavigate={handleNavigate} />);
+      case 'mobile_stats': return withPermission('mobile_stats', <MobileStats data={data} />);
+      case 'profile': return withPermission('profile', <ProfileView profile={data.profile} workExperiences={data.workExperiences} educations={data.educations} onUpdateProfile={(p) => setData(prev => ({...prev, profile: p}))} onAddWork={(w) => setData(prev => ({...prev, workExperiences: [...prev.workExperiences, w]}))} onUpdateWork={(w) => setData(prev => ({...prev, workExperiences: prev.workExperiences.map(i => i.id === w.id ? w : i)}))} onDeleteWork={(id) => setData(prev => ({...prev, workExperiences: prev.workExperiences.filter(i => i.id !== id)}))} onAddEducation={(e) => setData(prev => ({...prev, educations: [...prev.educations, e]}))} onUpdateEducation={(e) => setData(prev => ({...prev, educations: prev.educations.map(i => i.id === e.id ? e : i)}))} onDeleteEducation={(id) => setData(prev => ({...prev, educations: prev.educations.filter(e => e.id !== id)}))} appData={data} />);
+      case 'daily': return withPermission('daily', <DailyLogs logs={data.dailyReports} categories={data.workCategories} onAdd={(l) => setData(prev => ({...prev, dailyReports: [...prev.dailyReports, l]}))} onUpdate={(l) => setData(prev => ({...prev, dailyReports: prev.dailyReports.map(i => i.id === l.id ? l : i)}))} onDelete={(id) => setData(prev => ({...prev, dailyReports: prev.dailyReports.filter(i => i.id !== id)}))} onAddCategory={(c) => setData(prev => ({...prev, workCategories: [...prev.workCategories, c]}))} onDeleteCategory={(c) => setData(prev => ({...prev, workCategories: prev.workCategories.filter(i => i !== c)}))} affirmation={data.affirmations[0]} appData={data} />);
       case 'work_reflection': return withPermission('daily', (
         <WorkReflectionView 
           reflections={data.dailyReflections} 
@@ -305,46 +298,9 @@ const App: React.FC = () => {
           onAddAchievement={(ach) => setData(prev => ({...prev, achievements: [...prev.achievements, ach]}))} 
         />
       ));
-      case 'todo_list': return withPermission('todo', (
-        <ToDoList 
-          tasks={data.todoList} 
-          categories={data.todoCategories} 
-          onAdd={(t) => setData(prev => ({...prev, todoList: [...prev.todoList, t]}))} 
-          onUpdate={(t) => setData(prev => ({...prev, todoList: prev.todoList.map(i => i.id === t.id ? t : i)}))} 
-          onDelete={(id) => setData(prev => ({...prev, todoList: prev.todoList.filter(i => i.id !== id)}))} 
-          onAddCategory={(c) => setData(prev => ({...prev, todoCategories: [...prev.todoCategories, c]}))} 
-          onUpdateCategory={(o, n) => setData(prev => ({...prev, todoCategories: prev.todoCategories.map(i => i === o ? n : i)}))} 
-          onDeleteCategory={(c) => setData(prev => ({...prev, todoCategories: prev.todoCategories.filter(i => i !== c)}))} 
-        />
-      ));
-      case 'calendar': return (
-        <CareerCalendar 
-          data={data} 
-          onAddEvent={(e) => setData(prev => ({...prev, careerEvents: [...(prev.careerEvents || []), e]}))} 
-          onDeleteEvent={(id) => setData(prev => ({...prev, careerEvents: (prev.careerEvents || []).filter(i => i.id !== id)}))}
-        />
-      );
-      case 'skills': return withPermission('skills', (
-        <SkillTracker 
-          skills={data.skills} 
-          trainings={data.trainings} 
-          certs={data.certifications} 
-          onAddSkill={(s) => setData(prev => ({...prev, skills: [...prev.skills, s]}))} 
-          onUpdateSkill={(s) => setData(prev => ({...prev, skills: prev.skills.map(i => i.id === s.id ? s : i)}))} 
-          onDeleteSkill={(id) => setData(prev => ({...prev, skills: prev.skills.filter(i => i.id !== id)}))} 
-          onAddTraining={(t) => setData(prev => ({...prev, trainings: [...prev.trainings, t]}))} 
-          onUpdateTraining={(t) => setData(prev => ({...prev, trainings: prev.trainings.map(i => i.id === t.id ? t : i)}))} 
-          onDeleteTraining={(id) => setData(prev => ({...prev, trainings: prev.trainings.filter(i => i.id !== id)}))} 
-          onAddCert={(c) => setData(prev => ({...prev, certifications: [...prev.certifications, c]}))} 
-          onUpdateCert={(c) => setData(prev => ({...prev, certifications: prev.certifications.map(i => i.id === c.id ? c : i)}))} 
-          onDeleteCert={(id) => setData(prev => ({...prev, certifications: prev.certifications.filter(i => i.id !== id)}))} 
-          onAddTodo={(t) => setData(prev => ({...prev, todoList: [...prev.todoList, t]}))}
-          onSaveStrategy={(s: AiStrategy) => setData(prev => ({...prev, aiStrategies: [s, ...(prev.aiStrategies || [])]}))}
-          showToast={showToast}
-          data={data} 
-          initialSubTab={skillsSubTab as any}
-        />
-      ));
+      case 'todo_list': return withPermission('todo', <ToDoList tasks={data.todoList} categories={data.todoCategories} onAdd={(t) => setData(prev => ({...prev, todoList: [...prev.todoList, t]}))} onUpdate={(t) => setData(prev => ({...prev, todoList: prev.todoList.map(i => i.id === t.id ? t : i)}))} onDelete={(id) => setData(prev => ({...prev, todoList: prev.todoList.filter(i => i.id !== id)}))} onAddCategory={(c) => setData(prev => ({...prev, todoCategories: [...prev.todoCategories, c]}))} onUpdateCategory={(o, n) => setData(prev => ({...prev, todoCategories: prev.todoCategories.map(i => i === o ? n : i)}))} onDeleteCategory={(c) => setData(prev => ({...prev, todoCategories: prev.todoCategories.filter(i => i !== c)}))} />);
+      case 'calendar': return <CareerCalendar data={data} onAddEvent={(e) => setData(prev => ({...prev, careerEvents: [...(prev.careerEvents || []), e]}))} onDeleteEvent={(id) => setData(prev => ({...prev, careerEvents: (prev.careerEvents || []).filter(i => i.id !== id)}))} />;
+      case 'skills': return withPermission('skills', <SkillTracker skills={data.skills} trainings={data.trainings} certs={data.certifications} onAddSkill={(s) => setData(prev => ({...prev, skills: [...prev.skills, s]}))} onUpdateSkill={(s) => setData(prev => ({...prev, skills: prev.skills.map(i => i.id === s.id ? s : i)}))} onDeleteSkill={(id) => setData(prev => ({...prev, skills: prev.skills.filter(i => i.id !== id)}))} onAddTraining={(t) => setData(prev => ({...prev, trainings: [...prev.trainings, t]}))} onUpdateTraining={(t) => setData(prev => ({...prev, trainings: prev.trainings.map(i => i.id === t.id ? t : i)}))} onDeleteTraining={(id) => setData(prev => ({...prev, trainings: prev.trainings.filter(i => i.id !== id)}))} onAddCert={(c) => setData(prev => ({...prev, certifications: [...prev.certifications, c]}))} onUpdateCert={(c) => setData(prev => ({...prev, certifications: prev.certifications.map(i => i.id === c.id ? c : i)}))} onDeleteCert={(id) => setData(prev => ({...prev, certifications: prev.certifications.filter(i => i.id !== id)}))} onAddTodo={(t) => setData(prev => ({...prev, todoList: [...prev.todoList, t]}))} onSaveStrategy={(s: AiStrategy) => setData(prev => ({...prev, aiStrategies: [s, ...(prev.aiStrategies || [])]}))} showToast={showToast} data={data} initialSubTab={skillsSubTab as any} />);
       case 'career': return withPermission('career', <CareerPlanner paths={data.careerPaths} appData={data} onAddPath={(p) => setData(prev => ({...prev, careerPaths: [...prev.careerPaths, p]}))} onUpdatePath={(p) => setData(prev => ({...prev, careerPaths: prev.careerPaths.map(i => i.id === p.id ? p : i)}))} onDeletePath={(id) => setData(prev => ({...prev, careerPaths: prev.careerPaths.filter(i => i.id !== id)}))} />);
       case 'networking': return withPermission('networking', <Networking contacts={data.contacts} onAdd={(c) => setData(prev => ({...prev, contacts: [...prev.contacts, c]}))} onUpdate={(c) => setData(prev => ({...prev, contacts: prev.contacts.map(i => i.id === c.id ? c : i)}))} onDelete={(id) => setData(prev => ({...prev, contacts: prev.contacts.filter(i => i.id !== id)}))} />);
       case 'achievements': return withPermission('achievements', <AchievementTracker achievements={data.achievements} profile={data.profile} workExperiences={data.workExperiences} onAdd={(a) => setData(prev => ({...prev, achievements: [...prev.achievements, a]}))} onUpdate={(a) => setData(prev => ({...prev, achievements: prev.achievements.map(i => i.id === a.id ? a : i)}))} onDelete={(id) => setData(prev => ({...prev, achievements: prev.achievements.filter(i => i.id !== id)}))} />);
@@ -354,25 +310,70 @@ const App: React.FC = () => {
       case 'cv_generator': return withPermission('cv', <CVGenerator data={data} />);
       case 'online_cv': return withPermission('cv', <OnlineCVBuilder data={data} onUpdateConfig={(c) => setData(prev => ({...prev, onlineCV: c}))} />);
       case 'settings': return <AccountSettings reminderConfig={data.reminderConfig} onUpdateReminders={(c) => setData(prev => ({...prev, reminderConfig: c}))} />;
-      case 'billing': return <Billing data={data} products={publicProducts} />;
-      case 'admin_dashboard': return isAdmin ? <AdminPanel initialMode="dashboard" userRole={data.role} /> : <Dashboard data={data} onNavigate={handleNavigate} />;
-      case 'admin_users': return isAdmin ? <AdminPanel initialMode="users" userRole={data.role} /> : <Dashboard data={data} onNavigate={handleNavigate} />;
-      case 'admin_ai': return isAdmin ? <AdminPanel initialMode="ai" userRole={data.role} /> : <Dashboard data={data} onNavigate={handleNavigate} />;
-      case 'admin_products': return isAdmin ? <AdminPanel initialMode="products" userRole={data.role} /> : <Dashboard data={data} onNavigate={handleNavigate} />;
-      default: return <Dashboard data={data} onNavigate={handleNavigate} />;
+      case 'billing': return withPermission('billing', <Billing data={data} products={publicProducts} />);
+      default: return withPermission('dashboard', <Dashboard data={data} onNavigate={handleNavigate} />);
     }
   };
 
-  const handleLogout = () => {
-    auth.signOut();
-    // Refresh halaman untuk memastikan memori benar-benar bersih dan prevent leak
-    window.location.href = "/";
-  };
+  const handleLogout = () => { auth.signOut(); window.location.href = "/"; };
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col lg:flex-row overflow-x-hidden font-sans">
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} onLogout={handleLogout} isAdmin={isAdmin} />
       <main className="flex-1 lg:ml-64">
+        {/* EMAIL VERIFICATION REMINDER CARD (REF GBR 1) - Bypass for Superadmin */}
+        {!user.emailVerified && !isAdmin && !hideVerificationReminder && (
+          <div className="px-6 py-6 lg:px-10 lg:pt-8 animate-in slide-in-from-top-full duration-700 relative z-[200]">
+             <div className="bg-[#fffbeb] border border-[#fef3c7] p-8 lg:p-10 rounded-[2.5rem] shadow-sm relative overflow-hidden group">
+                {/* Dismiss Button */}
+                <button 
+                  onClick={() => setHideVerificationReminder(true)} 
+                  className="absolute top-6 right-8 text-amber-900/30 hover:text-amber-900 transition-colors"
+                >
+                  <i className="bi bi-x-lg text-lg"></i>
+                </button>
+
+                <div className="flex flex-col md:flex-row gap-8 items-start relative z-10">
+                   {/* Left Icon Area */}
+                   <div className="w-16 h-16 lg:w-20 lg:h-20 bg-[#fef3c7] rounded-[1.75rem] flex items-center justify-center shrink-0 shadow-inner">
+                      <i className="bi bi-envelope text-[#d97706] text-3xl"></i>
+                   </div>
+
+                   {/* Content Area */}
+                   <div className="space-y-4 flex-1">
+                      <h3 className="text-xl lg:text-2xl font-black text-[#92400e] tracking-tight leading-none uppercase">
+                        Verifikasi email dulu supaya akunmu aktif 100%
+                      </h3>
+                      <p className="text-sm lg:text-base text-amber-800/80 font-medium leading-relaxed max-w-3xl">
+                        Kami sudah mengirimkan email verifikasi ke <span className="font-black text-[#92400e]">{user.email}</span>. Silakan cek inbox atau folder <span className="font-black">SPAM/Promotions</span>, lalu klik tombol verifikasi di email tersebut.
+                      </p>
+                      
+                      <div className="flex flex-col sm:flex-row items-center gap-6 pt-4">
+                        <button 
+                          onClick={handleResendVerification} 
+                          disabled={resendingEmail}
+                          className="w-full sm:w-auto px-8 py-4 bg-[#d97706] hover:bg-[#b45309] text-white font-black rounded-2xl text-[11px] uppercase tracking-widest shadow-xl shadow-amber-200 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-3"
+                        >
+                           <i className="bi bi-envelope-fill"></i>
+                           {resendingEmail ? 'Mengirim Ulang...' : 'Kirim Ulang Email Verifikasi'}
+                        </button>
+                        
+                        <div className="flex items-center gap-3">
+                           <span className="text-xl">💡</span>
+                           <p className="text-[10px] lg:text-xs font-bold text-amber-700 italic">
+                             Belum menerima email? Klik tombol di samping untuk kirim ulang.
+                           </p>
+                        </div>
+                      </div>
+                   </div>
+                </div>
+                
+                {/* Decorative Pattern */}
+                <div className="absolute -bottom-10 -right-10 w-48 h-48 bg-[#fef3c7]/40 rounded-full blur-3xl"></div>
+             </div>
+          </div>
+        )}
+
         <div className={`${!isAdmin ? 'pt-0' : 'p-4 lg:p-8'}`}>
           {!isAdmin && <MobileHeader profile={data.profile} notificationCount={activeAlerts.length} onNavigate={handleNavigate} activeTab={activeTab} alerts={activeAlerts} />}
           <div className={`${!isAdmin ? 'p-4 lg:p-8 pt-6' : ''}`}>

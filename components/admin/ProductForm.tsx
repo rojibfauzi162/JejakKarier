@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { SubscriptionPlan, SubscriptionProduct, MayarConfig } from '../../types';
 import { getMayarConfig } from '../../services/firebase';
@@ -10,7 +11,21 @@ const ProductForm = ({ initialData, onCancel, onSubmit, onDelete }: any) => {
     showOnLanding: true,
     isHighlighted: false,
     allowedModules: ['dashboard', 'profile', 'daily', 'skills', 'todo_list'],
-    limits: { dailyLogs: 10, skills: 10, projects: 5, cvExports: 1 }
+    limits: { 
+      dailyLogs: 10, 
+      skills: 10, 
+      projects: 5, 
+      cvExports: 1,
+      trainingHistory: 0,
+      certification: 0,
+      careerPath: 0,
+      jobTracker: 0,
+      networking: 0,
+      todoList: 0,
+      workExperience: 0,
+      education: 0,
+      careerCalendar: 0
+    }
   });
 
   const [discountPercent, setDiscountPercent] = useState<number>(0);
@@ -38,7 +53,7 @@ const ProductForm = ({ initialData, onCancel, onSubmit, onDelete }: any) => {
   ];
 
   useEffect(() => {
-    if (form.price && form.originalPrice && form.originalPrice > form.price) {
+    if (form.price !== undefined && form.originalPrice && form.originalPrice > form.price) {
       const pct = Math.round(((form.originalPrice - form.price) / form.originalPrice) * 100);
       setDiscountPercent(pct);
     }
@@ -62,7 +77,7 @@ const ProductForm = ({ initialData, onCancel, onSubmit, onDelete }: any) => {
 
   const handleDiscountChange = (pct: number) => {
     setDiscountPercent(pct);
-    if (pct > 0 && form.price) {
+    if (pct > 0 && form.price !== undefined) {
       const original = Math.round(form.price / (1 - pct / 100));
       setForm({ ...form, originalPrice: original });
     } else {
@@ -95,7 +110,7 @@ const ProductForm = ({ initialData, onCancel, onSubmit, onDelete }: any) => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="space-y-2">
             <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Harga Jual (Rp)</label>
-            <input type="number" className="w-full px-6 py-4 rounded-2xl bg-indigo-50/30 border border-indigo-100 outline-none font-black text-sm text-indigo-600" value={form.price || ''} onChange={e => handlePriceChange(Number(e.target.value))} required />
+            <input type="number" className="w-full px-6 py-4 rounded-2xl bg-indigo-50/30 border border-indigo-100 outline-none font-black text-sm text-indigo-600" value={form.price === 0 ? 0 : (form.price || '')} onChange={e => handlePriceChange(Number(e.target.value))} required />
           </div>
           <div className="space-y-2">
             <label className="text-[10px] font-black text-indigo-500 uppercase tracking-widest ml-1">Set Diskon (%)</label>
@@ -185,7 +200,6 @@ const ProductForm = ({ initialData, onCancel, onSubmit, onDelete }: any) => {
         {onDelete && (
           <button type="button" onClick={onDelete} className="flex-1 py-5 bg-rose-50 text-rose-500 font-black rounded-3xl uppercase text-[11px] tracking-widest hover:bg-rose-500 hover:text-white transition-all">Hapus Paket</button>
         )}
-        {/* Fix: removed undefined onBack and solely rely on onCancel prop */}
         <button type="button" onClick={onCancel} className="flex-1 py-5 text-slate-400 font-black uppercase text-[11px] tracking-widest hover:bg-slate-50 rounded-3xl">Batal</button>
       </div>
     </form>
