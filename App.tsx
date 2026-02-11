@@ -38,7 +38,7 @@ import { onAuthStateChanged } from '@firebase/auth';
 const App: React.FC = () => {
   const [user, setUser] = useState<any>(null);
   
-  // Fungsi helper untuk mendapatkan template data baru yang bersih
+  // Fungsi helper untuk mendapatkan template data baru yang bersih (Deep Clone)
   const getCleanInitialData = () => JSON.parse(JSON.stringify(INITIAL_DATA));
 
   const [data, setData] = useState<AppData>(getCleanInitialData());
@@ -105,7 +105,7 @@ const App: React.FC = () => {
     });
   }, []);
 
-  // AUTH LISTENER: Mengelola transisi antar user dengan aman
+  // AUTH LISTENER: Mengelola transisi antar user dengan aman (Pembersihan State Mutlak)
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (authUser) => {
       setLoading(true);
@@ -168,14 +168,14 @@ const App: React.FC = () => {
     return () => unsubscribe();
   }, []);
 
-  // PERSISTENCE LOGIC: Hanya simpan jika UID sinkron
+  // PERSISTENCE LOGIC: Hanya simpan jika UID sinkron (Pencegahan nanang@ -> rojibfauzi@)
   useEffect(() => {
     const persist = async () => {
       // SECURITY GATE: 
       // 1. User Auth harus ada
       // 2. State 'data' harus punya UID yang sama dengan User Auth
       // 3. Sistem tidak sedang dalam proses loading
-      // 4. State 'data' bukan INITIAL_DATA kosong tanpa UID
+      // 4. State 'data' memiliki UID yang valid (bukan template kosong)
       if (user && data.uid === user.uid && !loading && data.uid) {
         await saveUserData(user.uid, data);
       }
@@ -193,7 +193,7 @@ const App: React.FC = () => {
       <div className="relative flex flex-col items-center gap-12 animate-in fade-in zoom-in duration-700">
         <div className="w-24 h-24 bg-indigo-600 rounded-[2.2rem] flex items-center justify-center text-white text-4xl font-black shadow-xl animate-bounce">F</div>
         <div className="space-y-4 text-center">
-          <h2 className="text-xl font-black text-slate-900 tracking-[0.25em] uppercase">Memuat Data Sesi...</h2>
+          <h2 className="text-xl font-black text-slate-900 tracking-[0.25em] uppercase">Sinkronisasi Sesi...</h2>
           <div className="w-64 h-1.5 bg-slate-100 rounded-full overflow-hidden border border-white">
              <div className="h-full bg-indigo-600 rounded-full w-full animate-loading-bar origin-left"></div>
           </div>
@@ -348,7 +348,7 @@ const App: React.FC = () => {
       case 'career': return withPermission('career', <CareerPlanner paths={data.careerPaths} appData={data} onAddPath={(p) => setData(prev => ({...prev, careerPaths: [...prev.careerPaths, p]}))} onUpdatePath={(p) => setData(prev => ({...prev, careerPaths: prev.careerPaths.map(i => i.id === p.id ? p : i)}))} onDeletePath={(id) => setData(prev => ({...prev, careerPaths: prev.careerPaths.filter(i => i.id !== id)}))} />);
       case 'networking': return withPermission('networking', <Networking contacts={data.contacts} onAdd={(c) => setData(prev => ({...prev, contacts: [...prev.contacts, c]}))} onUpdate={(c) => setData(prev => ({...prev, contacts: prev.contacts.map(i => i.id === c.id ? c : i)}))} onDelete={(id) => setData(prev => ({...prev, contacts: prev.contacts.filter(i => i.id !== id)}))} />);
       case 'achievements': return withPermission('achievements', <AchievementTracker achievements={data.achievements} profile={data.profile} workExperiences={data.workExperiences} onAdd={(a) => setData(prev => ({...prev, achievements: [...prev.achievements, a]}))} onUpdate={(a) => setData(prev => ({...prev, achievements: prev.achievements.map(i => i.id === a.id ? a : i)}))} onDelete={(id) => setData(prev => ({...prev, achievements: prev.achievements.filter(i => i.id !== id)}))} />);
-      case 'loker': return withPermission('loker', <JobTracker applications={data.jobApplications} onAdd={(j) => setData(prev => ({...prev, jobApplications: [...prev.jobApplications, j]}))} onUpdate={(j) => setData(prev => ({...prev, jobApplications: prev.jobApplications.map(i => i.id === j.id ? j : i)}))} onDelete={(id) => setData(prev => ({...prev, jobApplications: prev.jobApplications.filter(i => i.id !== id)}))} />);
+      case 'loker': return withPermission('loker', <JobTracker applications={data.jobApplications} careerEvents={data.careerEvents || []} onAdd={(j) => setData(prev => ({...prev, jobApplications: [...prev.jobApplications, j]}))} onUpdate={(j) => setData(prev => ({...prev, jobApplications: prev.jobApplications.map(i => i.id === j.id ? j : i)}))} onDelete={(id) => setData(prev => ({...prev, jobApplications: prev.jobApplications.filter(i => i.id !== id)}))} onAddCalendarEvent={(e) => setData(prev => ({...prev, careerEvents: [...(prev.careerEvents || []), e]}))} />);
       case 'projects': return withPermission('projects', <PersonalProjectTracker projects={data.personalProjects} onAdd={(p) => setData(prev => ({...prev, personalProjects: [...prev.personalProjects, p]}))} onUpdate={(p) => setData(prev => ({...prev, personalProjects: prev.personalProjects.map(i => i.id === p.id ? p : i)}))} onDelete={(id) => setData(prev => ({...prev, personalProjects: prev.personalProjects.filter(i => i.id !== id)}))} />);
       case 'reviews': return withPermission('reviews', <Reviews reviews={data.monthlyReviews} onAdd={(r) => setData(prev => ({...prev, monthlyReviews: [...prev.monthlyReviews, r]}))} onDelete={(id) => setData(prev => ({...prev, monthlyReviews: prev.monthlyReviews.filter(i => i.id !== id)}))} />);
       case 'cv_generator': return withPermission('cv', <CVGenerator data={data} />);
@@ -365,12 +365,12 @@ const App: React.FC = () => {
 
   const handleLogout = () => {
     auth.signOut();
-    // Refresh halaman untuk memastikan memori benar-benar bersih
+    // Refresh halaman untuk memastikan memori benar-benar bersih dan prevent leak
     window.location.href = "/";
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col lg:flex-row overflow-x-hidden">
+    <div className="min-h-screen bg-slate-50 flex flex-col lg:flex-row overflow-x-hidden font-sans">
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} onLogout={handleLogout} isAdmin={isAdmin} />
       <main className="flex-1 lg:ml-64">
         <div className={`${!isAdmin ? 'pt-0' : 'p-4 lg:p-8'}`}>
@@ -385,7 +385,7 @@ const App: React.FC = () => {
                      {isNotifOpen && (
                         <div className="absolute right-0 mt-3 w-80 bg-white border border-slate-100 rounded-[2.5rem] shadow-2xl p-4 animate-in slide-in-from-top-2 duration-300 z-[120]">
                            <div className="p-4 border-b border-slate-50 mb-3 flex justify-between items-center"><h4 className="text-[10px] font-black text-slate-900 uppercase tracking-widest">Pusat Notifikasi</h4></div>
-                           <div className="space-y-1.5">{activeAlerts.length > 0 ? activeAlerts.map((alert, i) => (<button key={i} onClick={() => { handleNavigate(alert.target); setIsNotifOpen(false); }} className="w-full flex items-center gap-4 p-4 rounded-[1.75rem] hover:bg-slate-50 transition-all text-left"><div className={`w-10 h-10 rounded-2xl bg-${alert.color}-50 text-${alert.color}-600 flex items-center justify-center text-sm shrink-0`}><i className={`bi ${alert.icon}`}></i></div><p className="text-xs font-black text-slate-800 leading-tight">{alert.text}</p></button>)) : (<div className="py-12 text-center text-slate-300">Tidak ada notifikasi baru</div>)}</div>
+                           <div className="space-y-1.5">{activeAlerts.length > 0 ? activeAlerts.map((alert, i) => (<button key={i} onClick={() => { handleNavigate(alert.target); setIsNotifOpen(false); }} className="w-full flex items-center gap-4 p-4 rounded-[1.75rem] hover:bg-slate-50 transition-all text-left"><div className={`w-10 h-10 rounded-2xl bg-${alert.color}-50 text-${alert.color}-600 flex items-center justify-center text-sm shrink-0`}><i className={`bi ${alert.icon}`}></i></div><p className="text-xs font-black text-slate-800 leading-tight">{alert.text}</p></button>)) : (<div className="py-12 text-center text-slate-300 font-bold uppercase text-[10px]">Tidak ada notifikasi baru</div>)}</div>
                         </div>
                      )}
                   </div>
