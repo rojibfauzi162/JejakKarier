@@ -1,8 +1,8 @@
 
 import { AppData, SkillStatus, SkillCategory, SkillPriority, TrainingStatus, AchievementCategory, CareerType, CareerStatus, JobStatus, ProjectStatus, UserRole, SubscriptionPlan, AccountStatus, SubscriptionProduct } from './types';
 
-// Fix: Added missing properties required by AppData type
-export const INITIAL_DATA: AppData = {
+// Gunakan Object.freeze untuk memastikan INITIAL_DATA tidak bisa dimutasi di memori
+export const INITIAL_DATA: AppData = Object.freeze({
   role: UserRole.USER,
   plan: SubscriptionPlan.FREE,
   status: AccountStatus.ACTIVE,
@@ -48,7 +48,7 @@ export const INITIAL_DATA: AppData = {
   personalProjects: [],
   todoList: [],
   todoCategories: ['Pendukung Kerja', 'Pengembangan Diri', 'Buka Peluang', 'Keseimbangan Hidup'],
-  careerEvents: [], // INITIAL CALENDAR STATE
+  careerEvents: [],
   affirmations: ["I am capable of achieving my professional goals", "Every challenge is an opportunity to grow"],
   workCategories: ['Operasional', 'Meeting', 'Learning', 'Administratif', 'Lainnya'],
   onlineCV: {
@@ -75,7 +75,7 @@ export const INITIAL_DATA: AppData = {
     timezone: "Asia/Jakarta"
   },
   completedAiMilestones: []
-};
+});
 
 export const DEFAULT_PRODUCTS: SubscriptionProduct[] = [
   { 

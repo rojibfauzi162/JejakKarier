@@ -239,7 +239,6 @@ export const saveProductsCatalog = async (products: SubscriptionProduct[]) => {
 
 /**
  * Memproses aktivasi paket dari webhook Mayar secara otomatis.
- * Mendukung pembuatan akun otomatis jika user belum terdaftar.
  */
 export const processMayarOrder = async (email: string, mayarProdId: string, customerName?: string, customerPhone?: string) => {
   const catalog = await getProductsCatalog();
@@ -259,8 +258,7 @@ export const processMayarOrder = async (email: string, mayarProdId: string, cust
   let userData: Partial<AppData> = {};
 
   if (querySnap.empty) {
-    // LOGIKA PEMBUATAN AKUN OTOMATIS
-    const generatedPassword = Math.random().toString(36).slice(-8); // Generate 8 char password
+    // LOGIKA PEMBUATAN AKUN OTOMATIS JIKA BELUM ADA
     const newUid = `mayar-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
     userRef = doc(db, "users", newUid);
 
@@ -269,7 +267,7 @@ export const processMayarOrder = async (email: string, mayarProdId: string, cust
 
     userData = {
       uid: newUid,
-      role: UserRole.SUPERADMIN,
+      role: UserRole.USER, // FIXED: Default role is USER, not Superadmin
       plan: matchedPlan.tier,
       status: AccountStatus.ACTIVE,
       joinedAt: now.toISOString(),
@@ -298,13 +296,8 @@ export const processMayarOrder = async (email: string, mayarProdId: string, cust
       affirmations: ["I am capable of achieving my professional goals"],
       completedAiMilestones: []
     };
-
-    // LOGIKA PENGIRIMAN EMAIL (MOCKUP/PLACEHOLDER)
-    // Di sini Anda biasanya memicu API seperti SendGrid/Mailchimp atau Cloud Function.
-    console.log(`[EMAIL TRIGGER] Mengirim kredensial ke ${email}. Password: ${generatedPassword}`);
     
     await setDoc(userRef, sanitizeData(userData));
-    console.log(`SUKSES: Akun baru dibuat untuk ${email} (Password: ${generatedPassword})`);
   } else {
     // LOGIKA UPDATE AKUN EKSISTING
     const userDoc = querySnap.docs[0];
@@ -323,14 +316,13 @@ export const processMayarOrder = async (email: string, mayarProdId: string, cust
 
     await updateDoc(userRef, {
       plan: matchedPlan.tier,
-      role: UserRole.SUPERADMIN,
       status: AccountStatus.ACTIVE,
       activeFrom: now.toISOString(),
       expiryDate: newExpiry.toISOString(),
       planPermissions: matchedPlan.allowedModules,
       planLimits: matchedPlan.limits,
       updatedAt: now.toISOString()
+      // FIXED: Do not overwrite role. Role remains what it was before.
     });
-    console.log(`SUKSES: Paket ${matchedPlan.name} aktif untuk user eksisting ${email}`);
   }
 };
