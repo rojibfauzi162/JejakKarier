@@ -1,12 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
-import { SubscriptionPlan, SubscriptionProduct, MayarConfig } from '../../types';
-import { getMayarConfig } from '../../services/firebase';
+import { SubscriptionPlan, SubscriptionProduct } from '../../types';
 
 const ProductForm = ({ initialData, onCancel, onSubmit, onDelete }: any) => {
   const [form, setForm] = useState<Partial<SubscriptionProduct>>(initialData || {
     name: '', tier: SubscriptionPlan.FREE, price: 0, originalPrice: 0, durationDays: 30,
-    mayarProductId: '',
     isActive: true,
     showOnLanding: true,
     isHighlighted: false,
@@ -29,7 +27,6 @@ const ProductForm = ({ initialData, onCancel, onSubmit, onDelete }: any) => {
   });
 
   const [discountPercent, setDiscountPercent] = useState<number>(0);
-  const [mayarConfig, setMayarConfig] = useState<MayarConfig | null>(null);
 
   // Daftar Modul Lengkap Sesuai App.tsx
   const APP_MODULES = [
@@ -57,7 +54,6 @@ const ProductForm = ({ initialData, onCancel, onSubmit, onDelete }: any) => {
       const pct = Math.round(((form.originalPrice - form.price) / form.originalPrice) * 100);
       setDiscountPercent(pct);
     }
-    getMayarConfig().then(res => { if (res) setMayarConfig(res); });
   }, []);
 
   const toggleModule = (mId: string) => {
@@ -106,7 +102,7 @@ const ProductForm = ({ initialData, onCancel, onSubmit, onDelete }: any) => {
 
       {/* 02: HARGA & MONETISASI */}
       <section className="space-y-6">
-        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] border-b pb-4">02. Harga & Strategi Mayar</h4>
+        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] border-b pb-4">02. Strategi Harga</h4>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="space-y-2">
             <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Harga Jual (Rp)</label>
@@ -123,13 +119,6 @@ const ProductForm = ({ initialData, onCancel, onSubmit, onDelete }: any) => {
           <div className="space-y-2">
             <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Durasi Akses (Hari)</label>
             <input type="number" className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-sm" value={form.durationDays} onChange={e => setForm({...form, durationDays: Number(e.target.value)})} required />
-          </div>
-          <div className="md:col-span-2 space-y-2">
-            <label className="text-[10px] font-black text-blue-600 uppercase tracking-widest ml-1">Mayar Product ID / Slug</label>
-            <div className="flex gap-2">
-               <input className="flex-1 px-6 py-4 rounded-2xl bg-blue-50/30 border-2 border-blue-100 outline-none font-mono text-xs text-blue-700" placeholder="Misal: elite-pro-30d" value={form.mayarProductId || ''} onChange={e => setForm({...form, mayarProductId: e.target.value})} />
-               <button type="button" onClick={() => window.open(`https://mayar.link/pl/${form.mayarProductId}`, '_blank')} className="px-5 py-4 bg-white border border-slate-200 rounded-2xl text-[10px] font-black uppercase hover:bg-slate-50 transition-all">Test ↗</button>
-            </div>
           </div>
         </div>
 

@@ -10,13 +10,14 @@ import AiArchitecture from './AiArchitecture';
 import ProductMatrix from './ProductMatrix';
 import SystemHealth from './SystemHealth';
 import ProductForm from './ProductForm';
-import MayarIntegration from './MayarIntegration';
 import TransactionManagement from './TransactionManagement';
 import AdminManagement from './AdminManagement';
 import AdminSettings from './AdminSettings';
+import MayarIntegration from './MayarIntegration';
 
 interface AdminPanelProps {
-  initialMode?: 'dashboard' | 'users' | 'products' | 'health' | 'ai' | 'integrations' | 'admin_transactions' | 'admin_admins' | 'settings';
+  /** Added 'integrations' to satisfy the routing call in App.tsx */
+  initialMode?: 'dashboard' | 'users' | 'products' | 'health' | 'ai' | 'admin_transactions' | 'admin_admins' | 'settings' | 'integrations';
   userRole?: UserRole;
 }
 
@@ -53,7 +54,21 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard', user
     { 
       id: 'p1', name: 'Paket Gratisan', tier: SubscriptionPlan.FREE, price: 0, durationDays: 3650, enabledDurations: [3650], 
       allowedModules: ['dashboard', 'profile', 'daily', 'skills'], 
-      limits: { dailyLogs: 10, skills: 5, projects: 2, cvExports: 1 } 
+      limits: { 
+        dailyLogs: 10, 
+        skills: 5, 
+        projects: 2, 
+        cvExports: 1,
+        trainingHistory: 5,
+        certification: 3,
+        careerPath: 1,
+        jobTracker: 5,
+        networking: 5,
+        todoList: 10,
+        workExperience: 3,
+        education: 2,
+        careerCalendar: 5
+      } 
     }
   ]);
 
@@ -63,7 +78,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard', user
   };
 
   const fetchUsersAndConfig = async (silent = false) => {
-    // Safety check: Jangan lanjutkan jika role user bukan superadmin
     if (userRole !== UserRole.SUPERADMIN) {
       setError("Akses Terbatas: Role 'superadmin' tidak ditemukan pada akun Anda.");
       setLoading(false);
@@ -218,7 +232,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard', user
   const handleSaveUserMetadata = async (metadata: Partial<AppData>) => {
     if (!editingUser?.uid) return;
     try {
-      // Pastikan tidak ada undefined yang lolos ke updateAdminMetadata
       await updateAdminMetadata(editingUser.uid, metadata);
       triggerToast("Berhasil update user! ✅");
       fetchUsersAndConfig(true);
@@ -285,7 +298,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard', user
       <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 pt-4">
         <div>
           <h2 className="text-3xl font-black text-slate-900 tracking-tight uppercase">
-            {initialMode === 'health' ? 'Kesehatan Sistem' : initialMode === 'users' ? 'Kelola User' : initialMode === 'ai' ? 'Arsitektur AI' : initialMode === 'products' ? 'Matriks Produk' : initialMode === 'integrations' ? 'Integrasi Mayar' : initialMode === 'admin_admins' ? 'Kelola Admin' : initialMode === 'admin_transactions' ? 'Manajemen Keuangan' : initialMode === 'settings' ? 'Global Settings' : 'Dashboard Admin Hub'}
+            {initialMode === 'health' ? 'Kesehatan Sistem' : initialMode === 'users' ? 'Kelola User' : initialMode === 'ai' ? 'Arsitektur AI' : initialMode === 'products' ? 'Matriks Produk' : initialMode === 'admin_admins' ? 'Kelola Admin' : initialMode === 'admin_transactions' ? 'Manajemen Keuangan' : initialMode === 'settings' ? 'Global Settings' : initialMode === 'integrations' ? 'Integrasi Pembayaran' : 'Dashboard Admin Hub'}
           </h2>
           <p className="text-slate-500 font-medium italic">Sistem Administrasi FokusKarir.</p>
         </div>
@@ -313,7 +326,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard', user
       )}
       {initialMode === 'products' && <ProductMatrix products={products} setEditingProduct={setEditingProduct} setIsProductModalOpen={setIsProductModalOpen} />}
       {initialMode === 'health' && <SystemHealth keyInfo={keyInfo} fetchingKeyInfo={fetchingKeyInfo} aiConfig={aiConfig} totalTokens={adminStats.totalTokens} />}
-      {initialMode === 'integrations' && <MayarIntegration />}
       {initialMode === 'admin_transactions' && (
         <TransactionManagement 
           users={users} 
@@ -329,12 +341,18 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard', user
         />
       )}
       {initialMode === 'settings' && <AdminSettings />}
+      {/** Added handling for integrations mode */}
+      {initialMode === 'integrations' && <MayarIntegration />}
 
       {/* MODAL USER */}
       {isUserModalOpen && editingUser && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[2000] p-4">
           <div className="bg-white w-full max-w-xl rounded-[2.5rem] shadow-2xl p-8 lg:p-12 animate-in zoom-in duration-300 overflow-y-auto max-h-[90vh]">
-             <h3 className="text-2xl font-black text-slate-900 uppercase mb-8">Kelola User</h3>
+             <div className="flex justify-between items-start mb-8">
+                <h3 className="text-2xl font-black text-slate-900 uppercase">Kelola User</h3>
+                <button onClick={() => setIsUserModalOpen(false)} className="w-10 h-10 rounded-full bg-slate-50 text-slate-400 flex items-center justify-center font-black">✕</button>
+             </div>
+
              <div className="space-y-6">
                 <div className="p-6 bg-slate-50 rounded-2xl border">
                   <p className="font-black text-slate-800">{editingUser.profile?.name}</p>
@@ -344,10 +362,17 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard', user
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <label className="text-[9px] font-black uppercase text-slate-400 ml-1">Role Utama</label>
-                    <select className="w-full px-4 py-2.5 rounded-xl border text-xs font-bold" value={editingUser.role} onChange={e => setEditingUser({ ...editingUser, role: e.target.value as UserRole })}>
+                    <select 
+                        className={`w-full px-4 py-2.5 rounded-xl border text-xs font-bold transition-all ${editingUser.role === UserRole.SUPERADMIN ? 'bg-rose-50 border-rose-300 text-rose-600' : 'bg-white'}`} 
+                        value={editingUser.role} 
+                        onChange={e => setEditingUser({ ...editingUser, role: e.target.value as UserRole })}
+                    >
                       <option value={UserRole.USER}>User Biasa / Member</option>
                       <option value={UserRole.SUPERADMIN}>Superadmin (Full Access)</option>
                     </select>
+                    {editingUser.role === UserRole.SUPERADMIN && (
+                      <p className="text-[8px] font-black text-rose-500 uppercase mt-1 px-1 animate-pulse">⚠️ Perhatian: User ini akan memiliki akses Admin penuh.</p>
+                    )}
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-[9px] font-black uppercase text-slate-400 ml-1">Status Akun</label>
@@ -358,7 +383,16 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard', user
                 </div>
 
                 <div className="pt-6 border-t border-slate-100 space-y-5">
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Subscription Control</p>
+                    <div className="flex justify-between items-center px-1">
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Subscription Control</p>
+                        <button 
+                            type="button"
+                            onClick={() => setEditingUser({...editingUser, role: UserRole.USER})}
+                            className="text-[9px] font-black text-blue-600 uppercase hover:underline"
+                        >
+                            Reset ke Role User Biasa
+                        </button>
+                    </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-1.5">
                             <label className="text-[9px] font-black uppercase text-slate-400 ml-1">Pilih Paket (Matriks Produk)</label>
@@ -426,7 +460,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard', user
                       planLimits: editingUser.planLimits,
                       activeFrom: editingUser.activeFrom
                   })} className="flex-1 py-4 bg-slate-900 text-white font-black rounded-2xl text-[10px] uppercase shadow-xl hover:bg-black transition-all">Simpan Perubahan</button>
-                  <button onClick={() => setIsUserModalOpen(false)} className="px-6 py-4 text-slate-400 font-black text-[10px] uppercase tracking-widest hover:text-slate-600">Batal</button>
                 </div>
              </div>
           </div>

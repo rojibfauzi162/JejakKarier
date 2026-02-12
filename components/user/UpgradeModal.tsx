@@ -1,44 +1,22 @@
 
 import React, { useState, useEffect } from 'react';
-import { SubscriptionProduct, SubscriptionPlan, MayarConfig } from '../../types';
-import { getMayarConfig } from '../../services/firebase';
+import { SubscriptionProduct, SubscriptionPlan } from '../../types';
 
 interface UpgradeModalProps {
   products: SubscriptionProduct[];
   currentPlan: SubscriptionPlan;
   onClose: () => void;
+  userEmail?: string;
+  userName?: string;
 }
 
-const UpgradeModal: React.FC<UpgradeModalProps> = ({ products, currentPlan, onClose }) => {
-  const [mayarConfig, setMayarConfig] = useState<MayarConfig | null>(null);
+const UpgradeModal: React.FC<UpgradeModalProps> = ({ products, currentPlan, onClose, userEmail, userName }) => {
   const premiumProducts = products.filter(p => p.price > 0);
 
-  useEffect(() => {
-    getMayarConfig().then(res => {
-      if (res) setMayarConfig(res);
-    });
-  }, []);
-
-  const handlePay = (mayarProdId?: string) => {
-    if (!mayarProdId) {
-      alert("ID Produk Mayar belum dikonfigurasi oleh admin.");
-      return;
-    }
-
-    let finalUrl = mayarProdId;
-    if (!mayarProdId.startsWith('http')) {
-       if (mayarConfig?.subdomain) {
-          finalUrl = `https://${mayarConfig.subdomain}.myr.id/plink/${mayarProdId}`;
-       } else {
-          if (mayarProdId.startsWith('p-')) {
-             finalUrl = `https://mayar.link/p/${mayarProdId}`;
-          } else {
-             finalUrl = `https://mayar.link/pl/${mayarProdId}`;
-          }
-       }
-    }
-
-    window.open(finalUrl, '_blank');
+  const handlePay = (planName: string, price: number) => {
+    const waNumber = "628123456789"; 
+    const message = encodeURIComponent(`Halo Admin, saya mau upgrade ke paket *${planName}* seharga *Rp ${price.toLocaleString('id-ID')}*.\n\nEmail: ${userEmail || '-'}\nNama: ${userName || '-'}`);
+    window.open(`https://wa.me/${waNumber}?text=${message}`, '_blank');
   };
 
   return (
@@ -54,7 +32,7 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({ products, currentPlan, onCl
                 <button onClick={onClose} className="w-10 h-10 bg-white/5 hover:bg-white/20 rounded-full flex items-center justify-center transition-all">✕</button>
               </div>
               <h2 className="text-3xl lg:text-5xl font-black tracking-tighter uppercase leading-none mb-4">Akses Unlimited <span className="text-indigo-200">FokusKarir Pro</span></h2>
-              <p className="text-indigo-100 text-lg font-medium italic opacity-80">Buka seluruh potensi AI Intelligence dan bangun portfolio profesional tanpa batas.</p>
+              <p className="text-indigo-100 text-lg font-medium italic opacity-80">Buka seluruh potensi AI Intelligence melalui aktivasi manual admin.</p>
            </div>
            <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -mr-32 -mt-32"></div>
         </div>
@@ -85,34 +63,18 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({ products, currentPlan, onCl
                                  <span className="uppercase">{m.replace('_', ' ')}</span>
                               </li>
                             ))}
-                            <li className="flex items-center gap-3 text-[10px] font-bold text-slate-600">
-                               <i className="bi bi-check-circle-fill text-emerald-500"></i>
-                               <span>LIMIT {p.limits.dailyLogs === 'unlimited' ? '∞' : p.limits.dailyLogs} DATA PER BULAN</span>
-                            </li>
                          </ul>
                       </div>
                    </div>
 
                    <button 
-                    onClick={() => handlePay(p.mayarProductId)}
+                    onClick={() => handlePay(p.name, p.price)}
                     className="w-full mt-10 py-4 bg-slate-900 text-white font-black rounded-2xl uppercase text-[10px] tracking-widest shadow-xl hover:bg-indigo-600 transition-all active:scale-95 z-10"
                    >
-                      Pilih Paket Sekarang →
+                      Pilih & Chat Admin →
                    </button>
-                   <div className="absolute -bottom-10 -right-10 w-24 h-24 bg-white rounded-full group-hover:bg-indigo-50 transition-colors duration-500 -z-0"></div>
                 </div>
               ))}
-           </div>
-
-           <div className="mt-14 pt-10 border-t border-slate-100 flex flex-col md:flex-row items-center justify-between gap-6">
-              <div className="flex items-center gap-4">
-                 <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-xl text-slate-400"><i className="bi bi-shield-check"></i></div>
-                 <div>
-                    <p className="text-xs font-black text-slate-800 uppercase tracking-tight">Pembayaran Aman & Terverifikasi</p>
-                    <p className="text-[9px] font-medium text-slate-400 uppercase tracking-widest">Gateway Resmi Powered by Mayar.id</p>
-                 </div>
-              </div>
-              <p className="text-[9px] font-bold text-slate-400 uppercase italic">"Langkah investasi terbaik untuk karir yang terukur."</p>
            </div>
         </div>
       </div>

@@ -352,11 +352,14 @@ export interface LandingPageConfig {
   updatedAt?: string;
 }
 
+/**
+ * Added MayarConfig interface to support payment integrations
+ */
 export interface MayarConfig {
   apiKey: string;
   subdomain?: string;
   webhookSecret?: string;
-  enabledEvents?: string[];
+  enabledEvents: string[];
   environment: 'sandbox' | 'production';
   updatedAt?: string;
 }
@@ -422,10 +425,11 @@ export interface SubscriptionProduct {
   durationDays: number;
   enabledDurations: number[];
   allowedModules: string[];
-  mayarProductId?: string;
   isActive?: boolean;
   showOnLanding?: boolean;
   isHighlighted?: boolean;
+  /** Added mayarProductId to satisfy constants and components */
+  mayarProductId?: string;
   limits: {
     dailyLogs: number | 'unlimited';
     skills: number | 'unlimited';

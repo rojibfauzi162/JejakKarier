@@ -2,7 +2,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, signInWithPopup } from '@firebase/auth';
 import { getFirestore, doc, setDoc, getDoc, collection, getDocs, updateDoc, increment, query, where, limit } from "firebase/firestore";
-import { AppData, AiConfig, SubscriptionProduct, AccountStatus, MayarConfig, LegalConfig, UserRole, LandingPageConfig } from "../types";
+import { AppData, AiConfig, SubscriptionProduct, AccountStatus, LegalConfig, UserRole, LandingPageConfig, MayarConfig } from "../types";
 
 // KONFIGURASI FIREBASE
 const firebaseConfig = {
@@ -192,25 +192,31 @@ export const saveLandingPageConfig = async (config: LandingPageConfig) => {
   }
 };
 
+/**
+ * Added getMayarConfig to retrieve payment integration settings
+ */
 export const getMayarConfig = async (): Promise<MayarConfig | null> => {
   try {
     const docRef = doc(db, "system_metadata", "mayar_configuration");
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) return docSnap.data() as MayarConfig;
-  } catch (e: any) {
-    console.warn("[FIREBASE] Config Mayar error:", e.message);
+  } catch (error: any) {
+    console.warn("[FIREBASE] Config Mayar error:", error.message);
   }
   return null;
 };
 
+/**
+ * Added saveMayarConfig to persist payment integration settings
+ */
 export const saveMayarConfig = async (config: MayarConfig) => {
   try {
     const docRef = doc(db, "system_metadata", "mayar_configuration");
-    const sanitized = sanitizeData({
+    const dataToSave = sanitizeData({
       ...config,
       updatedAt: new Date().toISOString()
     });
-    await setDoc(docRef, sanitized, { merge: true });
+    await setDoc(docRef, dataToSave, { merge: true });
   } catch (error) {
     throw error;
   }
@@ -234,95 +240,5 @@ export const saveProductsCatalog = async (products: SubscriptionProduct[]) => {
     await setDoc(docRef, sanitized);
   } catch (e) {
     throw e;
-  }
-};
-
-/**
- * Memproses aktivasi paket dari webhook Mayar secara otomatis.
- */
-export const processMayarOrder = async (email: string, mayarProdId: string, customerName?: string, customerPhone?: string) => {
-  const catalog = await getProductsCatalog();
-  const matchedPlan = catalog?.find(p => p.mayarProductId === mayarProdId || p.id === mayarProdId);
-  
-  if (!matchedPlan) {
-    console.error("Aktivasi Gagal: ID Produk/Slug '" + mayarProdId + "' tidak ditemukan di katalog.");
-    return;
-  }
-
-  const usersRef = collection(db, "users");
-  const q = query(usersRef, where("profile.email", "==", email.toLowerCase().trim()), limit(1));
-  const querySnap = await getDocs(q);
-
-  const now = new Date();
-  let userRef;
-  let userData: Partial<AppData> = {};
-
-  if (querySnap.empty) {
-    // LOGIKA PEMBUATAN AKUN OTOMATIS JIKA BELUM ADA
-    const newUid = `mayar-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-    userRef = doc(db, "users", newUid);
-
-    const expiryDate = new Date();
-    expiryDate.setDate(expiryDate.getDate() + matchedPlan.durationDays);
-
-    userData = {
-      uid: newUid,
-      role: UserRole.USER, // FIXED: Default role is USER, not Superadmin
-      plan: matchedPlan.tier,
-      status: AccountStatus.ACTIVE,
-      joinedAt: now.toISOString(),
-      lastLogin: now.toISOString(),
-      activeFrom: now.toISOString(),
-      expiryDate: expiryDate.toISOString(),
-      planPermissions: matchedPlan.allowedModules,
-      planLimits: matchedPlan.limits,
-      aiUsage: { cvGenerated: 0, coverLetters: 0, careerAnalysis: 0, totalTokens: 0 },
-      profile: {
-        name: customerName || "Member Mayar",
-        email: email.toLowerCase().trim(),
-        phone: customerPhone || "",
-        birthPlace: "", birthDate: "", maritalStatus: "", domicile: "",
-        mainCareer: "", sideCareer: "", currentCompany: "", currentPosition: "",
-        jobDesk: "", shortTermTarget: "", longTermTarget: "", description: "",
-        photoUrl: "", jobCategory: ""
-      },
-      workExperiences: [], educations: [], dailyReports: [], dailyReflections: [],
-      skills: [], trainings: [], certifications: [], careerPaths: [],
-      achievements: [], contacts: [], monthlyReviews: [], jobApplications: [],
-      personalProjects: [], todoList: [], todoCategories: ['Pendukung Kerja', 'Pengembangan Diri', 'Buka Peluang', 'Keseimbangan Hidup'],
-      careerEvents: [], workCategories: ['Operasional', 'Meeting', 'Learning', 'Administratif', 'Lainnya'],
-      onlineCV: { username: "", themeId: "modern-dark", isActive: false, visibleSections: ['work'], selectedItemIds: { work: [], education: [], skills: [], achievements: [], projects: [] }, socialLinks: {} },
-      reminderConfig: { weeklyProgress: true, monthlyEvaluation: true, dailyMotivation: true, dailyLogReminderTime: "17:00", reflectionReminderTime: "18:00", todoReminderTime: "20:00", timezone: "Asia/Jakarta" },
-      affirmations: ["I am capable of achieving my professional goals"],
-      completedAiMilestones: []
-    };
-    
-    await setDoc(userRef, sanitizeData(userData));
-  } else {
-    // LOGIKA UPDATE AKUN EKSISTING
-    const userDoc = querySnap.docs[0];
-    const existingData = userDoc.data() as AppData;
-    userRef = doc(db, "users", userDoc.id);
-
-    if (existingData.status === AccountStatus.BANNED) {
-       console.error("Aktivasi Ditolak: User dalam status Banned.");
-       return;
-    }
-
-    const currentExpiry = existingData.expiryDate ? new Date(existingData.expiryDate) : now;
-    const baseDate = currentExpiry > now ? currentExpiry : now;
-    const newExpiry = new Date(baseDate);
-    newExpiry.setDate(newExpiry.getDate() + matchedPlan.durationDays);
-
-    await updateDoc(userRef, {
-      plan: matchedPlan.tier,
-      status: AccountStatus.ACTIVE,
-      activeFrom: now.toISOString(),
-      expiryDate: newExpiry.toISOString(),
-      planPermissions: matchedPlan.allowedModules,
-      planLimits: matchedPlan.limits,
-      updatedAt: now.toISOString()
-      // FIXED: Do not overwrite role. Role remains what it was before.
-    });
   }
 };

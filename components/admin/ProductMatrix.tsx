@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { SubscriptionProduct } from '../../types';
 
@@ -88,17 +89,6 @@ const ProductMatrix: React.FC<ProductMatrixProps> = ({ products, setEditingProdu
                           </span>
                         ))}
                      </div>
-                  </div>
-
-                  {/* MAYAR LINK STATUS */}
-                  <div className={`mt-auto p-4 rounded-2xl border flex items-center justify-between ${p.mayarProductId ? 'bg-indigo-50 border-indigo-100' : 'bg-rose-50 border-rose-100'}`}>
-                    <div className="flex items-center gap-3 overflow-hidden">
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black shrink-0 ${p.mayarProductId ? 'bg-indigo-600 text-white' : 'bg-rose-600 text-white'}`}>M</div>
-                      <p className="text-[10px] font-mono font-bold truncate text-slate-700">
-                        {p.mayarProductId || 'ID MAYAR KOSONG'}
-                      </p>
-                    </div>
-                    {p.mayarProductId && <i className="bi bi-check-circle-fill text-indigo-600 text-sm"></i>}
                   </div>
                </div>
                <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-indigo-500/5 rounded-full blur-2xl -z-10"></div>

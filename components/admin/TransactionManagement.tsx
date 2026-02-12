@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo } from 'react';
-import { AppData, SubscriptionPlan, AccountStatus, PaymentStatus, ManualTransaction, SubscriptionProduct } from '../../types';
+import { AppData, SubscriptionPlan, AccountStatus, PaymentStatus, ManualTransaction, SubscriptionProduct, UserRole } from '../../types';
 
 interface TransactionManagementProps {
   users: AppData[];
@@ -33,26 +33,9 @@ const TransactionManagement: React.FC<TransactionManagementProps> = ({ users, pr
           uid: u.uid 
         }));
       }
-      
-      // Data Transaksi Sistem / Mayar
-      if (u.activeFrom && u.plan !== SubscriptionPlan.FREE) {
-        const matchingProd = products.find(p => p.tier === u.plan);
-        list.push({
-          id: `sys-${u.uid}`,
-          amount: matchingProd?.price || 0,
-          date: u.activeFrom,
-          status: PaymentStatus.PAID,
-          planTier: u.plan,
-          source: 'Mayar.id',
-          notes: 'Transaksi Otomatis Gateway',
-          userName: u.profile?.name, 
-          userEmail: u.profile?.email, 
-          uid: u.uid 
-        });
-      }
     });
     return list.sort((a, b) => b.date.localeCompare(a.date));
-  }, [users, products]);
+  }, [users]);
 
   const handleAddManualTransaction = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,6 +62,7 @@ const TransactionManagement: React.FC<TransactionManagementProps> = ({ users, pr
 
     const fields: Partial<AppData> = { manualTransactions: currentTxs };
 
+    // KUNCI KEAMANAN: Memastikan role tidak berubah saat aktivasi paket
     if (manualForm.status === PaymentStatus.PAID) {
       const selectedProduct = products.find(p => p.tier === manualForm.planTier);
       fields.plan = manualForm.planTier;
@@ -87,12 +71,23 @@ const TransactionManagement: React.FC<TransactionManagementProps> = ({ users, pr
       const expiry = new Date();
       expiry.setDate(expiry.getDate() + (selectedProduct?.durationDays || 30));
       fields.expiryDate = expiry.toISOString();
+      
+      // Update permissions & limits berdasarkan produk terpilih
+      if (selectedProduct) {
+        fields.planPermissions = selectedProduct.allowedModules;
+        fields.planLimits = selectedProduct.limits;
+      }
+
+      // Explicitly keep role as user unless already admin
+      if (user.role !== UserRole.SUPERADMIN) {
+        fields.role = UserRole.USER;
+      }
     }
 
     await onUpdateMetadata(selectedUserUid, fields);
     setShowManualModal(false);
     setEditingTx(null);
-    alert(editingTx ? "Transaksi diperbarui." : "Transaksi manual berhasil dicatat.");
+    alert(editingTx ? "Transaksi diperbarui." : "Transaksi manual berhasil dicatat. User tetap memiliki role Member.");
   };
 
   const handleEditClick = (uid: string, tx: ManualTransaction) => {
@@ -125,16 +120,26 @@ const TransactionManagement: React.FC<TransactionManagementProps> = ({ users, pr
       const expiry = new Date();
       expiry.setDate(expiry.getDate() + (selectedProduct?.durationDays || 30));
       fields.expiryDate = expiry.toISOString();
+      
+      if (selectedProduct) {
+        fields.planPermissions = selectedProduct.allowedModules;
+        fields.planLimits = selectedProduct.limits;
+      }
+
+      // Explicitly keep role as user unless already admin
+      if (user.role !== UserRole.SUPERADMIN) {
+        fields.role = UserRole.USER;
+      }
     }
 
     await onUpdateMetadata(uid, fields);
-    alert(`Status pembayaran diperbarui menjadi ${newStatus}`);
+    alert(`Status pembayaran diperbarui menjadi ${newStatus}. Hak akses user telah diaktifkan.`);
   };
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="flex justify-between items-center px-4">
-        <h3 className="text-xl font-black text-slate-900 uppercase">Daftar Transaksi</h3>
+        <h3 className="text-xl font-black text-slate-900 uppercase">Daftar Transaksi Manual</h3>
         <button 
           onClick={() => { setEditingTx(null); setSelectedUserUid(''); setManualForm({ amount: 0, status: PaymentStatus.UNPAID, planTier: SubscriptionPlan.PRO, notes: '' }); setShowManualModal(true); }}
           className="px-8 py-3 bg-indigo-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl hover:bg-indigo-700 transition-all"
@@ -156,7 +161,6 @@ const TransactionManagement: React.FC<TransactionManagementProps> = ({ users, pr
                 <th className="px-6 py-4">Paket</th>
                 <th className="px-6 py-4">Harga</th>
                 <th className="px-6 py-4 text-center">Status</th>
-                <th className="px-6 py-4">Sumber</th>
                 <th className="px-6 py-4">Tanggal</th>
                 <th className="px-8 py-4 text-right">Aksi</th>
               </tr>
@@ -180,15 +184,10 @@ const TransactionManagement: React.FC<TransactionManagementProps> = ({ users, pr
                     </span>
                   </td>
                   <td className="px-6 py-4">
-                    <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded ${t.source === 'Manual' ? 'bg-slate-100 text-slate-500' : 'bg-blue-600 text-white'}`}>
-                        {t.source}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
                     <p className="text-[10px] font-bold text-slate-500">{new Date(t.date).toLocaleDateString('id-ID')}</p>
                   </td>
                   <td className="px-8 py-4 text-right">
-                    {t.source === 'Manual' && t.status === PaymentStatus.UNPAID && (
+                    {t.status === PaymentStatus.UNPAID && (
                       <button 
                         onClick={() => handleUpdatePaymentStatus(t.uid, t.id, PaymentStatus.PAID)}
                         className="text-emerald-600 font-black text-[9px] uppercase hover:underline mr-4"
@@ -196,9 +195,7 @@ const TransactionManagement: React.FC<TransactionManagementProps> = ({ users, pr
                         Set Sudah Bayar
                       </button>
                     )}
-                    {t.source === 'Manual' && (
-                        <button onClick={() => handleEditClick(t.uid, t)} className="text-slate-400 font-black text-[9px] uppercase hover:underline mr-4">Edit</button>
-                    )}
+                    <button onClick={() => handleEditClick(t.uid, t)} className="text-slate-400 font-black text-[9px] uppercase hover:underline mr-4">Edit</button>
                     <button onClick={() => onManageUser({ uid: t.uid } as AppData)} className="text-indigo-600 font-black text-[9px] uppercase hover:underline">Detail User</button>
                   </td>
                 </tr>
@@ -274,7 +271,7 @@ const TransactionManagement: React.FC<TransactionManagementProps> = ({ users, pr
                    />
                 </div>
                 <div className="flex gap-4 pt-4">
-                   <button type="button" onClick={() => { setShowManualModal(false); setEditingTx(null); }} className="flex-1 py-4 text-slate-400 font-black uppercase text-[10px]">Batal</button>
+                   <button type="button" onClick={() => { setShowManualModal(false); setEditingTx(null); }} className="flex-1 py-4 text-slate-400 font-black rounded-2xl uppercase text-[10px]">Batal</button>
                    <button type="submit" className="flex-[2] py-4 bg-indigo-600 text-white font-black rounded-2xl uppercase text-[10px] shadow-xl">Simpan Transaksi</button>
                 </div>
              </form>
