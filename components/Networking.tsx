@@ -1,15 +1,16 @@
 
 import React, { useState, useMemo } from 'react';
-import { Contact } from '../types';
+import { Contact, AppData, SubscriptionPlan } from '../types';
 
 interface NetworkingProps {
   contacts: Contact[];
   onAdd: (c: Contact) => void;
   onUpdate: (c: Contact) => void;
   onDelete: (id: string) => void;
+  appData?: AppData;
 }
 
-const Networking: React.FC<NetworkingProps> = ({ contacts, onAdd, onUpdate, onDelete }) => {
+const Networking: React.FC<NetworkingProps> = ({ contacts, onAdd, onUpdate, onDelete, appData }) => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Contact | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -23,6 +24,12 @@ const Networking: React.FC<NetworkingProps> = ({ contacts, onAdd, onUpdate, onDe
   }, [contacts, searchQuery]);
 
   const openAddForm = () => {
+    // VALIDASI LIMIT DATABASE PAKET FREE
+    const limit = appData?.planLimits?.networking || 2;
+    if (appData?.plan === SubscriptionPlan.FREE && contacts.length >= Number(limit)) {
+      alert(`Batas kontak networking tercapai (${limit}). Silakan upgrade paket untuk mengelola lebih banyak relasi.`);
+      return;
+    }
     setEditingItem(null);
     setIsFormOpen(true);
   };

@@ -1,6 +1,6 @@
 
-import React, { useState, useEffect, useRef } from 'react';
-import { AppData, SkillStatus } from '../types';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { AppData, SkillStatus, SubscriptionPlan } from '../types';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 
 interface DashboardProps {
@@ -15,6 +15,62 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenNotif, on
   const [isMenuExpanded, setIsMenuExpanded] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   
+  // Trial Journey Logic
+  const daysSinceJoined = useMemo(() => {
+    const joined = new Date(data.joinedAt);
+    const now = new Date();
+    return Math.floor((now.getTime() - joined.getTime()) / (1000 * 3600 * 24)) + 1;
+  }, [data.joinedAt]);
+
+  const isTrialUser = data.plan === SubscriptionPlan.FREE;
+  const logCount = data.dailyReports.length;
+
+  // Scenario Message Engine
+  const trialMessage = useMemo(() => {
+    if (!isTrialUser) return null;
+
+    if (daysSinceJoined >= 7) return {
+      title: "Masa Trial Berakhir",
+      desc: "Data Anda sudah mulai membentuk pola perkembangan yang kuat. Lanjutkan analisis mendalam dengan Paket Pro?",
+      cta: "Buka Analisis Pro →",
+      type: "urgent"
+    };
+
+    if (daysSinceJoined === 1 && logCount === 0) return {
+      title: "Selamat Datang!",
+      desc: "Trial Premium 7 Hari Anda sudah aktif. Mulai hari Anda dengan mencatat 1 aktivitas kerja pertama.",
+      cta: "Isi Aktivitas Pertama →",
+      type: "guide",
+      target: "daily"
+    };
+
+    if (daysSinceJoined <= 3 && logCount >= 3) return {
+      title: "Pola Karir Terdeteksi",
+      desc: "Kami mulai melihat pola aktivitas Anda. Lihat rangkuman awal di tab Insight.",
+      cta: "Lihat Insight Awal →",
+      type: "insight",
+      target: "ai_insights"
+    };
+
+    if (daysSinceJoined <= 5 && logCount >= 5) return {
+      title: "Analisis Siap",
+      desc: "Data Anda sudah cukup untuk analisis awal kualifikasi. AI Strategist sudah bisa digunakan.",
+      cta: "Jalankan AI Strategist →",
+      type: "insight",
+      target: "skills"
+    };
+
+    if (daysSinceJoined === 6) return {
+      title: "Akses Terakhir",
+      desc: "Akses insight lanjutan akan terkunci besok. Amankan rekam jejak Anda sekarang.",
+      cta: "Amankan Akses Pro →",
+      type: "warning",
+      target: "billing"
+    };
+
+    return null;
+  }, [daysSinceJoined, logCount, isTrialUser]);
+
   // Expiry & Renewal Logic
   const expiryDate = data.expiryDate ? new Date(data.expiryDate) : null;
   const daysRemaining = expiryDate ? Math.ceil((expiryDate.getTime() - new Date().getTime()) / (1000 * 3600 * 24)) : Infinity;
@@ -165,6 +221,30 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenNotif, on
            </div>
         </header>
 
+        {/* TRIAL JOURNEY WIDGET (NEW) */}
+        {trialMessage && (
+          <div className="px-6">
+            <div className={`p-6 rounded-[2.5rem] shadow-xl animate-in slide-in-from-top-4 duration-700 ${
+              trialMessage.type === 'urgent' ? 'bg-rose-600 text-white' : 
+              trialMessage.type === 'warning' ? 'bg-amber-500 text-white' : 'bg-slate-900 text-white'
+            }`}>
+               <div className="flex gap-4">
+                  <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center text-2xl shrink-0 italic">!</div>
+                  <div className="space-y-3">
+                     <p className="text-[9px] font-black uppercase tracking-widest opacity-60">{trialMessage.title}</p>
+                     <p className="text-sm font-bold leading-tight">{trialMessage.desc}</p>
+                     <button 
+                      onClick={() => onNavigate?.(trialMessage.target || 'billing')}
+                      className="px-6 py-2.5 bg-white text-slate-900 rounded-xl text-[9px] font-black uppercase tracking-widest shadow-lg active:scale-95 transition-all"
+                     >
+                        {trialMessage.cta}
+                     </button>
+                  </div>
+               </div>
+            </div>
+          </div>
+        )}
+
         {/* SUBSCRIPTION & EXPIRY INFO BAR (MOBILE) */}
         <div className="px-6">
            <div className="bg-slate-50 p-5 rounded-[2rem] border border-slate-100 flex items-center justify-between shadow-sm">
@@ -183,63 +263,6 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenNotif, on
               </div>
            </div>
         </div>
-
-        {/* EXPIRY RENEWAL ALERT (MOBILE) - Closeable */}
-        {isExpiringSoon && isRenewalBannerOpen && (
-          <div className="px-6 animate-in slide-in-from-top-4 duration-500">
-             <div className="bg-gradient-to-br from-rose-600 to-indigo-600 p-8 rounded-[2.5rem] shadow-xl shadow-rose-200 text-white relative overflow-hidden">
-                <button onClick={() => setIsRenewalBannerOpen(false)} className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-full text-white/60 transition-all font-black text-xs">✕</button>
-                <div className="relative z-10">
-                   <div className="flex items-center gap-3 mb-4">
-                      <span className="text-2xl">⏳</span>
-                      <p className="text-[9px] font-black uppercase tracking-[0.2em] text-rose-100">Masa Aktif Hampir Habis</p>
-                   </div>
-                   <p className="text-sm font-bold leading-tight mb-6">Akses kualifikasi Anda berakhir dalam {daysRemaining} hari. Perpanjang sekarang agar rekam jejak tetap tervalidasi.</p>
-                   
-                   <div className="space-y-3">
-                      <button onClick={() => onNavigate?.('billing')} className="w-full py-3.5 bg-white text-rose-600 rounded-2xl text-[9px] font-black uppercase tracking-widest shadow-xl active:scale-95 transition-all">Perpanjang Paket Sekarang →</button>
-                      <div className="grid grid-cols-3 gap-2">
-                        <button onClick={() => onNavigate?.('billing')} className="py-2 bg-white/10 border border-white/20 rounded-xl text-[8px] font-black uppercase tracking-widest hover:bg-white/20">1 Bulan</button>
-                        <button onClick={() => onNavigate?.('billing')} className="py-2 bg-white/10 border border-white/20 rounded-xl text-[8px] font-black uppercase tracking-widest hover:bg-white/20">3 Bulan</button>
-                        <button onClick={() => onNavigate?.('billing')} className="py-2 bg-white/10 border border-white/20 rounded-xl text-[8px] font-black uppercase tracking-widest hover:bg-white/20">1 Tahun</button>
-                      </div>
-                   </div>
-                </div>
-                <div className="absolute -bottom-10 -right-10 w-48 h-48 bg-white/5 rounded-full blur-3xl"></div>
-             </div>
-          </div>
-        )}
-
-        {/* Reminder Modal Popup (Instead of Bars) */}
-        {showReminderModal && reminders.length > 0 && (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 animate-in fade-in duration-300">
-             <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm" onClick={() => setShowReminderModal(false)}></div>
-             <div className="relative bg-white w-full max-sm rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in duration-500">
-                <div className="p-8 bg-indigo-600 text-white text-center">
-                   <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4">🔔</div>
-                   <h3 className="text-xl font-black uppercase tracking-tight">Jangan Terlewat!</h3>
-                   <p className="text-[10px] font-bold text-indigo-200 uppercase tracking-widest mt-1">Selesaikan rekam jejak harian Anda</p>
-                </div>
-                <div className="p-6 space-y-4">
-                   {reminders.map(alert => (
-                     <div key={alert.id} className={`p-5 rounded-2xl border-2 bg-white border-${alert.color}-50 shadow-sm flex flex-col gap-4`}>
-                        <div className="flex items-start gap-4">
-                           <span className="text-2xl shrink-0">{alert.icon}</span>
-                           <p className="text-xs font-black text-slate-800 leading-tight uppercase">{alert.text}</p>
-                        </div>
-                        <button 
-                          onClick={() => { onNavigate?.(alert.target, alert.date); setShowReminderModal(false); }}
-                          className={`w-full py-3 bg-${alert.color === 'rose' ? 'rose-600' : 'indigo-600'} text-white font-black rounded-xl text-[10px] uppercase tracking-widest shadow-lg active:scale-95 transition-all`}
-                        >
-                          {alert.actionLabel}
-                        </button>
-                     </div>
-                   ))}
-                   <button onClick={() => setShowReminderModal(false)} className="w-full py-3 text-slate-400 font-black uppercase text-[9px] tracking-widest">Nanti Saja</button>
-                </div>
-             </div>
-          </div>
-        )}
 
         <div className="px-6 space-y-4">
            {/* Skill Readiness Card */}
@@ -336,26 +359,25 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenNotif, on
           </div>
         </header>
 
-        {/* DASHBOARD ALERT REMINDERS BAR - Desktop Only */}
-        {reminders.length > 0 && (
-          <div className="px-4 lg:px-0 space-y-3">
-            {reminders.map(alert => (
-              <div key={alert.id} className={`flex flex-col md:flex-row items-center justify-between p-6 lg:px-10 rounded-[2.5rem] border-2 shadow-xl animate-in slide-in-from-top-4 duration-700 bg-white border-${alert.color}-100`}>
-                <div className="flex items-center gap-6 text-center md:text-left mb-4 md:mb-0">
-                  <span className="text-3xl lg:text-4xl">{alert.icon}</span>
-                  <div>
-                    <p className={`text-[10px] font-black uppercase tracking-widest text-${alert.color}-400 mb-1`}>Reminder: Selesaikan Segera</p>
-                    <p className="text-sm lg:text-base font-black text-slate-800 tracking-tight">{alert.text}</p>
-                  </div>
+        {/* TRIAL JOURNEY DESKTOP (NEW) */}
+        {trialMessage && (
+          <div className={`p-8 lg:px-12 rounded-[3.5rem] border-2 shadow-2xl animate-in slide-in-from-top-4 duration-700 flex items-center justify-between gap-10 ${
+            trialMessage.type === 'urgent' ? 'bg-rose-600 text-white border-rose-500' : 
+            trialMessage.type === 'warning' ? 'bg-amber-500 text-white border-amber-400' : 'bg-slate-900 text-white border-slate-800'
+          }`}>
+             <div className="flex items-center gap-8">
+                <div className="w-20 h-20 bg-white/10 rounded-[2rem] flex items-center justify-center text-4xl shadow-inner italic">!</div>
+                <div>
+                   <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-60 mb-2">{trialMessage.title}</p>
+                   <p className="text-xl font-bold tracking-tight">{trialMessage.desc}</p>
                 </div>
-                <button 
-                  onClick={() => onNavigate?.(alert.target, alert.date)} 
-                  className={`px-8 py-3 bg-${alert.color === 'rose' ? 'rose-600' : alert.color === 'emerald' ? 'emerald-600' : 'indigo-600'} text-white font-black rounded-2xl text-[10px] uppercase tracking-widest shadow-2xl active:scale-95 transition-all`}
-                >
-                  Isi Sekarang →
-                </button>
-              </div>
-            ))}
+             </div>
+             <button 
+                onClick={() => onNavigate?.(trialMessage.target || 'billing')}
+                className="px-10 py-5 bg-white text-slate-900 rounded-[1.75rem] font-black uppercase tracking-widest shadow-2xl hover:scale-105 active:scale-95 transition-all"
+             >
+                {trialMessage.cta}
+             </button>
           </div>
         )}
 

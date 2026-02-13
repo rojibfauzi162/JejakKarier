@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { ToDoTask } from '../types';
+import { ToDoTask, AppData, SubscriptionPlan } from '../types';
 
 interface ToDoListProps {
   tasks: ToDoTask[];
@@ -12,6 +12,7 @@ interface ToDoListProps {
   onUpdateCategory?: (old: string, next: string) => void;
   onDeleteCategory?: (cat: string) => void;
   targetDate?: string;
+  appData?: AppData;
 }
 
 const FIXED_CATEGORIES = ['Pendukung Kerja', 'Pengembangan Diri', 'Buka Peluang', 'Keseimbangan Hidup'];
@@ -27,7 +28,8 @@ const ToDoList: React.FC<ToDoListProps> = ({
   onAddCategory, 
   onUpdateCategory, 
   onDeleteCategory,
-  targetDate
+  targetDate,
+  appData
 }) => {
   const [activeView, setActiveView] = useState<'checklist' | 'categories'>('checklist');
   const [newTaskText, setNewTaskText] = useState('');
@@ -67,6 +69,13 @@ const ToDoList: React.FC<ToDoListProps> = ({
     e.preventDefault();
     if (!newTaskText.trim()) return;
 
+    // VALIDASI LIMIT DATABASE PAKET FREE
+    const limit = appData?.planLimits?.todoList || 2;
+    if (appData?.plan === SubscriptionPlan.FREE && tasks.length >= Number(limit)) {
+      alert(`Batas langkah pengembangan tercapai (${limit}). Silakan upgrade paket untuk perencanaan tanpa batas.`);
+      return;
+    }
+
     const newTask: ToDoTask = {
       id: Math.random().toString(36).substr(2, 9),
       task: newTaskText,
@@ -105,6 +114,13 @@ const ToDoList: React.FC<ToDoListProps> = ({
 
   const handleExecuteDuplicate = () => {
     if (!duplicatingTask) return;
+
+    // VALIDASI LIMIT DATABASE PAKET FREE UNTUK DUPLIKAT
+    const limit = appData?.planLimits?.todoList || 2;
+    if (appData?.plan === SubscriptionPlan.FREE && tasks.length >= Number(limit)) {
+      alert(`Batas langkah pengembangan tercapai (${limit}). Tidak bisa menduplikat.`);
+      return;
+    }
     
     const targetDate = new Date(duplicateTargetDate);
     const duplicatedTask: ToDoTask = {
@@ -277,7 +293,7 @@ const ToDoList: React.FC<ToDoListProps> = ({
           <p className="text-slate-500 font-medium italic">"Kelola langkah-langkah kecil menuju target besar Anda."</p>
         </div>
         <div className="flex bg-white p-1 rounded-2xl shadow-sm border border-slate-100">
-           <button onClick={() => setActiveView('checklist')} className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeView === 'checklist' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-400 hover:text-slate-600'}`}>Checklist</button>
+           <button onClick={() => setActiveView('checklist')} className={`px-8 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeView === 'checklist' ? 'bg-slate-900 text-white shadow-lg' : 'text-slate-400 hover:text-slate-600'}`}>Checklist</button>
            <button onClick={() => setActiveView('categories')} className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeView === 'categories' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-400 hover:text-slate-600'}`}>Kategori</button>
         </div>
       </header>

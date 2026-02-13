@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { CareerPath, CareerType, AppData, CareerStatus } from '../types';
+import { CareerPath, CareerType, AppData, CareerStatus, SubscriptionPlan } from '../types';
 import { analyzeSkillGap } from '../services/geminiService';
 
 interface CareerPlannerProps {
@@ -43,6 +43,14 @@ const CareerPlanner: React.FC<CareerPlannerProps> = ({ paths, appData, onAddPath
   };
 
   const openForm = (path?: CareerPath) => {
+    // VALIDASI LIMIT DATABASE PAKET FREE
+    if (!path) {
+      const limit = appData?.planLimits?.careerPath || 2;
+      if (appData?.plan === SubscriptionPlan.FREE && paths.length >= Number(limit)) {
+        alert(`Batas target karir tercapai (${limit}). Silakan upgrade paket untuk perencanaan lebih mendalam.`);
+        return;
+      }
+    }
     setEditingPath(path || null);
     setIsFormOpen(true);
   };

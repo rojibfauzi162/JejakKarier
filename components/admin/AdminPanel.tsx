@@ -16,7 +16,6 @@ import AdminSettings from './AdminSettings';
 import MayarIntegration from './MayarIntegration';
 
 interface AdminPanelProps {
-  /** Added 'integrations' to satisfy the routing call in App.tsx */
   initialMode?: 'dashboard' | 'users' | 'products' | 'health' | 'ai' | 'admin_transactions' | 'admin_admins' | 'settings' | 'integrations';
   userRole?: UserRole;
 }
@@ -33,6 +32,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard', user
   // States for User Management
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<AppData | null>(null);
+  // State untuk melacak apakah Role benar-benar ingin diubah (Anti-State Leakage)
+  const [isChangingRole, setIsChangingRole] = useState(false);
 
   // States for Product Management
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
@@ -196,12 +197,39 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard', user
     return { total, activeToday, totalTokens, totalAiOps };
   }, [users]);
 
+  // FIX: Logika Deduplikasi yang diperkuat (Anti-Ghost & Anti-Double Email)
   const filteredUsers = useMemo(() => {
-    return users.filter(u => 
-      !u.isDeleted && (
-        (u.profile?.name || '').toLowerCase().includes(searchQuery.toLowerCase()) || 
-        (u.profile?.email || '').toLowerCase().includes(searchQuery.toLowerCase())
-      )
+    const emailMap = new Map<string, AppData>();
+    
+    // 1. Sort agar data dengan login terbaru diprioritaskan
+    const sortedUsers = [...users].sort((a, b) => 
+      new Date(b.lastLogin || 0).getTime() - new Date(a.lastLogin || 0).getTime()
+    );
+
+    sortedUsers.forEach(u => {
+      // 2. Pembersihan: Buang data tanpa email atau tanpa nama (data sampah)
+      if (!u.isDeleted && u.profile?.email && u.profile?.name && u.profile.email.trim() !== "") {
+        // 3. Normalisasi email: trim spasi dan jadikan huruf kecil agar perbandingan akurat
+        const normalizedEmail = u.profile.email.toLowerCase().trim();
+        
+        // 4. Hanya masukkan jika email unik belum terdaftar (mengambil yang paling baru login)
+        if (!emailMap.has(normalizedEmail)) {
+          emailMap.set(normalizedEmail, u);
+        } else {
+            // Jika sudah ada, tapi data baru ini memiliki role 'superadmin', prioritaskan admin
+            const existing = emailMap.get(normalizedEmail);
+            if (existing?.role !== UserRole.SUPERADMIN && u.role === UserRole.SUPERADMIN) {
+                emailMap.set(normalizedEmail, u);
+            }
+        }
+      }
+    });
+
+    const uniqueUsers = Array.from(emailMap.values());
+
+    return uniqueUsers.filter(u => 
+      (u.profile?.name || '').toLowerCase().includes(searchQuery.toLowerCase()) || 
+      (u.profile?.email || '').toLowerCase().includes(searchQuery.toLowerCase())
     );
   }, [users, searchQuery]);
 
@@ -232,10 +260,21 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard', user
   const handleSaveUserMetadata = async (metadata: Partial<AppData>) => {
     if (!editingUser?.uid) return;
     try {
-      await updateAdminMetadata(editingUser.uid, metadata);
+      // KEAMANAN KRITIKAL: Jika 'isChangingRole' false, buang properti 'role' dari pengiriman data
+      const payload = { ...metadata };
+      if (!isChangingRole) {
+        delete payload.role;
+      }
+
+      await updateAdminMetadata(editingUser.uid, payload);
       triggerToast("Berhasil update user! ✅");
+      
+      // Update local state segera agar UI berubah tanpa nunggu fetch (Mencegah tampilan Rojib tetap Admin)
+      setUsers(prev => prev.map(u => u.uid === editingUser.uid ? { ...u, ...payload } : u));
+      
       fetchUsersAndConfig(true);
       setIsUserModalOpen(false);
+      setIsChangingRole(false);
     } catch (e) {
       triggerToast("Gagal update user.", "error");
     }
@@ -313,7 +352,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard', user
 
       {/* RENDER MODUL SESUAI MODE */}
       {initialMode === 'dashboard' && <AdminDashboard stats={adminStats} users={users} />}
-      {initialMode === 'users' && <UserManagement users={filteredUsers} searchQuery={searchQuery} setSearchQuery={setSearchQuery} onManage={(u) => { setEditingUser(u); setIsUserModalOpen(true); }} />}
+      {initialMode === 'users' && <UserManagement users={filteredUsers} searchQuery={searchQuery} setSearchQuery={setSearchQuery} onManage={(u) => { setEditingUser(u); setIsUserModalOpen(true); setIsChangingRole(false); }} />}
       {initialMode === 'ai' && (
         <AiArchitecture 
           aiConfig={aiConfig} setAiConfigState={setAiConfigState} 
@@ -331,7 +370,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard', user
           users={users} 
           products={products}
           onUpdateMetadata={async (uid, fields) => { await updateAdminMetadata(uid, fields); triggerToast("Data Keuangan Diperbarui ✅"); fetchUsersAndConfig(true); }} 
-          onManageUser={(u) => { setEditingUser(u); setIsUserModalOpen(true); }} 
+          onManageUser={(u) => { setEditingUser(u); setIsUserModalOpen(true); setIsChangingRole(false); }} 
         />
       )}
       {initialMode === 'admin_admins' && (
@@ -341,7 +380,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard', user
         />
       )}
       {initialMode === 'settings' && <AdminSettings />}
-      {/** Added handling for integrations mode */}
       {initialMode === 'integrations' && <MayarIntegration />}
 
       {/* MODAL USER */}
@@ -361,18 +399,21 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard', user
                 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <label className="text-[9px] font-black uppercase text-slate-400 ml-1">Role Utama</label>
+                    <div className="flex justify-between items-center ml-1">
+                       <label className="text-[9px] font-black uppercase text-slate-400">Role Utama</label>
+                       {!isChangingRole && (
+                         <button onClick={() => setIsChangingRole(true)} className="text-[8px] font-black text-indigo-600 uppercase hover:underline">Ubah Role 🔐</button>
+                       )}
+                    </div>
                     <select 
-                        className={`w-full px-4 py-2.5 rounded-xl border text-xs font-bold transition-all ${editingUser.role === UserRole.SUPERADMIN ? 'bg-rose-50 border-rose-300 text-rose-600' : 'bg-white'}`} 
+                        disabled={!isChangingRole}
+                        className={`w-full px-4 py-2.5 rounded-xl border text-xs font-bold transition-all ${!isChangingRole ? 'bg-slate-50 text-slate-400 cursor-not-allowed' : 'bg-white border-indigo-300'}`} 
                         value={editingUser.role} 
                         onChange={e => setEditingUser({ ...editingUser, role: e.target.value as UserRole })}
                     >
                       <option value={UserRole.USER}>User Biasa / Member</option>
                       <option value={UserRole.SUPERADMIN}>Superadmin (Full Access)</option>
                     </select>
-                    {editingUser.role === UserRole.SUPERADMIN && (
-                      <p className="text-[8px] font-black text-rose-500 uppercase mt-1 px-1 animate-pulse">⚠️ Perhatian: User ini akan memiliki akses Admin penuh.</p>
-                    )}
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-[9px] font-black uppercase text-slate-400 ml-1">Status Akun</label>
@@ -385,13 +426,15 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard', user
                 <div className="pt-6 border-t border-slate-100 space-y-5">
                     <div className="flex justify-between items-center px-1">
                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Subscription Control</p>
-                        <button 
-                            type="button"
-                            onClick={() => setEditingUser({...editingUser, role: UserRole.USER})}
-                            className="text-[9px] font-black text-blue-600 uppercase hover:underline"
-                        >
-                            Reset ke Role User Biasa
-                        </button>
+                        {editingUser.role === UserRole.SUPERADMIN && (
+                            <button 
+                                type="button"
+                                onClick={() => { setEditingUser({...editingUser, role: UserRole.USER}); setIsChangingRole(true); }}
+                                className="text-[9px] font-black text-rose-600 uppercase hover:underline"
+                            >
+                                Reset ke Role User Biasa
+                            </button>
+                        )}
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-1.5">

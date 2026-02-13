@@ -1,5 +1,6 @@
+
 import React, { useState, useRef, useEffect } from 'react';
-import { UserProfile, WorkExperience, Education, AppData } from '../types';
+import { UserProfile, WorkExperience, Education, AppData, SubscriptionPlan } from '../types';
 import { generateProfileBio } from '../services/geminiService';
 // Added import for auth to fix "Cannot find name 'auth'" errors
 import { auth } from '../services/firebase';
@@ -155,12 +156,24 @@ const ProfileView: React.FC<ProfileViewProps> = ({
   };
 
   const createNewWork = () => {
+    // VALIDASI LIMIT DATABASE PAKET FREE
+    const limit = appData?.planLimits?.workExperience || 2;
+    if (appData?.plan === SubscriptionPlan.FREE && workExperiences.length >= Number(limit)) {
+      alert(`Batas riwayat pekerjaan tercapai (${limit}). Silakan upgrade paket untuk menambahkan lebih banyak.`);
+      return;
+    }
     const id = Math.random().toString(36).substr(2, 9);
     onAddWork({ id, position: '', company: '', duration: '', description: '' });
     setIsEditingWork(id);
   };
 
   const createNewEdu = () => {
+    // VALIDASI LIMIT DATABASE PAKET FREE
+    const limit = appData?.planLimits?.education || 2;
+    if (appData?.plan === SubscriptionPlan.FREE && educations.length >= Number(limit)) {
+      alert(`Batas riwayat pendidikan tercapai (${limit}). Silakan upgrade paket untuk menambahkan lebih banyak.`);
+      return;
+    }
     const id = Math.random().toString(36).substr(2, 9);
     setIsRangeEdu(false);
     setStartYearEdu('');

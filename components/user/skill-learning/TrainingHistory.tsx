@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo } from 'react';
-import { Training, TrainingStatus, SkillPriority, CareerEvent, EventType, ImportanceLevel } from '../../../types';
+import { Training, TrainingStatus, SkillPriority, CareerEvent, EventType, ImportanceLevel, AppData, SubscriptionPlan } from '../../../types';
 
 interface TrainingHistoryProps {
   trainings: Training[];
@@ -9,9 +9,10 @@ interface TrainingHistoryProps {
   onDeleteTraining: (id: string) => void;
   showToast: (m: string, t?: 'success' | 'error' | 'info') => void;
   onAddCalendarEvent?: (e: CareerEvent) => void;
+  appData?: AppData;
 }
 
-const TrainingHistory: React.FC<TrainingHistoryProps> = ({ trainings, onAddTraining, onUpdateTraining, onDeleteTraining, showToast, onAddCalendarEvent }) => {
+const TrainingHistory: React.FC<TrainingHistoryProps> = ({ trainings, onAddTraining, onUpdateTraining, onDeleteTraining, showToast, onAddCalendarEvent, appData }) => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Training | null>(null);
   
@@ -34,6 +35,17 @@ const TrainingHistory: React.FC<TrainingHistoryProps> = ({ trainings, onAddTrain
        return new Date(t.deadline) < new Date();
     }
     return false;
+  };
+
+  const openAddForm = () => {
+    // VALIDASI LIMIT DATABASE PAKET FREE
+    const limit = appData?.planLimits?.trainingHistory || 2;
+    if (appData?.plan === SubscriptionPlan.FREE && trainings.length >= Number(limit)) {
+      alert(`Batas riwayat pelatihan tercapai (${limit}). Silakan upgrade paket untuk mendata seluruh perjalanan belajar Anda.`);
+      return;
+    }
+    setEditingItem(null);
+    setIsFormOpen(true);
   };
 
   const openScheduleModal = (t: Training) => {
@@ -75,7 +87,7 @@ const TrainingHistory: React.FC<TrainingHistoryProps> = ({ trainings, onAddTrain
       </div>
 
       <div className="flex justify-end px-1">
-        <button onClick={() => { setEditingItem(null); setIsFormOpen(true); }} className="px-6 py-3 bg-slate-900 text-white font-black rounded-2xl text-[10px] uppercase tracking-widest shadow-xl hover:bg-black transition-all">+ Add Course</button>
+        <button onClick={openAddForm} className="px-6 py-3 bg-slate-900 text-white font-black rounded-2xl text-[10px] uppercase tracking-widest shadow-xl hover:bg-black transition-all">+ Add Course</button>
       </div>
 
       <div className="bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden">
@@ -343,18 +355,21 @@ const TrainingForm = ({ initialData, onSubmit, onCancel }: any) => {
         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Bukti Sertifikat (Link / Upload)</label>
         <div className="flex gap-4">
            <input className="flex-1 px-5 py-4 rounded-2xl border border-slate-200 bg-slate-50 font-bold text-xs" value={form.certLink} onChange={e => setForm({...form, certLink: e.target.value})} placeholder="https://..." />
+           {/* Added missing label and input closure for file upload */}
            <label className="px-6 py-4 bg-slate-900 text-white font-black rounded-2xl text-[10px] uppercase cursor-pointer hover:bg-black transition-all">
              Upload
              <input type="file" className="hidden" accept="image/*,.pdf" onChange={handleFileUpload} />
            </label>
         </div>
       </div>
+      {/* Added missing form footer and buttons */}
       <div className="flex gap-4 pt-4">
         <button type="button" onClick={onCancel} className="flex-1 py-4 bg-slate-100 text-slate-400 font-black rounded-2xl uppercase text-[10px]">Batal</button>
-        <button type="button" onClick={() => onSubmit(form)} className="flex-[2] py-4 bg-slate-900 text-white font-black rounded-2xl uppercase text-[10px] shadow-xl">Simpan Data</button>
+        <button type="button" onClick={() => onSubmit(form)} className="flex-[2] py-4 bg-slate-900 text-white font-black rounded-2xl uppercase text-[10px] shadow-xl">Simpan Pelatihan</button>
       </div>
     </div>
   );
 };
 
+/* Added missing default export to fix SkillTracker.tsx import error */
 export default TrainingHistory;

@@ -60,9 +60,9 @@ const TransactionManagement: React.FC<TransactionManagementProps> = ({ users, pr
       currentTxs = [...currentTxs, newTx];
     }
 
+    // PROTEKSI: Pastikan role tidak ikut dalam payload transaksi
     const fields: Partial<AppData> = { manualTransactions: currentTxs };
 
-    // KUNCI KEAMANAN: Memastikan role tidak berubah saat aktivasi paket
     if (manualForm.status === PaymentStatus.PAID) {
       const selectedProduct = products.find(p => p.tier === manualForm.planTier);
       fields.plan = manualForm.planTier;
@@ -72,22 +72,19 @@ const TransactionManagement: React.FC<TransactionManagementProps> = ({ users, pr
       expiry.setDate(expiry.getDate() + (selectedProduct?.durationDays || 30));
       fields.expiryDate = expiry.toISOString();
       
-      // Update permissions & limits berdasarkan produk terpilih
       if (selectedProduct) {
         fields.planPermissions = selectedProduct.allowedModules;
         fields.planLimits = selectedProduct.limits;
       }
-
-      // Explicitly keep role as user unless already admin
-      if (user.role !== UserRole.SUPERADMIN) {
-        fields.role = UserRole.USER;
-      }
+      
+      // KEAMANAN KRITIKAL: Hapus properti role jika ada untuk mencegah promosi tidak sengaja
+      delete (fields as any).role;
     }
 
     await onUpdateMetadata(selectedUserUid, fields);
     setShowManualModal(false);
     setEditingTx(null);
-    alert(editingTx ? "Transaksi diperbarui." : "Transaksi manual berhasil dicatat. User tetap memiliki role Member.");
+    alert(editingTx ? "Transaksi diperbarui." : "Transaksi manual berhasil dicatat. Level akses user tetap terjaga.");
   };
 
   const handleEditClick = (uid: string, tx: ManualTransaction) => {
@@ -126,14 +123,12 @@ const TransactionManagement: React.FC<TransactionManagementProps> = ({ users, pr
         fields.planLimits = selectedProduct.limits;
       }
 
-      // Explicitly keep role as user unless already admin
-      if (user.role !== UserRole.SUPERADMIN) {
-        fields.role = UserRole.USER;
-      }
+      // KEAMANAN KRITIKAL: Jangan biarkan field role menyelinap masuk ke update pembayaran
+      delete (fields as any).role;
     }
 
     await onUpdateMetadata(uid, fields);
-    alert(`Status pembayaran diperbarui menjadi ${newStatus}. Hak akses user telah diaktifkan.`);
+    alert(`Status pembayaran diperbarui. Paket ${tx.planTier} telah diaktifkan tanpa mengubah level akses (Role) user.`);
   };
 
   return (

@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo } from 'react';
-import { AppData, CareerEvent, EventType, ImportanceLevel, JobStatus, TrainingStatus } from '../../types';
+import { AppData, CareerEvent, EventType, ImportanceLevel, JobStatus, TrainingStatus, SubscriptionPlan } from '../../types';
 
 interface CareerCalendarProps {
   data: AppData;
@@ -79,6 +79,12 @@ const CareerCalendar: React.FC<CareerCalendarProps> = ({ data, onAddEvent, onDel
   };
 
   const handleOpenAdd = (day: string) => {
+    // VALIDASI LIMIT DATABASE PAKET FREE
+    const limit = data.planLimits?.careerCalendar || 2;
+    if (data.plan === SubscriptionPlan.FREE && (data.careerEvents || []).length >= Number(limit)) {
+      alert(`Batas event kalender tercapai (${limit}). Silakan upgrade paket untuk menjadwalkan lebih banyak agenda.`);
+      return;
+    }
     setSelectedDay(day);
     setForm({ ...form, date: day });
     setCustomDetail('');
@@ -142,7 +148,7 @@ const CareerCalendar: React.FC<CareerCalendarProps> = ({ data, onAddEvent, onDel
            <h3 className="text-sm font-black uppercase tracking-widest w-40 text-center text-slate-700">
              {currentDate.toLocaleString('id-ID', { month: 'long', year: 'numeric' })}
            </h3>
-           <button onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1))} className="w-10 h-10 flex items-center justify-center hover:bg-slate-50 rounded-xl text-slate-400">→</button>
+           <button onClick={() => currentDate && setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1))} className="w-10 h-10 flex items-center justify-center hover:bg-slate-50 rounded-xl text-slate-400">→</button>
         </div>
       </header>
 
@@ -220,7 +226,7 @@ const CareerCalendar: React.FC<CareerCalendarProps> = ({ data, onAddEvent, onDel
                          <span>•</span>
                          <span className={e.importance === ImportanceLevel.HIGH ? 'text-rose-500' : ''}>Prio: {e.importance}</span>
                       </div>
-                      {e.notes && <p className="text-[11px] text-slate-500 italic mb-4 leading-relaxed whitespace-pre-line">"{e.notes}"</p>}
+                      {e.notes && <p className="text-11px text-slate-500 italic mb-4 leading-relaxed whitespace-pre-line">"{e.notes}"</p>}
                    </div>
                    {e.link && (
                      <a href={e.link} target="_blank" rel="noreferrer" className="mt-4 py-2 bg-indigo-600 text-white rounded-xl text-center font-black text-[9px] uppercase tracking-widest shadow-lg shadow-indigo-100">Buka Link Event ↗</a>

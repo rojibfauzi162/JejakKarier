@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo } from 'react';
-import { JobApplication, JobStatus, CareerEvent, EventType, ImportanceLevel } from '../types';
+import { JobApplication, JobStatus, CareerEvent, EventType, ImportanceLevel, AppData, SubscriptionPlan } from '../types';
 
 interface JobTrackerProps {
   applications: JobApplication[];
@@ -9,11 +9,12 @@ interface JobTrackerProps {
   onUpdate: (j: JobApplication) => void;
   onDelete: (id: string) => void;
   onAddCalendarEvent?: (e: CareerEvent) => void;
+  appData?: AppData;
 }
 
 type TimeFilter = 'All' | '1 Day' | '7 Days' | '30 Days' | 'Custom Range';
 
-const JobTracker: React.FC<JobTrackerProps> = ({ applications, careerEvents, onAdd, onUpdate, onDelete, onAddCalendarEvent }) => {
+const JobTracker: React.FC<JobTrackerProps> = ({ applications, careerEvents, onAdd, onUpdate, onDelete, onAddCalendarEvent, appData }) => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<JobApplication | null>(null);
   
@@ -67,6 +68,12 @@ const JobTracker: React.FC<JobTrackerProps> = ({ applications, careerEvents, onA
   }, [applications, locationFilter, statusFilter, timeFilter, customStartDate, customEndDate]);
 
   const openAddForm = () => {
+    // VALIDASI LIMIT DATABASE PAKET FREE
+    const limit = appData?.planLimits?.jobTracker || 2;
+    if (appData?.plan === SubscriptionPlan.FREE && applications.length >= Number(limit)) {
+      alert(`Batas lamaran kerja tercapai (${limit}). Silakan upgrade paket untuk melacak lebih banyak peluang.`);
+      return;
+    }
     setEditingItem(null);
     setIsFormOpen(true);
   };

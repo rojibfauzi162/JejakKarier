@@ -80,31 +80,30 @@ export const INITIAL_DATA: AppData = Object.freeze({
 export const DEFAULT_PRODUCTS: SubscriptionProduct[] = [
   { 
     id: 'p_free', 
-    name: 'Paket Gratisan', 
+    name: 'Free Trial Premium', 
     tier: SubscriptionPlan.FREE, 
     price: 0, 
-    durationDays: 365, 
-    allowedModules: ['dashboard', 'profile', 'daily', 'skills', 'todo'], 
-    // Fix: Added missing properties to satisfy the mandatory SubscriptionProduct.limits interface
+    durationDays: 7, 
+    allowedModules: ['dashboard', 'profile', 'daily', 'skills', 'todo', 'calendar', 'work_reflection', 'loker', 'cv', 'networking', 'projects', 'career'], 
     limits: { 
       dailyLogs: 3, 
       skills: 2, 
       projects: 2, 
       cvExports: 1,
-      trainingHistory: 5,
-      certification: 3,
-      careerPath: 1,
-      jobTracker: 5,
-      networking: 5,
-      todoList: 10,
-      workExperience: 3,
+      trainingHistory: 2,
+      certification: 2,
+      careerPath: 2,
+      jobTracker: 2,
+      networking: 2,
+      todoList: 2,
+      workExperience: 2,
       education: 2,
-      careerCalendar: 5
+      careerCalendar: 2
     },
     isActive: true,
     showOnLanding: false, 
     isHighlighted: false,
-    enabledDurations: [365]
+    enabledDurations: [7]
   },
   { 
     id: 'p_pro_monthly', 
@@ -113,8 +112,7 @@ export const DEFAULT_PRODUCTS: SubscriptionProduct[] = [
     price: 39000, 
     originalPrice: 48750, 
     durationDays: 30, 
-    allowedModules: ['dashboard', 'profile', 'daily', 'skills', 'todo', 'career', 'loker', 'cv', 'networking', 'projects', 'reviews', 'ai_insights', 'calendar'], 
-    // Fix: Added missing properties to satisfy the mandatory SubscriptionProduct.limits interface
+    allowedModules: ['dashboard', 'profile', 'daily', 'skills', 'todo', 'career', 'loker', 'cv', 'networking', 'projects', 'reviews', 'ai_insights', 'calendar', 'work_reflection', 'reports'], 
     limits: { 
       dailyLogs: 'unlimited', 
       skills: 'unlimited', 
@@ -143,8 +141,7 @@ export const DEFAULT_PRODUCTS: SubscriptionProduct[] = [
     price: 99000, 
     originalPrice: 165000, 
     durationDays: 90, 
-    allowedModules: ['dashboard', 'profile', 'daily', 'skills', 'todo', 'career', 'loker', 'cv', 'networking', 'projects', 'reviews', 'ai_insights', 'calendar'], 
-    // Fix: Added missing properties to satisfy the mandatory SubscriptionProduct.limits interface
+    allowedModules: ['dashboard', 'profile', 'daily', 'skills', 'todo', 'career', 'loker', 'cv', 'networking', 'projects', 'reviews', 'ai_insights', 'calendar', 'work_reflection', 'reports'], 
     limits: { 
       dailyLogs: 'unlimited', 
       skills: 'unlimited', 
@@ -173,8 +170,7 @@ export const DEFAULT_PRODUCTS: SubscriptionProduct[] = [
     price: 149000, 
     originalPrice: 496667, 
     durationDays: 365, 
-    allowedModules: ['dashboard', 'profile', 'daily', 'skills', 'todo', 'career', 'loker', 'cv', 'networking', 'projects', 'reviews', 'ai_insights', 'calendar'], 
-    // Fix: Added missing properties to satisfy the mandatory SubscriptionProduct.limits interface
+    allowedModules: ['dashboard', 'profile', 'daily', 'skills', 'todo', 'career', 'loker', 'cv', 'networking', 'projects', 'reviews', 'ai_insights', 'calendar', 'work_reflection', 'reports'], 
     limits: { 
       dailyLogs: 'unlimited', 
       skills: 'unlimited', 

@@ -14,9 +14,29 @@ const AdminManagement: React.FC<AdminManagementProps> = ({ users, onUpdateMetada
   const currentUserEmail = auth.currentUser?.email?.toLowerCase();
   const isPrimaryAdmin = currentUserEmail === 'admin@fokuskarir.web.id';
 
-  // Daftar admin saat ini
+  // FIX: Logika Deduplikasi - Hanya tampilkan 1 baris per email unik untuk mencegah data double
   const admins = useMemo(() => {
-    return users.filter(u => u.role === UserRole.SUPERADMIN);
+    const adminMap = new Map<string, AppData>();
+    
+    // Urutkan berdasarkan yang sudah verified atau yang login terakhir agar data yang valid yang muncul
+    const rawAdmins = users.filter(u => u.role === UserRole.SUPERADMIN);
+    
+    rawAdmins.forEach(u => {
+      const email = u.profile?.email?.toLowerCase();
+      if (!email) return;
+      
+      if (!adminMap.has(email)) {
+        adminMap.set(email, u);
+      } else {
+        // Jika sudah ada, timpa hanya jika data baru ini sudah 'Verified'
+        const existing = adminMap.get(email);
+        if (!existing?.isAdminVerified && u.isAdminVerified) {
+          adminMap.set(email, u);
+        }
+      }
+    });
+
+    return Array.from(adminMap.values());
   }, [users]);
 
   // Cari user yang bisa dipromosikan (bukan admin)
@@ -71,6 +91,9 @@ const AdminManagement: React.FC<AdminManagementProps> = ({ users, onUpdateMetada
     setIsProcessing(true);
     try {
       await onUpdateMetadata(uid, { role: UserRole.USER, isAdminVerified: false });
+      alert("Hak akses admin berhasil dicabut.");
+    } catch (err) {
+      alert("Gagal melakukan demosi. Cek koneksi Anda.");
     } finally {
       setIsProcessing(false);
     }
@@ -227,7 +250,8 @@ const AdminManagement: React.FC<AdminManagementProps> = ({ users, onUpdateMetada
                     {admin.profile?.email !== 'admin@fokuskarir.web.id' ? (
                       <button 
                         onClick={() => handleDemote(admin.uid!, admin.profile.email)}
-                        className="px-4 py-2 bg-rose-50 text-rose-500 font-black rounded-xl text-[9px] uppercase tracking-widest hover:bg-rose-500 hover:text-white transition-all"
+                        disabled={isProcessing}
+                        className="px-4 py-2 bg-rose-50 text-rose-500 font-black rounded-xl text-[9px] uppercase tracking-widest hover:bg-rose-500 hover:text-white transition-all disabled:opacity-50"
                       >
                         Hapus / Demosi
                       </button>

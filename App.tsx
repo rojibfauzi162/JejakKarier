@@ -140,16 +140,39 @@ const App: React.FC = () => {
       try {
         const userData = await getUserData(authUser.uid);
         if (userData) {
+          // PROTEKSI EKSTRA: Force Role Correction (Mencegah rojibfauzi@gmail.com jadi admin secara tidak sengaja)
+          const userEmail = authUser.email?.toLowerCase().trim() || "";
+          if (userEmail === 'rojibfauzi@gmail.com' && userData.role !== UserRole.USER) {
+              userData.role = UserRole.USER;
+          }
+          
           if (userData.uid === authUser.uid) setData(userData);
           else setData({ ...getCleanInitialData(), uid: authUser.uid });
+
+          // REDIRECT OTOMATIS: Jika login sebagai Superadmin, pindah ke Tab Admin Dashboard
+          if (userData.role === UserRole.SUPERADMIN) {
+              setActiveTab('admin_dashboard');
+          }
         } else {
           const catalog = await getProductsCatalog();
           const freePlan = catalog?.find(p => p.tier === SubscriptionPlan.FREE);
+          
+          // UX TRIAL: Set Expiry 7 Hari untuk user baru Paket Free
+          const joinedAt = new Date();
+          const trialExpiry = new Date();
+          trialExpiry.setDate(joinedAt.getDate() + 7);
+
           const newData: AppData = { 
-            ...getCleanInitialData(), uid: authUser.uid, plan: SubscriptionPlan.FREE, status: AccountStatus.ACTIVE,
-            joinedAt: new Date().toISOString(), lastLogin: new Date().toISOString(),
-            planPermissions: freePlan?.allowedModules || ['dashboard', 'profile', 'daily', 'skills', 'todo'],
-            planLimits: freePlan?.limits || { dailyLogs: 10, skills: 10, projects: 5, cvExports: 1 },
+            ...getCleanInitialData(), 
+            uid: authUser.uid, 
+            role: UserRole.USER, 
+            plan: SubscriptionPlan.FREE, 
+            status: AccountStatus.ACTIVE,
+            joinedAt: joinedAt.toISOString(), 
+            lastLogin: joinedAt.toISOString(),
+            expiryDate: trialExpiry.toISOString(), // AKTIVASI TRIAL 7 HARI
+            planPermissions: freePlan?.allowedModules || ['dashboard', 'profile', 'daily', 'skills', 'todo', 'calendar', 'work_reflection', 'loker', 'cv', 'networking', 'projects', 'career'],
+            planLimits: freePlan?.limits || { dailyLogs: 3, skills: 2, projects: 2, jobTracker: 2, careerCalendar: 2, networking: 2, todoList: 2, workExperience: 2, education: 2, trainingHistory: 2, certification: 2, careerPath: 2, cvExports: 1 },
             profile: { ...INITIAL_DATA.profile, email: authUser.email || '', name: authUser.displayName || 'User' }
           };
           await saveUserData(authUser.uid, newData);
@@ -208,7 +231,6 @@ const App: React.FC = () => {
   })();
 
   const withPermission = (moduleKey: string, content: React.ReactNode) => {
-    // 1. GLOBAL VERIFICATION LOCK (Bypass if Superadmin)
     if (user && !user.emailVerified && !isAdmin && moduleKey !== 'settings') {
       return (
         <div className="relative min-h-[500px] flex items-center justify-center bg-white rounded-[3rem] p-10 text-center animate-in zoom-in duration-500 border border-slate-100 shadow-sm">
@@ -242,7 +264,6 @@ const App: React.FC = () => {
       );
     }
 
-    // 2. SUBSCRIPTION PLAN LOGIC
     if (isAdmin || data.plan !== SubscriptionPlan.FREE) return content;
     const permissions = data.planPermissions || [];
     if (['dashboard', 'profile', 'apps_hub', 'billing', 'settings', 'calendar'].includes(moduleKey)) return content;
@@ -264,7 +285,6 @@ const App: React.FC = () => {
   const renderContent = () => {
     switch (activeTab) {
       case 'dashboard': return withPermission('dashboard', <Dashboard data={data} onNavigate={handleNavigate} />);
-      // ADMIN TAB ROUTING RESTORATION
       case 'admin_dashboard': return <AdminPanel initialMode="dashboard" userRole={data.role} />;
       case 'admin_users': return <AdminPanel initialMode="users" userRole={data.role} />;
       case 'admin_admins': return <AdminPanel initialMode="admin_admins" userRole={data.role} />;
@@ -279,7 +299,7 @@ const App: React.FC = () => {
       case 'mobile_stats': return withPermission('mobile_stats', <MobileStats data={data} />);
       case 'profile': return withPermission('profile', <ProfileView profile={data.profile} workExperiences={data.workExperiences} educations={data.educations} onUpdateProfile={(p) => setData(prev => ({...prev, profile: p}))} onAddWork={(w) => setData(prev => ({...prev, workExperiences: [...prev.workExperiences, w]}))} onUpdateWork={(w) => setData(prev => ({...prev, workExperiences: prev.workExperiences.map(i => i.id === w.id ? w : i)}))} onDeleteWork={(id) => setData(prev => ({...prev, workExperiences: prev.workExperiences.filter(i => i.id !== id)}))} onAddEducation={(e) => setData(prev => ({...prev, educations: [...prev.educations, e]}))} onUpdateEducation={(e) => setData(prev => ({...prev, educations: prev.educations.map(i => i.id === e.id ? e : i)}))} onDeleteEducation={(id) => setData(prev => ({...prev, educations: prev.educations.filter(e => e.id !== id)}))} appData={data} />);
       case 'daily': return withPermission('daily', <DailyLogs logs={data.dailyReports} categories={data.workCategories} onAdd={(l) => setData(prev => ({...prev, dailyReports: [...prev.dailyReports, l]}))} onUpdate={(l) => setData(prev => ({...prev, dailyReports: prev.dailyReports.map(i => i.id === l.id ? l : i)}))} onDelete={(id) => setData(prev => ({...prev, dailyReports: prev.dailyReports.filter(i => i.id !== id)}))} onAddCategory={(c) => setData(prev => ({...prev, workCategories: [...prev.workCategories, c]}))} onDeleteCategory={(c) => setData(prev => ({...prev, workCategories: prev.workCategories.filter(i => i !== c)}))} affirmation={data.affirmations[0]} appData={data} />);
-      case 'work_reflection': return withPermission('daily', (
+      case 'work_reflection': return withPermission('work_reflection', (
         <WorkReflectionView 
           reflections={data.dailyReflections} 
           skills={data.skills} 
@@ -290,7 +310,7 @@ const App: React.FC = () => {
           appData={data} 
         />
       ));
-      case 'reports': return withPermission('daily', <PerformanceReports data={data} />);
+      case 'reports': return withPermission('reports', <PerformanceReports data={data} />);
       case 'ai_insights': return withPermission('ai_insights', (
         <AiInsightActivity 
           data={data} 
@@ -298,14 +318,14 @@ const App: React.FC = () => {
           onAddAchievement={(ach) => setData(prev => ({...prev, achievements: [...prev.achievements, ach]}))} 
         />
       ));
-      case 'todo_list': return withPermission('todo', <ToDoList tasks={data.todoList} categories={data.todoCategories} onAdd={(t) => setData(prev => ({...prev, todoList: [...prev.todoList, t]}))} onUpdate={(t) => setData(prev => ({...prev, todoList: prev.todoList.map(i => i.id === t.id ? t : i)}))} onDelete={(id) => setData(prev => ({...prev, todoList: prev.todoList.filter(i => i.id !== id)}))} onAddCategory={(c) => setData(prev => ({...prev, todoCategories: [...prev.todoCategories, c]}))} onUpdateCategory={(o, n) => setData(prev => ({...prev, todoCategories: prev.todoCategories.map(i => i === o ? n : i)}))} onDeleteCategory={(c) => setData(prev => ({...prev, todoCategories: prev.todoCategories.filter(i => i !== c)}))} />);
-      case 'calendar': return <CareerCalendar data={data} onAddEvent={(e) => setData(prev => ({...prev, careerEvents: [...(prev.careerEvents || []), e]}))} onDeleteEvent={(id) => setData(prev => ({...prev, careerEvents: (prev.careerEvents || []).filter(i => i.id !== id)}))} />;
+      case 'todo_list': return withPermission('todo', <ToDoList tasks={data.todoList} categories={data.todoCategories} onAdd={(t) => setData(prev => ({...prev, todoList: [...prev.todoList, t]}))} onUpdate={(t) => setData(prev => ({...prev, todoList: prev.todoList.map(i => i.id === t.id ? t : i)}))} onDelete={(id) => setData(prev => ({...prev, todoList: prev.todoList.filter(i => i.id !== id)}))} onAddCategory={(c) => setData(prev => ({...prev, todoCategories: [...prev.todoCategories, c]}))} onUpdateCategory={(o, n) => setData(prev => ({...prev, todoCategories: prev.todoCategories.map(i => i === o ? n : i)}))} onDeleteCategory={(c) => setData(prev => ({...prev, todoCategories: prev.todoCategories.filter(i => i !== c)}))} appData={data} />);
+      case 'calendar': return withPermission('calendar', <CareerCalendar data={data} onAddEvent={(e) => setData(prev => ({...prev, careerEvents: [...(prev.careerEvents || []), e]}))} onDeleteEvent={(id) => setData(prev => ({...prev, careerEvents: (prev.careerEvents || []).filter(i => i.id !== id)}))} />);
       case 'skills': return withPermission('skills', <SkillTracker skills={data.skills} trainings={data.trainings} certs={data.certifications} onAddSkill={(s) => setData(prev => ({...prev, skills: [...prev.skills, s]}))} onUpdateSkill={(s) => setData(prev => ({...prev, skills: prev.skills.map(i => i.id === s.id ? s : i)}))} onDeleteSkill={(id) => setData(prev => ({...prev, skills: prev.skills.filter(i => i.id !== id)}))} onAddTraining={(t) => setData(prev => ({...prev, trainings: [...prev.trainings, t]}))} onUpdateTraining={(t) => setData(prev => ({...prev, trainings: prev.trainings.map(i => i.id === t.id ? t : i)}))} onDeleteTraining={(id) => setData(prev => ({...prev, trainings: prev.trainings.filter(i => i.id !== id)}))} onAddCert={(c) => setData(prev => ({...prev, certifications: [...prev.certifications, c]}))} onUpdateCert={(c) => setData(prev => ({...prev, certifications: prev.certifications.map(i => i.id === c.id ? c : i)}))} onDeleteCert={(id) => setData(prev => ({...prev, certifications: prev.certifications.filter(i => i.id !== id)}))} onAddTodo={(t) => setData(prev => ({...prev, todoList: [...prev.todoList, t]}))} onSaveStrategy={(s: AiStrategy) => setData(prev => ({...prev, aiStrategies: [s, ...(prev.aiStrategies || [])]}))} showToast={showToast} data={data} initialSubTab={skillsSubTab as any} />);
       case 'career': return withPermission('career', <CareerPlanner paths={data.careerPaths} appData={data} onAddPath={(p) => setData(prev => ({...prev, careerPaths: [...prev.careerPaths, p]}))} onUpdatePath={(p) => setData(prev => ({...prev, careerPaths: prev.careerPaths.map(i => i.id === p.id ? p : i)}))} onDeletePath={(id) => setData(prev => ({...prev, careerPaths: prev.careerPaths.filter(i => i.id !== id)}))} />);
-      case 'networking': return withPermission('networking', <Networking contacts={data.contacts} onAdd={(c) => setData(prev => ({...prev, contacts: [...prev.contacts, c]}))} onUpdate={(c) => setData(prev => ({...prev, contacts: prev.contacts.map(i => i.id === c.id ? c : i)}))} onDelete={(id) => setData(prev => ({...prev, contacts: prev.contacts.filter(i => i.id !== id)}))} />);
+      case 'networking': return withPermission('networking', <Networking contacts={data.contacts} onAdd={(c) => setData(prev => ({...prev, contacts: [...prev.contacts, c]}))} onUpdate={(c) => setData(prev => ({...prev, contacts: prev.contacts.map(i => i.id === c.id ? c : i)}))} onDelete={(id) => setData(prev => ({...prev, contacts: prev.contacts.filter(i => i.id !== id)}))} appData={data} />);
       case 'achievements': return withPermission('achievements', <AchievementTracker achievements={data.achievements} profile={data.profile} workExperiences={data.workExperiences} onAdd={(a) => setData(prev => ({...prev, achievements: [...prev.achievements, a]}))} onUpdate={(a) => setData(prev => ({...prev, achievements: prev.achievements.map(i => i.id === a.id ? a : i)}))} onDelete={(id) => setData(prev => ({...prev, achievements: prev.achievements.filter(i => i.id !== id)}))} />);
-      case 'loker': return withPermission('loker', <JobTracker applications={data.jobApplications} careerEvents={data.careerEvents || []} onAdd={(j) => setData(prev => ({...prev, jobApplications: [...prev.jobApplications, j]}))} onUpdate={(j) => setData(prev => ({...prev, jobApplications: prev.jobApplications.map(i => i.id === j.id ? j : i)}))} onDelete={(id) => setData(prev => ({...prev, jobApplications: prev.jobApplications.filter(i => i.id !== id)}))} onAddCalendarEvent={(e) => setData(prev => ({...prev, careerEvents: [...(prev.careerEvents || []), e]}))} />);
-      case 'projects': return withPermission('projects', <PersonalProjectTracker projects={data.personalProjects} onAdd={(p) => setData(prev => ({...prev, personalProjects: [...prev.personalProjects, p]}))} onUpdate={(p) => setData(prev => ({...prev, personalProjects: prev.personalProjects.map(i => i.id === p.id ? p : i)}))} onDelete={(id) => setData(prev => ({...prev, personalProjects: prev.personalProjects.filter(i => i.id !== id)}))} />);
+      case 'loker': return withPermission('loker', <JobTracker applications={data.jobApplications} careerEvents={data.careerEvents || []} onAdd={(j) => setData(prev => ({...prev, jobApplications: [...prev.jobApplications, j]}))} onUpdate={(j) => setData(prev => ({...prev, jobApplications: prev.jobApplications.map(i => i.id === j.id ? j : i)}))} onDelete={(id) => setData(prev => ({...prev, jobApplications: prev.jobApplications.filter(i => i.id !== id)}))} onAddCalendarEvent={(e) => setData(prev => ({...prev, careerEvents: [...(prev.careerEvents || []), e]}))} appData={data} />);
+      case 'projects': return withPermission('projects', <PersonalProjectTracker projects={data.personalProjects} onAdd={(p) => setData(prev => ({...prev, personalProjects: [...prev.personalProjects, p]}))} onUpdate={(p) => setData(prev => ({...prev, personalProjects: prev.personalProjects.map(i => i.id === p.id ? p : i)}))} onDelete={(id) => setData(prev => ({...prev, personalProjects: prev.personalProjects.filter(i => i.id !== id)}))} appData={data} />);
       case 'reviews': return withPermission('reviews', <Reviews reviews={data.monthlyReviews} onAdd={(r) => setData(prev => ({...prev, monthlyReviews: [...prev.monthlyReviews, r]}))} onDelete={(id) => setData(prev => ({...prev, monthlyReviews: prev.monthlyReviews.filter(i => i.id !== id)}))} />);
       case 'cv_generator': return withPermission('cv', <CVGenerator data={data} />);
       case 'online_cv': return withPermission('cv', <OnlineCVBuilder data={data} onUpdateConfig={(c) => setData(prev => ({...prev, onlineCV: c}))} />);
@@ -321,11 +341,9 @@ const App: React.FC = () => {
     <div className="min-h-screen bg-slate-50 flex flex-col lg:flex-row overflow-x-hidden font-sans">
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} onLogout={handleLogout} isAdmin={isAdmin} />
       <main className="flex-1 lg:ml-64">
-        {/* EMAIL VERIFICATION REMINDER CARD (REF GBR 1) - Bypass for Superadmin */}
         {!user.emailVerified && !isAdmin && !hideVerificationReminder && (
           <div className="px-6 py-6 lg:px-10 lg:pt-8 animate-in slide-in-from-top-full duration-700 relative z-[200]">
              <div className="bg-[#fffbeb] border border-[#fef3c7] p-8 lg:p-10 rounded-[2.5rem] shadow-sm relative overflow-hidden group">
-                {/* Dismiss Button */}
                 <button 
                   onClick={() => setHideVerificationReminder(true)} 
                   className="absolute top-6 right-8 text-amber-900/30 hover:text-amber-900 transition-colors"
@@ -334,12 +352,10 @@ const App: React.FC = () => {
                 </button>
 
                 <div className="flex flex-col md:flex-row gap-8 items-start relative z-10">
-                   {/* Left Icon Area */}
                    <div className="w-16 h-16 lg:w-20 lg:h-20 bg-[#fef3c7] rounded-[1.75rem] flex items-center justify-center shrink-0 shadow-inner">
                       <i className="bi bi-envelope text-[#d97706] text-3xl"></i>
                    </div>
 
-                   {/* Content Area */}
                    <div className="space-y-4 flex-1">
                       <h3 className="text-xl lg:text-2xl font-black text-[#92400e] tracking-tight leading-none uppercase">
                         Verifikasi email dulu supaya akunmu aktif 100%
@@ -368,7 +384,6 @@ const App: React.FC = () => {
                    </div>
                 </div>
                 
-                {/* Decorative Pattern */}
                 <div className="absolute -bottom-10 -right-10 w-48 h-48 bg-[#fef3c7]/40 rounded-full blur-3xl"></div>
              </div>
           </div>
