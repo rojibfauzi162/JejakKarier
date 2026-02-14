@@ -14,7 +14,7 @@ const md5 = (string: string) => {
   function hh(a: number, b: number, c: number, d: number, x: number, s: number, t: number) { return add32(rot(add32(add32(a, b ^ c ^ d), add32(x, t)), s), b); }
   function ii(a: number, b: number, c: number, d: number, x: number, s: number, t: number) { return add32(rot(add32(add32(a, c ^ (b | ~d)), add32(x, t)), s), b); }
   
-  const words = [];
+  const words: number[] = [];
   for (let i = 0; i < string.length * 8; i += 8) words[i >> 5] |= (string.charCodeAt(i / 8) & 0xFF) << (i % 32);
   let b = string.length * 8;
   words[b >> 5] |= 0x80 << (b % 32);
