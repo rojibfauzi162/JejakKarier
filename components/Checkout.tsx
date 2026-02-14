@@ -1,108 +1,50 @@
-
 import React, { useState, useEffect } from 'react';
 import { SubscriptionProduct, SubscriptionPlan, PaymentStatus, AccountStatus, ManualTransaction, AppData } from '../types';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, sendEmailVerification } from '@firebase/auth';
 import { auth, signInWithGoogle, saveUserData, getUserData, getDuitkuConfig } from '../services/firebase';
 
-// --- HELPER HASHING ---
+// --- FULL SELF-CONTAINED HASHING HELPERS ---
+
+// MD5 Implementation (untuk Inquiry/Transaksi)
 const md5 = (string: string) => {
-  function k(a: any, b: any) {
-    a[b >> 5] |= 128 << (b % 32);
-    a[(((b + 64) >>> 9) << 4) + 14] = b;
-    var c = 1732584193, d = -271733879, e = -1732584194, f = 271733878, g = 0;
-    for (; g < a.length; g += 16) {
-      var h = c, i = d, j = e, l = f;
-      c = ff(c, d, e, f, a[g + 0], 7, -680876936);
-      f = ff(f, c, d, e, a[g + 1], 12, -389564586);
-      e = ff(e, f, c, d, a[g + 2], 17, 606105819);
-      d = ff(d, e, f, c, a[g + 3], 22, -1044525330);
-      c = ff(c, d, e, f, a[g + 4], 7, -176418897);
-      f = ff(f, c, d, e, a[g + 5], 12, 1200080426);
-      e = ff(e, f, c, d, a[g + 6], 17, -1473231341);
-      d = ff(d, e, f, c, a[g + 7], 22, -45705983);
-      c = ff(c, d, e, f, a[g + 8], 7, 1770035416);
-      f = ff(f, c, d, e, a[g + 9], 12, -1958414417);
-      e = ff(e, f, c, d, a[g + 10], 17, -42063);
-      d = ff(d, e, f, c, a[g + 11], 22, -1990404162);
-      c = ff(c, d, e, f, a[g + 12], 7, 1804603682);
-      f = ff(f, c, d, e, a[g + 13], 12, -40341101);
-      e = ff(e, f, c, d, a[g + 14], 17, -1502002290);
-      d = ff(d, e, f, c, a[g + 15], 22, 1236535329);
-      c = gg(c, d, e, f, a[g + 1], 5, -165796510);
-      f = gg(f, c, d, e, a[g + 6], 9, -1069501632);
-      e = gg(e, f, c, d, a[g + 11], 14, 643717713);
-      d = gg(d, e, f, c, a[g + 0], 20, -373897302);
-      c = gg(c, d, e, f, a[g + 5], 5, -701558691);
-      f = gg(f, c, d, e, a[g + 10], 9, 38016083);
-      e = gg(e, f, c, d, a[g + 15], 14, -660478335);
-      d = gg(d, e, f, c, a[g + 4], 20, -405537848);
-      c = gg(c, d, e, f, a[g + 9], 5, 568446438);
-      f = gg(f, c, d, e, a[g + 14], 9, -1019803690);
-      e = gg(e, f, c, d, a[g + 3], 14, -187363961);
-      d = gg(d, e, f, c, a[g + 8], 20, 1163531501);
-      c = gg(c, d, e, f, a[g + 13], 5, -1444681467);
-      f = gg(f, c, d, e, a[g + 2], 9, -51403784);
-      e = gg(e, f, c, d, a[g + 7], 14, 1735328473);
-      d = gg(d, e, f, c, a[g + 12], 20, -1926607734);
-      c = hh(c, d, e, f, a[g + 5], 4, -378558);
-      f = hh(f, c, d, e, a[g + 8], 11, -2022574463);
-      e = hh(e, f, c, d, a[g + 11], 16, 1839030562);
-      d = hh(d, e, f, c, a[g + 14], 23, -35309556);
-      c = hh(c, d, e, f, a[g + 1], 4, -1530992060);
-      f = hh(f, c, d, e, a[g + 4], 11, 1272893353);
-      e = hh(e, f, c, d, a[g + 7], 16, -155497632);
-      d = hh(d, e, f, c, a[g + 10], 23, -1094730640);
-      c = hh(c, d, e, f, a[g + 13], 4, 681279174);
-      f = hh(f, c, d, e, a[g + 0], 11, -358537222);
-      e = hh(e, f, c, d, a[g + 3], 16, -722521979);
-      d = hh(d, e, f, c, a[g + 6], 23, 76029189);
-      c = hh(c, d, e, f, a[g + 9], 4, -640364487);
-      f = hh(f, c, d, e, a[g + 12], 11, -421815835);
-      e = hh(e, f, c, d, a[g + 15], 16, 530742520);
-      d = hh(d, e, f, c, a[g + 2], 23, -995338651);
-      c = ii(c, d, e, f, a[g + 0], 6, -198630844);
-      f = ii(f, c, d, e, a[g + 7], 10, 1126891415);
-      e = ii(e, f, c, d, a[g + 14], 15, -1416354905);
-      d = ii(d, e, f, c, a[g + 5], 21, -57434055);
-      c = ii(c, d, e, f, a[g + 12], 6, 1700485571);
-      f = ii(f, c, d, e, a[g + 3], 10, -1894946606);
-      e = ii(e, f, c, d, a[g + 10], 15, -1051523);
-      d = ii(d, e, f, c, a[g + 1], 21, -2054922799);
-      c = ii(c, d, e, f, a[g + 8], 6, 1873313359);
-      f = ii(f, c, d, e, a[g + 15], 10, -30611744);
-      e = ii(e, f, c, d, a[g + 6], 15, -1560198380);
-      d = ii(d, e, f, c, a[g + 13], 21, 1309151649);
-      c = ii(c, d, e, f, a[g + 4], 6, -145523070);
-      f = ii(f, c, d, e, a[g + 11], 10, -1120210379);
-      e = ii(e, f, c, d, a[g + 2], 15, 718787280);
-      d = ii(d, e, f, c, a[g + 9], 21, -343485551);
-      c = add32(c, h);
-      d = add32(d, i);
-      e = add32(e, j);
-      f = add32(f, l);
-    }
-    return [c, d, e, f];
+  function add32(a: number, b: number) { return (a + b) & 0xFFFFFFFF; }
+  function rot(a: number, b: number) { return (a << b) | (a >>> (32 - b)); }
+  function ff(a: number, b: number, c: number, d: number, x: number, s: number, t: number) { return add32(rot(add32(add32(a, (b & c) | (~b & d)), add32(x, t)), s), b); }
+  function gg(a: number, b: number, c: number, d: number, x: number, s: number, t: number) { return add32(rot(add32(add32(a, (b & d) | (c & ~d)), add32(x, t)), s), b); }
+  function hh(a: number, b: number, c: number, d: number, x: number, s: number, t: number) { return add32(rot(add32(add32(a, b ^ c ^ d), add32(x, t)), s), b); }
+  function ii(a: number, b: number, c: number, d: number, x: number, s: number, t: number) { return add32(rot(add32(add32(a, c ^ (b | ~d)), add32(x, t)), s), b); }
+  
+  const words = [];
+  for (let i = 0; i < string.length * 8; i += 8) words[i >> 5] |= (string.charCodeAt(i / 8) & 0xFF) << (i % 32);
+  let b = string.length * 8;
+  words[b >> 5] |= 0x80 << (b % 32);
+  words[(((b + 64) >>> 9) << 4) + 14] = b;
+  
+  let a = 1732584193, c = -1732584194, d = 271733878, e = -271733879;
+  for (let i = 0; i < words.length; i += 16) {
+    let oa = a, ob = d, oc = c, od = e;
+    a = ff(a, d, c, e, words[i+0], 7, -680876936); e = ff(e, a, d, c, words[i+1], 12, -389564586); c = ff(c, e, a, d, words[i+2], 17, 606105819); d = ff(d, c, e, a, words[i+3], 22, -1044525330);
+    a = ff(a, d, c, e, words[i+4], 7, -176418897); e = ff(e, a, d, c, words[i+5], 12, 1200080426); c = ff(c, e, a, d, words[i+6], 17, -1473231341); d = ff(d, c, e, a, words[i+7], 22, -45705983);
+    a = ff(a, d, c, e, words[i+8], 7, 1770035416); e = ff(e, a, d, c, words[i+9], 12, -1958414417); c = ff(c, e, a, d, words[i+10], 17, -42063); d = ff(d, c, e, a, words[i+11], 22, -1990404162);
+    a = ff(a, d, c, e, words[i+12], 7, 1804603682); e = ff(e, a, d, c, words[i+13], 12, -40341101); c = ff(c, e, a, d, words[i+14], 17, -1502002290); d = ff(d, c, e, a, words[i+15], 22, 1236535329);
+    a = gg(a, d, c, e, words[i+1], 5, -165796510); e = gg(e, a, d, c, words[i+6], 9, -1069501632); c = gg(c, e, a, d, words[i+11], 14, 643717713); d = gg(d, c, e, a, words[i+0], 20, -373897302);
+    a = gg(a, d, c, e, words[i+5], 5, -701558691); e = gg(e, a, d, c, words[i+10], 9, 38016083); c = gg(c, e, a, d, words[i+15], 14, -660478335); d = gg(d, c, e, a, words[i+4], 20, -405537848);
+    a = gg(a, d, c, e, words[i+9], 5, 568446438); e = gg(e, a, d, c, words[i+14], 9, -1019803690); c = gg(c, e, a, d, words[i+3], 14, -187363961); d = gg(d, c, e, a, words[i+8], 20, 1163531501);
+    a = gg(a, d, c, e, words[i+13], 5, -1444681467); e = gg(e, a, d, c, words[i+2], 9, -51403784); c = gg(c, e, a, d, words[i+7], 14, 1735328473); d = gg(d, c, e, a, words[i+12], 20, -1926607734);
+    a = hh(a, d, c, e, words[i+5], 4, -378558); e = hh(e, a, d, c, words[i+8], 11, -2022574463); c = hh(c, e, a, d, words[i+11], 16, 1839030562); d = hh(d, c, e, a, words[i+14], 23, -35309556);
+    a = hh(a, d, c, e, words[i+1], 4, -1530992060); e = hh(e, a, d, c, words[i+4], 11, 1272893353); c = hh(c, e, a, d, words[i+7], 16, -155497632); d = hh(d, c, e, a, words[i+10], 23, -1094730640);
+    a = hh(a, d, c, e, words[i+13], 4, 681279174); e = hh(e, a, d, c, words[i+0], 11, -358537222); c = hh(c, e, a, d, words[i+3], 16, -722521979); d = hh(d, c, e, a, words[i+6], 23, 76029189);
+    a = hh(a, d, c, e, words[i+9], 4, -640364487); e = hh(e, a, d, c, words[i+12], 11, -421815835); c = hh(c, e, a, d, words[i+15], 16, 530742520); d = hh(d, c, e, a, words[i+2], 23, -995338651);
+    a = ii(a, d, c, e, words[i+0], 6, -198630844); e = ii(e, a, d, c, words[i+7], 10, 1126891415); c = ii(c, e, a, d, words[i+14], 15, -1416354905); d = ii(d, c, e, a, words[i+5], 21, -57434055);
+    a = ii(a, d, c, e, words[i+12], 6, 1700485571); e = ii(e, a, d, c, words[i+3], 10, -1894946606); c = ii(c, e, a, d, words[i+10], 15, -1051523); d = ii(d, c, e, a, words[i+1], 21, -2054922799);
+    a = ii(a, d, c, e, words[i+8], 6, 1873313359); e = ii(e, a, d, c, words[i+15], 10, -30611744); c = ii(c, e, a, d, words[i+6], 15, -1560198380); d = ii(d, c, e, a, words[i+13], 21, 1309151649);
+    a = ii(a, d, c, e, words[i+4], 6, -145523070); e = ii(e, a, d, c, words[i+11], 10, -1120210379); c = ii(c, e, a, d, words[i+2], 15, 718787280); d = ii(d, c, e, a, words[i+9], 21, -343485551);
+    a = add32(a, oa); d = add32(d, ob); c = add32(c, oc); e = add32(e, od);
   }
-  function ff(a: any, b: any, c: any, d: any, x: any, s: any, t: any) { return cmn((b & c) | (~b & d), a, b, x, s, t); }
-  function gg(a: any, b: any, c: any, d: any, x: any, s: any, t: any) { return cmn((b & d) | (c & ~d), a, b, x, s, t); }
-  function hh(a: any, b: any, c: any, d: any, x: any, s: any, t: any) { return cmn(b ^ c ^ d, a, b, x, s, t); }
-  function ii(a: any, b: any, c: any, d: any, x: any, s: any, t: any) { return cmn(c ^ (b | ~d), a, b, x, s, t); }
-  function cmn(q: any, a: any, b: any, x: any, s: any, t: any) { return add32(rot(add32(add32(a, q), add32(x, t)), s), b); }
-  function add32(a: any, b: any) { return (a + b) & 4294967295; }
-  function rot(a: any, b: any) { return (a << b) | (a >>> (32 - b)); }
-  function strToWords(s: string) {
-    var a: any[] = [], i = 0;
-    for (; i < s.length * 8; i += 8) a[i >> 5] |= (s.charCodeAt(i / 8) & 255) << (i % 32);
-    return a;
-  }
-  function wordsToHex(a: any) {
-    var s = "", i = 0;
-    for (; i < a.length * 32; i += 8) s += ((a[i >> 5] >>> (i % 32)) & 255).toString(16).padStart(2, '0');
-    return s;
-  }
-  return wordsToHex(k(strToWords(string), string.length * 8));
+  return [a, d, c, e].map(v => ("00000000" + (v >>> 0).toString(16)).slice(-8).split("").reverse().join("").match(/../g)!.join("")).join("");
 };
 
+// SHA256 Implementation (untuk Get Payment Method)
 const sha256 = async (string: string) => {
   const utf8 = new TextEncoder().encode(string);
   const hashBuffer = await crypto.subtle.digest('SHA-256', utf8);
@@ -128,7 +70,7 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
   const [paymentMethods, setPaymentMethods] = useState<any[]>([]);
   const [showMethods, setShowMethods] = useState(false);
 
-  // Gunakan Proxy CORS publik untuk mengatasi keterbatasan browser
+  // CORS Proxy Bridge
   const CORS_PROXY = "https://api.allorigins.win/raw?url=";
 
   useEffect(() => {
@@ -164,38 +106,44 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
     setLoading(true);
     setError('');
     try {
-      // Format datetime: YYYY-MM-DD HH:MM:SS
-      const d = new Date();
-      const datetime = d.getFullYear() + "-" + 
-                      String(d.getMonth() + 1).padStart(2, '0') + "-" + 
-                      String(d.getDate()).padStart(2, '0') + " " + 
-                      String(d.getHours()).padStart(2, '0') + ":" + 
-                      String(d.getMinutes()).padStart(2, '0') + ":" + 
-                      String(d.getSeconds()).padStart(2, '0');
+      // 1. Format Datetime Sesuai PHP: date('Y-m-d H:i:s')
+      const now = new Date();
+      const datetime = now.getFullYear() + "-" + 
+                      String(now.getMonth() + 1).padStart(2, '0') + "-" + 
+                      String(now.getDate()).padStart(2, '0') + " " + 
+                      String(now.getHours()).padStart(2, '0') + ":" + 
+                      String(now.getMinutes()).padStart(2, '0') + ":" + 
+                      String(now.getSeconds()).padStart(2, '0');
 
-      const signature = await sha256(duitkuConfig.merchantCode + plan.price + datetime + duitkuConfig.apiKey);
+      // 2. Signature SHA256 Sesuai PHP
+      const signatureStr = duitkuConfig.merchantCode + plan.price.toString() + datetime + duitkuConfig.apiKey;
+      const signature = await sha256(signatureStr);
       
+      // 3. Request Parameters dengan Key Sesuai PHP (merchantcode, amount, datetime, signature)
+      const payload = {
+        merchantcode: duitkuConfig.merchantCode,
+        amount: plan.price,
+        datetime: datetime,
+        signature: signature
+      };
+
       const baseUrl = duitkuConfig.environment === 'sandbox' 
         ? 'https://sandbox.duitku.com/webapi/api/merchant/paymentmethod/getpaymentmethod'
         : 'https://passport.duitku.com/webapi/api/merchant/paymentmethod/getpaymentmethod';
 
-      // Bungkus URL asli dengan Proxy CORS
       const url = CORS_PROXY + encodeURIComponent(baseUrl);
 
       const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          merchantcode: duitkuConfig.merchantCode,
-          amount: plan.price,
-          datetime: datetime,
-          signature: signature
-        })
+        body: JSON.stringify(payload)
       });
 
       if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
       
       const res = await response.json();
+      
+      // 4. Handle Response Code
       if (res.responseCode === '00') {
         setPaymentMethods(res.paymentFee || []);
         setShowMethods(true);
@@ -203,8 +151,8 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
         setError(res.responseMessage || "Gagal mengambil metode pembayaran dari Duitku.");
       }
     } catch (err: any) {
-      console.error("CORS/Fetch Error:", err);
-      setError("Kesalahan Koneksi: Pastikan setting Merchant Duitku benar atau coba kembali beberapa saat lagi.");
+      console.error("Duitku Fetch Error:", err);
+      setError("Kesalahan Koneksi Duitku. Pastikan API Key & Merchant Code di panel Admin sudah benar.");
     } finally {
       setLoading(false);
     }
@@ -215,22 +163,27 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
     setLoading(true);
     setError('');
     try {
-      const orderId = `FC-${Date.now()}`;
-      const signature = md5(duitkuConfig.merchantCode + orderId + plan.price + duitkuConfig.apiKey);
+      // Order ID unik berbasis timestamp
+      const orderId = "FK-" + Date.now();
+      
+      // Signature MD5 Sesuai PHP: md5($merchantCode . $merchantOrderId . $paymentAmount . $apiKey)
+      const signatureStr = duitkuConfig.merchantCode + orderId + plan.price.toString() + duitkuConfig.apiKey;
+      const signature = md5(signatureStr);
       
       const userData = await getUserData(user.uid);
       const customerName = user.displayName || userData?.profile?.name || "Customer";
       
+      // Inquiry Params (v2)
       const payload = {
         merchantCode: duitkuConfig.merchantCode,
         paymentAmount: plan.price,
         paymentMethod: methodCode,
         merchantOrderId: orderId,
-        productDetails: `Langganan ${plan.name}`,
+        productDetails: `Langganan FokusKarir ${plan.name}`,
         email: user.email,
         customerVaName: customerName,
         callbackUrl: duitkuConfig.callbackUrl || `${window.location.origin}/api/callback`,
-        returnUrl: `${window.location.origin}`, // Redirect kembali ke domain utama untuk menghindari 404
+        returnUrl: `${window.location.origin}`,
         expiryPeriod: 60,
         signature: signature
       };
@@ -239,7 +192,6 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
         ? 'https://sandbox.duitku.com/webapi/api/merchant/v2/inquiry'
         : 'https://passport.duitku.com/webapi/api/merchant/v2/inquiry';
 
-      // Bungkus URL asli dengan Proxy CORS
       const url = CORS_PROXY + encodeURIComponent(baseUrl);
 
       const response = await fetch(url, {
@@ -252,7 +204,7 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
 
       const res = await response.json();
       if (res.statusCode === '00') {
-        // Simpan transaksi PENDING ke Firestore agar admin bisa pantau
+        // Catat transaksi PENDING ke database lokal (Firestore)
         const newTx: ManualTransaction = {
           id: orderId,
           amount: plan.price,
@@ -269,14 +221,14 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
         const currentTxs = userData?.manualTransactions || [];
         await saveUserData(user.uid, { ...userData, manualTransactions: [...currentTxs, newTx] } as AppData);
         
-        // REDIRECT KE PAYMENT URL ASLI DARI DUITKU
+        // Redirect ke halaman pembayaran Duitku
         window.location.href = res.paymentUrl;
       } else {
-        setError(res.statusMessage || "Inquiry Transaksi Gagal");
+        setError(res.statusMessage || "Gagal membuat invoice pembayaran.");
       }
     } catch (err: any) {
       console.error("Inquiry Error:", err);
-      setError("Gagal membuat transaksi. Silakan coba metode manual atau hubungi support.");
+      setError("Gagal menghubungi gateway pembayaran.");
     } finally {
       setLoading(false);
     }
@@ -381,7 +333,7 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
                       </button>
                     )) : (
                       <div className="py-12 text-center">
-                        <p className="text-[10px] font-bold text-slate-400 uppercase">Sedang memuat opsi...</p>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase">Gagal memuat opsi, silakan coba metode manual.</p>
                       </div>
                     )}
                   </div>
