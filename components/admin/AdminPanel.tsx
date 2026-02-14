@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { AppData, UserRole, AccountStatus, SubscriptionPlan, AiConfig, SubscriptionProduct, DuitkuConfig } from '../../types';
 import { getAllUsers, updateAdminMetadata, getAiConfig, saveAiConfig, getProductsCatalog, saveProductsCatalog, getDuitkuConfig, saveDuitkuConfig } from '../../services/firebase';
@@ -195,6 +194,20 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard', user
     }
   };
 
+  const handleDeleteProduct = async () => {
+    if (!editingProduct) return;
+    if (!confirm(`Hapus produk "${editingProduct.name}"?`)) return;
+    try {
+      const newProducts = products.filter(p => p.id !== editingProduct.id);
+      await saveProductsCatalog(newProducts);
+      setProducts(newProducts);
+      triggerToast("Produk berhasil dihapus.");
+      setIsProductModalOpen(false);
+    } catch (e) {
+      triggerToast("Gagal menghapus produk.", "error");
+    }
+  };
+
   if (loading) return <div className="h-full flex flex-col items-center justify-center space-y-4"><div className="w-12 h-12 border-4 border-slate-900 border-t-transparent rounded-full animate-spin"></div><p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Menghubungkan ke pusat data...</p></div>;
 
   return (
@@ -236,7 +249,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard', user
                 <h3 className="text-2xl font-black text-slate-900 uppercase">Kelola User</h3>
                 <button onClick={() => setIsUserModalOpen(false)} className="w-10 h-10 rounded-full bg-slate-50 text-slate-400 flex items-center justify-center font-black">✕</button>
              </div>
-             {/* Form User Management Logic */}
              <div className="space-y-6">
                 <div className="p-6 bg-slate-50 rounded-2xl border">
                   <p className="font-black text-slate-800">{editingUser.profile?.name}</p>
@@ -258,6 +270,25 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard', user
                 </div>
                 <button onClick={() => handleSaveUserMetadata(editingUser)} className="w-full py-4 bg-slate-900 text-white font-black rounded-2xl uppercase text-[10px] shadow-xl">Simpan Perubahan</button>
              </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL PRODUK (FIX: TAMBAH/EDIT PRODUK) */}
+      {isProductModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[2000] p-4">
+          <div className="bg-white w-full max-w-4xl rounded-[3rem] shadow-2xl p-8 lg:p-14 animate-in zoom-in duration-300 overflow-y-auto max-h-[90vh] no-scrollbar">
+             <div className="flex justify-between items-start mb-10">
+                <h3 className="text-3xl font-black text-slate-900 uppercase tracking-tight">{editingProduct ? 'Edit Paket Langganan' : 'Buat Paket Baru'}</h3>
+                <button onClick={() => setIsProductModalOpen(false)} className="w-12 h-12 rounded-full bg-slate-50 text-slate-400 flex items-center justify-center font-black hover:bg-rose-50 hover:text-rose-500 transition-all">✕</button>
+             </div>
+             
+             <ProductForm 
+                initialData={editingProduct}
+                onCancel={() => setIsProductModalOpen(false)}
+                onSubmit={handleSaveProduct}
+                onDelete={editingProduct ? handleDeleteProduct : undefined}
+             />
           </div>
         </div>
       )}

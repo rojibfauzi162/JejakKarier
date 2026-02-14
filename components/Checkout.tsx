@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { SubscriptionProduct, SubscriptionPlan, PaymentStatus, AccountStatus, ManualTransaction, AppData } from '../types';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, sendEmailVerification } from '@firebase/auth';
-import { auth, signInWithGoogle, saveUserData, getUserData, getDuitkuConfig } from '../services/firebase';
+import { auth, signInWithGoogle, saveUserData, getUserData, getDuitkuConfig, getLandingPageConfig } from '../services/firebase';
 
 // --- FULL SELF-CONTAINED HASHING HELPERS ---
 
@@ -69,6 +69,8 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
   const [duitkuConfig, setDuitkuConfig] = useState<any>(null);
   const [paymentMethods, setPaymentMethods] = useState<any[]>([]);
   const [showMethods, setShowMethods] = useState(false);
+  const [showManualSuccess, setShowManualSuccess] = useState(false);
+  const [adminPhone, setAdminPhone] = useState('628123456789');
 
   // CORS Proxy Bridge
   const CORS_PROXY = "https://api.allorigins.win/raw?url=";
@@ -77,6 +79,11 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
     getDuitkuConfig().then(cfg => {
       if (cfg && cfg.merchantCode && cfg.apiKey) {
         setDuitkuConfig(cfg);
+      }
+    });
+    getLandingPageConfig().then(cfg => {
+      if (cfg && cfg.adminWhatsApp) {
+        setAdminPhone(cfg.adminWhatsApp);
       }
     });
   }, []);
@@ -211,6 +218,7 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
           date: new Date().toISOString(),
           status: PaymentStatus.PENDING,
           planTier: plan.tier,
+          durationDays: plan.durationDays,
           paymentMethod: 'Duitku',
           reference: res.reference,
           userName: customerName,
@@ -239,21 +247,33 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
     try {
       const orderId = `TX-MANUAL-${Date.now()}`;
       const userData = await getUserData(user.uid);
+      const customerName = user.displayName || userData?.profile?.name || "Customer";
+      
       const newTx: ManualTransaction = {
         id: orderId,
         amount: plan.price,
         date: new Date().toISOString(),
         status: PaymentStatus.PENDING,
         planTier: plan.tier,
+        durationDays: plan.durationDays,
         paymentMethod: 'Manual',
-        userName: user.displayName || userData?.profile?.name,
+        userName: customerName,
         userEmail: user.email
       };
-      await saveUserData(user.uid, { ...userData, manualTransactions: [...(userData?.manualTransactions || []), newTx] } as AppData);
       
-      const waNumber = "628123456789"; 
-      const message = encodeURIComponent(`Halo Admin FokusKarir, saya sudah checkout paket *${plan.name}* dengan ID: *${orderId}*.\nEmail: ${user?.email}\nMohon instruksi pembayaran.`);
-      window.open(`https://wa.me/${waNumber}?text=${message}`, '_blank');
+      const currentTxs = userData?.manualTransactions || [];
+      await saveUserData(user.uid, { ...userData, manualTransactions: [...currentTxs, newTx] } as AppData);
+      
+      setShowManualSuccess(true);
+      
+      const message = encodeURIComponent(`Halo Admin FokusKarir, saya sudah checkout paket *${plan.name}* dengan ID: *${orderId}*.\n\nNama: *${customerName}*\nEmail: *${user?.email}*\n\nMohon instruksi pembayaran manual.`);
+      
+      setTimeout(() => {
+        window.open(`https://wa.me/${adminPhone}?text=${message}`, '_blank');
+      }, 2000);
+      
+    } catch (err: any) {
+      setError("Gagal menyimpan data transaksi manual.");
     } finally {
       setLoading(false);
     }
@@ -354,7 +374,7 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
                 {!isLogin && <div className="space-y-1.5"><label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Nama Lengkap</label><input className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-sm" value={name} onChange={e => setName(e.target.value)} required /></div>}
                 <div className="space-y-1.5"><label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Email</label><input className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-sm" value={email} onChange={e => setEmail(e.target.value)} required type="email" /></div>
                 <div className="space-y-1.5"><label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Password</label><input className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-sm" value={password} onChange={e => setPassword(e.target.value)} required type="password" /></div>
-                <button disabled={loading} className="w-full py-5 bg-slate-900 text-white font-black uppercase rounded-2xl shadow-xl">{loading ? 'Processing...' : 'Lanjut Bayar'}</button>
+                <button disabled={loading} className="w-full py-5 bg-slate-900 text-white font-black rounded-2xl shadow-xl">{loading ? 'Processing...' : 'Lanjut Bayar'}</button>
               </form>
               <div className="relative"><div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-100"></div></div><div className="relative flex justify-center text-[10px] font-black uppercase tracking-widest"><span className="bg-white px-4 text-slate-300">Atau</span></div></div>
               <button onClick={async () => { setLoading(true); try { await signInWithGoogle(); } catch(e){} finally { setLoading(false); } }} className="w-full py-4 border-2 border-slate-100 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-slate-50 transition-all">
@@ -364,6 +384,30 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
           )}
         </div>
       </div>
+
+      {/* MODAL SUKSES TRANSAKSI MANUAL */}
+      {showManualSuccess && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[2000] flex items-center justify-center p-6">
+           <div className="bg-white max-w-md w-full rounded-[3.5rem] p-10 lg:p-12 border border-slate-100 shadow-2xl animate-in zoom-in duration-300">
+              <div className="text-center">
+                 <div className="w-20 h-20 bg-emerald-50 text-emerald-600 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-inner">
+                    <i className="bi bi-check-circle-fill text-4xl"></i>
+                 </div>
+                 <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight mb-4">Data Telah Tersimpan</h3>
+                 <p className="text-slate-500 font-bold text-xs uppercase tracking-widest leading-relaxed mb-10">
+                   Kami akan menghubungkan ke tim admin kami, mohon ditunggu. <br/>
+                   <span className="text-indigo-600 block mt-2">Anda akan dialihkan ke WhatsApp...</span>
+                 </p>
+                 <button 
+                  onClick={() => setShowManualSuccess(false)}
+                  className="w-full py-4 bg-slate-900 text-white font-black rounded-2xl uppercase text-[10px] tracking-widest hover:bg-black transition-all"
+                 >
+                   Tutup Panel
+                 </button>
+              </div>
+           </div>
+        </div>
+      )}
     </div>
   );
 };

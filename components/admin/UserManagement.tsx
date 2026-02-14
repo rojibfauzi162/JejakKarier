@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { AppData } from '../../types';
+import { AppData, SubscriptionPlan } from '../../types';
 
 interface UserManagementProps {
   users: AppData[];
@@ -27,28 +26,50 @@ const UserManagement: React.FC<UserManagementProps> = ({ users, searchQuery, set
               <tr className="text-[10px] font-black uppercase text-slate-400 bg-slate-50/50">
                 <th className="px-8 py-4">Identitas</th>
                 <th className="px-6 py-4 text-center">Paket</th>
+                <th className="px-6 py-4 text-center">Masa Aktif</th>
                 <th className="px-6 py-4 text-center">Status</th>
                 <th className="px-8 py-4 text-right">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
-              {users.map(u => (
-                <tr key={u.uid} className="hover:bg-slate-50/50 transition-colors">
-                  <td className="px-8 py-4">
-                    <p className="font-black text-slate-800 text-sm">{u.profile?.name || 'User'}</p>
-                    <p className="text-[10px] font-bold text-slate-400">{u.profile?.email}</p>
-                  </td>
-                  <td className="px-6 py-4 text-center">
-                    <span className="px-3 py-1 bg-slate-100 rounded-lg text-[9px] font-black uppercase">{u.plan}</span>
-                  </td>
-                  <td className="px-6 py-4 text-center">
-                    <span className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase ${u.status === 'Active' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>{u.status}</span>
-                  </td>
-                  <td className="px-8 py-4 text-right">
-                    <button onClick={() => onManage(u)} className="text-indigo-600 font-black text-[10px] uppercase hover:underline">Kelola</button>
-                  </td>
-                </tr>
-              ))}
+              {users.map(u => {
+                const expiryDate = u.expiryDate ? new Date(u.expiryDate) : null;
+                const today = new Date();
+                const daysLeft = expiryDate ? Math.ceil((expiryDate.getTime() - today.getTime()) / (1000 * 3600 * 24)) : null;
+                const isExpired = daysLeft !== null && daysLeft <= 0;
+
+                return (
+                  <tr key={u.uid} className="hover:bg-slate-50/50 transition-colors">
+                    <td className="px-8 py-4">
+                      <p className="font-black text-slate-800 text-sm">{u.profile?.name || 'User'}</p>
+                      <p className="text-[10px] font-bold text-slate-400">{u.profile?.email}</p>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <span className="px-3 py-1 bg-slate-100 rounded-lg text-[9px] font-black uppercase">{u.plan}</span>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      {expiryDate ? (
+                        <div className="flex flex-col items-center">
+                          <p className={`text-[10px] font-black uppercase ${isExpired ? 'text-rose-500' : 'text-slate-700'}`}>
+                            {expiryDate.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}
+                          </p>
+                          <span className={`text-[8px] font-bold uppercase mt-0.5 ${isExpired ? 'text-rose-400' : 'text-indigo-500'}`}>
+                            {isExpired ? '(EXPIRED)' : `(${daysLeft} hari lagi)`}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-[10px] font-bold text-slate-300 uppercase">Permanen / Free</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <span className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase ${u.status === 'Active' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>{u.status}</span>
+                    </td>
+                    <td className="px-8 py-4 text-right">
+                      <button onClick={() => onManage(u)} className="text-indigo-600 font-black text-[10px] uppercase hover:underline">Kelola</button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
        </div>

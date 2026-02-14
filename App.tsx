@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { AppData, UserRole, SubscriptionProduct, SubscriptionPlan, AccountStatus, ToDoTask, AiStrategy, Training, Certification, Skill, CareerEvent, JobStatus, EventType, ImportanceLevel, WorkExperience, Education } from './types';
 import { INITIAL_DATA, DEFAULT_PRODUCTS } from './constants';
@@ -297,7 +296,6 @@ const App: React.FC = () => {
       
       case 'apps_hub': return withPermission('apps_hub', <AppsHub onNavigate={handleNavigate} />);
       case 'mobile_stats': return withPermission('mobile_stats', <MobileStats data={data} />);
-      /* Fixed: Comparison between WorkExperience object and string ID on line 299 by using i.id !== id */
       case 'profile': return withPermission('profile', <ProfileView profile={data.profile} workExperiences={data.workExperiences} educations={data.educations} onUpdateProfile={(p) => setData(prev => ({...prev, profile: p}))} onAddWork={(w) => setData(prev => ({...prev, workExperiences: [...prev.workExperiences, w]}))} onUpdateWork={(w) => setData(prev => ({...prev, workExperiences: prev.workExperiences.map(i => i.id === w.id ? w : i)}))} onDeleteWork={(id) => setData(prev => ({...prev, workExperiences: prev.workExperiences.filter(i => i.id !== id)}))} onAddEducation={(e) => setData(prev => ({...prev, educations: [...prev.educations, e]}))} onUpdateEducation={(e) => setData(prev => ({...prev, educations: prev.educations.map(i => i.id === e.id ? e : i)}))} onDeleteEducation={(id) => setData(prev => ({...prev, educations: prev.educations.filter(e => e.id !== id)}))} appData={data} />);
       case 'daily': return withPermission('daily', <DailyLogs logs={data.dailyReports} categories={data.workCategories} onAdd={(l) => setData(prev => ({...prev, dailyReports: [...prev.dailyReports, l]}))} onUpdate={(l) => setData(prev => ({...prev, dailyReports: prev.dailyReports.map(i => i.id === l.id ? l : i)}))} onDelete={(id) => setData(prev => ({...prev, dailyReports: prev.dailyReports.filter(i => i.id !== id)}))} onAddCategory={(c) => setData(prev => ({...prev, workCategories: [...prev.workCategories, c]}))} onDeleteCategory={(c) => setData(prev => ({...prev, workCategories: prev.workCategories.filter(i => i !== c)}))} affirmation={data.affirmations[0]} appData={data} onUpgrade={commonProps.onUpgrade} />);
       case 'work_reflection': return withPermission('work_reflection', <WorkReflectionView reflections={data.dailyReflections} skills={data.skills} onAdd={(r) => setData(prev => ({...prev, dailyReflections: [...prev.dailyReflections, r]}))} onUpdateSkill={(s) => setData(prev => ({...prev, skills: prev.skills.map(i => i.id === s.id ? s : i)}))} onAddTodo={(t) => setData(prev => ({...prev, todoList: [...prev.todoList, t]}))} onAddAchievement={(a) => setData(prev => ({...prev, achievements: [...prev.achievements, a]}))} appData={data} />);
@@ -315,7 +313,7 @@ const App: React.FC = () => {
       case 'cv_generator': return withPermission('cv', <CVGenerator data={data} />);
       case 'online_cv': return withPermission('cv', <OnlineCVBuilder data={data} onUpdateConfig={(c) => setData(prev => ({...prev, onlineCV: c}))} />);
       case 'settings': return <AccountSettings reminderConfig={data.reminderConfig} onUpdateReminders={(c) => setData(prev => ({...prev, reminderConfig: c}))} />;
-      case 'billing': return withPermission('billing', <Billing data={data} products={publicProducts} />);
+      case 'billing': return withPermission('billing', <Billing data={data} products={publicProducts} onSelectPlan={(p) => setCheckoutPlan(p)} />);
       default: return withPermission('dashboard', <Dashboard data={data} onNavigate={handleNavigate} />);
     }
   };

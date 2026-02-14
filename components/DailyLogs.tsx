@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useEffect } from 'react';
 import { DailyReport, AppData, SubscriptionPlan } from '../types';
 
@@ -41,6 +40,11 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
   const [isExecutingPlan, setIsExecutingPlan] = useState(false);
   const [showHistoryFor, setShowHistoryFor] = useState<string | null>(null);
   
+  // History Modal States
+  const [historySearch, setHistorySearch] = useState('');
+  const [historyPage, setHistoryPage] = useState(1);
+  const historyPerPage = 5;
+
   // Filters State
   const [searchQuery, setSearchQuery] = useState('');
   const [filterCat, setFilterCat] = useState('all');
@@ -57,17 +61,20 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
   // LOGIC LIMITASI DATA - HANYA UNTUK PAKET FREE
   const limit = appData?.planLimits?.dailyLogs || 10;
   const isLimitReached = appData?.plan === SubscriptionPlan.FREE && limit !== 'unlimited' && logs.length >= (Number(limit));
-  const remaining = limit === 'unlimited' ? Infinity : Number(limit) - logs.length;
 
   const metricChoices = ['Laporan', 'Jam', 'Berkas', 'Persentase (%)', 'Nominal (IDR)', 'Custom'];
 
-  // LOGIC: Map riwayat aktivitas untuk auto-fill (Ditingkatkan untuk mengambil data progres terakhir)
+  // LOGIC: Map riwayat aktivitas terbatas seminggu terakhir dari hari ini
   const pastActivitiesMap = useMemo(() => {
     const map: Record<string, { category: string, metricLabel: string, metricValue: number, targetValue: number }> = {};
-    // Urutkan berdasarkan tanggal descending untuk mendapatkan data terbaru dari aktivitas tersebut
-    const sortedLogs = [...logs].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
     
-    sortedLogs.forEach(l => {
+    const recentLogs = [...logs]
+      .filter(l => new Date(l.date) >= oneWeekAgo)
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    
+    recentLogs.forEach(l => {
       if (!map[l.activity]) {
         map[l.activity] = { 
           category: l.category, 
@@ -105,6 +112,13 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
     }
   ]);
 
+  // AUTO-FILL LOGIC: Kantor (Perusahaan) -> Profile Current Company
+  useEffect(() => {
+    if (headerData.context === 'Perusahaan' && appData?.profile.currentCompany) {
+      setHeaderData(prev => ({ ...prev, companyName: appData.profile.currentCompany }));
+    }
+  }, [headerData.context, appData?.profile.currentCompany]);
+
   const handleAddLine = () => {
     setActivityLines([...activityLines, {
       tempId: Math.random().toString(36).substr(2, 9),
@@ -140,6 +154,9 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
 
     setIsExecutingPlan(asExecute);
     setShowHistoryFor(null);
+    setHistorySearch('');
+    setHistoryPage(1);
+
     if (asExecute && log) {
       setEditingLogId(null);
       setHeaderData({
@@ -187,7 +204,7 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
       setHeaderData({
         date: targetDate || new Date().toISOString().split('T')[0],
         context: 'Perusahaan',
-        companyName: currentCompany || '',
+        companyName: (headerData.context === 'Perusahaan' && appData?.profile.currentCompany) ? appData.profile.currentCompany : (currentCompany || ''),
       });
       setActivityLines([{
         tempId: Math.random().toString(36).substr(2, 9),
@@ -248,7 +265,6 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
     setIsExecutingPlan(false);
   };
 
-  // Improved Filtering Logic
   const groupedLogsByDate = useMemo(() => {
     let result = [...logs].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
@@ -379,6 +395,16 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
     return days;
   };
 
+  // Logic: Filter and Paginate History list inside modal
+  const filteredHistory = useMemo(() => {
+    return pastActivityTitles.filter(t => t.toLowerCase().includes(historySearch.toLowerCase()));
+  }, [pastActivityTitles, historySearch]);
+
+  const totalHistoryPages = Math.ceil(filteredHistory.length / historyPerPage);
+  const paginatedHistory = useMemo(() => {
+    return filteredHistory.slice((historyPage - 1) * historyPerPage, historyPage * historyPerPage);
+  }, [filteredHistory, historyPage]);
+
   const dayNames = ['S', 'S', 'R', 'K', 'J', 'S', 'M'];
 
   return (
@@ -408,47 +434,30 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
         <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
       </div>
 
-      {/* INFO KUOTA (QUOTA BANNER) */}
-      <div className="bg-indigo-50 border border-indigo-100 p-5 rounded-[2rem] flex flex-col sm:flex-row justify-between items-center gap-6 mx-1 shadow-sm">
-         <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-indigo-600 text-white rounded-2xl flex items-center justify-center text-xl shadow-lg shadow-indigo-200">
-               <i className="bi bi-database-fill"></i>
-            </div>
-            <div>
-               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Kapasitas Daily Work Log ({appData?.plan})</p>
-               <p className="text-sm font-black text-slate-800 tracking-tight">
-                  {logs.length} / {limit === 'unlimited' ? '∞' : limit} Slot Aktivitas Digunakan
-               </p>
-            </div>
-         </div>
-         <button 
-            onClick={onUpgrade}
-            className="w-full sm:w-auto px-8 py-3 bg-white text-indigo-600 font-black rounded-xl text-[10px] uppercase tracking-widest shadow-sm border border-indigo-100 hover:bg-indigo-50 transition-all active:scale-95"
-         >
-            🚀 Upgrade Kuota
-         </button>
-      </div>
-
-      {/* LIMIT ALERT BAR - HANYA UNTUK USER FREE */}
-      {isLimitReached && appData?.plan === SubscriptionPlan.FREE && (
-        <div className="bg-rose-50 border-2 border-rose-100 p-6 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-6 animate-in slide-in-from-top-2 duration-500 shadow-sm mx-1">
-           <div className="flex items-center gap-4 text-center md:text-left">
-              <span className="text-3xl">⚠️</span>
+      {/* INFO KUOTA - HIDDEN FOR PRO */}
+      {appData?.plan === SubscriptionPlan.FREE && (
+        <div className="bg-indigo-50 border border-indigo-100 p-5 rounded-[2rem] flex flex-col sm:flex-row justify-between items-center gap-6 mx-1 shadow-sm">
+           <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-indigo-600 text-white rounded-2xl flex items-center justify-center text-xl shadow-lg shadow-indigo-200">
+                 <i className="bi bi-database-fill"></i>
+              </div>
               <div>
-                 <p className="text-[10px] font-black text-rose-600 uppercase tracking-widest mb-1">Limitasi Data Paket {appData?.plan}</p>
-                 <p className="text-sm font-bold text-slate-800">Batas maksimal {limit} log telah tercapai. Upgrade ke paket Premium untuk pencatatan tanpa batas.</p>
+                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Kapasitas Daily Work Log ({appData?.plan})</p>
+                 <p className="text-sm font-black text-slate-800 tracking-tight">
+                    {logs.length} / {limit === 'unlimited' ? '∞' : limit} Slot Aktivitas Digunakan
+                 </p>
               </div>
            </div>
            <button 
-            onClick={onUpgrade}
-            className="px-8 py-3 bg-rose-600 text-white font-black rounded-2xl text-[10px] uppercase tracking-widest shadow-xl shadow-rose-100 hover:bg-rose-700 transition-all active:scale-95"
+              onClick={onUpgrade}
+              className="w-full sm:w-auto px-8 py-3 bg-white text-indigo-600 font-black rounded-xl text-[10px] uppercase tracking-widest shadow-sm border border-indigo-100 hover:bg-indigo-50 transition-all active:scale-95"
            >
-             Upgrade Sekarang →
+              🚀 Upgrade Kuota
            </button>
         </div>
       )}
 
-      {/* Primary Filters - Unified Row */}
+      {/* Primary Filters */}
       <div className="bg-white p-6 lg:p-10 rounded-[3rem] shadow-sm border border-slate-100 space-y-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-end">
             <div className="lg:col-span-6 space-y-2">
@@ -504,36 +513,10 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
                             </h4>
                             <button onClick={() => setCalDate(new Date(calDate.getFullYear(), calDate.getMonth() + 1))} className="w-8 h-8 rounded-full hover:bg-slate-200 flex items-center justify-center text-slate-400">→</button>
                         </div>
-                        <div className="flex gap-4">
-                            <div className="text-center">
-                                <p className="text-[8px] font-black text-slate-400 uppercase">Mulai</p>
-                                <p className="text-[10px] font-black text-blue-600">{startDate || 'Pilih...'}</p>
-                            </div>
-                            <div className="text-center">
-                                <p className="text-[8px] font-black text-slate-400 uppercase">Hingga</p>
-                                <p className="text-[10px] font-black text-blue-600">{endDate || '-'}</p>
-                            </div>
-                        </div>
                     </div>
-
                     <div className="grid grid-cols-7 gap-1 text-center border-t border-slate-200 pt-4">
                         {dayNames.map((d, i) => <div key={i} className="text-[10px] font-black text-slate-300 py-2">{d}</div>)}
                         {renderCalendarGrid()}
-                    </div>
-
-                    <div className="flex gap-3 items-center pt-4 border-t border-slate-200">
-                        <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">Presets:</span>
-                        <div className="flex gap-2">
-                            {[{l:'7 Hari', t:'7days'}, {l:'30 Hari', t:'30days'}, {l:'Quarter', t:'quarter'}].map(p => (
-                                <button 
-                                    key={p.t}
-                                    onClick={() => handleSetTimeFilter(p.t as TimeFilter)}
-                                    className={`px-4 py-1.5 border rounded-full text-[9px] font-black uppercase transition-all shadow-sm ${filterTime === p.t ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white border-slate-200 text-slate-500 hover:border-indigo-500 hover:text-indigo-600'}`}
-                                >
-                                    {p.l}
-                                </button>
-                            ))}
-                        </div>
                     </div>
                 </div>
                 <div className="md:col-span-4 bg-indigo-600 text-white p-8 rounded-[2rem] flex flex-col justify-between shadow-2xl shadow-indigo-200">
@@ -541,17 +524,13 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
                         <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60 mb-2">Terdeteksi</p>
                         <p className="text-4xl font-black tracking-tighter">{totalPages} <span className="text-lg opacity-40">Hari</span></p>
                     </div>
-                    <div className="space-y-1">
-                        <p className="text-[10px] font-bold opacity-80 leading-relaxed italic">"Archive digital Anda siap untuk ditinjau."</p>
-                        <button onClick={() => handleSetTimeFilter('all')} className="text-[9px] font-black uppercase tracking-widest text-indigo-300 hover:text-white">× Reset Semua Filter</button>
-                    </div>
+                    <button onClick={() => handleSetTimeFilter('all')} className="text-[9px] font-black uppercase tracking-widest text-indigo-300 hover:text-white">× Reset Filter</button>
                 </div>
-                <div className="absolute bottom-0 right-0 w-64 h-64 bg-indigo-500/5 rounded-full translate-y-1/2 translate-x-1/2 blur-3xl"></div>
             </div>
         )}
       </div>
 
-      {/* Main Content View (Table for Desktop, Cards for Mobile) */}
+      {/* Main Content View */}
       <div className="bg-white rounded-[3rem] shadow-sm border border-slate-200 overflow-hidden min-h-[400px] flex flex-col">
         {currentDayGroup ? (
           <div className="animate-in fade-in duration-700 flex-1">
@@ -562,7 +541,6 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
                     <h3 className="text-lg font-black text-slate-900 tracking-tight leading-none uppercase">
                         {new Date(currentDayGroup[0]).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
                     </h3>
-                    <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest mt-1">Laporan Aktivitas Harian</p>
                  </div>
               </div>
               <button 
@@ -573,7 +551,7 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
               </button>
             </div>
             
-            {/* Desktop Table View */}
+            {/* Desktop Table */}
             <div className="hidden lg:block overflow-x-auto">
                 <table className="w-full text-left border-collapse min-w-[1200px] table-fixed">
                 <thead>
@@ -592,57 +570,17 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
                     const isPercentage = log.metricLabel.includes('%') || log.metricLabel.toLowerCase().includes('persen');
                     return (
                         <tr key={log.id} className={`hover:bg-slate-50/50 transition-colors group ${log.isPlan ? 'bg-amber-50/5 italic' : ''}`}>
-                            <td className="px-10 py-6 text-center font-black text-slate-300 text-sm">
-                            {index + 1}
-                            </td>
-                            <td className="px-6 py-6">
-                            <div className="font-black text-slate-800 text-sm leading-tight">
-                                {log.activity}
-                                {log.isPlan && <span className="ml-2 px-1.5 py-0.5 bg-amber-100 text-amber-700 text-[8px] rounded uppercase font-black tracking-widest not-italic">PLAN</span>}
-                            </div>
-                            </td>
-                            <td className="px-6 py-6 text-center">
-                                <span className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border inline-block ${
-                                log.context === 'Perusahaan' ? 'bg-indigo-50 text-indigo-600 border-indigo-100' :
-                                log.context === 'Personal' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
-                                'bg-amber-50 text-amber-600 border-amber-100'
-                                }`}>
-                                {log.context}
-                                </span>
-                            </td>
-                            <td className="px-6 py-6 text-center">
-                            <span className="px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border inline-block bg-blue-50 text-blue-600 border-blue-100">
-                                {log.category}
-                            </span>
-                            </td>
-                            <td className="px-6 py-6 font-bold text-slate-600 text-[13px] break-words">
-                            {log.isPlan ? <span className="text-slate-300 italic">Menunggu Hasil</span> : (log.output || log.activity)}
-                            </td>
-                            <td className="px-6 py-6">
-                            {isPercentage ? (
-                                <div className="space-y-1.5">
-                                <div className="flex justify-between items-center text-[9px] font-black uppercase text-blue-600">
-                                    <span>{log.isPlan ? 'Target' : 'Terealisasi'}</span>
-                                    <span>{log.isPlan ? log.targetValue : log.metricValue}%</span>
-                                </div>
-                                <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
-                                    <div className={`h-full transition-all duration-700 ${log.isPlan ? 'bg-amber-400' : 'bg-blue-600'}`} style={{ width: `${Math.min(log.isPlan ? (log.targetValue || 0) : log.metricValue, 100)}%` }}></div>
-                                </div>
-                                </div>
-                            ) : (
-                                <div className="flex justify-center">
-                                <span className={`px-4 py-2 ${log.isPlan ? 'bg-amber-500' : 'bg-indigo-600'} text-white rounded-xl text-[10px] font-black uppercase tracking-wider shadow-sm`}>
-                                    {log.isPlan ? `Target: ` : ``}
-                                    {log.metricLabel.includes('IDR') ? `Rp ${(log.isPlan ? log.targetValue : log.metricValue)?.toLocaleString()}` : `${log.isPlan ? log.targetValue : log.metricValue} ${log.metricLabel}`}
-                                </span>
-                                </div>
-                            )}
-                            </td>
+                            <td className="px-10 py-6 text-center font-black text-slate-300 text-sm">{index + 1}</td>
+                            <td className="px-6 py-6"><div className="font-black text-slate-800 text-sm leading-tight">{log.activity}</div></td>
+                            <td className="px-6 py-6 text-center"><span className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border inline-block ${log.context === 'Perusahaan' ? 'bg-indigo-50 text-indigo-600 border-indigo-100' : 'bg-amber-50 text-amber-600 border-amber-100'}`}>{log.context}</span></td>
+                            <td className="px-6 py-6 text-center"><span className="px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border inline-block bg-blue-50 text-blue-600 border-blue-100">{log.category}</span></td>
+                            <td className="px-6 py-6 font-bold text-slate-600 text-[13px] break-words">{log.isPlan ? <span className="text-slate-300 italic">Menunggu Hasil</span> : (log.output || log.activity)}</td>
+                            <td className="px-6 py-6 text-center"><span className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-[10px] font-black uppercase tracking-wider">{log.metricValue} {log.metricLabel}</span></td>
                             <td className="px-10 py-6 text-center">
-                            <div className="flex items-center justify-center gap-2">
-                                <button onClick={() => handleOpenModal(log)} className="p-2.5 bg-white border border-slate-200 text-slate-400 hover:text-blue-600 hover:border-blue-200 rounded-xl transition-all shadow-sm">✎</button>
-                                <button onClick={() => onDelete(log.id)} className="p-2.5 bg-white border border-slate-200 text-slate-400 hover:text-rose-600 hover:border-rose-200 rounded-xl transition-all shadow-sm">✕</button>
-                            </div>
+                              <div className="flex items-center justify-center gap-2">
+                                  <button onClick={() => handleOpenModal(log)} className="p-2.5 bg-white border border-slate-200 text-slate-400 hover:text-blue-600 rounded-xl transition-all shadow-sm">✎</button>
+                                  <button onClick={() => onDelete(log.id)} className="p-2.5 bg-white border border-slate-200 text-slate-400 hover:text-rose-600 rounded-xl transition-all shadow-sm">✕</button>
+                              </div>
                             </td>
                         </tr>
                     );
@@ -650,148 +588,23 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
                 </tbody>
                 </table>
             </div>
-
-            {/* Mobile Card Mode View */}
-            <div className="lg:hidden bg-white">
-              {currentDayGroup[1].map((log, index) => {
-                const isPercentage = log.metricLabel.includes('%') || log.metricLabel.toLowerCase().includes('persen');
-                return (
-                  <div key={log.id} className={`p-6 border-b border-slate-50 last:border-none space-y-4 ${log.isPlan ? 'bg-amber-50/5' : ''}`}>
-                    <div className="flex justify-between items-start">
-                        <div className="flex gap-4">
-                           <span className="text-[10px] font-black text-slate-300">#{index + 1}</span>
-                           <div>
-                              <h4 className={`font-black text-slate-800 text-sm leading-tight ${log.isPlan ? 'italic' : ''}`}>
-                                 {log.activity}
-                                 {log.isPlan && <span className="ml-2 px-1.5 py-0.5 bg-amber-100 text-amber-700 text-[8px] rounded uppercase font-black tracking-widest not-italic">PLAN</span>}
-                              </h4>
-                              <div className="flex flex-wrap gap-2 mt-3">
-                                 <span className={`px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-widest border ${
-                                   log.context === 'Perusahaan' ? 'bg-indigo-50 text-indigo-600 border-indigo-100' :
-                                   log.context === 'Personal' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
-                                   'bg-amber-50 text-amber-600 border-amber-100'
-                                 }`}>{log.context}</span>
-                                 <span className="px-2 py-0.5 bg-blue-50 text-blue-600 rounded-lg text-[8px] font-black uppercase tracking-widest border border-blue-100">{log.category}</span>
-                              </div>
-                           </div>
-                        </div>
-                        <div className="flex gap-1 shrink-0 ml-4">
-                           <button onClick={() => handleOpenModal(log)} className="w-8 h-8 flex items-center justify-center bg-slate-50 text-slate-400 rounded-xl">✎</button>
-                           <button onClick={() => onDelete(log.id)} className="w-8 h-8 flex items-center justify-center bg-slate-50 text-slate-400 rounded-xl">✕</button>
-                        </div>
-                    </div>
-                    
-                    <div className="bg-slate-50 p-4 rounded-2xl space-y-4">
-                       <div>
-                          <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Output / Realita</p>
-                          <p className="text-xs font-bold text-slate-600 leading-relaxed">
-                             {log.isPlan ? <span className="italic opacity-50">Menunggu Hasil</span> : (log.output || log.activity)}
-                          </p>
-                       </div>
-                       
-                       <div className="pt-3 border-t border-slate-200/50 flex justify-between items-center">
-                          <div className="flex-1">
-                             {isPercentage ? (
-                               <div className="space-y-1.5">
-                                  <div className="flex justify-between items-center text-[8px] font-black uppercase">
-                                     <span className="text-slate-400">{log.isPlan ? 'Target' : 'Capaian'}</span>
-                                     <span className="text-blue-600">{log.isPlan ? log.targetValue : log.metricValue}%</span>
-                                  </div>
-                                  <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
-                                     <div className={`h-full transition-all duration-700 ${log.isPlan ? 'bg-amber-400' : 'bg-blue-600'}`} style={{width: `${Math.min(log.isPlan ? (log.targetValue || 0) : log.metricValue, 100)}%`}}></div>
-                                  </div>
-                               </div>
-                             ) : (
-                               <span className={`px-4 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest text-white shadow-sm ${log.isPlan ? 'bg-amber-500' : 'bg-indigo-600'}`}>
-                                 {log.isPlan ? 'TGT: ' : ''}{log.metricLabel.includes('IDR') ? `Rp ${(log.isPlan ? log.targetValue : log.metricValue)?.toLocaleString()}` : `${log.isPlan ? log.targetValue : log.metricValue} ${log.metricLabel}`}
-                               </span>
-                             )}
-                          </div>
-                          {log.isPlan && (
-                            <button 
-                             onClick={() => handleOpenModal(log, true)}
-                             className="ml-4 px-4 py-2 bg-emerald-600 text-white rounded-xl text-[8px] font-black uppercase tracking-[0.1em] shadow-lg shadow-emerald-100 active:scale-95 transition-transform"
-                            >
-                              🚀 Update
-                            </button>
-                          )}
-                       </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
           </div>
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center py-32 space-y-6">
              <div className="text-7xl opacity-20 grayscale">🕯️</div>
-             <div className="text-center">
-                <p className="text-slate-400 font-black uppercase tracking-[0.4em] text-xs">Belum Ada Data Log</p>
-                <p className="text-slate-300 font-bold text-[10px] uppercase tracking-widest mt-2">Atur ulang filter atau buat entri baru untuk hari ini.</p>
-             </div>
              <button onClick={() => handleOpenModal()} className="px-10 py-4 bg-blue-600 text-white font-black uppercase tracking-widest text-[10px] rounded-2xl shadow-xl shadow-blue-100 hover:bg-blue-700 transition-all">+ Catat Aktivitas</button>
           </div>
         )}
       </div>
 
-      {/* Archive Navigation */}
-      {totalPages > 0 && (
-        <div className="bg-white p-8 lg:p-10 rounded-[3rem] shadow-sm border border-slate-100 flex flex-col md:flex-row items-center justify-between gap-8">
-            <div className="flex items-center gap-6">
-                <button 
-                    disabled={currentPage === 1}
-                    onClick={() => setCurrentPage(p => p - 1)}
-                    className="w-14 h-14 flex items-center justify-center bg-slate-900 text-white disabled:bg-slate-50 disabled:text-slate-200 rounded-[1.5rem] transition-all shadow-xl shadow-slate-200 font-black text-xl active:scale-90"
-                >
-                    ←
-                </button>
-                <div className="text-center">
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-1">Pilih Tanggal</p>
-                    <h4 className="text-xl font-black text-slate-900 tracking-tighter">{currentPage} <span className="text-slate-300 font-medium mx-2">DARI</span> {totalPages}</h4>
-                </div>
-                <button 
-                    disabled={currentPage === totalPages}
-                    onClick={() => setCurrentPage(p => p + 1)}
-                    className="w-14 h-14 flex items-center justify-center bg-slate-900 text-white disabled:bg-slate-50 disabled:text-slate-200 rounded-[1.5rem] transition-all shadow-xl shadow-slate-200 font-black text-xl active:scale-90"
-                >
-                    →
-                </button>
-            </div>
-
-            <div className="flex-1 max-w-lg overflow-x-auto no-scrollbar pb-2 flex flex-col items-center">
-                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-4">Navigasi Tanggal</p>
-                <div className="flex gap-3 justify-center">
-                    {groupedLogsByDate.map((group, i) => (
-                        <button 
-                            key={group[0]}
-                            onClick={() => setCurrentPage(i + 1)}
-                            className={`shrink-0 w-11 h-11 rounded-2xl text-[10px] font-black transition-all border flex flex-col items-center justify-center leading-none ${
-                                currentPage === i + 1 
-                                ? 'bg-indigo-600 border-indigo-600 text-white shadow-2xl scale-110' 
-                                : 'bg-white border-slate-200 text-slate-400 hover:border-indigo-300'
-                            }`}
-                        >
-                            <span className="text-[6px] uppercase mb-0.5 opacity-50">Tgl</span>
-                            {new Date(group[0]).getDate()}
-                        </button>
-                    ))}
-                </div>
-            </div>
-        </div>
-      )}
-
-      {/* Multi-Activity Modal UI */}
+      {/* MULTI-ACTIVITY MODAL */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-xl flex items-center justify-center z-[200] p-4">
-          <div className="bg-white w-full max-w-5xl rounded-[3.5rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.4)] p-8 lg:p-14 animate-in zoom-in duration-300 overflow-y-auto max-h-[95vh] no-scrollbar">
+          <div className="bg-white w-full max-w-5xl rounded-[3.5rem] shadow-2xl p-8 lg:p-14 animate-in zoom-in duration-300 overflow-y-auto max-h-[95vh] no-scrollbar">
             <div className="flex justify-between items-start mb-10">
               <div className="space-y-1">
-                <h3 className="text-3xl lg:text-4xl font-black text-slate-900 tracking-tighter uppercase leading-none">
-                   {isExecutingPlan ? 'Update Progress Pekerjaan' : (editingLogId ? 'Ubah Catatan' : 'Catat Pekerjaan Baru')}
-                </h3>
-                <p className="text-slate-400 font-bold uppercase text-[10px] tracking-[0.3em]">
-                   Log Aktivitas Produktivitas v2.0
-                </p>
+                <h3 className="text-3xl lg:text-4xl font-black text-slate-900 tracking-tighter uppercase leading-none">{editingLogId ? 'Ubah Catatan' : 'Catat Pekerjaan Baru'}</h3>
+                <p className="text-slate-400 font-bold uppercase text-[10px] tracking-[0.3em]">Log Aktivitas Produktivitas v2.0</p>
               </div>
               <button onClick={() => setIsModalOpen(false)} className="w-12 h-12 flex items-center justify-center bg-slate-50 text-slate-400 hover:text-rose-600 rounded-full transition-colors text-xl font-black">✕</button>
             </div>
@@ -801,22 +614,11 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8 bg-slate-50/50 p-8 rounded-[3rem] border border-slate-100 shadow-inner">
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tanggal</label>
-                  <input 
-                    type="date" 
-                    className="w-full px-6 py-4 rounded-2xl border border-slate-200 outline-none bg-white font-black text-sm text-blue-600 focus:ring-4 focus:ring-blue-500/5 transition-all shadow-sm"
-                    value={headerData.date}
-                    onChange={e => setHeaderData({ ...headerData, date: e.target.value })}
-                    disabled={isExecutingPlan}
-                  />
+                  <input type="date" className="w-full px-6 py-4 rounded-2xl border border-slate-200 bg-white font-black text-sm text-blue-600 focus:ring-4 focus:ring-blue-500/5 transition-all shadow-sm" value={headerData.date} onChange={e => setHeaderData({ ...headerData, date: e.target.value })} />
                 </div>
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Konteks Pekerjaan</label>
-                  <select 
-                    className="w-full px-6 py-4 rounded-2xl border border-slate-200 outline-none bg-white font-black text-sm cursor-pointer shadow-sm"
-                    value={headerData.context}
-                    onChange={e => setHeaderData({ ...headerData, context: e.target.value as any })}
-                    disabled={isExecutingPlan}
-                  >
+                  <select className="w-full px-6 py-4 rounded-2xl border border-slate-200 bg-white font-black text-sm cursor-pointer shadow-sm" value={headerData.context} onChange={e => setHeaderData({ ...headerData, context: e.target.value as any })}>
                     <option value="Perusahaan">Kantor (Perusahaan)</option>
                     <option value="Personal">Personal Proyek</option>
                     <option value="Sampingan">Freelance / Sampingan</option>
@@ -824,13 +626,7 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
                 </div>
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Identitas Instansi</label>
-                  <input 
-                    placeholder={currentCompany || "Nama Perusahaan"}
-                    className="w-full px-6 py-4 rounded-2xl border border-slate-200 outline-none bg-white font-black text-sm shadow-sm"
-                    value={headerData.companyName}
-                    onChange={e => setHeaderData({ ...headerData, companyName: e.target.value })}
-                    disabled={isExecutingPlan}
-                  />
+                  <input placeholder="Nama Perusahaan" className="w-full px-6 py-4 rounded-2xl border border-slate-200 bg-white font-black text-sm shadow-sm" value={headerData.companyName} onChange={e => setHeaderData({ ...headerData, companyName: e.target.value })} />
                 </div>
               </div>
 
@@ -838,122 +634,67 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
               <div className="space-y-6">
                 <div className="flex items-center justify-between px-4">
                   <h4 className="text-xs font-black text-slate-900 uppercase tracking-[0.4em]">Daftar Pekerjaan</h4>
-                  {(!editingLogId || isExecutingPlan) && (
-                    <button 
-                      type="button" 
-                      onClick={handleAddLine}
-                      className="px-6 py-2 bg-indigo-50 text-indigo-600 rounded-full font-black text-[10px] uppercase tracking-widest hover:bg-indigo-100 transition-all flex items-center gap-2"
-                    >
-                      <span className="text-lg">+</span> Tambah Baris
-                    </button>
-                  )}
+                  <button type="button" onClick={handleAddLine} className="px-6 py-2 bg-indigo-50 text-indigo-600 rounded-full font-black text-[10px] uppercase tracking-widest hover:bg-indigo-100 transition-all flex items-center gap-2">
+                    <span className="text-lg">+</span> Tambah Baris
+                  </button>
                 </div>
 
                 <div className="space-y-6">
                   {activityLines.map((line) => (
                     <div key={line.tempId} className={`p-8 lg:p-10 border rounded-[3rem] shadow-sm space-y-6 animate-in slide-in-from-top-4 relative group ${line.isPlan ? 'bg-white border-slate-100' : 'bg-emerald-50/10 border-emerald-100'}`}>
-                      {activityLines.length > 1 && !editingLogId && (
-                        <button 
-                          type="button" 
-                          onClick={() => handleRemoveLine(line.tempId)}
-                          className="absolute -top-3 -right-3 w-10 h-10 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center font-black shadow-lg hover:bg-rose-500 hover:text-white transition-all z-20"
-                        >
-                          ✕
-                        </button>
+                      {activityLines.length > 1 && (
+                        <button type="button" onClick={() => handleRemoveLine(line.tempId)} className="absolute -top-3 -right-3 w-10 h-10 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center font-black shadow-lg hover:bg-rose-500 hover:text-white transition-all z-20">✕</button>
                       )}
                       
                       <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
                         <div className="md:col-span-8 space-y-6">
                           <div className="space-y-2">
-                             <div className="flex justify-between items-center px-1">
-                               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Aktivitas Utama</label>
-                               {!line.isPlan && (
-                                 <button 
-                                   type="button" 
-                                   onClick={() => updateLine(line.tempId, { useCustomOutput: !line.useCustomOutput, output: line.useCustomOutput ? '' : line.output })}
-                                   className={`text-[9px] font-black uppercase px-3 py-1 rounded-lg transition-all ${line.useCustomOutput ? 'bg-indigo-600 text-white shadow-md' : 'text-indigo-600 border border-indigo-100'}`}
-                                 >
-                                   {line.useCustomOutput ? '✓ Custom Output Aktif' : '✎ Set Custom Output'}
-                                 </button>
-                               )}
-                             </div>
+                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Aktivitas Utama</label>
                              <div className="relative">
-                               <input 
-                                placeholder="Ketik apa yang Anda kerjakan..."
-                                className="w-full px-6 py-4 rounded-2xl border border-slate-200 outline-none bg-white font-black text-sm focus:ring-4 focus:ring-blue-500/5 transition-all shadow-sm pr-24"
-                                value={line.activity}
-                                onChange={e => updateLine(line.tempId, { activity: e.target.value })}
-                               />
-                               <button 
-                                type="button"
-                                onClick={() => setShowHistoryFor(showHistoryFor === line.tempId ? null : line.tempId)}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-indigo-50 border border-indigo-100 rounded-xl text-[9px] font-black text-indigo-600 hover:bg-indigo-600 hover:text-white transition-all shadow-sm"
-                               >
-                                 🕒 RIWAYAT
-                               </button>
+                               <input placeholder="Ketik apa yang Anda kerjakan..." className="w-full px-6 py-4 rounded-2xl border border-slate-200 bg-white font-black text-sm focus:ring-4 focus:ring-blue-500/5 transition-all shadow-sm pr-24" value={line.activity} onChange={e => updateLine(line.tempId, { activity: e.target.value })} />
+                               <button type="button" onClick={() => setShowHistoryFor(showHistoryFor === line.tempId ? null : line.tempId)} className="absolute right-3 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-indigo-50 border border-indigo-100 rounded-xl text-[9px] font-black text-indigo-600 hover:bg-indigo-600 hover:text-white transition-all shadow-sm">🕒 RIWAYAT</button>
 
                                {showHistoryFor === line.tempId && (
-                                 <div className="absolute top-[calc(100%+8px)] left-0 right-0 bg-white border border-slate-200 rounded-[1.5rem] shadow-2xl z-[100] p-2 max-h-[220px] overflow-y-auto no-scrollbar animate-in slide-in-from-top-2">
-                                    <p className="text-[8px] font-black text-slate-400 uppercase px-3 py-2 border-b border-slate-50 tracking-[0.2em]">Pilih dari Riwayat</p>
-                                    {pastActivityTitles.length > 0 ? (
-                                      pastActivityTitles.map(title => {
-                                        const matched = pastActivitiesMap[title];
-                                        return (
-                                          <button
-                                            key={title}
-                                            type="button"
-                                            onClick={() => {
-                                              updateLine(line.tempId, {
-                                                activity: title,
-                                                category: matched.category,
-                                                metricOption: metricChoices.includes(matched.metricLabel) ? matched.metricLabel : 'Custom',
-                                                customMetricLabel: metricChoices.includes(matched.metricLabel) ? '' : matched.metricLabel,
-                                                metricValue: matched.metricValue,
-                                                targetValue: matched.metricValue // Angka target baru mulai dari realisasi terakhir agar nyambung
-                                              });
-                                              setShowHistoryFor(null);
-                                            }}
-                                            className="w-full text-left p-3 hover:bg-indigo-50 rounded-xl text-[10px] font-bold text-slate-700 flex justify-between items-center group transition-colors"
-                                          >
-                                            <div className="flex flex-col">
-                                              <span>{title}</span>
-                                              <span className="text-[7px] text-slate-400 uppercase font-black tracking-widest">{matched.category}</span>
-                                            </div>
-                                            <div className="text-right">
-                                              <span className="text-[8px] font-black text-indigo-400 uppercase bg-indigo-50/50 px-2 py-0.5 rounded group-hover:bg-white">{matched.metricValue} {matched.metricLabel}</span>
-                                            </div>
+                                 <div className="absolute top-[calc(100%+8px)] left-0 right-0 bg-white border border-slate-200 rounded-[1.5rem] shadow-2xl z-[100] p-4 max-h-[350px] overflow-hidden animate-in slide-in-from-top-2 flex flex-col">
+                                    <div className="flex justify-between items-center mb-4">
+                                       <p className="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em]">Pilih dari Riwayat (Seminggu Terakhir)</p>
+                                       <input 
+                                         placeholder="Cari..." 
+                                         className="px-3 py-1 rounded-lg border text-[10px] outline-none w-32" 
+                                         value={historySearch} 
+                                         onChange={e => {setHistorySearch(e.target.value); setHistoryPage(1);}} 
+                                         onClick={e => e.stopPropagation()} 
+                                       />
+                                    </div>
+                                    <div className="space-y-2 flex-1 overflow-y-auto no-scrollbar">
+                                      {paginatedHistory.length > 0 ? (
+                                        paginatedHistory.map(title => (
+                                          <button key={title} type="button" onClick={() => { updateLine(line.tempId, { activity: title, category: pastActivitiesMap[title].category, metricOption: metricChoices.includes(pastActivitiesMap[title].metricLabel) ? pastActivitiesMap[title].metricLabel : 'Custom', customMetricLabel: metricChoices.includes(pastActivitiesMap[title].metricLabel) ? '' : pastActivitiesMap[title].metricLabel, metricValue: pastActivitiesMap[title].metricValue, targetValue: pastActivitiesMap[title].targetValue }); setShowHistoryFor(null); }} className="w-full text-left p-3 hover:bg-indigo-50 rounded-xl text-[10px] font-bold text-slate-700 flex justify-between items-center group transition-colors">
+                                            <span>{title}</span>
+                                            <span className="text-[8px] font-black text-indigo-400 bg-indigo-50 px-2 py-0.5 rounded uppercase">{pastActivitiesMap[title].category}</span>
                                           </button>
-                                        );
-                                      })
-                                    ) : (
-                                      <div className="p-4 text-center text-[10px] text-slate-400 italic">Belum ada riwayat aktivitas</div>
+                                        ))
+                                      ) : (
+                                        <div className="p-10 text-center text-[10px] text-slate-400 italic">Data tidak ditemukan</div>
+                                      )}
+                                    </div>
+                                    {totalHistoryPages > 1 && (
+                                      <div className="mt-4 pt-4 border-t flex justify-center gap-2">
+                                        {Array.from({ length: totalHistoryPages }).map((_, i) => (
+                                          <button key={i} type="button" onClick={(e) => { e.stopPropagation(); setHistoryPage(i + 1); }} className={`w-6 h-6 rounded-md text-[8px] font-black transition-all ${historyPage === i + 1 ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-50 text-slate-400'}`}>{i + 1}</button>
+                                        ))}
+                                      </div>
                                     )}
                                  </div>
                                )}
                              </div>
                           </div>
-                          {!line.isPlan && line.useCustomOutput && (
-                            <div className="space-y-2 animate-in slide-in-from-top-2">
-                               <label className="text-[10px] font-black text-emerald-600 uppercase tracking-widest ml-1">Hasil Konkret Khusus</label>
-                               <input 
-                                placeholder="Jelaskan hasil spesifik Anda..."
-                                className="w-full px-6 py-4 rounded-2xl border border-emerald-100 outline-none bg-white font-black text-sm text-emerald-800 shadow-sm focus:ring-4 focus:ring-emerald-500/5 transition-all"
-                                value={line.output}
-                                onChange={e => updateLine(line.tempId, { output: e.target.value })}
-                                required={line.useCustomOutput}
-                               />
-                            </div>
-                          )}
                         </div>
 
                         <div className="md:col-span-4 space-y-6">
                           <div className="space-y-2">
                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Kategori</label>
-                            <select 
-                              className="w-full px-6 py-4 rounded-2xl border border-slate-200 bg-white font-black text-sm outline-none shadow-sm cursor-pointer"
-                              value={line.category}
-                              onChange={e => updateLine(line.tempId, { category: e.target.value })}
-                            >
+                            <select className="w-full px-6 py-4 rounded-2xl border border-slate-200 bg-white font-black text-sm outline-none shadow-sm cursor-pointer" value={line.category} onChange={e => updateLine(line.tempId, { category: e.target.value })}>
                               {categories.map(c => <option key={c} value={c}>{c}</option>)}
                             </select>
                           </div>
@@ -963,126 +704,16 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
                           </div>
                         </div>
                       </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 pt-6 border-t border-slate-50 items-end">
-                         <div className="space-y-2">
-                            <label className="text-[9px] font-black text-slate-400 uppercase ml-1">Satuan Metrik</label>
-                            <select 
-                              className="w-full px-5 py-3 rounded-xl border border-slate-200 bg-white font-black text-[11px] shadow-sm"
-                              value={line.metricOption}
-                              onChange={e => updateLine(line.tempId, { metricOption: e.target.value })}
-                            >
-                              {metricChoices.map(m => <option key={m} value={m}>{m}</option>)}
-                            </select>
-                            {line.metricOption === 'Custom' && (
-                              <input 
-                                placeholder="Ketik Satuan (misal: Modul, Berkas, dsb)"
-                                className="w-full px-4 py-2 mt-2 rounded-lg border border-indigo-100 bg-white font-bold text-[10px] outline-none animate-in slide-in-from-top-1"
-                                value={line.customMetricLabel}
-                                onChange={e => updateLine(line.tempId, { customMetricLabel: e.target.value })}
-                              />
-                            )}
-                         </div>
-                         
-                         <div className="md:col-span-2">
-                            <div className="flex justify-between items-center mb-2 px-1">
-                               <label className="text-[9px] font-black text-slate-400 uppercase">
-                                 {line.isPlan ? 'Target Progres' : 'Realisasi Progres'}
-                               </label>
-                               {!line.isPlan && line.metricOption.includes('%') && (
-                                 <button 
-                                   type="button" 
-                                   onClick={() => updateLine(line.tempId, { metricValue: 100 })}
-                                   className="text-[9px] font-black text-emerald-600 uppercase hover:underline"
-                                 >
-                                   ✓ Tandai Selesai (100%)
-                                 </button>
-                               )}
-                            </div>
-                            <input 
-                              type="number"
-                              className={`w-full px-5 py-3 rounded-xl border font-black text-sm shadow-sm ${line.isPlan ? 'bg-slate-50 border-slate-200' : 'bg-white border-emerald-100 text-emerald-600'}`}
-                              value={line.isPlan ? line.targetValue : line.metricValue}
-                              onChange={e => {
-                                const v = parseInt(e.target.value) || 0;
-                                if (line.isPlan) updateLine(line.tempId, { targetValue: v });
-                                else updateLine(line.tempId, { metricValue: v });
-                              }}
-                            />
-                         </div>
-
-                         <div className="flex items-center justify-end h-full pb-2">
-                           <div className="px-4 py-2 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg">
-                             {line.isPlan ? `TGT: ${line.targetValue}` : `RL: ${line.metricValue}`} {line.metricOption === 'Custom' ? line.customMetricLabel : line.metricOption}
-                           </div>
-                         </div>
-                      </div>
                     </div>
                   ))}
                 </div>
               </div>
               
               <div className="flex gap-6 pt-10 border-t border-slate-100">
-                <button 
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="flex-1 py-5 text-slate-400 font-black uppercase tracking-widest hover:bg-slate-50 rounded-[2rem] transition-all text-[11px]"
-                >
-                  Batal
-                </button>
-                <button 
-                  type="submit"
-                  className="flex-[2] py-5 bg-blue-600 text-white font-black uppercase tracking-[0.2em] rounded-[2rem] shadow-2xl shadow-blue-500/20 hover:bg-blue-700 transition-all active:scale-[0.98] text-[11px]"
-                >
-                  {isExecutingPlan ? '🔥 Simpan Realisasi' : (editingLogId ? 'Simpan Perubahan' : '🚀 Simpan Laporan')}
-                </button>
+                <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-5 text-slate-400 font-black uppercase tracking-widest hover:bg-slate-50 rounded-[2rem] text-[11px]">Batal</button>
+                <button type="submit" className="flex-[2] py-5 bg-blue-600 text-white font-black uppercase tracking-[0.2em] rounded-[2rem] shadow-blue-500/20 hover:bg-blue-700 transition-all text-[11px]">🚀 Simpan Laporan</button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL: MANAGE CATEGORIES */}
-      {isManageCatsOpen && (
-        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md flex items-center justify-center z-[300] p-4">
-          <div className="bg-white w-full max-w-md rounded-[3rem] shadow-2xl p-8 lg:p-10 animate-in zoom-in duration-300">
-             <div className="flex justify-between items-center mb-8">
-                <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">Kelola Bidang Kerja</h3>
-                <button onClick={() => setIsManageCatsOpen(false)} className="text-slate-400 hover:text-slate-900">✕</button>
-             </div>
-
-             <div className="space-y-4 max-h-[300px] overflow-y-auto no-scrollbar mb-8">
-                {categories.map(cat => (
-                  <div key={cat} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100 group">
-                    <span className="text-sm font-bold text-slate-700">{cat}</span>
-                    <button 
-                      onClick={() => onDeleteCategory(cat)}
-                      className="opacity-0 group-hover:opacity-100 w-8 h-8 flex items-center justify-center bg-rose-50 text-rose-500 rounded-lg hover:bg-rose-500 hover:text-white transition-all"
-                    >
-                      <i className="bi bi-trash-fill text-xs"></i>
-                    </button>
-                  </div>
-                ))}
-             </div>
-
-             <div className="pt-6 border-t border-slate-100">
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">Kategori Baru</p>
-                <div className="flex gap-2">
-                   <input 
-                    placeholder="Nama kategori..."
-                    className="flex-1 px-5 py-3 rounded-xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs"
-                    value={newCatInput}
-                    onChange={e => setNewCatInput(e.target.value)}
-                    onKeyDown={e => { if(e.key === 'Enter' && newCatInput.trim()) { onAddCategory(newCatInput); setNewCatInput(''); } }}
-                   />
-                   <button 
-                    onClick={() => { if(newCatInput.trim()) { onAddCategory(newCatInput); setNewCatInput(''); } }}
-                    className="px-6 py-3 bg-blue-600 text-white font-black rounded-xl text-[10px] uppercase shadow-lg shadow-blue-100"
-                   >
-                     Tambah
-                   </button>
-                </div>
-             </div>
           </div>
         </div>
       )}

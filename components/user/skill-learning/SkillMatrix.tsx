@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { Skill, SkillStatus, SkillCategory, SkillPriority, AppData, SubscriptionPlan } from '../../../types';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
@@ -113,26 +112,28 @@ const SkillMatrix: React.FC<SkillMatrixProps> = ({ skills, onAddSkill, onUpdateS
         </div>
       </div>
 
-      {/* INFO KUOTA (QUOTA BANNER) */}
-      <div className="bg-indigo-50 border border-indigo-100 p-5 rounded-[2rem] flex flex-col sm:flex-row justify-between items-center gap-6 mx-1 shadow-sm">
-         <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-indigo-600 text-white rounded-2xl flex items-center justify-center text-xl shadow-lg shadow-indigo-200">
-               <i className="bi bi-bullseye"></i>
-            </div>
-            <div>
-               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Kapasitas Matriks Skill ({appData?.plan})</p>
-               <p className="text-sm font-black text-slate-800 tracking-tight">
-                  {skills.length} / {limit === 'unlimited' ? '∞' : limit} Kompetensi Terdaftar
-               </p>
-            </div>
-         </div>
-         <button 
-            onClick={onUpgrade}
-            className="w-full sm:w-auto px-8 py-3 bg-white text-indigo-600 font-black rounded-xl text-[10px] uppercase tracking-widest shadow-sm border border-indigo-100 hover:bg-indigo-50 transition-all active:scale-95"
-         >
-            🚀 Upgrade Plan
-         </button>
-      </div>
+      {/* INFO KUOTA (QUOTA BANNER) - HIDDEN FOR PRO USERS */}
+      {appData?.plan === SubscriptionPlan.FREE && (
+        <div className="bg-indigo-50 border border-indigo-100 p-5 rounded-[2rem] flex flex-col sm:flex-row justify-between items-center gap-6 mx-1 shadow-sm">
+           <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-indigo-600 text-white rounded-2xl flex items-center justify-center text-xl shadow-lg shadow-indigo-200">
+                 <i className="bi bi-bullseye"></i>
+              </div>
+              <div>
+                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Kapasitas Matriks Skill ({appData?.plan})</p>
+                 <p className="text-sm font-black text-slate-800 tracking-tight">
+                    {skills.length} / {limit === 'unlimited' ? '∞' : limit} Kompetensi Terdaftar
+                 </p>
+              </div>
+           </div>
+           <button 
+              onClick={onUpgrade}
+              className="w-full sm:w-auto px-8 py-3 bg-white text-indigo-600 font-black rounded-xl text-[10px] uppercase tracking-widest shadow-sm border border-indigo-100 hover:bg-indigo-50 transition-all active:scale-95"
+           >
+              🚀 Upgrade Plan
+           </button>
+        </div>
+      )}
 
       {/* LIMIT ALERT BAR - HANYA UNTUK USER FREE */}
       {isLimitReached && appData?.plan === SubscriptionPlan.FREE && (
@@ -186,7 +187,7 @@ const SkillMatrix: React.FC<SkillMatrixProps> = ({ skills, onAddSkill, onUpdateS
                   </td>
                   <td className="px-8 py-6">
                     <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden shadow-inner">
-                      <div className={`h-full transition-all duration-1000 ${skill.currentLevel >= 4 ? 'bg-emerald-500' : skill.currentLevel >= 3 ? 'bg-blue-500' : 'bg-amber-500'}`} style={{ width: `${(skill.currentLevel / 5) * 100}%` }}></div>
+                      <div className={`h-full transition-all duration-1000 ${skill.currentLevel >= 4 ? 'bg-emerald-50' : skill.currentLevel >= 3 ? 'bg-blue-500' : 'bg-amber-500'}`} style={{ width: `${(skill.currentLevel / 5) * 100}%` }}></div>
                     </div>
                   </td>
                   <td className="px-6 py-6 text-center">
@@ -232,7 +233,7 @@ const SkillMatrix: React.FC<SkillMatrixProps> = ({ skills, onAddSkill, onUpdateS
                       <span className="text-xs font-black text-indigo-600">{skill.currentLevel} / 5</span>
                    </div>
                    <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
-                      <div className={`h-full transition-all duration-1000 ${skill.currentLevel >= 4 ? 'bg-emerald-500' : 'bg-indigo-600'}`} style={{ width: `${(skill.currentLevel/5)*100}%` }}></div>
+                      <div className={`h-full transition-all duration-1000 ${skill.currentLevel >= 4 ? 'bg-emerald-50' : 'bg-indigo-600'}`} style={{ width: `${(skill.currentLevel/5)*100}%` }}></div>
                    </div>
                 </div>
 

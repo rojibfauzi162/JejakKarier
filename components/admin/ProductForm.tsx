@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { SubscriptionPlan, SubscriptionProduct } from '../../types';
 
@@ -23,7 +22,6 @@ const ProductForm = ({ initialData, onCancel, onSubmit, onDelete }: any) => {
       workExperience: 0,
       education: 0,
       careerCalendar: 0,
-      // Added achievements limit to match SubscriptionProduct interface
       achievements: 0
     }
   });
@@ -49,6 +47,14 @@ const ProductForm = ({ initialData, onCancel, onSubmit, onDelete }: any) => {
     { id: 'reviews', label: 'Monthly Review' },
     { id: 'cv_generator', label: 'CV PDF Export' },
     { id: 'online_cv', label: 'Digital Landing Page' },
+  ];
+
+  // Fixed list of limit keys to ensure all are shown regardless of product type
+  const LIMIT_KEYS = [
+    'skills', 'certification', 'projects', 'careerPath',
+    'workExperience', 'education', 'dailyLogs', 'todoList',
+    'careerCalendar', 'cvExports', 'trainingHistory', 'jobTracker',
+    'networking', 'achievements'
   ];
 
   useEffect(() => {
@@ -144,21 +150,26 @@ const ProductForm = ({ initialData, onCancel, onSubmit, onDelete }: any) => {
       <section className="space-y-6">
         <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] border-b pb-4">03. Limitasi Database (0 = Tanpa Batas)</h4>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          {Object.keys(form.limits || {}).map(key => (
-            <div key={key} className="space-y-2">
-              <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">{key.replace(/([A-Z])/g, ' $1')}</label>
-              <input 
-                type="number" 
-                className="w-full px-5 py-3 rounded-xl border border-slate-200 bg-white font-black text-sm shadow-sm" 
-                value={(form.limits as any)[key] === 'unlimited' ? 0 : (form.limits as any)[key]} 
-                onChange={e => {
-                  const val = Number(e.target.value);
-                  const nextLimits = { ...form.limits, [key]: val === 0 ? 'unlimited' : val };
-                  setForm({ ...form, limits: nextLimits as any });
-                }} 
-              />
-            </div>
-          ))}
+          {LIMIT_KEYS.map(key => {
+            const currentVal = (form.limits as any)?.[key];
+            const displayVal = currentVal === 'unlimited' ? 0 : (currentVal ?? 0);
+
+            return (
+              <div key={key} className="space-y-2">
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">{key.replace(/([A-Z])/g, ' $1')}</label>
+                <input 
+                  type="number" 
+                  className="w-full px-5 py-3 rounded-xl border border-slate-200 bg-white font-black text-sm shadow-sm focus:border-indigo-400 transition-all outline-none" 
+                  value={displayVal} 
+                  onChange={e => {
+                    const val = Number(e.target.value);
+                    const nextLimits = { ...(form.limits || {}), [key]: val === 0 ? 'unlimited' : val };
+                    setForm({ ...form, limits: nextLimits as any });
+                  }} 
+                />
+              </div>
+            );
+          })}
         </div>
       </section>
 
@@ -191,7 +202,7 @@ const ProductForm = ({ initialData, onCancel, onSubmit, onDelete }: any) => {
         {onDelete && (
           <button type="button" onClick={onDelete} className="flex-1 py-5 bg-rose-50 text-rose-500 font-black rounded-3xl uppercase text-[11px] tracking-widest hover:bg-rose-500 hover:text-white transition-all">Hapus Paket</button>
         )}
-        <button type="button" onClick={onCancel} className="flex-1 py-5 text-slate-400 font-black uppercase text-[11px] tracking-widest hover:bg-slate-50 rounded-3xl">Batal</button>
+        <button type="button" onClick={onCancel} className="flex-1 py-4 bg-slate-100 text-slate-400 font-black rounded-2xl uppercase text-[10px]">Batal</button>
       </div>
     </form>
   );

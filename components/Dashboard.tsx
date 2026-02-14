@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { AppData, SkillStatus, SubscriptionPlan } from '../types';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
@@ -384,7 +383,26 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenNotif, on
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
           <MetricCard title="Produktivitas" value={data.dailyReports.length > 0 ? data.dailyReports[data.dailyReports.length - 1].metricValue : 0} subtitle={`${data.dailyReports.length > 0 ? data.dailyReports[data.dailyReports.length - 1].metricLabel : 'Belum ada data'}`} icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>} color="indigo" />
           <MetricCard title="Progress Skill" value={`${progressPercent}%`} subtitle={`${achievedSkills} / ${skillCount} Skill tercapai`} icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>} color="emerald" />
-          <MetricCard title="Kesiapan Akun" value={`${accountReadiness}%`} subtitle="Lengkapi profil Anda" icon={<i className="bi bi-person-check-fill"></i>} color="slate" />
+          
+          {/* UPDATED: MASA AKTIF CARD FOR PRO USERS */}
+          {data.plan !== SubscriptionPlan.FREE ? (
+            <MetricCard 
+              title="Masa Aktif" 
+              value={daysRemaining === Infinity ? "Unlimited" : `${daysRemaining} Hari`} 
+              subtitle={data.expiryDate ? `Hingga ${new Date(data.expiryDate).toLocaleDateString('id-ID', {day: '2-digit', month: 'short', year: 'numeric'})}` : "Aktif Selamanya"} 
+              icon={<i className="bi bi-calendar-check-fill"></i>} 
+              color="blue" 
+            />
+          ) : (
+            <MetricCard 
+              title="Kesiapan Akun" 
+              value={`${accountReadiness}%`} 
+              subtitle="Lengkapi profil Anda" 
+              icon={<i className="bi bi-person-check-fill"></i>} 
+              color="slate" 
+            />
+          )}
+
           <MetricCard title="Pencapaian" value={data.achievements.length} subtitle="Milestone tervalidasi" icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"></path></svg>} color="amber" />
         </div>
 
@@ -420,7 +438,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenNotif, on
 };
 
 const MetricCard: React.FC<{ title: string; value: number | string; subtitle: string; icon: React.ReactNode; color: string }> = ({ title, value, subtitle, icon, color }) => {
-  const colors: Record<string, string> = { indigo: 'bg-indigo-50 text-indigo-600', emerald: 'bg-emerald-50 text-emerald-600', slate: 'bg-slate-100 text-slate-900', amber: 'bg-amber-50 text-amber-600' };
+  const colors: Record<string, string> = { indigo: 'bg-indigo-50 text-indigo-600', emerald: 'bg-emerald-50 text-emerald-600', slate: 'bg-slate-100 text-slate-900', amber: 'bg-amber-50 text-amber-600', blue: 'bg-blue-50 text-blue-600' };
   return (
     <div className="bg-white p-10 rounded-[3rem] shadow-[0_2px_40px_rgba(0,0,0,0.02)] border border-slate-100 transition-all duration-500 hover:shadow-[0_20px_60px_rgba(0,0,0,0.05)] hover:-translate-y-2 group"><div className={`w-14 h-14 ${colors[color]} rounded-2xl flex items-center justify-center mb-8 shadow-inner group-hover:scale-110 transition-transform duration-500 text-2xl`}>{icon}</div><p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.3em] mb-2">{title}</p><h4 className="text-2xl font-black text-slate-900 tracking-tight leading-none">{value}</h4><p className="text-[10px] text-slate-500 mt-5 font-black uppercase tracking-widest opacity-60 italic">{subtitle}</p></div>
   );

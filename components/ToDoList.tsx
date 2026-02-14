@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useEffect } from 'react';
 import { ToDoTask, AppData, SubscriptionPlan } from '../types';
 
@@ -304,26 +303,28 @@ const ToDoList: React.FC<ToDoListProps> = ({
         </div>
       </header>
 
-      {/* INFO KUOTA (QUOTA BANNER) */}
-      <div className="bg-indigo-50 border border-indigo-100 p-5 rounded-[2rem] flex flex-col sm:flex-row justify-between items-center gap-6 mx-1 shadow-sm">
-         <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-indigo-600 text-white rounded-2xl flex items-center justify-center text-xl shadow-lg shadow-indigo-200">
-               <i className="bi bi-list-check"></i>
-            </div>
-            <div>
-               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Kapasitas Checklist Proyek ({appData?.plan})</p>
-               <p className="text-sm font-black text-slate-800 tracking-tight">
-                  {tasks.length} / {limit === 'unlimited' ? '∞' : limit} Langkah Terdaftar
-               </p>
-            </div>
-         </div>
-         <button 
-            onClick={onUpgrade}
-            className="w-full sm:w-auto px-8 py-3 bg-white text-indigo-600 font-black rounded-xl text-[10px] uppercase tracking-widest shadow-sm border border-indigo-100 hover:bg-indigo-50 transition-all active:scale-95"
-         >
-            🚀 Upgrade Plan
-         </button>
-      </div>
+      {/* INFO KUOTA (QUOTA BANNER) - HIDDEN FOR PAID PLANS */}
+      {appData?.plan === SubscriptionPlan.FREE && (
+        <div className="bg-indigo-50 border border-indigo-100 p-5 rounded-[2rem] flex flex-col sm:flex-row justify-between items-center gap-6 mx-1 shadow-sm">
+           <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-indigo-600 text-white rounded-2xl flex items-center justify-center text-xl shadow-lg shadow-indigo-200">
+                 <i className="bi bi-list-check"></i>
+              </div>
+              <div>
+                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Kapasitas Checklist Proyek ({appData?.plan})</p>
+                 <p className="text-sm font-black text-slate-800 tracking-tight">
+                    {tasks.length} / {limit === 'unlimited' ? '∞' : limit} Langkah Terdaftar
+                 </p>
+              </div>
+           </div>
+           <button 
+              onClick={onUpgrade}
+              className="w-full sm:w-auto px-8 py-3 bg-white text-indigo-600 font-black rounded-xl text-[10px] uppercase tracking-widest shadow-sm border border-indigo-100 hover:bg-indigo-50 transition-all active:scale-95"
+           >
+              🚀 Upgrade Plan
+           </button>
+        </div>
+      )}
 
       {activeView === 'checklist' ? (
         <div className="space-y-6">
@@ -425,5 +426,4 @@ const ToDoList: React.FC<ToDoListProps> = ({
   );
 };
 
-// Fixed: Add default export to satisfy App.tsx import
 export default ToDoList;

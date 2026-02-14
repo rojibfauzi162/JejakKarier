@@ -1,4 +1,3 @@
-
 export enum SkillStatus {
   GAP = 'gap',
   ON_PROGRESS = 'on progress',
@@ -116,6 +115,7 @@ export interface ManualTransaction {
   date: string;
   status: PaymentStatus;
   planTier: SubscriptionPlan;
+  durationDays?: number;
   notes?: string;
   userName?: string;
   userEmail?: string;
@@ -363,6 +363,7 @@ export interface LandingPageConfig {
   videoDemoLinks: Record<string, string>;
   desktopDashboardImg?: string;
   mobileDashboardImg?: string;
+  adminWhatsApp?: string;
   updatedAt?: string;
 }
 

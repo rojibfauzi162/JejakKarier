@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { CareerPath, CareerType, AppData, CareerStatus, SubscriptionPlan } from '../types';
 import { analyzeSkillGap } from '../services/geminiService';
@@ -110,26 +109,28 @@ const CareerPlanner: React.FC<CareerPlannerProps> = ({ paths, appData, onAddPath
         </button>
       </header>
 
-      {/* INFO KUOTA (QUOTA BANNER) */}
-      <div className="bg-indigo-50 border border-indigo-100 p-5 rounded-[2rem] flex flex-col sm:flex-row justify-between items-center gap-6 shadow-sm mx-1">
-         <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-indigo-600 text-white rounded-2xl flex items-center justify-center text-xl shadow-lg shadow-indigo-200">
-               <i className="bi bi-rocket-takeoff-fill"></i>
-            </div>
-            <div>
-               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Kapasitas Target Karir ({appData?.plan})</p>
-               <p className="text-sm font-black text-slate-800 tracking-tight">
-                  {paths.length} / {limit === 'unlimited' ? '∞' : limit} Target Disusun
-               </p>
-            </div>
-         </div>
-         <button 
-            onClick={onUpgrade}
-            className="w-full sm:w-auto px-8 py-3 bg-white text-indigo-600 font-black rounded-xl text-[10px] uppercase tracking-widest shadow-sm border border-indigo-100 hover:bg-indigo-50 transition-all active:scale-95"
-         >
-            🚀 Upgrade Plan
-         </button>
-      </div>
+      {/* INFO KUOTA (QUOTA BANNER) - HIDDEN FOR PRO USERS */}
+      {appData?.plan === SubscriptionPlan.FREE && (
+        <div className="bg-indigo-50 border border-indigo-100 p-5 rounded-[2rem] flex flex-col sm:flex-row justify-between items-center gap-6 shadow-sm mx-1">
+           <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-indigo-600 text-white rounded-2xl flex items-center justify-center text-xl shadow-lg shadow-indigo-200">
+                 <i className="bi bi-rocket-takeoff-fill"></i>
+              </div>
+              <div>
+                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Kapasitas Target Karir ({appData?.plan})</p>
+                 <p className="text-sm font-black text-slate-800 tracking-tight">
+                    {paths.length} / {limit === 'unlimited' ? '∞' : limit} Target Disusun
+                 </p>
+              </div>
+           </div>
+           <button 
+              onClick={onUpgrade}
+              className="w-full sm:w-auto px-8 py-3 bg-white text-indigo-600 font-black rounded-xl text-[10px] uppercase tracking-widest shadow-sm border border-indigo-100 hover:bg-indigo-50 transition-all active:scale-95"
+           >
+              🚀 Upgrade Plan
+           </button>
+        </div>
+      )}
 
       {/* Desktop Spreadsheet Table */}
       <div className="hidden lg:block bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden overflow-x-auto">

@@ -1,34 +1,37 @@
-
 import React from 'react';
-import { AppData, SubscriptionProduct, AccountStatus } from '../types';
+import { AppData, SubscriptionProduct, AccountStatus, PaymentStatus } from '../types';
 
 interface BillingProps {
   data: AppData;
   products: SubscriptionProduct[];
+  onSelectPlan?: (p: SubscriptionProduct) => void;
 }
 
-const Billing: React.FC<BillingProps> = ({ data, products }) => {
+const Billing: React.FC<BillingProps> = ({ data, products, onSelectPlan }) => {
   const expiryDate = data.expiryDate ? new Date(data.expiryDate) : null;
   const today = new Date();
   const daysRemaining = expiryDate ? Math.ceil((expiryDate.getTime() - today.getTime()) / (1000 * 3600 * 24)) : Infinity;
   const isExpired = daysRemaining <= 0;
 
   const currentProduct = products.find(p => p.tier === data.plan);
+  
+  // Ambil transaksi milik user ini saja
+  const myTransactions = [...(data.manualTransactions || [])].sort((a, b) => b.date.localeCompare(a.date));
 
-  const handlePay = (mayarProdId?: string) => {
-    if (!mayarProdId) {
-      alert("ID Produk Mayar belum dikonfigurasi oleh admin.");
-      return;
+  const handleExtend = (product: SubscriptionProduct) => {
+    if (onSelectPlan) {
+      onSelectPlan(product);
+    } else {
+      // Fallback jika prop tidak tersedia
+      alert("Sistem checkout sedang disiapkan.");
     }
-    // Mengarahkan ke link pembayaran Mayar
-    window.open(`https://mayar.link/pl/${mayarProdId}`, '_blank');
   };
 
   return (
     <div className="space-y-10 animate-in fade-in duration-700 pb-20 px-4 lg:px-0">
       <header>
         <h2 className="text-3xl font-black text-slate-900 tracking-tight uppercase">Billing & Subscription</h2>
-        <p className="text-slate-500 font-medium italic">"Kelola akses dan upgrade kualifikasi profesional Anda."</p>
+        <p className="text-slate-500 font-medium italic">"Kelola akses dan perbarui paket kualifikasi profesional Anda."</p>
       </header>
 
       {/* CURRENT SUBSCRIPTION CARD */}
@@ -86,12 +89,12 @@ const Billing: React.FC<BillingProps> = ({ data, products }) => {
             </div>
             <p className="text-[9px] font-black text-blue-600 uppercase tracking-widest flex items-center gap-2">
                <span className="w-1.5 h-1.5 bg-blue-600 rounded-full animate-pulse"></span>
-               Pembayaran Aman via Mayar.id
+               Pembayaran Aman & Otomatis
             </p>
          </div>
 
          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {products.filter(p => p.price > 0).map(p => (
+            {products.filter(p => p.price > 0 && p.isActive !== false).map(p => (
               <div key={p.id} className="bg-white p-8 rounded-[3.5rem] border border-slate-100 shadow-sm hover:shadow-xl transition-all flex flex-col group relative overflow-hidden">
                  <div className="flex-1 space-y-8">
                     <div>
@@ -127,7 +130,7 @@ const Billing: React.FC<BillingProps> = ({ data, products }) => {
                  </div>
 
                  <button 
-                  onClick={() => handlePay(p.mayarProductId)}
+                  onClick={() => handleExtend(p)}
                   className="w-full mt-10 py-4 bg-slate-900 text-white font-black rounded-2xl uppercase text-[10px] tracking-widest shadow-xl hover:bg-black transition-all active:scale-95 z-10"
                  >
                     {data.plan === p.tier ? 'Perpanjang Paket' : 'Pilih Paket →'}
@@ -136,6 +139,68 @@ const Billing: React.FC<BillingProps> = ({ data, products }) => {
                  <div className="absolute -bottom-12 -right-12 w-32 h-32 bg-slate-50 rounded-full group-hover:bg-indigo-50 transition-colors duration-500"></div>
               </div>
             ))}
+         </div>
+      </div>
+
+      {/* TRANSACTION HISTORY TABLE */}
+      <div className="space-y-6">
+         <div className="px-2">
+            <h3 className="text-xl font-black text-slate-900 uppercase">Riwayat Transaksi Akun</h3>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Pantau status pembayaran dan aktivasi paket Anda.</p>
+         </div>
+
+         <div className="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden">
+            <div className="overflow-x-auto">
+               <table className="w-full text-left">
+                  <thead>
+                     <tr className="bg-slate-50 border-b border-slate-100 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                        <th className="px-8 py-5">ID Transaksi</th>
+                        <th className="px-6 py-5">Paket</th>
+                        <th className="px-6 py-5">Metode</th>
+                        <th className="px-6 py-5">Nominal</th>
+                        <th className="px-6 py-5 text-center">Status</th>
+                        <th className="px-8 py-5 text-right">Tanggal</th>
+                     </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-50">
+                     {myTransactions.length > 0 ? myTransactions.map(tx => (
+                        <tr key={tx.id} className="hover:bg-slate-50/50 transition-colors">
+                           <td className="px-8 py-5 font-mono text-[10px] font-bold text-slate-400">{tx.id}</td>
+                           <td className="px-6 py-5">
+                              <span className="text-xs font-black text-slate-800 uppercase">{tx.planTier}</span>
+                              <p className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">{tx.durationDays} Hari Akses</p>
+                           </td>
+                           <td className="px-6 py-5">
+                              <span className="px-2 py-1 bg-slate-100 rounded text-[8px] font-black uppercase text-slate-500">
+                                 {tx.paymentMethod || 'Manual'}
+                              </span>
+                           </td>
+                           <td className="px-6 py-5 font-black text-slate-700 text-xs">
+                              Rp {tx.amount.toLocaleString('id-ID')}
+                           </td>
+                           <td className="px-6 py-5 text-center">
+                              <span className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border inline-block min-w-[80px] ${
+                                 tx.status === PaymentStatus.PAID ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                                 tx.status === PaymentStatus.PENDING ? 'bg-amber-50 text-amber-600 border-amber-100 animate-pulse' :
+                                 'bg-rose-50 text-rose-600 border-rose-100'
+                              }`}>
+                                 {tx.status}
+                              </span>
+                           </td>
+                           <td className="px-8 py-5 text-right font-bold text-slate-400 text-[10px]">
+                              {new Date(tx.date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}
+                           </td>
+                        </tr>
+                     )) : (
+                        <tr>
+                           <td colSpan={6} className="px-8 py-12 text-center text-slate-300 font-bold uppercase tracking-widest text-[10px] italic">
+                              Belum ada riwayat transaksi terdeteksi.
+                           </td>
+                        </tr>
+                     )}
+                  </tbody>
+               </table>
+            </div>
          </div>
       </div>
 
