@@ -9,9 +9,10 @@ interface CareerPlannerProps {
   onAddPath: (path: CareerPath) => void;
   onUpdatePath: (path: CareerPath) => void;
   onDeletePath: (id: string) => void;
+  onUpgrade?: () => void;
 }
 
-const CareerPlanner: React.FC<CareerPlannerProps> = ({ paths, appData, onAddPath, onUpdatePath, onDeletePath }) => {
+const CareerPlanner: React.FC<CareerPlannerProps> = ({ paths, appData, onAddPath, onUpdatePath, onDeletePath, onUpgrade }) => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [aiResult, setAiResult] = useState<{ trainings: string[], certifications: string[], summary: string } | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -44,10 +45,11 @@ const CareerPlanner: React.FC<CareerPlannerProps> = ({ paths, appData, onAddPath
 
   const openForm = (path?: CareerPath) => {
     // VALIDASI LIMIT DATABASE PAKET FREE
+    const limit = appData?.planLimits?.careerPath || 2;
     if (!path) {
-      const limit = appData?.planLimits?.careerPath || 2;
       if (appData?.plan === SubscriptionPlan.FREE && paths.length >= Number(limit)) {
         alert(`Batas target karir tercapai (${limit}). Silakan upgrade paket untuk perencanaan lebih mendalam.`);
+        onUpgrade?.();
         return;
       }
     }
@@ -89,6 +91,8 @@ const CareerPlanner: React.FC<CareerPlannerProps> = ({ paths, appData, onAddPath
     return deadlineDate < currentDate;
   };
 
+  const limit = appData?.planLimits?.careerPath || 2;
+
   return (
     <div className="space-y-8 animate-in slide-in-from-right duration-500 pb-20">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -105,6 +109,27 @@ const CareerPlanner: React.FC<CareerPlannerProps> = ({ paths, appData, onAddPath
           + Tambah Target Karir
         </button>
       </header>
+
+      {/* INFO KUOTA (QUOTA BANNER) */}
+      <div className="bg-indigo-50 border border-indigo-100 p-5 rounded-[2rem] flex flex-col sm:flex-row justify-between items-center gap-6 shadow-sm mx-1">
+         <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-indigo-600 text-white rounded-2xl flex items-center justify-center text-xl shadow-lg shadow-indigo-200">
+               <i className="bi bi-rocket-takeoff-fill"></i>
+            </div>
+            <div>
+               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Kapasitas Target Karir ({appData?.plan})</p>
+               <p className="text-sm font-black text-slate-800 tracking-tight">
+                  {paths.length} / {limit === 'unlimited' ? '∞' : limit} Target Disusun
+               </p>
+            </div>
+         </div>
+         <button 
+            onClick={onUpgrade}
+            className="w-full sm:w-auto px-8 py-3 bg-white text-indigo-600 font-black rounded-xl text-[10px] uppercase tracking-widest shadow-sm border border-indigo-100 hover:bg-indigo-50 transition-all active:scale-95"
+         >
+            🚀 Upgrade Plan
+         </button>
+      </div>
 
       {/* Desktop Spreadsheet Table */}
       <div className="hidden lg:block bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden overflow-x-auto">
@@ -304,7 +329,7 @@ const CareerPlanner: React.FC<CareerPlannerProps> = ({ paths, appData, onAddPath
       {/* Form Modal */}
       {isFormOpen && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[100] p-4">
-          <div className="bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl p-10 animate-in zoom-in duration-300 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl p-10 animate-in zoom-in duration-300 max-h-[90vh] overflow-y-auto no-scrollbar">
             <h3 className="text-3xl font-black text-slate-900 tracking-tight mb-8">
               {editingPath ? 'Update Target Karir' : 'Target Karir Baru'}
             </h3>

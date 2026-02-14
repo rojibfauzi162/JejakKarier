@@ -68,7 +68,9 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard', user
         todoList: 10,
         workExperience: 3,
         education: 2,
-        careerCalendar: 5
+        careerCalendar: 5,
+        // Added achievements limit to resolve missing property error
+        achievements: 5
       } 
     }
   ]);

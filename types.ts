@@ -444,6 +444,7 @@ export interface SubscriptionProduct {
     workExperience: number | 'unlimited';
     education: number | 'unlimited';
     careerCalendar: number | 'unlimited';
+    achievements: number | 'unlimited'; // Added
   };
 }
 

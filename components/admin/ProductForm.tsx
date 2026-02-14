@@ -22,23 +22,25 @@ const ProductForm = ({ initialData, onCancel, onSubmit, onDelete }: any) => {
       todoList: 0,
       workExperience: 0,
       education: 0,
-      careerCalendar: 0
+      careerCalendar: 0,
+      // Added achievements limit to match SubscriptionProduct interface
+      achievements: 0
     }
   });
 
   const [discountPercent, setDiscountPercent] = useState<number>(0);
 
-  // Daftar Modul Lengkap Sesuai App.tsx
+  // Daftar Modul Lengkap Sesuai App.tsx dan permintaan User
   const APP_MODULES = [
     { id: 'dashboard', label: 'Dashboard Utama' },
     { id: 'profile', label: 'Profil & Bio' },
     { id: 'daily', label: 'Daily Work Log' },
-    { id: 'work_reflection', label: 'Work Reflection' },
-    { id: 'reports', label: 'Performance Reports' },
+    { id: 'work_reflection', label: 'Refleksi Kerja (Work Reflection)' },
+    { id: 'reports', label: 'Laporan Pekerjaan (Performance Reports)' },
     { id: 'ai_insights', label: 'AI Activity Insights' },
-    { id: 'todo_list', label: 'Growth Checklist' },
+    { id: 'todo_list', label: 'Langkah Pengembangan (Checklist)' },
     { id: 'calendar', label: 'Career Calendar' },
-    { id: 'skills', label: 'Skill Matrix' },
+    { id: 'skills', label: 'Skill Matrix & Learning' },
     { id: 'career', label: 'Career Path Planner' },
     { id: 'networking', label: 'Networking Vault' },
     { id: 'achievements', label: 'Achievement Tracker' },
@@ -89,11 +91,11 @@ const ProductForm = ({ initialData, onCancel, onSubmit, onDelete }: any) => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
             <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Nama Paket Langganan</label>
-            <input className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-sm focus:border-indigo-500 transition-all" value={form.name} onChange={e => setForm({...form, name: e.target.value})} placeholder="Misal: Elite Pro Yearly" required />
+            <input className="w-full px-6 py-4 rounded-2xl border border-slate-200 bg-slate-50 font-bold text-sm outline-none focus:border-indigo-500 transition-all" value={form.name} onChange={e => setForm({...form, name: e.target.value})} placeholder="Misal: Elite Pro Yearly" required />
           </div>
           <div className="space-y-2">
             <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Kategori Tier</label>
-            <select className="w-full px-6 py-4 rounded-2xl bg-white border border-slate-200 outline-none font-bold text-sm cursor-pointer" value={form.tier} onChange={e => setForm({...form, tier: e.target.value as SubscriptionPlan})}>
+            <select className="w-full px-6 py-4 rounded-2xl border border-slate-200 bg-white font-bold text-sm outline-none cursor-pointer" value={form.tier} onChange={e => setForm({...form, tier: e.target.value as SubscriptionPlan})}>
               {Object.values(SubscriptionPlan).map(t => <option key={t} value={t}>{t}</option>)}
             </select>
           </div>
@@ -106,19 +108,19 @@ const ProductForm = ({ initialData, onCancel, onSubmit, onDelete }: any) => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="space-y-2">
             <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Harga Jual (Rp)</label>
-            <input type="number" className="w-full px-6 py-4 rounded-2xl bg-indigo-50/30 border border-indigo-100 outline-none font-black text-sm text-indigo-600" value={form.price === 0 ? 0 : (form.price || '')} onChange={e => handlePriceChange(Number(e.target.value))} required />
+            <input type="number" className="w-full px-6 py-4 rounded-2xl border border-indigo-100 bg-indigo-50/30 font-black text-sm text-indigo-600 outline-none" value={form.price === 0 ? 0 : (form.price || '')} onChange={e => handlePriceChange(Number(e.target.value))} required />
           </div>
           <div className="space-y-2">
             <label className="text-[10px] font-black text-indigo-500 uppercase tracking-widest ml-1">Set Diskon (%)</label>
-            <input type="number" min="0" max="99" className="w-full px-6 py-4 rounded-2xl bg-white border border-slate-200 outline-none font-bold text-sm" value={discountPercent || ''} onChange={e => handleDiscountChange(Number(e.target.value))} />
+            <input type="number" min="0" max="99" className="w-full px-6 py-4 rounded-2xl border border-slate-200 bg-white font-bold text-sm outline-none" value={discountPercent || ''} onChange={e => handleDiscountChange(Number(e.target.value))} />
           </div>
           <div className="space-y-2">
             <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 italic">Harga Coret (Otomatis)</label>
-            <input className="w-full px-6 py-4 rounded-2xl bg-slate-100 border border-slate-200 outline-none font-bold text-sm text-rose-400" value={form.originalPrice || 0} readOnly />
+            <input className="w-full px-6 py-4 rounded-2xl border border-slate-200 bg-slate-100 font-bold text-sm text-rose-400 outline-none" value={form.originalPrice || 0} readOnly />
           </div>
           <div className="space-y-2">
             <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Durasi Akses (Hari)</label>
-            <input type="number" className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-sm" value={form.durationDays} onChange={e => setForm({...form, durationDays: Number(e.target.value)})} required />
+            <input type="number" className="w-full px-6 py-4 rounded-2xl border border-slate-200 bg-slate-50 font-bold text-sm outline-none" value={form.durationDays} onChange={e => setForm({...form, durationDays: Number(e.target.value)})} required />
           </div>
         </div>
 

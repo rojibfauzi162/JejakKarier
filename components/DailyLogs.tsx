@@ -39,6 +39,7 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
   const [isManageCatsOpen, setIsManageCatsOpen] = useState(false);
   const [newCatInput, setNewCatInput] = useState('');
   const [isExecutingPlan, setIsExecutingPlan] = useState(false);
+  const [showHistoryFor, setShowHistoryFor] = useState<string | null>(null);
   
   // Filters State
   const [searchQuery, setSearchQuery] = useState('');
@@ -59,6 +60,27 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
   const remaining = limit === 'unlimited' ? Infinity : Number(limit) - logs.length;
 
   const metricChoices = ['Laporan', 'Jam', 'Berkas', 'Persentase (%)', 'Nominal (IDR)', 'Custom'];
+
+  // LOGIC: Map riwayat aktivitas untuk auto-fill (Ditingkatkan untuk mengambil data progres terakhir)
+  const pastActivitiesMap = useMemo(() => {
+    const map: Record<string, { category: string, metricLabel: string, metricValue: number, targetValue: number }> = {};
+    // Urutkan berdasarkan tanggal descending untuk mendapatkan data terbaru dari aktivitas tersebut
+    const sortedLogs = [...logs].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    
+    sortedLogs.forEach(l => {
+      if (!map[l.activity]) {
+        map[l.activity] = { 
+          category: l.category, 
+          metricLabel: l.metricLabel,
+          metricValue: l.metricValue,
+          targetValue: l.targetValue || 0
+        };
+      }
+    });
+    return map;
+  }, [logs]);
+
+  const pastActivityTitles = useMemo(() => Object.keys(pastActivitiesMap), [pastActivitiesMap]);
 
   // State untuk form
   const [headerData, setHeaderData] = useState({
@@ -101,12 +123,12 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
 
   const handleRemoveLine = (tempId: string) => {
     if (activityLines.length > 1) {
-      setActivityLines(activityLines.filter(l => l.tempId !== tempId));
+      setActivityLines(activityLines.filter(line => line.tempId !== tempId));
     }
   };
 
   const updateLine = (tempId: string, fields: Partial<ActivityLine>) => {
-    setActivityLines(activityLines.map(l => l.tempId === tempId ? { ...l, ...fields } : l));
+    setActivityLines(activityLines.map(line => line.tempId === tempId ? { ...line, ...fields } : line));
   };
 
   const handleOpenModal = (log?: DailyReport, asExecute: boolean = false) => {
@@ -117,6 +139,7 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
     }
 
     setIsExecutingPlan(asExecute);
+    setShowHistoryFor(null);
     if (asExecute && log) {
       setEditingLogId(null);
       setHeaderData({
@@ -125,19 +148,19 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
         companyName: log.companyName || currentCompany || '',
       });
       
-      const dailyLogs = logs.filter(l => l.date === log.date);
-      setActivityLines(dailyLogs.map(l => ({
-        tempId: l.id,
-        activity: l.activity,
-        category: l.category,
-        output: l.output || l.activity,
-        metricValue: l.metricValue,
-        targetValue: l.targetValue || 0,
-        metricLabel: l.metricLabel,
-        metricOption: metricChoices.includes(l.metricLabel) ? l.metricLabel : 'Custom',
-        customMetricLabel: metricChoices.includes(l.metricLabel) ? '' : l.metricLabel,
+      const dailyLogs = logs.filter(item => item.date === log.date);
+      setActivityLines(dailyLogs.map(item => ({
+        tempId: item.id,
+        activity: item.activity,
+        category: item.category,
+        output: item.output || item.activity,
+        metricValue: item.metricValue,
+        targetValue: item.targetValue || 0,
+        metricLabel: item.metricLabel,
+        metricOption: metricChoices.includes(item.metricLabel) ? item.metricLabel : 'Custom',
+        customMetricLabel: metricChoices.includes(item.metricLabel) ? '' : item.metricLabel,
         isPlan: false,
-        useCustomOutput: l.output !== l.activity && !!l.output
+        useCustomOutput: item.output !== item.activity && !!item.output
       })));
     } else if (log) {
       setEditingLogId(log.id);
@@ -185,13 +208,12 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const validLines = activityLines.filter(l => l.activity.trim() !== '');
+    const validLines = activityLines.filter(line => line.activity.trim() !== '');
     if (validLines.length === 0) return;
 
-    // Logika Sinkronisasi Penghapusan: Jika dalam mode eksekusi, cek ID yang hilang dari daftar submitted
     if (isExecutingPlan) {
-      const submittedIds = new Set(validLines.map(l => l.tempId));
-      const originalLogsForDay = logs.filter(l => l.date === headerData.date);
+      const submittedIds = new Set(validLines.map(line => line.tempId));
+      const originalLogsForDay = logs.filter(oldLog => oldLog.date === headerData.date);
       
       originalLogsForDay.forEach(oldLog => {
         if (!submittedIds.has(oldLog.id)) {
@@ -217,7 +239,7 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
         reflection: '' 
       };
 
-      const exists = logs.some(l => l.id === line.tempId);
+      const exists = logs.some(item => item.id === line.tempId);
       if (exists) onUpdate(logData);
       else onAdd(logData);
     });
@@ -231,14 +253,14 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
     let result = [...logs].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
     if (searchQuery) {
-      result = result.filter(l => 
-        l.activity.toLowerCase().includes(searchQuery.toLowerCase()) || 
-        (l.output && l.output.toLowerCase().includes(searchQuery.toLowerCase()))
+      result = result.filter((item) => 
+        item.activity.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        (item.output && item.output.toLowerCase().includes(searchQuery.toLowerCase()))
       );
     }
 
     if (filterCat !== 'all') {
-      result = result.filter(l => l.category === filterCat);
+      result = result.filter((item) => item.category === filterCat);
     }
 
     if (filterTime !== 'all') {
@@ -246,19 +268,19 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
       now.setHours(0,0,0,0);
       const todayStr = now.toISOString().split('T')[0];
       
-      result = result.filter(l => {
-        const logDate = new Date(l.date);
+      result = result.filter((item) => {
+        const logDate = new Date(item.date);
         logDate.setHours(0,0,0,0);
         const diffDays = (now.getTime() - logDate.getTime()) / (1000 * 3600 * 24);
 
-        if (filterTime === 'today') return l.date === todayStr;
+        if (filterTime === 'today') return item.date === todayStr;
         if (filterTime === '7days') return diffDays >= 0 && diffDays <= 7;
         if (filterTime === '30days') return diffDays >= 0 && diffDays <= 30;
         if (filterTime === 'quarter') return diffDays >= 0 && diffDays <= 90;
         if (filterTime === 'range') {
             if (!startDate) return true;
-            if (!endDate) return l.date === startDate;
-            return l.date >= startDate && l.date <= endDate;
+            if (!endDate) return item.date === startDate;
+            return item.date >= startDate && item.date <= endDate;
         }
         return true;
       });
@@ -276,21 +298,15 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
   const totalPages = groupedLogsByDate.length;
   const currentDayGroup = groupedLogsByDate[currentPage - 1];
 
-  // Logic: Handle Target Date Navigation from Reminder (FIXED)
   useEffect(() => {
     if (targetDate) {
-      // Tunggu hingga data groupedLogsByDate terhitung
-      const idx = groupedLogsByDate.findIndex(g => g[0] === targetDate);
+      const idx = groupedLogsByDate.findIndex(group => group[0] === targetDate);
       if (idx !== -1) {
         setCurrentPage(idx + 1);
       } else {
-        // Jika belum ada log di tanggal tsb (karena reminder suruh isi hari ini yang masih kosong)
-        // Reset filter agar data muncul
         setFilterTime('all');
         setSearchQuery('');
-        // Pastikan header data siap dengan tanggal target
         setHeaderData(prev => ({ ...prev, date: targetDate }));
-        // Buka modal secara otomatis jika user datang dari reminder "Hari Ini"
         if (targetDate === new Date().toISOString().split('T')[0]) {
            handleOpenModal();
         }
@@ -341,7 +357,7 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
       const isSelectedStart = startDate === dayStr;
       const isSelectedEnd = endDate === dayStr;
       const isInRange = startDate && endDate && dayStr > startDate && dayStr < endDate;
-      const hasLogs = logs.some(l => l.date === dayStr);
+      const hasLogs = logs.some(logEntry => logEntry.date === dayStr);
 
       days.push(
         <button
@@ -390,6 +406,27 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
           </div>
         </div>
         <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
+      </div>
+
+      {/* INFO KUOTA (QUOTA BANNER) */}
+      <div className="bg-indigo-50 border border-indigo-100 p-5 rounded-[2rem] flex flex-col sm:flex-row justify-between items-center gap-6 mx-1 shadow-sm">
+         <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-indigo-600 text-white rounded-2xl flex items-center justify-center text-xl shadow-lg shadow-indigo-200">
+               <i className="bi bi-database-fill"></i>
+            </div>
+            <div>
+               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Kapasitas Daily Work Log ({appData?.plan})</p>
+               <p className="text-sm font-black text-slate-800 tracking-tight">
+                  {logs.length} / {limit === 'unlimited' ? '∞' : limit} Slot Aktivitas Digunakan
+               </p>
+            </div>
+         </div>
+         <button 
+            onClick={onUpgrade}
+            className="w-full sm:w-auto px-8 py-3 bg-white text-indigo-600 font-black rounded-xl text-[10px] uppercase tracking-widest shadow-sm border border-indigo-100 hover:bg-indigo-50 transition-all active:scale-95"
+         >
+            🚀 Upgrade Kuota
+         </button>
       </div>
 
       {/* LIMIT ALERT BAR - HANYA UNTUK USER FREE */}
@@ -840,12 +877,60 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
                                  </button>
                                )}
                              </div>
-                             <input 
-                              placeholder="Ketik apa yang Anda kerjakan..."
-                              className="w-full px-6 py-4 rounded-2xl border border-slate-200 outline-none bg-white font-black text-sm focus:ring-4 focus:ring-blue-500/5 transition-all shadow-sm"
-                              value={line.activity}
-                              onChange={e => updateLine(line.tempId, { activity: e.target.value })}
-                             />
+                             <div className="relative">
+                               <input 
+                                placeholder="Ketik apa yang Anda kerjakan..."
+                                className="w-full px-6 py-4 rounded-2xl border border-slate-200 outline-none bg-white font-black text-sm focus:ring-4 focus:ring-blue-500/5 transition-all shadow-sm pr-24"
+                                value={line.activity}
+                                onChange={e => updateLine(line.tempId, { activity: e.target.value })}
+                               />
+                               <button 
+                                type="button"
+                                onClick={() => setShowHistoryFor(showHistoryFor === line.tempId ? null : line.tempId)}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-indigo-50 border border-indigo-100 rounded-xl text-[9px] font-black text-indigo-600 hover:bg-indigo-600 hover:text-white transition-all shadow-sm"
+                               >
+                                 🕒 RIWAYAT
+                               </button>
+
+                               {showHistoryFor === line.tempId && (
+                                 <div className="absolute top-[calc(100%+8px)] left-0 right-0 bg-white border border-slate-200 rounded-[1.5rem] shadow-2xl z-[100] p-2 max-h-[220px] overflow-y-auto no-scrollbar animate-in slide-in-from-top-2">
+                                    <p className="text-[8px] font-black text-slate-400 uppercase px-3 py-2 border-b border-slate-50 tracking-[0.2em]">Pilih dari Riwayat</p>
+                                    {pastActivityTitles.length > 0 ? (
+                                      pastActivityTitles.map(title => {
+                                        const matched = pastActivitiesMap[title];
+                                        return (
+                                          <button
+                                            key={title}
+                                            type="button"
+                                            onClick={() => {
+                                              updateLine(line.tempId, {
+                                                activity: title,
+                                                category: matched.category,
+                                                metricOption: metricChoices.includes(matched.metricLabel) ? matched.metricLabel : 'Custom',
+                                                customMetricLabel: metricChoices.includes(matched.metricLabel) ? '' : matched.metricLabel,
+                                                metricValue: matched.metricValue,
+                                                targetValue: matched.metricValue // Angka target baru mulai dari realisasi terakhir agar nyambung
+                                              });
+                                              setShowHistoryFor(null);
+                                            }}
+                                            className="w-full text-left p-3 hover:bg-indigo-50 rounded-xl text-[10px] font-bold text-slate-700 flex justify-between items-center group transition-colors"
+                                          >
+                                            <div className="flex flex-col">
+                                              <span>{title}</span>
+                                              <span className="text-[7px] text-slate-400 uppercase font-black tracking-widest">{matched.category}</span>
+                                            </div>
+                                            <div className="text-right">
+                                              <span className="text-[8px] font-black text-indigo-400 uppercase bg-indigo-50/50 px-2 py-0.5 rounded group-hover:bg-white">{matched.metricValue} {matched.metricLabel}</span>
+                                            </div>
+                                          </button>
+                                        );
+                                      })
+                                    ) : (
+                                      <div className="p-4 text-center text-[10px] text-slate-400 italic">Belum ada riwayat aktivitas</div>
+                                    )}
+                                 </div>
+                               )}
+                             </div>
                           </div>
                           {!line.isPlan && line.useCustomOutput && (
                             <div className="space-y-2 animate-in slide-in-from-top-2">

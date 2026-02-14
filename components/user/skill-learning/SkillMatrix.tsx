@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { Skill, SkillStatus, SkillCategory, SkillPriority, AppData, SubscriptionPlan } from '../../../types';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
@@ -67,25 +68,6 @@ const SkillMatrix: React.FC<SkillMatrixProps> = ({ skills, onAddSkill, onUpdateS
 
   return (
     <div className="space-y-10 animate-in fade-in duration-700">
-      {/* LIMIT ALERT BAR - HANYA UNTUK USER FREE */}
-      {isLimitReached && appData?.plan === SubscriptionPlan.FREE && (
-        <div className="bg-amber-50 border-2 border-amber-100 p-6 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm mx-1">
-           <div className="flex items-center gap-4 text-center md:text-left">
-              <span className="text-3xl">🎯</span>
-              <div>
-                 <p className="text-[10px] font-black text-amber-600 uppercase tracking-widest mb-1">Matrix Skill Terbatas</p>
-                 <p className="text-sm font-bold text-slate-800">Anda telah mencatat {skills.length} dari {limit} skill di paket {appData?.plan}.</p>
-              </div>
-           </div>
-           <button 
-            onClick={onUpgrade}
-            className="px-8 py-3 bg-amber-600 text-white font-black rounded-2xl text-[10px] uppercase tracking-widest shadow-xl shadow-amber-100 hover:bg-amber-700 transition-all active:scale-95"
-           >
-             Upgrade Level Karir →
-           </button>
-        </div>
-      )}
-
       {/* Statistics Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-1 bg-white p-8 rounded-[3rem] shadow-sm border border-slate-100 flex flex-col items-center overflow-hidden">
@@ -130,6 +112,46 @@ const SkillMatrix: React.FC<SkillMatrixProps> = ({ skills, onAddSkill, onUpdateS
            </div>
         </div>
       </div>
+
+      {/* INFO KUOTA (QUOTA BANNER) */}
+      <div className="bg-indigo-50 border border-indigo-100 p-5 rounded-[2rem] flex flex-col sm:flex-row justify-between items-center gap-6 mx-1 shadow-sm">
+         <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-indigo-600 text-white rounded-2xl flex items-center justify-center text-xl shadow-lg shadow-indigo-200">
+               <i className="bi bi-bullseye"></i>
+            </div>
+            <div>
+               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Kapasitas Matriks Skill ({appData?.plan})</p>
+               <p className="text-sm font-black text-slate-800 tracking-tight">
+                  {skills.length} / {limit === 'unlimited' ? '∞' : limit} Kompetensi Terdaftar
+               </p>
+            </div>
+         </div>
+         <button 
+            onClick={onUpgrade}
+            className="w-full sm:w-auto px-8 py-3 bg-white text-indigo-600 font-black rounded-xl text-[10px] uppercase tracking-widest shadow-sm border border-indigo-100 hover:bg-indigo-50 transition-all active:scale-95"
+         >
+            🚀 Upgrade Plan
+         </button>
+      </div>
+
+      {/* LIMIT ALERT BAR - HANYA UNTUK USER FREE */}
+      {isLimitReached && appData?.plan === SubscriptionPlan.FREE && (
+        <div className="bg-amber-50 border-2 border-amber-100 p-6 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm mx-1">
+           <div className="flex items-center gap-4 text-center md:text-left">
+              <span className="text-3xl">⚠️</span>
+              <div>
+                 <p className="text-[10px] font-black text-amber-600 uppercase tracking-widest mb-1">Matrix Skill Terbatas</p>
+                 <p className="text-sm font-bold text-slate-800">Anda telah mencatat {skills.length} dari {limit} skill di paket {appData?.plan}.</p>
+              </div>
+           </div>
+           <button 
+            onClick={onUpgrade}
+            className="px-8 py-3 bg-amber-600 text-white font-black rounded-2xl text-[10px] uppercase tracking-widest shadow-xl shadow-amber-100 hover:bg-amber-700 transition-all active:scale-95"
+           >
+             Upgrade Level Karir →
+           </button>
+        </div>
+      )}
 
       <div className="flex justify-between items-center px-1">
         <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">Daftar Kompetensi</h3>

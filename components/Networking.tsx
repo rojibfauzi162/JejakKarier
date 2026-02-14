@@ -8,9 +8,10 @@ interface NetworkingProps {
   onUpdate: (c: Contact) => void;
   onDelete: (id: string) => void;
   appData?: AppData;
+  onUpgrade?: () => void;
 }
 
-const Networking: React.FC<NetworkingProps> = ({ contacts, onAdd, onUpdate, onDelete, appData }) => {
+const Networking: React.FC<NetworkingProps> = ({ contacts, onAdd, onUpdate, onDelete, appData, onUpgrade }) => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Contact | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -28,6 +29,7 @@ const Networking: React.FC<NetworkingProps> = ({ contacts, onAdd, onUpdate, onDe
     const limit = appData?.planLimits?.networking || 2;
     if (appData?.plan === SubscriptionPlan.FREE && contacts.length >= Number(limit)) {
       alert(`Batas kontak networking tercapai (${limit}). Silakan upgrade paket untuk mengelola lebih banyak relasi.`);
+      onUpgrade?.();
       return;
     }
     setEditingItem(null);
@@ -45,6 +47,8 @@ const Networking: React.FC<NetworkingProps> = ({ contacts, onAdd, onUpdate, onDe
     </svg>
   );
 
+  const limit = appData?.planLimits?.networking || 2;
+
   return (
     <div className="space-y-8 animate-in fade-in duration-700 pb-24 lg:pb-20">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -57,6 +61,27 @@ const Networking: React.FC<NetworkingProps> = ({ contacts, onAdd, onUpdate, onDe
           Kontak Baru
         </button>
       </header>
+
+      {/* INFO KUOTA (QUOTA BANNER) */}
+      <div className="bg-indigo-50 border border-indigo-100 p-5 rounded-[2rem] flex flex-col sm:flex-row justify-between items-center gap-6 mx-1 shadow-sm">
+         <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-indigo-600 text-white rounded-2xl flex items-center justify-center text-xl shadow-lg shadow-indigo-200">
+               <i className="bi bi-people-fill"></i>
+            </div>
+            <div>
+               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Kapasitas Networking Vault ({appData?.plan})</p>
+               <p className="text-sm font-black text-slate-800 tracking-tight">
+                  {contacts.length} / {limit === 'unlimited' ? '∞' : limit} Relasi Terdaftar
+               </p>
+            </div>
+         </div>
+         <button 
+            onClick={onUpgrade}
+            className="w-full sm:w-auto px-8 py-3 bg-white text-indigo-600 font-black rounded-xl text-[10px] uppercase tracking-widest shadow-sm border border-indigo-100 hover:bg-indigo-50 transition-all active:scale-95"
+         >
+            🚀 Upgrade Plan
+         </button>
+      </div>
 
       {/* Summary Box & Search */}
       <div className="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center">

@@ -84,7 +84,7 @@ export const DEFAULT_PRODUCTS: SubscriptionProduct[] = [
     tier: SubscriptionPlan.FREE, 
     price: 0, 
     durationDays: 7, 
-    allowedModules: ['dashboard', 'profile', 'daily', 'skills', 'todo', 'calendar', 'work_reflection', 'loker', 'cv', 'networking', 'projects', 'career'], 
+    allowedModules: ['dashboard', 'profile', 'daily', 'skills', 'todo_list', 'calendar', 'work_reflection', 'loker', 'cv_generator', 'online_cv', 'networking', 'projects', 'career', 'reports', 'achievements', 'ai_insights', 'reviews'], 
     limits: { 
       dailyLogs: 3, 
       skills: 2, 
@@ -98,7 +98,8 @@ export const DEFAULT_PRODUCTS: SubscriptionProduct[] = [
       todoList: 2,
       workExperience: 2,
       education: 2,
-      careerCalendar: 2
+      careerCalendar: 2,
+      achievements: 1 // Fixed for Free
     },
     isActive: true,
     showOnLanding: false, 
@@ -112,7 +113,7 @@ export const DEFAULT_PRODUCTS: SubscriptionProduct[] = [
     price: 39000, 
     originalPrice: 48750, 
     durationDays: 30, 
-    allowedModules: ['dashboard', 'profile', 'daily', 'skills', 'todo', 'career', 'loker', 'cv', 'networking', 'projects', 'reviews', 'ai_insights', 'calendar', 'work_reflection', 'reports'], 
+    allowedModules: ['dashboard', 'profile', 'daily', 'skills', 'todo_list', 'career', 'loker', 'cv_generator', 'online_cv', 'networking', 'projects', 'reviews', 'ai_insights', 'calendar', 'work_reflection', 'reports', 'achievements'], 
     limits: { 
       dailyLogs: 'unlimited', 
       skills: 'unlimited', 
@@ -126,7 +127,8 @@ export const DEFAULT_PRODUCTS: SubscriptionProduct[] = [
       todoList: 'unlimited',
       workExperience: 'unlimited',
       education: 'unlimited',
-      careerCalendar: 'unlimited'
+      careerCalendar: 'unlimited',
+      achievements: 'unlimited' // Fixed for Pro
     }, 
     mayarProductId: 'paket-bulanan-jejakkarir-40840', 
     isActive: true, 
@@ -141,7 +143,7 @@ export const DEFAULT_PRODUCTS: SubscriptionProduct[] = [
     price: 99000, 
     originalPrice: 165000, 
     durationDays: 90, 
-    allowedModules: ['dashboard', 'profile', 'daily', 'skills', 'todo', 'career', 'loker', 'cv', 'networking', 'projects', 'reviews', 'ai_insights', 'calendar', 'work_reflection', 'reports'], 
+    allowedModules: ['dashboard', 'profile', 'daily', 'skills', 'todo_list', 'career', 'loker', 'cv_generator', 'online_cv', 'networking', 'projects', 'reviews', 'ai_insights', 'calendar', 'work_reflection', 'reports', 'achievements'], 
     limits: { 
       dailyLogs: 'unlimited', 
       skills: 'unlimited', 
@@ -155,7 +157,8 @@ export const DEFAULT_PRODUCTS: SubscriptionProduct[] = [
       todoList: 'unlimited',
       workExperience: 'unlimited',
       education: 'unlimited',
-      careerCalendar: 'unlimited'
+      careerCalendar: 'unlimited',
+      achievements: 'unlimited' // Fixed for Pro
     }, 
     mayarProductId: 'paket-3-bulanan-jejakkarir-40841', 
     isActive: true, 
@@ -170,7 +173,7 @@ export const DEFAULT_PRODUCTS: SubscriptionProduct[] = [
     price: 149000, 
     originalPrice: 496667, 
     durationDays: 365, 
-    allowedModules: ['dashboard', 'profile', 'daily', 'skills', 'todo', 'career', 'loker', 'cv', 'networking', 'projects', 'reviews', 'ai_insights', 'calendar', 'work_reflection', 'reports'], 
+    allowedModules: ['dashboard', 'profile', 'daily', 'skills', 'todo_list', 'career', 'loker', 'cv_generator', 'online_cv', 'networking', 'projects', 'reviews', 'ai_insights', 'calendar', 'work_reflection', 'reports', 'achievements'], 
     limits: { 
       dailyLogs: 'unlimited', 
       skills: 'unlimited', 
@@ -184,7 +187,8 @@ export const DEFAULT_PRODUCTS: SubscriptionProduct[] = [
       todoList: 'unlimited',
       workExperience: 'unlimited',
       education: 'unlimited',
-      careerCalendar: 'unlimited'
+      careerCalendar: 'unlimited',
+      achievements: 'unlimited' // Fixed for Pro
     }, 
     mayarProductId: 'paket-tahunan-jejakkarir-40842', 
     isActive: true, 

@@ -10,11 +10,12 @@ interface JobTrackerProps {
   onDelete: (id: string) => void;
   onAddCalendarEvent?: (e: CareerEvent) => void;
   appData?: AppData;
+  onUpgrade?: () => void;
 }
 
 type TimeFilter = 'All' | '1 Day' | '7 Days' | '30 Days' | 'Custom Range';
 
-const JobTracker: React.FC<JobTrackerProps> = ({ applications, careerEvents, onAdd, onUpdate, onDelete, onAddCalendarEvent, appData }) => {
+const JobTracker: React.FC<JobTrackerProps> = ({ applications, careerEvents, onAdd, onUpdate, onDelete, onAddCalendarEvent, appData, onUpgrade }) => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<JobApplication | null>(null);
   
@@ -72,6 +73,7 @@ const JobTracker: React.FC<JobTrackerProps> = ({ applications, careerEvents, onA
     const limit = appData?.planLimits?.jobTracker || 2;
     if (appData?.plan === SubscriptionPlan.FREE && applications.length >= Number(limit)) {
       alert(`Batas lamaran kerja tercapai (${limit}). Silakan upgrade paket untuk melacak lebih banyak peluang.`);
+      onUpgrade?.();
       return;
     }
     setEditingItem(null);
@@ -144,6 +146,8 @@ const JobTracker: React.FC<JobTrackerProps> = ({ applications, careerEvents, onA
     alert(`Status ${selectedIds.size} lamaran berhasil diperbarui!`);
   };
 
+  const limit = appData?.planLimits?.jobTracker || 2;
+
   return (
     <div className="space-y-6 animate-in fade-in duration-700 pb-24 lg:pb-16">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -155,6 +159,27 @@ const JobTracker: React.FC<JobTrackerProps> = ({ applications, careerEvents, onA
           + Log Lamaran Baru
         </button>
       </header>
+
+      {/* INFO KUOTA (QUOTA BANNER) */}
+      <div className="bg-indigo-50 border border-indigo-100 p-5 rounded-[2rem] flex flex-col sm:flex-row justify-between items-center gap-6 mx-1 shadow-sm">
+         <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-indigo-600 text-white rounded-2xl flex items-center justify-center text-xl shadow-lg shadow-indigo-200">
+               <i className="bi bi-briefcase-fill"></i>
+            </div>
+            <div>
+               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Kapasitas Pelacakan Loker ({appData?.plan})</p>
+               <p className="text-sm font-black text-slate-800 tracking-tight">
+                  {applications.length} / {limit === 'unlimited' ? '∞' : limit} Lamaran Terdaftar
+               </p>
+            </div>
+         </div>
+         <button 
+            onClick={onUpgrade}
+            className="w-full sm:w-auto px-8 py-3 bg-white text-indigo-600 font-black rounded-xl text-[10px] uppercase tracking-widest shadow-sm border border-indigo-100 hover:bg-indigo-50 transition-all active:scale-95"
+         >
+            🚀 Upgrade Plan
+         </button>
+      </div>
 
       {/* Stats Widgets */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -238,7 +263,7 @@ const JobTracker: React.FC<JobTrackerProps> = ({ applications, careerEvents, onA
                       {isSchedulable && (
                         <button 
                           onClick={() => openScheduleModal(app)}
-                          className="p-2.5 bg-indigo-50 text-indigo-600 border border-indigo-100 hover:bg-indigo-600 hover:text-white rounded-xl transition-all shadow-sm"
+                          className="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl hover:bg-indigo-600 hover:text-white transition-all shadow-sm border border-indigo-100"
                           title="Jadwalkan ke Kalender"
                         >
                            <i className="bi bi-calendar-plus"></i>
@@ -350,7 +375,7 @@ const JobTracker: React.FC<JobTrackerProps> = ({ applications, careerEvents, onA
       {/* MODAL FORM: Tambah & Edit */}
       {isFormOpen && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[500] p-4">
-          <div className="bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl p-8 lg:p-10 animate-in zoom-in duration-300 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl p-8 lg:p-10 animate-in zoom-in duration-300 max-h-[90vh] overflow-y-auto no-scrollbar">
             <JobForm 
               initialData={editingItem}
               onSubmit={(data) => {
