@@ -74,7 +74,9 @@ export enum AccountStatus {
 
 export enum PaymentStatus {
   PAID = 'Paid',
-  UNPAID = 'Unpaid'
+  UNPAID = 'Unpaid',
+  EXPIRED = 'Expired',
+  PENDING = 'Pending'
 }
 
 // NEW ENUMS FOR CALENDAR
@@ -117,6 +119,9 @@ export interface ManualTransaction {
   notes?: string;
   userName?: string;
   userEmail?: string;
+  paymentMethod?: 'Manual' | 'Duitku';
+  reference?: string; // Reference from Duitku
+  checkoutUrl?: string;
 }
 
 export interface WorkExperience {
@@ -339,6 +344,15 @@ export interface AiConfig {
   updatedAt?: string;
 }
 
+export interface DuitkuConfig {
+  merchantCode: string;
+  apiKey: string;
+  environment: 'sandbox' | 'production';
+  callbackUrl?: string;
+  returnUrl?: string;
+  updatedAt?: string;
+}
+
 export interface LegalConfig {
   privacyPolicy: string;
   termsOfService: string;
@@ -352,9 +366,6 @@ export interface LandingPageConfig {
   updatedAt?: string;
 }
 
-/**
- * Added MayarConfig interface to support payment integrations
- */
 export interface MayarConfig {
   apiKey: string;
   subdomain?: string;

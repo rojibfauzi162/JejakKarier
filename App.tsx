@@ -288,6 +288,7 @@ const App: React.FC = () => {
       case 'admin_users': return <AdminPanel initialMode="users" userRole={data.role} />;
       case 'admin_admins': return <AdminPanel initialMode="admin_admins" userRole={data.role} />;
       case 'admin_transactions': return <AdminPanel initialMode="admin_transactions" userRole={data.role} />;
+      case 'duitku': return <AdminPanel initialMode="duitku" userRole={data.role} />;
       case 'admin_ai': return <AdminPanel initialMode="ai" userRole={data.role} />;
       case 'admin_products': return <AdminPanel initialMode="products" userRole={data.role} />;
       case 'admin_integrations': return <AdminPanel initialMode="integrations" userRole={data.role} />;

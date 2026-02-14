@@ -85,6 +85,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout, is
             <SidebarItem id="admin_users" active={activeTab === 'admin_users'} onClick={() => setActiveTab('admin_users')} icon={<i className="bi bi-people"></i>} label="Kelola User" color="rose" />
             <SidebarItem id="admin_admins" active={activeTab === 'admin_admins'} onClick={() => setActiveTab('admin_admins')} icon={<i className="bi bi-shield-lock"></i>} label="Kelola Admin" color="rose" />
             <SidebarItem id="admin_transactions" active={activeTab === 'admin_transactions'} onClick={() => setActiveTab('admin_transactions')} icon={<i className="bi bi-currency-dollar"></i>} label="Kelola Transaksi" color="blue" />
+            <SidebarItem id="duitku" active={activeTab === 'duitku'} onClick={() => setActiveTab('duitku')} icon={<i className="bi bi-credit-card"></i>} label="Integrasi Duitku" color="blue" />
             <SidebarItem id="admin_ai" active={activeTab === 'admin_ai'} onClick={() => setActiveTab('admin_ai')} icon={<i className="bi bi-cpu"></i>} label="AI Architecture" color="blue" />
             <SidebarItem id="admin_products" active={activeTab === 'admin_products'} onClick={() => setActiveTab('admin_products')} icon={<i className="bi bi-box-seam"></i>} label="Product Matrix" color="blue" />
             <SidebarItem id="admin_settings" active={activeTab === 'admin_settings'} onClick={() => setActiveTab('admin_settings')} icon={<i className="bi bi-gear-fill"></i>} label="Pengaturan Admin" color="blue" />

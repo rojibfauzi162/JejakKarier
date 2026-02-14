@@ -2,7 +2,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, signInWithPopup } from '@firebase/auth';
 import { getFirestore, doc, setDoc, getDoc, collection, getDocs, updateDoc, increment, query, where, limit } from "firebase/firestore";
-import { AppData, AiConfig, SubscriptionProduct, AccountStatus, LegalConfig, UserRole, LandingPageConfig, MayarConfig } from "../types";
+import { AppData, AiConfig, SubscriptionProduct, AccountStatus, LegalConfig, UserRole, LandingPageConfig, MayarConfig, DuitkuConfig } from "../types";
 
 // KONFIGURASI FIREBASE
 const firebaseConfig = {
@@ -140,6 +140,30 @@ export const getAiConfig = async (): Promise<AiConfig | null> => {
 export const saveAiConfig = async (config: AiConfig) => {
   try {
     const docRef = doc(db, "system_metadata", "ai_configuration");
+    const dataToSave = sanitizeData({
+      ...config,
+      updatedAt: new Date().toISOString()
+    });
+    await setDoc(docRef, dataToSave, { merge: true });
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getDuitkuConfig = async (): Promise<DuitkuConfig | null> => {
+  try {
+    const docRef = doc(db, "system_metadata", "duitku_configuration");
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) return docSnap.data() as DuitkuConfig;
+  } catch (error: any) {
+    console.warn("[FIREBASE] Config Duitku error:", error.message);
+  }
+  return null;
+};
+
+export const saveDuitkuConfig = async (config: DuitkuConfig) => {
+  try {
+    const docRef = doc(db, "system_metadata", "duitku_configuration");
     const dataToSave = sanitizeData({
       ...config,
       updatedAt: new Date().toISOString()

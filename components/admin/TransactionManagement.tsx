@@ -23,11 +23,9 @@ const TransactionManagement: React.FC<TransactionManagementProps> = ({ users, pr
   const transactions = useMemo(() => {
     const list: any[] = [];
     users.forEach(u => {
-      // Data Transaksi Manual
       if (u.manualTransactions) {
         u.manualTransactions.forEach(t => list.push({ 
           ...t, 
-          source: 'Manual',
           userName: u.profile?.name, 
           userEmail: u.profile?.email, 
           uid: u.uid 
@@ -50,6 +48,7 @@ const TransactionManagement: React.FC<TransactionManagementProps> = ({ users, pr
       date: editingTx ? editingTx.tx.date : new Date().toISOString(),
       status: manualForm.status,
       planTier: manualForm.planTier,
+      paymentMethod: 'Manual',
       notes: manualForm.notes
     };
 
@@ -60,7 +59,6 @@ const TransactionManagement: React.FC<TransactionManagementProps> = ({ users, pr
       currentTxs = [...currentTxs, newTx];
     }
 
-    // PROTEKSI: Pastikan role tidak ikut dalam payload transaksi
     const fields: Partial<AppData> = { manualTransactions: currentTxs };
 
     if (manualForm.status === PaymentStatus.PAID) {
@@ -76,27 +74,11 @@ const TransactionManagement: React.FC<TransactionManagementProps> = ({ users, pr
         fields.planPermissions = selectedProduct.allowedModules;
         fields.planLimits = selectedProduct.limits;
       }
-      
-      // KEAMANAN KRITIKAL: Hapus properti role jika ada untuk mencegah promosi tidak sengaja
-      delete (fields as any).role;
     }
 
     await onUpdateMetadata(selectedUserUid, fields);
     setShowManualModal(false);
     setEditingTx(null);
-    alert(editingTx ? "Transaksi diperbarui." : "Transaksi manual berhasil dicatat. Level akses user tetap terjaga.");
-  };
-
-  const handleEditClick = (uid: string, tx: ManualTransaction) => {
-    setEditingTx({ uid, tx });
-    setSelectedUserUid(uid);
-    setManualForm({
-      amount: tx.amount,
-      status: tx.status,
-      planTier: tx.planTier,
-      notes: tx.notes || ''
-    });
-    setShowManualModal(true);
   };
 
   const handleUpdatePaymentStatus = async (uid: string, txId: string, newStatus: PaymentStatus) => {
@@ -122,21 +104,18 @@ const TransactionManagement: React.FC<TransactionManagementProps> = ({ users, pr
         fields.planPermissions = selectedProduct.allowedModules;
         fields.planLimits = selectedProduct.limits;
       }
-
-      // KEAMANAN KRITIKAL: Jangan biarkan field role menyelinap masuk ke update pembayaran
-      delete (fields as any).role;
     }
 
     await onUpdateMetadata(uid, fields);
-    alert(`Status pembayaran diperbarui. Paket ${tx.planTier} telah diaktifkan tanpa mengubah level akses (Role) user.`);
+    alert(`Status pembayaran diperbarui. Paket ${tx.planTier} telah aktif.`);
   };
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="flex justify-between items-center px-4">
-        <h3 className="text-xl font-black text-slate-900 uppercase">Daftar Transaksi Manual</h3>
+        <h3 className="text-xl font-black text-slate-900 uppercase">Manajemen Keuangan</h3>
         <button 
-          onClick={() => { setEditingTx(null); setSelectedUserUid(''); setManualForm({ amount: 0, status: PaymentStatus.UNPAID, planTier: SubscriptionPlan.PRO, notes: '' }); setShowManualModal(true); }}
+          onClick={() => { setEditingTx(null); setSelectedUserUid(''); setShowManualModal(true); }}
           className="px-8 py-3 bg-indigo-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl hover:bg-indigo-700 transition-all"
         >
           + Tambah Transaksi Manual
@@ -145,18 +124,18 @@ const TransactionManagement: React.FC<TransactionManagementProps> = ({ users, pr
 
       <div className="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden">
         <div className="p-8 border-b border-slate-50 flex justify-between items-center">
-          <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight">Log Transaksi & Billing</h3>
+          <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight">Log Transaksi & Checkout</h3>
           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{transactions.length} Records</span>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
               <tr className="text-[10px] font-black uppercase text-slate-400 bg-slate-50/50">
-                <th className="px-8 py-4">User</th>
+                <th className="px-8 py-4">User & Metode</th>
                 <th className="px-6 py-4">Paket</th>
-                <th className="px-6 py-4">Harga</th>
+                <th className="px-6 py-4">Jumlah</th>
                 <th className="px-6 py-4 text-center">Status</th>
-                <th className="px-6 py-4">Tanggal</th>
+                <th className="px-6 py-4">Tgl Transaksi</th>
                 <th className="px-8 py-4 text-right">Aksi</th>
               </tr>
             </thead>
@@ -165,7 +144,12 @@ const TransactionManagement: React.FC<TransactionManagementProps> = ({ users, pr
                 <tr key={t.id} className="hover:bg-slate-50/50 transition-colors">
                   <td className="px-8 py-4">
                     <p className="font-black text-slate-800 text-sm">{t.userName}</p>
-                    <p className="text-[10px] font-bold text-slate-400">{t.userEmail}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                       <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase ${t.paymentMethod === 'Duitku' ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-100 text-slate-500'}`}>
+                         {t.paymentMethod || 'Manual'}
+                       </span>
+                       <p className="text-[10px] font-bold text-slate-400 truncate max-w-[120px]">{t.userEmail}</p>
+                    </div>
                   </td>
                   <td className="px-6 py-4">
                     <span className="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-lg text-[9px] font-black uppercase border border-indigo-100">{t.planTier}</span>
@@ -174,41 +158,44 @@ const TransactionManagement: React.FC<TransactionManagementProps> = ({ users, pr
                     <p className="font-black text-slate-700">Rp {t.amount?.toLocaleString('id-ID')}</p>
                   </td>
                   <td className="px-6 py-4 text-center">
-                    <span className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase ${t.status === PaymentStatus.PAID ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
+                    <span className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase ${
+                      t.status === PaymentStatus.PAID ? 'bg-emerald-50 text-emerald-600' : 
+                      t.status === PaymentStatus.PENDING ? 'bg-amber-50 text-amber-600 animate-pulse' :
+                      'bg-rose-50 text-rose-600'
+                    }`}>
                       {t.status}
                     </span>
                   </td>
                   <td className="px-6 py-4">
-                    <p className="text-[10px] font-bold text-slate-500">{new Date(t.date).toLocaleDateString('id-ID')}</p>
+                    <p className="text-[10px] font-bold text-slate-500">{new Date(t.date).toLocaleDateString('id-ID', {day:'2-digit', month:'short', year:'numeric'})}</p>
                   </td>
                   <td className="px-8 py-4 text-right">
-                    {t.status === PaymentStatus.UNPAID && (
+                    {(t.status === PaymentStatus.PENDING || t.status === PaymentStatus.UNPAID) && (
                       <button 
                         onClick={() => handleUpdatePaymentStatus(t.uid, t.id, PaymentStatus.PAID)}
                         className="text-emerald-600 font-black text-[9px] uppercase hover:underline mr-4"
                       >
-                        Set Sudah Bayar
+                        Validasi Bayar
                       </button>
                     )}
-                    <button onClick={() => handleEditClick(t.uid, t)} className="text-slate-400 font-black text-[9px] uppercase hover:underline mr-4">Edit</button>
                     <button onClick={() => onManageUser({ uid: t.uid } as AppData)} className="text-indigo-600 font-black text-[9px] uppercase hover:underline">Detail User</button>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+          {transactions.length === 0 && <div className="p-20 text-center text-slate-300 font-bold uppercase tracking-widest text-xs italic">Belum ada transaksi terdeteksi.</div>}
         </div>
       </div>
 
       {showManualModal && (
         <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md flex items-center justify-center z-[2000] p-4">
           <div className="bg-white w-full max-w-lg rounded-[2.5rem] p-8 lg:p-10 shadow-2xl animate-in zoom-in duration-300">
-             <h3 className="text-2xl font-black text-slate-900 uppercase mb-8">{editingTx ? 'Edit Transaksi' : 'Transaksi Manual'}</h3>
+             <h3 className="text-2xl font-black text-slate-900 uppercase mb-8">Tambah Transaksi Manual</h3>
              <form onSubmit={handleAddManualTransaction} className="space-y-6">
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Pilih User</label>
                   <select 
-                    disabled={!!editingTx}
                     className="w-full px-5 py-3 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs"
                     value={selectedUserUid}
                     onChange={e => setSelectedUserUid(e.target.value)}
@@ -247,27 +234,16 @@ const TransactionManagement: React.FC<TransactionManagementProps> = ({ users, pr
                    </div>
                 </div>
                 <div className="space-y-2">
-                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Status Pembayaran</label>
-                   <select 
-                     className="w-full px-5 py-3 rounded-2xl bg-white border border-slate-200 outline-none font-bold text-xs"
-                     value={manualForm.status}
-                     onChange={e => setManualForm({...manualForm, status: e.target.value as PaymentStatus})}
-                   >
-                      <option value={PaymentStatus.UNPAID}>BELUM BAYAR</option>
-                      <option value={PaymentStatus.PAID}>SUDAH BAYAR</option>
-                   </select>
-                </div>
-                <div className="space-y-2">
                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Catatan</label>
                    <textarea 
-                     className="w-full px-5 py-3 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs"
+                     className="w-full px-5 py-3 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs resize-none"
                      value={manualForm.notes}
                      onChange={e => setManualForm({...manualForm, notes: e.target.value})}
                    />
                 </div>
                 <div className="flex gap-4 pt-4">
-                   <button type="button" onClick={() => { setShowManualModal(false); setEditingTx(null); }} className="flex-1 py-4 text-slate-400 font-black rounded-2xl uppercase text-[10px]">Batal</button>
-                   <button type="submit" className="flex-[2] py-4 bg-indigo-600 text-white font-black rounded-2xl uppercase text-[10px] shadow-xl">Simpan Transaksi</button>
+                   <button type="button" onClick={() => setShowManualModal(false)} className="flex-1 py-4 bg-slate-50 text-slate-400 font-black rounded-2xl uppercase text-[10px]">Batal</button>
+                   <button type="submit" className="flex-[2] py-4 bg-indigo-600 text-white font-black rounded-2xl uppercase text-[10px] shadow-xl">Simpan & Aktifkan</button>
                 </div>
              </form>
           </div>
