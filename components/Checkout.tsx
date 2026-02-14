@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { SubscriptionProduct, SubscriptionPlan, PaymentStatus, AccountStatus, ManualTransaction, AppData } from '../types';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, sendEmailVerification } from '@firebase/auth';
@@ -127,6 +128,9 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
   const [paymentMethods, setPaymentMethods] = useState<any[]>([]);
   const [showMethods, setShowMethods] = useState(false);
 
+  // Gunakan Proxy CORS publik untuk mengatasi keterbatasan browser
+  const CORS_PROXY = "https://api.allorigins.win/raw?url=";
+
   useEffect(() => {
     getDuitkuConfig().then(cfg => {
       if (cfg && cfg.merchantCode && cfg.apiKey) {
@@ -158,13 +162,25 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
   const handleFetchPaymentMethods = async () => {
     if (!duitkuConfig) return;
     setLoading(true);
+    setError('');
     try {
-      const datetime = new Date().toISOString().replace('T', ' ').split('.')[0];
+      // Format datetime: YYYY-MM-DD HH:MM:SS
+      const d = new Date();
+      const datetime = d.getFullYear() + "-" + 
+                      String(d.getMonth() + 1).padStart(2, '0') + "-" + 
+                      String(d.getDate()).padStart(2, '0') + " " + 
+                      String(d.getHours()).padStart(2, '0') + ":" + 
+                      String(d.getMinutes()).padStart(2, '0') + ":" + 
+                      String(d.getSeconds()).padStart(2, '0');
+
       const signature = await sha256(duitkuConfig.merchantCode + plan.price + datetime + duitkuConfig.apiKey);
       
-      const url = duitkuConfig.environment === 'sandbox' 
+      const baseUrl = duitkuConfig.environment === 'sandbox' 
         ? 'https://sandbox.duitku.com/webapi/api/merchant/paymentmethod/getpaymentmethod'
         : 'https://passport.duitku.com/webapi/api/merchant/paymentmethod/getpaymentmethod';
+
+      // Bungkus URL asli dengan Proxy CORS
+      const url = CORS_PROXY + encodeURIComponent(baseUrl);
 
       const response = await fetch(url, {
         method: 'POST',
@@ -177,15 +193,18 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
         })
       });
 
+      if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
+      
       const res = await response.json();
       if (res.responseCode === '00') {
-        setPaymentMethods(res.paymentFee);
+        setPaymentMethods(res.paymentFee || []);
         setShowMethods(true);
       } else {
-        setError(res.responseMessage || "Gagal mengambil metode pembayaran");
+        setError(res.responseMessage || "Gagal mengambil metode pembayaran dari Duitku.");
       }
     } catch (err: any) {
-      setError("CORS Error: Akses Duitku diblokir oleh browser. Gunakan server-side proxy atau pastikan setting Merchant Duitku benar.");
+      console.error("CORS/Fetch Error:", err);
+      setError("Kesalahan Koneksi: Pastikan setting Merchant Duitku benar atau coba kembali beberapa saat lagi.");
     } finally {
       setLoading(false);
     }
@@ -194,6 +213,7 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
   const handleInquiryTransaction = async (methodCode: string) => {
     if (!duitkuConfig || !user) return;
     setLoading(true);
+    setError('');
     try {
       const orderId = `FC-${Date.now()}`;
       const signature = md5(duitkuConfig.merchantCode + orderId + plan.price + duitkuConfig.apiKey);
@@ -210,14 +230,17 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
         email: user.email,
         customerVaName: customerName,
         callbackUrl: duitkuConfig.callbackUrl || `${window.location.origin}/api/callback`,
-        returnUrl: duitkuConfig.returnUrl || window.location.origin,
+        returnUrl: `${window.location.origin}`, // Redirect kembali ke domain utama untuk menghindari 404
         expiryPeriod: 60,
         signature: signature
       };
 
-      const url = duitkuConfig.environment === 'sandbox'
+      const baseUrl = duitkuConfig.environment === 'sandbox'
         ? 'https://sandbox.duitku.com/webapi/api/merchant/v2/inquiry'
         : 'https://passport.duitku.com/webapi/api/merchant/v2/inquiry';
+
+      // Bungkus URL asli dengan Proxy CORS
+      const url = CORS_PROXY + encodeURIComponent(baseUrl);
 
       const response = await fetch(url, {
         method: 'POST',
@@ -225,9 +248,11 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
         body: JSON.stringify(payload)
       });
 
+      if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
+
       const res = await response.json();
       if (res.statusCode === '00') {
-        // Simpan transaksi PENDING ke Firestore
+        // Simpan transaksi PENDING ke Firestore agar admin bisa pantau
         const newTx: ManualTransaction = {
           id: orderId,
           amount: plan.price,
@@ -237,18 +262,21 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
           paymentMethod: 'Duitku',
           reference: res.reference,
           userName: customerName,
-          userEmail: user.email
+          userEmail: user.email,
+          checkoutUrl: res.paymentUrl
         };
-        const updatedTransactions = [...(userData?.manualTransactions || []), newTx];
-        await saveUserData(user.uid, { ...userData, manualTransactions: updatedTransactions } as AppData);
         
-        // REDIRECT KE PAYMENT URL ASLI
+        const currentTxs = userData?.manualTransactions || [];
+        await saveUserData(user.uid, { ...userData, manualTransactions: [...currentTxs, newTx] } as AppData);
+        
+        // REDIRECT KE PAYMENT URL ASLI DARI DUITKU
         window.location.href = res.paymentUrl;
       } else {
-        setError(res.statusMessage || "Inquiry Gagal");
+        setError(res.statusMessage || "Inquiry Transaksi Gagal");
       }
     } catch (err: any) {
-      setError("Terjadi kesalahan sistem saat menghubungi Duitku.");
+      console.error("Inquiry Error:", err);
+      setError("Gagal membuat transaksi. Silakan coba metode manual atau hubungi support.");
     } finally {
       setLoading(false);
     }
@@ -280,7 +308,7 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 lg:p-8 font-sans">
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 lg:p-8 font-sans text-slate-900">
       <div className="max-w-5xl w-full grid grid-cols-1 lg:grid-cols-2 bg-white rounded-[3rem] shadow-2xl overflow-hidden border border-slate-100 animate-in zoom-in duration-500">
         
         <div className="bg-slate-900 p-8 lg:p-14 text-white space-y-12 relative overflow-hidden">
@@ -304,7 +332,7 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
                </div>
             </div>
             <div className="mt-10 p-6 bg-blue-500/10 rounded-3xl border border-blue-500/20">
-               <p className="text-[10px] font-bold text-blue-300 uppercase tracking-widest leading-relaxed">* Akun Anda akan aktif otomatis setelah pembayaran terverifikasi.</p>
+               <p className="text-[10px] font-bold text-blue-300 uppercase tracking-widest leading-relaxed">* Akun Anda akan aktif otomatis setelah pembayaran terverifikasi oleh sistem.</p>
             </div>
           </div>
           <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-indigo-600/20 rounded-full blur-3xl"></div>
@@ -320,13 +348,11 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
                     <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Pilih Metode Bayar</h3>
                     <p className="text-slate-400 text-sm font-medium">Akun: <span className="text-indigo-600 font-black">{user.email}</span></p>
                   </div>
-                  {error && <div className="p-4 bg-rose-50 text-rose-600 text-[10px] font-bold rounded-2xl border border-rose-100 uppercase">{error}</div>}
+                  {error && <div className="p-4 bg-rose-50 text-rose-600 text-[10px] font-bold rounded-2xl border border-rose-100 uppercase animate-shake">{error}</div>}
                   <div className="space-y-4">
-                    {duitkuConfig ? (
-                      <button onClick={handleFetchPaymentMethods} disabled={loading} className="w-full py-5 bg-indigo-600 text-white font-black uppercase tracking-widest rounded-2xl shadow-xl hover:bg-indigo-700 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-3">
-                        {loading ? 'Processing...' : <><i className="bi bi-credit-card-2-back-fill text-lg"></i> Bayar Otomatis (Duitku)</>}
-                      </button>
-                    ) : <div className="p-4 bg-slate-50 rounded-2xl text-[10px] font-bold text-slate-400 uppercase">Gateway Sedang Maintenance</div>}
+                    <button onClick={handleFetchPaymentMethods} disabled={loading} className="w-full py-5 bg-indigo-600 text-white font-black uppercase tracking-widest rounded-2xl shadow-xl hover:bg-indigo-700 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-3">
+                      {loading ? 'Processing...' : <><i className="bi bi-credit-card-2-back-fill text-lg"></i> Bayar Otomatis (Duitku)</>}
+                    </button>
                     <div className="relative"><div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-100"></div></div><div className="relative flex justify-center text-[10px] font-black uppercase tracking-widest"><span className="bg-white px-4 text-slate-300">Atau</span></div></div>
                     <button onClick={handlePayManual} disabled={loading} className="w-full py-5 bg-slate-900 text-white font-black uppercase rounded-2xl shadow-xl hover:bg-black transition-all active:scale-95 flex items-center justify-center gap-3">Konfirmasi Manual (WhatsApp)</button>
                   </div>
@@ -338,7 +364,7 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
                     <button onClick={() => setShowMethods(false)} className="text-[10px] font-black text-rose-500 uppercase tracking-widest">Batal</button>
                   </div>
                   <div className="grid grid-cols-1 gap-3 max-h-[400px] overflow-y-auto pr-2 no-scrollbar">
-                    {paymentMethods.map((m: any) => (
+                    {paymentMethods.length > 0 ? paymentMethods.map((m: any) => (
                       <button 
                         key={m.paymentMethod}
                         onClick={() => handleInquiryTransaction(m.paymentMethod)}
@@ -346,11 +372,18 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
                       >
                         <div className="flex items-center gap-4">
                           <img src={m.paymentImage} alt={m.paymentName} className="w-12 h-auto object-contain bg-white p-1 rounded-lg" />
-                          <span className="text-xs font-black text-slate-700 uppercase">{m.paymentName}</span>
+                          <div className="text-left">
+                             <span className="text-xs font-black text-slate-700 uppercase block">{m.paymentName}</span>
+                             {m.totalFee > 0 && <span className="text-[8px] font-bold text-slate-400">Fee: Rp {parseInt(m.totalFee).toLocaleString('id-ID')}</span>}
+                          </div>
                         </div>
                         <span className="text-[10px] font-black text-indigo-600 group-hover:translate-x-1 transition-transform">→</span>
                       </button>
-                    ))}
+                    )) : (
+                      <div className="py-12 text-center">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase">Sedang memuat opsi...</p>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
