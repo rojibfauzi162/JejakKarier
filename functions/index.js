@@ -31,13 +31,16 @@ app.post("/getMethods", async (req, res) => {
     }
     
     const config = configSnap.data();
+    const intAmount = parseInt(amount);
     const datetime = new Date().toISOString().slice(0, 19).replace("T", " ");
-    const sigBase = config.merchantCode + amount + datetime + config.apiKey;
+    
+    // Signature getPaymentMethod: sha256(merchantCode + amount + datetime + apiKey)
+    const sigBase = config.merchantCode + intAmount + datetime + config.apiKey;
     const signature = crypto.createHash("sha256").update(sigBase).digest("hex");
 
     const payload = {
       merchantcode: config.merchantCode,
-      amount: amount,
+      amount: intAmount,
       datetime: datetime,
       signature: signature,
     };
@@ -79,7 +82,7 @@ app.post("/createInquiry", async (req, res) => {
     ]);
 
     if (!configSnap.exists) {
-      return res.status(400).json({statusCode: "404", statusMessage: "Config Duitku belum disetel di Admin."});
+      return res.status(400).json({statusCode: "404", statusMessage: "Config Duitku belum disetel di Admin Panel."});
     }
     
     const config = configSnap.data();
@@ -89,23 +92,19 @@ app.post("/createInquiry", async (req, res) => {
     const plan = (catalogData.list || []).find((p) => String(p.id) === String(planId));
 
     if (!plan) {
-      console.error(`[ERROR] Plan ID ${planId} tidak ditemukan. Tersedia:`, (catalogData.list || []).map(p => p.id));
+      console.error(`[ERROR] Plan ID ${planId} tidak ditemukan di database Firestore.`);
       return res.status(400).json({
         statusCode: "404", 
-        statusMessage: "Paket tidak ditemukan dalam katalog database. Silakan Update Katalog di Admin Panel."
+        statusMessage: "Paket tidak ditemukan dalam katalog database. Silakan masuk ke Admin Panel > Product Matrix dan klik 'Update Katalog Produk'."
       });
     }
 
-    if (!plan.price || plan.price <= 0) {
-      return res.status(400).json({statusCode: "400", statusMessage: "Harga paket tidak valid di database."});
-    }
-
     // 2. Setup Data Transaksi
+    const intAmount = Math.floor(Number(plan.price));
     const orderId = "FK-" + Date.now();
-    const amount = Math.floor(Number(plan.price));
     
-    // SIGNATURE INQUIRY V2: md5(merchantcode + merchantOrderId + paymentAmount + apiKey)
-    const signature = md5(config.merchantCode + orderId + amount + config.apiKey);
+    // SIGNATURE INQUIRY V2: md5(merchantCode + merchantOrderId + paymentAmount + apiKey)
+    const signature = md5(config.merchantCode + orderId + intAmount + config.apiKey);
 
     const region = "us-central1";
     const projectId = process.env.GCP_PROJECT || "jejakkarir-11379";
@@ -129,7 +128,7 @@ app.post("/createInquiry", async (req, res) => {
       paymentMethod: paymentMethod,
       merchantOrderId: orderId,
       productDetails: "Berlangganan " + plan.name,
-      itemDetails: itemDetails, // Menambahkan detail item
+      itemDetails: itemDetails, // Menambahkan detail item sesuai permintaan
       email: email || "customer@mail.com",
       customerVaName: customerName || "Customer FokusKarir",
       callbackUrl: callbackUrl,
@@ -143,6 +142,8 @@ app.post("/createInquiry", async (req, res) => {
     const sandInq = "https://sandbox.duitku.com/webapi/api/merchant/v2/inquiry";
     const url = config.environment === "production" ? prodInq : sandInq;
 
+    console.log("[DUITKU] Sending Payload:", JSON.stringify(payload));
+
     // 3. Request ke Duitku
     const response = await fetch(url, {
       method: "POST",
@@ -150,8 +151,8 @@ app.post("/createInquiry", async (req, res) => {
       body: JSON.stringify(payload),
     });
 
-    let data;
     const responseText = await response.text();
+    let data;
     try {
       data = JSON.parse(responseText);
     } catch (e) {
@@ -174,7 +175,7 @@ app.post("/createInquiry", async (req, res) => {
         await userRef.update({
           manualTransactions: [...currentTxs, {
             id: orderId,
-            amount: amount,
+            amount: intAmount,
             date: new Date().toISOString(),
             status: "Pending",
             planTier: plan.tier,
@@ -214,6 +215,7 @@ exports.duitkuCallback = functions.https.onRequest(async (req, res) => {
     if (!configSnap.exists) return res.status(500).send("Configuration missing");
     
     const config = configSnap.data();
+    // Signature Callback: md5(merchantCode + amount + merchantOrderId + apiKey)
     const sigBase = config.merchantCode + amount + merchantOrderId + config.apiKey;
     const calcSignature = md5(sigBase);
 
