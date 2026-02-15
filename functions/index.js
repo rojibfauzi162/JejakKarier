@@ -31,15 +31,18 @@ app.post("/getMethods", async (req, res) => {
     }
     
     const config = configSnap.data();
+    const merchantCode = String(config.merchantCode).trim();
+    const apiKey = String(config.apiKey).trim();
+    
     const intAmount = parseInt(amount);
     const datetime = new Date().toISOString().slice(0, 19).replace("T", " ");
     
     // Signature getPaymentMethod: sha256(merchantCode + amount + datetime + apiKey)
-    const sigBase = config.merchantCode + intAmount + datetime + config.apiKey;
+    const sigBase = merchantCode + intAmount + datetime + apiKey;
     const signature = crypto.createHash("sha256").update(sigBase).digest("hex");
 
     const payload = {
-      merchantcode: config.merchantCode,
+      merchantcode: merchantCode,
       amount: intAmount,
       datetime: datetime,
       signature: signature,
@@ -75,8 +78,6 @@ app.post("/createInquiry", async (req, res) => {
       return res.status(400).json({statusCode: "400", statusMessage: "UID dan Plan ID wajib diisi."});
     }
 
-    console.log(`[INQUIRY] Request for UID: ${uid}, Plan: ${planId}`);
-
     // 1. Ambil Config & Catalog
     const [configSnap, catalogSnap] = await Promise.all([
       db.doc("system_metadata/duitku_configuration").get(),
@@ -84,31 +85,23 @@ app.post("/createInquiry", async (req, res) => {
     ]);
 
     if (!configSnap.exists) {
-      return res.status(400).json({statusCode: "404", statusMessage: "Config Duitku belum disetel di Admin Panel."});
+      return res.status(400).json({statusCode: "404", statusMessage: "Config Duitku belum disetel."});
     }
     
     const config = configSnap.data();
+    const merchantCode = String(config.merchantCode).trim();
+    const apiKey = String(config.apiKey).trim();
+
     const catalogData = catalogSnap.exists ? catalogSnap.data() : {list: []};
-    
-    // Cari paket dengan perbandingan string yang aman
     const plans = catalogData.list || [];
-    console.log(`[INQUIRY] Found ${plans.length} plans in Firestore.`);
-    
     let plan = plans.find((p) => String(p.id) === String(planId));
 
-    // Fallback: Jika ID tidak ketemu, coba cari berdasarkan tier jika planId terlihat seperti tier (misal 'Pro')
     if (!plan && (planId === "Pro" || planId === "Free")) {
-        console.log(`[INQUIRY] ID not found, trying fallback by Tier: ${planId}`);
         plan = plans.find((p) => String(p.tier) === String(planId));
     }
 
     if (!plan) {
-      console.error(`[ERROR] Plan ID "${planId}" tidak ditemukan di database Firestore.`);
-      console.log("[INQUIRY] Available Plan IDs in DB:", plans.map(p => p.id).join(', '));
-      return res.status(400).json({
-        statusCode: "404", 
-        statusMessage: `Paket "${planId}" tidak ditemukan dalam katalog database. Silakan masuk ke Admin Panel > Product Matrix dan klik 'Update Katalog Produk'.`
-      });
+      return res.status(400).json({statusCode: "404", statusMessage: "Paket tidak ditemukan di DB."});
     }
 
     // 2. Setup Data Transaksi
@@ -116,30 +109,19 @@ app.post("/createInquiry", async (req, res) => {
     const orderId = "FK-" + Date.now();
     
     // SIGNATURE INQUIRY V2: md5(merchantCode + merchantOrderId + paymentAmount + apiKey)
-    const signature = md5(config.merchantCode + orderId + intAmount + config.apiKey);
+    const signature = md5(merchantCode + orderId + intAmount + apiKey);
 
     const region = "us-central1";
     const projectId = process.env.GCP_PROJECT || "jejakkarir-11379";
-    const fallbackCallback = `https://${region}-${projectId}.cloudfunctions.net/duitkuCallback`;
-    
-    const callbackUrl = config.callbackUrl || fallbackCallback;
+    const callbackUrl = config.callbackUrl || `https://${region}-${projectId}.cloudfunctions.net/duitkuCallback`;
     const returnUrl = config.returnUrl || "https://fokuskarir.web.id/billing";
 
-    const itemDetails = [
-      {
-        name: plan.name,
-        price: intAmount,
-        quantity: 1
-      }
-    ];
-
     const payload = {
-      merchantCode: config.merchantCode,
+      merchantCode: merchantCode,
       paymentAmount: intAmount,
       paymentMethod: paymentMethod,
       merchantOrderId: orderId,
       productDetails: "Berlangganan " + plan.name,
-      itemDetails: itemDetails,
       email: email || "customer@mail.com",
       customerVaName: customerName || "Customer FokusKarir",
       callbackUrl: callbackUrl,
@@ -153,6 +135,8 @@ app.post("/createInquiry", async (req, res) => {
     const sandInq = "https://sandbox.duitku.com/webapi/api/merchant/v2/inquiry";
     const url = config.environment === "production" ? prodInq : sandInq;
 
+    console.log(`[DUITKU] Sending Payload to ${config.environment}:`, JSON.stringify(payload));
+
     // 3. Request ke Duitku
     const response = await fetch(url, {
       method: "POST",
@@ -160,17 +144,11 @@ app.post("/createInquiry", async (req, res) => {
       body: JSON.stringify(payload),
     });
 
-    const responseText = await response.text();
-    let data;
-    try {
-      data = JSON.parse(responseText);
-    } catch (e) {
-      console.error("[DUITKU ERROR] Non-JSON Response:", responseText);
-      return res.status(502).json({
-        statusCode: "502",
-        statusMessage: "Duitku memberikan respon tidak valid (Gateway Error).",
-      });
-    }
+    const data = await response.json();
+    
+    // CRITICAL LOGGING: Lihat apa alasan Duitku menolak transaksi ini
+    console.log(`[DUITKU] Response Code: ${response.status}`);
+    console.log(`[DUITKU] Response Body:`, JSON.stringify(data));
 
     // 4. Jika Sukses, Simpan ke History User sebagai 'Pending'
     if (data && data.statusCode === "00") {
@@ -224,8 +202,11 @@ exports.duitkuCallback = functions.https.onRequest(async (req, res) => {
     if (!configSnap.exists) return res.status(500).send("Configuration missing");
     
     const config = configSnap.data();
+    const merchantCode = String(config.merchantCode).trim();
+    const apiKey = String(config.apiKey).trim();
+
     // Signature Callback: md5(merchantCode + amount + merchantOrderId + apiKey)
-    const sigBase = config.merchantCode + amount + merchantOrderId + config.apiKey;
+    const sigBase = merchantCode + amount + merchantOrderId + apiKey;
     const calcSignature = md5(sigBase);
 
     if (signature !== calcSignature) {
@@ -261,7 +242,7 @@ exports.duitkuCallback = functions.https.onRequest(async (req, res) => {
             expiryDate: newExpiry.toISOString(),
             updatedAt: new Date().toISOString(),
           });
-          console.log(`[DUITKU CALLBACK] SUCCESS: Account ${additionalParam} activated via ${merchantOrderId}.`);
+          console.log(`[DUITKU CALLBACK] SUCCESS: Account ${additionalParam} activated.`);
         }
       }
     }

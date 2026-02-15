@@ -66,7 +66,7 @@ const App: React.FC = () => {
     } catch (err: any) {
       showToast(err.message, "error");
     } finally {
-      resendingEmail && setResendingEmail(false);
+      setResendingEmail(false);
     }
   };
 
@@ -138,12 +138,16 @@ const App: React.FC = () => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (authUser) => {
       setLoading(true);
-      setUser(null);
-      setData(getCleanInitialData());
       if (!authUser) {
+        setUser(null);
+        setData(getCleanInitialData());
         setLoading(false);
         return;
       }
+      
+      // SET USER SECEPAT MUNGKIN AGAR LAYAR BERPINDAH
+      setUser(authUser);
+
       try {
         let userData = await getUserData(authUser.uid);
         const catalog = await getProductsCatalog() || DEFAULT_PRODUCTS;
@@ -182,6 +186,7 @@ const App: React.FC = () => {
           }
 
         } else {
+          // PROSES DATA BARU (REGISTRASI)
           const freePlan = catalog.find(p => p.tier === SubscriptionPlan.FREE);
           const joinedAt = new Date();
           const trialExpiry = new Date();
@@ -212,10 +217,9 @@ const App: React.FC = () => {
           setData(newData);
           localStorage.removeItem('pending_registration');
         }
-        setUser(authUser);
       } catch (err) {
-        console.error(err);
-        showToast("Gagal sinkronisasi data.", "error");
+        console.error("Auth Sinkronisasi Error:", err);
+        showToast("Sinkronisasi tertunda, tetap masuk ke sistem.", "info");
       } finally {
         setLoading(false);
       }
@@ -265,7 +269,10 @@ const App: React.FC = () => {
   })();
 
   const withPermission = (moduleKey: string, content: React.ReactNode) => {
-    if (user && !user.emailVerified && !isAdmin && moduleKey !== 'settings') {
+    // MODUL DASAR YANG SELALU BISA DIAKSES MESKIPUN BELUM VERIFIKASI
+    const basicModules = ['dashboard', 'profile', 'apps_hub', 'billing', 'settings', 'calendar'];
+
+    if (user && !user.emailVerified && !isAdmin && !basicModules.includes(moduleKey)) {
       return (
         <div className="relative min-h-[500px] flex items-center justify-center bg-white rounded-[3rem] p-10 text-center animate-in zoom-in duration-500 border border-slate-100 shadow-sm">
            <div className="space-y-6">
@@ -289,7 +296,7 @@ const App: React.FC = () => {
 
     if (isAdmin || data.plan !== SubscriptionPlan.FREE) return content;
     const permissions = data.planPermissions || [];
-    if (['dashboard', 'profile', 'apps_hub', 'billing', 'settings', 'calendar'].includes(moduleKey)) return content;
+    if (basicModules.includes(moduleKey)) return content;
     if (!permissions.includes(moduleKey)) {
       return (
         <div className="relative min-h-[500px] flex items-center justify-center bg-white rounded-[3rem] p-10 text-center">
@@ -372,7 +379,7 @@ const App: React.FC = () => {
     <div className="min-h-screen bg-slate-50 flex flex-col lg:flex-row overflow-x-hidden font-sans">
       <Sidebar activeTab={activeTab} setActiveTab={handleNavigate} onLogout={handleLogout} isAdmin={isAdmin} isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
       <main className="flex-1 lg:ml-64">
-        {!user.emailVerified && !isAdmin && !hideVerificationReminder && (
+        {!user?.emailVerified && !isAdmin && !hideVerificationReminder && user && (
           <div className="px-6 py-6 lg:px-10 lg:pt-8 animate-in slide-in-from-top-full duration-700 relative z-[200]">
              <div className="bg-[#fffbeb] border border-[#fef3c7] p-8 lg:p-10 rounded-[2.5rem] shadow-sm relative overflow-hidden group">
                 <button onClick={() => setHideVerificationReminder(true)} className="absolute top-6 right-8 text-amber-900/30 hover:text-amber-900 transition-colors"><i className="bi bi-x-lg text-lg"></i></button>
@@ -391,7 +398,7 @@ const App: React.FC = () => {
         )}
 
         <div className={`${!isAdmin ? 'pt-0' : 'p-4 lg:p-8 pt-2'}`}>
-          {!isAdmin && <MobileHeader profile={data.profile} notificationCount={activeAlerts.length} onNavigate={handleNavigate} activeTab={activeTab} alerts={activeAlerts} />}
+          {!isAdmin && user && <MobileHeader profile={data.profile} notificationCount={activeAlerts.length} onNavigate={handleNavigate} activeTab={activeTab} alerts={activeAlerts} />}
           <div className={`${!isAdmin ? 'p-4 lg:p-8 pt-6' : 'pt-0'}`}>
             {isUpgradeModalOpen && (
               <UpgradeModal 
@@ -412,19 +419,21 @@ const App: React.FC = () => {
                    {isAdmin ? 'Sistem Administrasi FokusKarir.' : 'FokusKarir Control Center'}
                  </p>
                </div>
-               <div className="flex items-center gap-6 ml-auto">
-                  <div className="relative" ref={desktopNotifRef}>
-                     <button onClick={() => setIsNotifOpen(!isNotifOpen)} className={`w-10 h-10 rounded-full flex items-center justify-center transition-all relative border ${isNotifOpen ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg' : 'bg-white text-slate-400 border-slate-100 hover:text-indigo-600'}`}><i className={`bi ${isNotifOpen ? 'bi-bell-fill' : 'bi-bell'}`}></i>{activeAlerts.length > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white text-[8px] font-black rounded-full flex items-center justify-center border-2 border-white">{activeAlerts.length}</span>}</button>
-                     {isNotifOpen && (
-                        <div className="absolute right-0 mt-3 w-80 bg-white border border-slate-100 rounded-[2.5rem] shadow-2xl p-4 animate-in slide-in-from-top-2 duration-300 z-[120]">
-                           <div className="p-4 border-b border-slate-50 mb-3 flex justify-between items-center"><h4 className="text-[10px] font-black text-slate-900 uppercase tracking-widest">Pusat Notifikasi</h4></div>
-                           <div className="space-y-1.5">{activeAlerts.length > 0 ? activeAlerts.map((alert, i) => (<button key={i} onClick={() => { handleNavigate(alert.target); setIsNotifOpen(false); }} className="w-full flex items-center gap-4 p-4 rounded-[1.75rem] hover:bg-slate-50 transition-all text-left"><div className={`w-10 h-10 rounded-2xl bg-${alert.color}-50 text-${alert.color}-600 flex items-center justify-center text-sm shrink-0`}><i className={`bi ${alert.icon}`}></i></div><p className="text-xs font-black text-slate-800 leading-tight">{alert.text}</p></button>)) : (<div className="py-12 text-center text-slate-300 font-bold uppercase text-[10px]">Tidak ada notifikasi baru</div>)}</div>
-                        </div>
-                     )}
-                  </div>
-                  <div className="h-8 w-px bg-slate-200"></div>
-                  <div className="flex items-center gap-3"><div className="text-right"><p className="text-[10px] font-black text-slate-900 leading-none">{data.profile.name}</p><p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-1">{data.plan}</p></div><div className="w-10 h-10 rounded-full bg-slate-200 overflow-hidden border-2 border-white shadow-sm">{data.profile.photoUrl ? <img src={data.profile.photoUrl} className="w-full h-full object-cover" alt="User" /> : <div className="w-full h-full flex items-center justify-center text-slate-400"><i className="bi bi-person-fill"></i></div>}</div></div>
-               </div>
+               {user && (
+                 <div className="flex items-center gap-6 ml-auto">
+                    <div className="relative" ref={desktopNotifRef}>
+                       <button onClick={() => setIsNotifOpen(!isNotifOpen)} className={`w-10 h-10 rounded-full flex items-center justify-center transition-all relative border ${isNotifOpen ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg' : 'bg-white text-slate-400 border-slate-100 hover:text-indigo-600'}`}><i className={`bi ${isNotifOpen ? 'bi-bell-fill' : 'bi-bell'}`}></i>{activeAlerts.length > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white text-[8px] font-black rounded-full flex items-center justify-center border-2 border-white">{activeAlerts.length}</span>}</button>
+                       {isNotifOpen && (
+                          <div className="absolute right-0 mt-3 w-80 bg-white border border-slate-100 rounded-[2.5rem] shadow-2xl p-4 animate-in slide-in-from-top-2 duration-300 z-[120]">
+                             <div className="p-4 border-b border-slate-50 mb-3 flex justify-between items-center"><h4 className="text-[10px] font-black text-slate-900 uppercase tracking-widest">Pusat Notifikasi</h4></div>
+                             <div className="space-y-1.5">{activeAlerts.length > 0 ? activeAlerts.map((alert, i) => (<button key={i} onClick={() => { handleNavigate(alert.target); setIsNotifOpen(false); }} className="w-full flex items-center gap-4 p-4 rounded-[1.75rem] hover:bg-slate-50 transition-all text-left"><div className={`w-10 h-10 rounded-2xl bg-${alert.color}-50 text-${alert.color}-600 flex items-center justify-center text-sm shrink-0`}><i className={`bi ${alert.icon}`}></i></div><p className="text-xs font-black text-slate-800 leading-tight">{alert.text}</p></button>)) : (<div className="py-12 text-center text-slate-300 font-bold uppercase text-[10px]">Tidak ada notifikasi baru</div>)}</div>
+                          </div>
+                       )}
+                    </div>
+                    <div className="h-8 w-px bg-slate-200"></div>
+                    <div className="flex items-center gap-3"><div className="text-right"><p className="text-[10px] font-black text-slate-900 leading-none">{data.profile.name}</p><p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-1">{data.plan}</p></div><div className="w-10 h-10 rounded-full bg-slate-200 overflow-hidden border-2 border-white shadow-sm">{data.profile.photoUrl ? <img src={data.profile.photoUrl} className="w-full h-full object-cover" alt="User" /> : <div className="w-full h-full flex items-center justify-center text-slate-400"><i className="bi bi-person-fill"></i></div>}</div></div>
+                 </div>
+               )}
             </div>
             {renderContent()}
           </div>

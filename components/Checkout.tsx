@@ -189,7 +189,7 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
                     <button onClick={handleFetchPaymentMethods} disabled={loading} className="w-full py-5 bg-indigo-600 text-white font-black uppercase tracking-widest rounded-2xl shadow-xl hover:bg-indigo-700 transition-all flex items-center justify-center gap-3">
                       {loading ? (
                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      ) : <><i className="bi bi-credit-card-2-back-fill text-lg"></i> Bayar Otomatis</>}
+                      ) : <><i className="bi bi-credit-card-2-back-fill text-lg"></i> Konfirmasi Otomatis</>}
                     </button>
                     <div className="relative"><div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-100"></div></div><div className="relative flex justify-center text-[10px] font-black uppercase tracking-widest"><span className="bg-white px-4 text-slate-300">Atau</span></div></div>
                     <button onClick={handlePayManual} disabled={loading} className="w-full py-5 bg-slate-900 text-white font-black uppercase rounded-2xl shadow-xl hover:bg-black transition-all">Konfirmasi Manual (WhatsApp)</button>
@@ -228,7 +228,7 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
                 {!isLogin && <input type="tel" className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-sm" placeholder="WhatsApp (08...)" value={phone} onChange={e => setPhone(e.target.value)} required />}
                 <input className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-sm" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required type="email" />
                 <input className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-sm" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} required type="password" />
-                <button disabled={loading} className="w-full py-5 bg-slate-900 text-white font-black rounded-2xl shadow-xl">{loading ? 'Processing...' : 'Lanjut Pembayaran'}</button>
+                <button disabled={loading} className="w-full py-5 bg-slate-900 text-white font-black rounded-2xl shadow-xl">{loading ? 'Processing...' : isLogin ? 'Masuk Sekarang' : 'Daftar Akun'}</button>
               </form>
               <button onClick={async () => { setLoading(true); try { await signInWithGoogle(); } catch(e){} finally { setLoading(false); } }} className="w-full py-4 border-2 border-slate-100 rounded-2xl text-[10px] font-black uppercase flex items-center justify-center gap-3 hover:bg-slate-50 transition-all"><img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-4 h-4" alt="Google" /> Daftar via Google</button>
             </div>

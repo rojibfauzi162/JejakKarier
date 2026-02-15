@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { LegalConfig, LandingPageConfig } from '../../types';
 import { getLegalConfig, saveLegalConfig, getLandingPageConfig, saveLandingPageConfig } from '../../services/firebase';
@@ -11,7 +12,10 @@ const AdminSettings: React.FC = () => {
     videoDemoLinks: {},
     desktopDashboardImg: '',
     mobileDashboardImg: '',
-    adminWhatsApp: '628123456789'
+    adminWhatsApp: '628123456789',
+    businessEmail: '',
+    businessPhone: '',
+    businessAddress: ''
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -46,7 +50,10 @@ const AdminSettings: React.FC = () => {
         if (resLanding) {
           setLandingConfig({
             ...resLanding,
-            adminWhatsApp: resLanding.adminWhatsApp || '628123456789'
+            adminWhatsApp: resLanding.adminWhatsApp || '628123456789',
+            businessEmail: resLanding.businessEmail || '',
+            businessPhone: resLanding.businessPhone || '',
+            businessAddress: resLanding.businessAddress || ''
           });
         }
       } catch (e) {
@@ -183,28 +190,55 @@ const AdminSettings: React.FC = () => {
         </div>
       </div>
 
-      {/* SECTION: KONTAK ADMIN & SUPPORT */}
+      {/* SECTION: KONTAK ADMIN & IDENTITAS USAHA */}
       <div className="bg-white p-8 lg:p-12 rounded-[3.5rem] shadow-sm border border-indigo-100 space-y-12">
         <div className="flex items-center gap-6 pb-8 border-b border-slate-50">
           <div className="w-16 h-16 bg-indigo-600 text-white rounded-[1.75rem] flex items-center justify-center text-3xl shadow-xl">
-            <i className="bi bi-whatsapp"></i>
+            <i className="bi bi-shop"></i>
           </div>
           <div>
-            <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Kontak Admin & Support</h3>
-            <p className="text-slate-400 font-medium text-sm">Kelola nomor tujuan konfirmasi manual dan bantuan pelanggan.</p>
+            <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Identitas & Kontak Usaha</h3>
+            <p className="text-slate-400 font-medium text-sm">Informasi ini akan ditampilkan di footer Landing Page publik.</p>
           </div>
         </div>
 
-        <div className="max-w-2xl space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
            <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nomor WhatsApp Super Admin</label>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">WhatsApp Admin (628...)</label>
               <input 
                 className="w-full px-6 py-5 bg-slate-50 border border-slate-200 rounded-[1.75rem] outline-none font-black text-indigo-600 focus:border-indigo-400 transition-all text-sm"
                 placeholder="62812..."
                 value={landingConfig.adminWhatsApp || ''}
                 onChange={e => setLandingConfig({...landingConfig, adminWhatsApp: e.target.value.replace(/[^0-9]/g, '')})}
               />
-              <p className="text-[9px] text-slate-400 italic mt-1 ml-1">Masukkan angka saja dimulai dengan kode negara (62). Digunakan pada fitur konfirmasi manual WhatsApp.</p>
+           </div>
+           <div className="space-y-2">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Email Bisnis</label>
+              <input 
+                className="w-full px-6 py-5 bg-slate-50 border border-slate-200 rounded-[1.75rem] outline-none font-black text-slate-700 focus:border-indigo-400 transition-all text-sm"
+                placeholder="support@fokuskarir.com"
+                value={landingConfig.businessEmail || ''}
+                onChange={e => setLandingConfig({...landingConfig, businessEmail: e.target.value})}
+              />
+           </div>
+           <div className="space-y-2">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nomor Telepon Kantor</label>
+              <input 
+                className="w-full px-6 py-5 bg-slate-50 border border-slate-200 rounded-[1.75rem] outline-none font-black text-slate-700 focus:border-indigo-400 transition-all text-sm"
+                placeholder="021-xxxxxx"
+                value={landingConfig.businessPhone || ''}
+                onChange={e => setLandingConfig({...landingConfig, businessPhone: e.target.value})}
+              />
+           </div>
+           <div className="space-y-2 md:col-span-2">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Alamat Usaha</label>
+              <textarea 
+                className="w-full px-6 py-5 bg-slate-50 border border-slate-200 rounded-[1.75rem] outline-none font-black text-slate-700 focus:border-indigo-400 transition-all text-sm resize-none"
+                placeholder="Jl. Teknologi No. 123, Jakarta Selatan..."
+                rows={3}
+                value={landingConfig.businessAddress || ''}
+                onChange={e => setLandingConfig({...landingConfig, businessAddress: e.target.value})}
+              />
            </div>
         </div>
       </div>

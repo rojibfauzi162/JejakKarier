@@ -379,6 +379,9 @@ export interface LandingPageConfig {
   desktopDashboardImg?: string;
   mobileDashboardImg?: string;
   adminWhatsApp?: string;
+  businessEmail?: string;
+  businessPhone?: string;
+  businessAddress?: string;
   updatedAt?: string;
 }
 

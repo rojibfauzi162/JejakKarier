@@ -35,14 +35,13 @@ const Auth: React.FC<AuthProps> = ({ onBack }) => {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         await updateProfile(userCredential.user, { displayName: name });
         
-        // FITUR BARU: Kirim Verifikasi Email
+        // FITUR: Kirim Verifikasi Email (Dilakukan di background)
         try {
           await sendEmailVerification(userCredential.user);
-          setSuccessMsg('Akun berhasil dibuat! Silakan cek email Anda (termasuk folder spam) untuk memverifikasi akun sebelum melanjutkan.');
         } catch (mailErr: any) {
           console.warn("Gagal mengirim email verifikasi:", mailErr.message);
-          // Tetap biarkan login, tapi beri info di dashboard nanti
         }
+        // Jangan setSuccessMsg di sini jika ingin langsung masuk ke dashboard tanpa interupsi
       }
     } catch (err: any) {
       let friendlyMessage = 'Terjadi kesalahan saat menghubungi server. Silakan coba lagi.';
@@ -57,9 +56,9 @@ const Auth: React.FC<AuthProps> = ({ onBack }) => {
       }
       setError(friendlyMessage);
       if (!isLogin) localStorage.removeItem('pending_registration');
-    } finally {
-      setLoading(false);
+      setLoading(false); // Hentikan loading hanya jika terjadi error
     }
+    // Jika sukses, loading tidak perlu di-false-kan secara manual karena komponen akan unmount oleh App.tsx
   };
 
   const handleForgotPassword = async (e: React.FormEvent) => {
@@ -90,7 +89,6 @@ const Auth: React.FC<AuthProps> = ({ onBack }) => {
       await signInWithGoogle();
     } catch (err: any) {
       setError(err.message || 'Gagal masuk dengan Google.');
-    } finally {
       setLoading(false);
     }
   };

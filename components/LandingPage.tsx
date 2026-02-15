@@ -187,7 +187,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
                       <p className="text-[8px] font-black uppercase tracking-[0.2em] leading-relaxed italic opacity-80">"Data mengalahkan asumsi."</p>
                    </div>
                    <div className="aspect-[4/5] rounded-[2.5rem] overflow-hidden shadow-2xl border-4 border-white bg-slate-100">
-                      <img src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=600&auto=format&fit=crop" className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700" alt="Profesional Indonesia Pria" />
+                      <img src="https://images.unsplash.com/photo-1581091226825-aee158?q=80&w=600&auto=format&fit=crop" className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700" alt="Profesional Indonesia Pria" />
                    </div>
                 </div>
              </div>
@@ -431,16 +431,63 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
       </section>
 
       {/* FOOTER */}
-      <footer className="py-10 border-t border-slate-100 px-6 lg:px-12">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white text-[10px] font-black">F</div>
-            <span className="text-lg font-black tracking-tighter">FokusKarir</span>
+      <footer className="py-20 border-t border-slate-100 bg-slate-50/50 px-6 lg:px-12">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-12 lg:gap-20">
+          {/* Brand & Address */}
+          <div className="md:col-span-4 space-y-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-black shadow-lg">F</div>
+              <span className="text-xl font-black tracking-tighter text-slate-900">FokusKarir</span>
+            </div>
+            <div className="space-y-4">
+              {landingConfig?.businessAddress && (
+                <div className="flex gap-3">
+                   <i className="bi bi-geo-alt-fill text-indigo-600 mt-1"></i>
+                   <p className="text-sm font-medium text-slate-500 leading-relaxed">{landingConfig.businessAddress}</p>
+                </div>
+              )}
+              {landingConfig?.businessPhone && (
+                <div className="flex gap-3 items-center">
+                   <i className="bi bi-telephone-fill text-indigo-600"></i>
+                   <p className="text-sm font-bold text-slate-600">{landingConfig.businessPhone}</p>
+                </div>
+              )}
+              {landingConfig?.businessEmail && (
+                <div className="flex gap-3 items-center">
+                   <i className="bi bi-envelope-at-fill text-indigo-600"></i>
+                   <p className="text-sm font-bold text-slate-600">{landingConfig.businessEmail}</p>
+                </div>
+              )}
+            </div>
           </div>
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">© 2025 Intelligent Performance System. Hak Cipta Dilindungi.</p>
-          <div className="flex gap-6">
-             <button onClick={() => onShowLegal?.('privacy')} className="text-[10px] font-black uppercase text-slate-400 hover:text-slate-900 transition-colors">Privacy</button>
-             <button onClick={() => onShowLegal?.('terms')} className="text-[10px] font-black uppercase text-slate-400 hover:text-slate-900 transition-colors">Terms</button>
+
+          {/* Quick Links */}
+          <div className="md:col-span-2 space-y-6">
+            <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Navigasi</h4>
+            <ul className="space-y-4">
+              <li><button onClick={onLogin} className="text-sm font-bold text-slate-600 hover:text-indigo-600 transition-colors">Masuk Akun</button></li>
+              <li><button onClick={onStart} className="text-sm font-bold text-slate-600 hover:text-indigo-600 transition-colors">Daftar Baru</button></li>
+            </ul>
+          </div>
+
+          {/* Legal Links */}
+          <div className="md:col-span-2 space-y-6">
+            <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Legalitas</h4>
+            <ul className="space-y-4">
+              <li><button onClick={() => onShowLegal?.('privacy')} className="text-sm font-bold text-slate-600 hover:text-indigo-600 transition-colors">Kebijakan Privasi</button></li>
+              <li><button onClick={() => onShowLegal?.('terms')} className="text-sm font-bold text-slate-600 hover:text-indigo-600 transition-colors">Syarat & Layanan</button></li>
+            </ul>
+          </div>
+
+          {/* Connect */}
+          <div className="md:col-span-4 space-y-6">
+             <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Connect With Us</h4>
+             <div className="flex gap-4">
+                <a href={`https://wa.me/${landingConfig?.adminWhatsApp}`} target="_blank" className="w-12 h-12 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-xl text-emerald-600 shadow-sm hover:shadow-lg transition-all"><i className="bi bi-whatsapp"></i></a>
+                <a href="#" className="w-12 h-12 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-xl text-indigo-600 shadow-sm hover:shadow-lg transition-all"><i className="bi bi-instagram"></i></a>
+                <a href="#" className="w-12 h-12 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-xl text-blue-600 shadow-sm hover:shadow-lg transition-all"><i className="bi bi-linkedin"></i></a>
+             </div>
+             <p className="text-[10px] font-bold text-slate-400 leading-relaxed uppercase tracking-tight pt-4">© 2025 Intelligent Performance System.<br/>Built for ambitious professionals.</p>
           </div>
         </div>
       </footer>
