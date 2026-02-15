@@ -86,6 +86,7 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
     setLoading(true);
     setError('');
     try {
+      console.log("[CHECKOUT] Creating Inquiry for Plan ID:", plan.id);
       const response = await fetch(`${CLOUD_FUNCTIONS_URL}/createInquiry`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
