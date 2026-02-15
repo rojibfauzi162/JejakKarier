@@ -61,6 +61,7 @@ interface CheckoutProps {
 const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
   const [isLogin, setIsLogin] = useState(false);
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
@@ -96,6 +97,7 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
       if (isLogin) {
         await signInWithEmailAndPassword(auth, email, password);
       } else {
+        localStorage.setItem('pending_registration', JSON.stringify({ name, email, phone }));
         const cred = await createUserWithEmailAndPassword(auth, email, password);
         await updateProfile(cred.user, { displayName: name });
         try { await sendEmailVerification(cred.user); } catch (e) {}
@@ -103,6 +105,7 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
       }
     } catch (err: any) {
       setError(err.message);
+      if (!isLogin) localStorage.removeItem('pending_registration');
     } finally {
       setLoading(false);
     }
@@ -372,6 +375,7 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
               {successMsg && <div className="p-4 bg-emerald-50 text-emerald-600 text-[10px] font-bold rounded-2xl border border-emerald-100 uppercase">{successMsg}</div>}
               <form onSubmit={handleAuth} className="space-y-5">
                 {!isLogin && <div className="space-y-1.5"><label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Nama Lengkap</label><input className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-sm" value={name} onChange={e => setName(e.target.value)} required /></div>}
+                {!isLogin && <div className="space-y-1.5"><label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Nomor WhatsApp</label><input type="tel" className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-sm" value={phone} onChange={e => setPhone(e.target.value)} required /></div>}
                 <div className="space-y-1.5"><label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Email</label><input className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-sm" value={email} onChange={e => setEmail(e.target.value)} required type="email" /></div>
                 <div className="space-y-1.5"><label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Password</label><input className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-sm" value={password} onChange={e => setPassword(e.target.value)} required type="password" /></div>
                 <button disabled={loading} className="w-full py-5 bg-slate-900 text-white font-black rounded-2xl shadow-xl">{loading ? 'Processing...' : 'Lanjut Bayar'}</button>

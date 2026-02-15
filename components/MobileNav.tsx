@@ -6,9 +6,9 @@ interface MobileNavProps {
   setActiveTab: (tab: string, date?: string) => void;
   onLogout: () => void;
   isAdmin?: boolean;
+  onOpenSidebar?: () => void; // NEW: Callback to open main sidebar
 }
 
-// Fix: Defined NavItem interface to handle optional isSpecial property
 interface NavItem {
   id: string;
   label: string;
@@ -16,26 +16,24 @@ interface NavItem {
   isSpecial?: boolean;
 }
 
-const MobileNav: React.FC<MobileNavProps> = ({ activeTab, setActiveTab, onLogout, isAdmin }) => {
+const MobileNav: React.FC<MobileNavProps> = ({ activeTab, setActiveTab, onLogout, isAdmin, onOpenSidebar }) => {
   const [showDailyMenu, setShowDailyMenu] = useState(false);
-  const [showLogoutModal, setShowLogoutModal] = useState(false); // State baru untuk modal logout mobile
+  const [showLogoutModal, setShowLogoutModal] = useState(false); 
 
   // Menu untuk User Biasa
   const userItems: NavItem[] = [
     { id: 'dashboard', label: 'Home', icon: 'bi-house-door' },
     { id: 'daily_toggle', label: 'Daily', icon: 'bi-journal-text', isSpecial: true },
     { id: 'todo_list', label: 'Langkah', icon: 'bi-check2-square' },
-    { id: 'calendar', label: 'Calendar', icon: 'bi-calendar3' }, // REPLACED BILLING WITH CALENDAR
+    { id: 'calendar', label: 'Calendar', icon: 'bi-calendar3' }, 
   ];
 
-  // Menu Khusus Super Admin
+  // Menu Khusus Super Admin - UPDATED
   const adminItems: NavItem[] = [
-    { id: 'admin_dashboard', label: 'Admin', icon: 'bi-speedometer2' },
+    { id: 'admin_dashboard', label: 'Dashboard', icon: 'bi-speedometer2' },
     { id: 'admin_users', label: 'Users', icon: 'bi-people' },
-    { id: 'admin_ai', label: 'AI Build', icon: 'bi-cpu' },
-    { id: 'admin_products', label: 'Products', icon: 'bi-box-seam' },
-    { id: 'admin_integrations', label: 'Integrasi', icon: 'bi-link-45deg' },
-    { id: 'logout', label: 'Logout', icon: 'bi-box-arrow-right' },
+    { id: 'admin_transactions', label: 'Transaksi', icon: 'bi-currency-dollar' },
+    { id: 'others', label: 'Lainnya', icon: 'bi-grid-fill' }, // Triggers Sidebar
   ];
 
   const mainItems = isAdmin ? adminItems : userItems;
@@ -45,6 +43,8 @@ const MobileNav: React.FC<MobileNavProps> = ({ activeTab, setActiveTab, onLogout
       setShowLogoutModal(true);
     } else if (id === 'daily_toggle') {
       setShowDailyMenu(!showDailyMenu);
+    } else if (id === 'others') {
+      onOpenSidebar?.();
     } else {
       setShowDailyMenu(false);
       setActiveTab(id);
@@ -53,7 +53,6 @@ const MobileNav: React.FC<MobileNavProps> = ({ activeTab, setActiveTab, onLogout
 
   return (
     <div className="lg:hidden fixed bottom-0 left-0 right-0 z-[100]">
-      {/* MODERN BUBBLE DAILY SUB-MENU (Hanya untuk User) */}
       {!isAdmin && showDailyMenu && (
         <div className="absolute bottom-[calc(100%+12px)] left-0 right-0 px-6 animate-in slide-in-from-bottom-4 zoom-in-95 duration-300">
            <div className="bg-white/95 backdrop-blur-2xl border border-indigo-100 rounded-[2.5rem] p-3 shadow-[0_20px_60px_-15px_rgba(79,70,229,0.2)] flex flex-col gap-1 relative ring-1 ring-black/5">
@@ -97,15 +96,12 @@ const MobileNav: React.FC<MobileNavProps> = ({ activeTab, setActiveTab, onLogout
                  <span className="text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity">→</span>
               </button>
 
-              {/* Speech Bubble Pointer */}
               <div className="absolute -bottom-2 left-[38%] -translate-x-1/2 w-4 h-4 bg-white border-r border-b border-indigo-100 rotate-45"></div>
            </div>
-           {/* Global Overlay click outside */}
            <div className="fixed inset-0 z-[-1] bg-slate-950/5" onClick={() => setShowDailyMenu(false)}></div>
         </div>
       )}
 
-      {/* Tactile 3D Bottom Nav Bar */}
       <nav className={`bg-white/95 backdrop-blur-xl border-t-2 border-indigo-500/10 ${isAdmin ? 'px-2' : 'px-6'} pt-3 pb-4 flex items-center justify-between shadow-[0_-12px_40px_rgba(0,0,0,0.08)] relative z-10`}>
         {mainItems.map((item) => {
           const isActive = activeTab === item.id || (item.isSpecial && (activeTab === 'daily' || activeTab === 'work_reflection' || activeTab === 'reports'));
@@ -151,7 +147,6 @@ const MobileNav: React.FC<MobileNavProps> = ({ activeTab, setActiveTab, onLogout
         )}
       </nav>
 
-      {/* Modal Konfirmasi Logout Mobile - Perbaikan Centering */}
       {showLogoutModal && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 lg:p-6 overflow-y-auto">
           <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm" onClick={() => setShowLogoutModal(false)}></div>
@@ -161,7 +156,7 @@ const MobileNav: React.FC<MobileNavProps> = ({ activeTab, setActiveTab, onLogout
                 <i className="bi bi-door-open-fill"></i>
               </div>
               <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Keluar Sesi?</h3>
-              <p className="text-slate-400 text-xs font-bold leading-relaxed mt-2 uppercase tracking-widest">Apakah Anda yakin ingin mengakhiri sesi kerja saat ini?</p>
+              <p className="text-slate-400 text-xs font-bold leading-relaxed mt-2 uppercase tracking-widest text-center">Apakah Anda yakin ingin mengakhiri sesi kerja saat ini?</p>
             </div>
             <div className="flex gap-4">
               <button 

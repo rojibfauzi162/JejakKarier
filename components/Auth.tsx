@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, sendEmailVerification } from '@firebase/auth';
 import { auth, signInWithGoogle } from '../services/firebase';
@@ -10,6 +9,7 @@ interface AuthProps {
 const Auth: React.FC<AuthProps> = ({ onBack }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [name, setName] = useState('');
@@ -27,6 +27,9 @@ const Auth: React.FC<AuthProps> = ({ onBack }) => {
       if (isLogin) {
         await signInWithEmailAndPassword(auth, email, password);
       } else {
+        // Simpan detail ke localStorage sebelum membuat akun agar App.tsx bisa mengambilnya
+        localStorage.setItem('pending_registration', JSON.stringify({ name, email, phone }));
+        
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         await updateProfile(userCredential.user, { displayName: name });
         
@@ -51,6 +54,7 @@ const Auth: React.FC<AuthProps> = ({ onBack }) => {
         default: friendlyMessage = err.message || 'Maaf, terjadi kendala.';
       }
       setError(friendlyMessage);
+      if (!isLogin) localStorage.removeItem('pending_registration');
     } finally {
       setLoading(false);
     }
@@ -115,6 +119,13 @@ const Auth: React.FC<AuthProps> = ({ onBack }) => {
             <div className="space-y-1.5">
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Full Name</label>
               <input type="text" required className="w-full px-5 py-4 rounded-2xl bg-white/5 border border-white/10 text-white outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-bold placeholder:text-slate-600" placeholder="Alex Johnson" value={name} onChange={(e) => setName(e.target.value)} />
+            </div>
+          )}
+
+          {!isLogin && (
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">WhatsApp Number</label>
+              <input type="tel" required className="w-full px-5 py-4 rounded-2xl bg-white/5 border border-white/10 text-white outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-bold placeholder:text-slate-600" placeholder="08123456789" value={phone} onChange={(e) => setPhone(e.target.value)} />
             </div>
           )}
 

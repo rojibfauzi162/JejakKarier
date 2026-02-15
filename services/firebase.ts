@@ -1,8 +1,8 @@
 
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, signInWithPopup } from '@firebase/auth';
-import { getFirestore, doc, setDoc, getDoc, collection, getDocs, updateDoc, increment, query, where, limit } from "firebase/firestore";
-import { AppData, AiConfig, SubscriptionProduct, AccountStatus, LegalConfig, UserRole, LandingPageConfig, MayarConfig, DuitkuConfig } from "../types";
+import { getFirestore, doc, setDoc, getDoc, collection, getDocs, updateDoc, increment, query, where, limit, deleteDoc } from "firebase/firestore";
+import { AppData, AiConfig, SubscriptionProduct, AccountStatus, LegalConfig, UserRole, LandingPageConfig, MayarConfig, DuitkuConfig, FollowUpConfig } from "../types";
 
 // KONFIGURASI FIREBASE
 const firebaseConfig = {
@@ -19,15 +19,9 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 
-// Provider Google Auth
 const googleProvider = new GoogleAuthProvider();
-googleProvider.setCustomParameters({
-  prompt: 'select_account'
-});
+googleProvider.setCustomParameters({ prompt: 'select_account' });
 
-/**
- * Utility to recursively remove undefined values from an object.
- */
 const sanitizeData = (obj: any): any => {
   if (Array.isArray(obj)) {
     return obj.map(item => sanitizeData(item));
@@ -51,6 +45,26 @@ export const signInWithGoogle = async () => {
     console.error("Error signing in with Google:", error);
     throw error;
   }
+};
+
+/**
+ * Mencari data user berdasarkan email di seluruh koleksi users
+ */
+export const findUserByEmail = async (email: string): Promise<AppData | null> => {
+  if (!email) return null;
+  const q = query(collection(db, "users"), where("profile.email", "==", email.toLowerCase().trim()), limit(1));
+  const querySnapshot = await getDocs(q);
+  if (!querySnapshot.empty) {
+    return { ...querySnapshot.docs[0].data() as AppData, uid: querySnapshot.docs[0].id };
+  }
+  return null;
+};
+
+/**
+ * Menghapus dokumen user (digunakan saat konsolidasi duplikat)
+ */
+export const deleteUserDoc = async (uid: string) => {
+  await deleteDoc(doc(db, "users", uid));
 };
 
 export const saveUserData = async (uid: string, data: AppData) => {
@@ -174,6 +188,30 @@ export const saveDuitkuConfig = async (config: DuitkuConfig) => {
   }
 };
 
+export const getFollowUpConfig = async (): Promise<FollowUpConfig | null> => {
+  try {
+    const docRef = doc(db, "system_metadata", "follow_up_configuration");
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) return docSnap.data() as FollowUpConfig;
+  } catch (error: any) {
+    console.warn("[FIREBASE] Config FollowUp error:", error.message);
+  }
+  return null;
+};
+
+export const saveFollowUpConfig = async (config: FollowUpConfig) => {
+  try {
+    const docRef = doc(db, "system_metadata", "follow_up_configuration");
+    const dataToSave = sanitizeData({
+      ...config,
+      updatedAt: new Date().toISOString()
+    });
+    await setDoc(docRef, dataToSave, { merge: true });
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const getLegalConfig = async (): Promise<LegalConfig | null> => {
   try {
     const docRef = doc(db, "system_metadata", "legal_configuration");
@@ -216,9 +254,6 @@ export const saveLandingPageConfig = async (config: LandingPageConfig) => {
   }
 };
 
-/**
- * Added getMayarConfig to retrieve payment integration settings
- */
 export const getMayarConfig = async (): Promise<MayarConfig | null> => {
   try {
     const docRef = doc(db, "system_metadata", "mayar_configuration");
@@ -230,9 +265,6 @@ export const getMayarConfig = async (): Promise<MayarConfig | null> => {
   return null;
 };
 
-/**
- * Added saveMayarConfig to persist payment integration settings
- */
 export const saveMayarConfig = async (config: MayarConfig) => {
   try {
     const docRef = doc(db, "system_metadata", "mayar_configuration");

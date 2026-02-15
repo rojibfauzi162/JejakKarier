@@ -14,11 +14,8 @@ const AdminManagement: React.FC<AdminManagementProps> = ({ users, onUpdateMetada
   const currentUserEmail = auth.currentUser?.email?.toLowerCase();
   const isPrimaryAdmin = currentUserEmail === 'admin@fokuskarir.web.id';
 
-  // FIX: Logika Deduplikasi - Hanya tampilkan 1 baris per email unik untuk mencegah data double
   const admins = useMemo(() => {
     const adminMap = new Map<string, AppData>();
-    
-    // Urutkan berdasarkan yang sudah verified atau yang login terakhir agar data yang valid yang muncul
     const rawAdmins = users.filter(u => u.role === UserRole.SUPERADMIN);
     
     rawAdmins.forEach(u => {
@@ -28,7 +25,6 @@ const AdminManagement: React.FC<AdminManagementProps> = ({ users, onUpdateMetada
       if (!adminMap.has(email)) {
         adminMap.set(email, u);
       } else {
-        // Jika sudah ada, timpa hanya jika data baru ini sudah 'Verified'
         const existing = adminMap.get(email);
         if (!existing?.isAdminVerified && u.isAdminVerified) {
           adminMap.set(email, u);
@@ -39,7 +35,6 @@ const AdminManagement: React.FC<AdminManagementProps> = ({ users, onUpdateMetada
     return Array.from(adminMap.values());
   }, [users]);
 
-  // Cari user yang bisa dipromosikan (bukan admin)
   const candidate = useMemo(() => {
     if (!searchEmail.trim()) return null;
     return users.find(u => u.profile?.email?.toLowerCase() === searchEmail.toLowerCase() && u.role !== UserRole.SUPERADMIN);
@@ -105,7 +100,7 @@ const AdminManagement: React.FC<AdminManagementProps> = ({ users, onUpdateMetada
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
-      {/* Pending Approvals (Only for Primary Admin) */}
+      {/* Pending Approvals */}
       {isPrimaryAdmin && pendingApprovals.length > 0 && (
         <div className="bg-amber-50 p-8 rounded-[2.5rem] border border-amber-100 shadow-sm">
            <div className="flex items-center gap-4 mb-6">
@@ -130,16 +125,9 @@ const AdminManagement: React.FC<AdminManagementProps> = ({ users, onUpdateMetada
                       <button 
                         onClick={() => handleVerifyAdmin(u.uid!)}
                         disabled={isProcessing}
-                        className="px-6 py-2.5 bg-emerald-600 text-white font-black rounded-xl text-[10px] uppercase tracking-widest hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-100"
+                        className="px-6 py-2.5 bg-emerald-600 text-white font-black rounded-xl text-[10px] uppercase tracking-widest"
                       >
-                        Verifikasi Akun ✅
-                      </button>
-                      <button 
-                        onClick={() => onUpdateMetadata(u.uid!, { adminPromotionRequested: false })}
-                        disabled={isProcessing}
-                        className="px-6 py-2.5 bg-rose-50 text-rose-500 font-black rounded-xl text-[10px] uppercase tracking-widest hover:bg-rose-100 transition-all"
-                      >
-                        Tolak
+                        Verifikasi
                       </button>
                    </div>
                 </div>
@@ -151,67 +139,52 @@ const AdminManagement: React.FC<AdminManagementProps> = ({ users, onUpdateMetada
       {/* Search & Promote Section */}
       <div className="bg-white p-8 lg:p-10 rounded-[2.5rem] border border-slate-100 shadow-sm">
         <div className="flex items-center gap-6 mb-8">
-          <div className="w-14 h-14 bg-indigo-600 text-white rounded-2xl flex items-center justify-center text-2xl shadow-xl shadow-indigo-100">
+          <div className="w-14 h-14 bg-indigo-600 text-white rounded-2xl flex items-center justify-center text-2xl shadow-xl">
             <i className="bi bi-person-plus-fill"></i>
           </div>
           <div>
             <h3 className="text-xl font-black text-slate-900 uppercase">{isPrimaryAdmin ? 'Tambah Admin Baru' : 'Ajukan Admin Baru'}</h3>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-              {isPrimaryAdmin ? 'Berikan akses Super Admin ke user terdaftar.' : 'Ajukan promosi akun ke Admin Utama.'}
-            </p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Berikan hak akses khusus pengelola sistem.</p>
           </div>
         </div>
 
         <div className="max-w-2xl space-y-4">
-          <div className="relative">
-            <input 
-              type="text"
-              placeholder="Masukkan email user yang sudah terdaftar..."
-              className="w-full pl-6 pr-32 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none font-bold text-sm focus:border-indigo-500 transition-all"
-              value={searchEmail}
-              onChange={e => setSearchEmail(e.target.value)}
-            />
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300">
-              <i className="bi bi-search text-xl"></i>
-            </div>
-          </div>
-
-          {candidate ? (
+          <input 
+            type="text"
+            placeholder="Masukkan email user..."
+            className="w-full pl-6 pr-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none font-bold text-sm"
+            value={searchEmail}
+            onChange={e => setSearchEmail(e.target.value)}
+          />
+          {candidate && (
             <div className="p-6 bg-indigo-50 border border-indigo-100 rounded-3xl flex items-center justify-between animate-in zoom-in duration-300">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-indigo-600 font-black shadow-sm">
-                  {candidate.profile?.name?.charAt(0).toUpperCase()}
-                </div>
-                <div>
-                  <p className="text-sm font-black text-slate-800">{candidate.profile?.name}</p>
-                  <p className="text-[10px] font-bold text-slate-400">{candidate.profile?.email}</p>
-                </div>
+              <div>
+                <p className="text-sm font-black text-slate-800">{candidate.profile?.name}</p>
+                <p className="text-[10px] font-bold text-slate-400">{candidate.profile?.email}</p>
               </div>
               <button 
                 onClick={() => handleRequestPromote(candidate.uid!)}
                 disabled={isProcessing}
-                className="px-6 py-2.5 bg-indigo-600 text-white font-black rounded-xl text-[10px] uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100"
+                className="px-6 py-2.5 bg-indigo-600 text-white font-black rounded-xl text-[10px] uppercase"
               >
-                {isPrimaryAdmin ? 'Promosikan ⚡' : 'Ajukan Verifikasi 🚀'}
+                Promosikan ⚡
               </button>
             </div>
-          ) : searchEmail && (
-            <p className="text-[10px] font-bold text-rose-500 uppercase tracking-widest ml-1">
-              User tidak ditemukan atau sudah menjadi Admin.
-            </p>
           )}
         </div>
       </div>
 
-      {/* Admin List Table */}
+      {/* Admin List Table / Cards */}
       <div className="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden">
         <div className="p-8 border-b border-slate-50 flex justify-between items-center">
           <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight">Daftar Super Admin</h3>
           <span className="px-4 py-1.5 bg-slate-100 rounded-full text-[9px] font-black text-slate-500 uppercase tracking-widest">
-            {admins.length} Pengelola Aktif
+            {admins.length} Pengelola
           </span>
         </div>
-        <div className="overflow-x-auto">
+
+        {/* DESKTOP TABLE */}
+        <div className="hidden lg:block overflow-x-auto">
           <table className="w-full text-left">
             <thead>
               <tr className="text-[10px] font-black uppercase text-slate-400 bg-slate-50/50">
@@ -241,28 +214,62 @@ const AdminManagement: React.FC<AdminManagementProps> = ({ users, onUpdateMetada
                     </span>
                   </td>
                   <td className="px-6 py-5 text-center">
-                    <span className={`flex justify-center items-center gap-2 text-[10px] font-black uppercase ${admin.isAdminVerified ? 'text-emerald-500' : 'text-amber-500'}`}>
-                      <span className={`w-1.5 h-1.5 rounded-full ${admin.isAdminVerified ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500 animate-pulse'}`}></span>
+                    <span className={`text-[10px] font-black uppercase ${admin.isAdminVerified ? 'text-emerald-500' : 'text-amber-500'}`}>
                       {admin.isAdminVerified ? 'Verified' : 'Review Required'}
                     </span>
                   </td>
                   <td className="px-10 py-5 text-right">
-                    {admin.profile?.email !== 'admin@fokuskarir.web.id' ? (
+                    {admin.profile?.email !== 'admin@fokuskarir.web.id' && (
                       <button 
                         onClick={() => handleDemote(admin.uid!, admin.profile.email)}
-                        disabled={isProcessing}
-                        className="px-4 py-2 bg-rose-50 text-rose-500 font-black rounded-xl text-[9px] uppercase tracking-widest hover:bg-rose-500 hover:text-white transition-all disabled:opacity-50"
+                        className="px-4 py-2 bg-rose-50 text-rose-500 font-black rounded-xl text-[9px] uppercase hover:bg-rose-500 hover:text-white transition-all"
                       >
-                        Hapus / Demosi
+                        Demosi
                       </button>
-                    ) : (
-                      <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest italic">Root Protected</span>
                     )}
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+        </div>
+
+        {/* MOBILE CARD VIEW */}
+        <div className="lg:hidden p-4 space-y-4">
+           {admins.map(admin => (
+             <div key={admin.uid} className="bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100 space-y-4">
+                <div className="flex justify-between items-start">
+                   <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-slate-900 text-white rounded-xl flex items-center justify-center font-black text-xs">
+                        {admin.profile?.name?.charAt(0)}
+                      </div>
+                      <div>
+                        <h4 className="font-black text-slate-800 text-sm leading-tight">{admin.profile?.name}</h4>
+                        <p className="text-[10px] font-bold text-slate-400 mt-0.5">{admin.profile?.email}</p>
+                      </div>
+                   </div>
+                   <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase border ${admin.isAdminVerified ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-amber-50 text-amber-600 border-amber-100'}`}>
+                      {admin.isAdminVerified ? 'Verified' : 'Pending'}
+                   </span>
+                </div>
+
+                <div className="space-y-1">
+                   <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Tingkat Akses</p>
+                   <p className="text-[10px] font-black text-indigo-600 uppercase flex items-center gap-2">
+                     <i className="bi bi-shield-lock-fill"></i>
+                     {admin.profile?.email === 'admin@fokuskarir.web.id' ? 'Owner / Primary' : 'Verified Super Admin'}
+                   </p>
+                </div>
+
+                <div className="pt-4 border-t border-slate-200/50 flex justify-end">
+                   {admin.profile?.email !== 'admin@fokuskarir.web.id' ? (
+                      <button onClick={() => handleDemote(admin.uid!, admin.profile.email)} className="px-6 py-2 bg-rose-50 text-rose-500 rounded-xl font-black text-[9px] uppercase">Cabut Hak Akses</button>
+                   ) : (
+                      <span className="text-[9px] font-black text-slate-300 uppercase italic">Root Access Locked</span>
+                   )}
+                </div>
+             </div>
+           ))}
         </div>
       </div>
     </div>

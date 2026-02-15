@@ -353,6 +353,13 @@ export interface DuitkuConfig {
   updatedAt?: string;
 }
 
+export interface FollowUpConfig {
+  pendingPaymentScript: string;
+  expiryReminderScript: string;
+  justExpiredScript: string;
+  updatedAt?: string;
+}
+
 export interface LegalConfig {
   privacyPolicy: string;
   termsOfService: string;

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { AppData, UserRole, SubscriptionProduct, SubscriptionPlan, AccountStatus, ToDoTask, AiStrategy, Training, Certification, Skill, CareerEvent, JobStatus, EventType, ImportanceLevel, WorkExperience, Education } from './types';
 import { INITIAL_DATA, DEFAULT_PRODUCTS } from './constants';
@@ -31,7 +32,7 @@ import AppsHub from './components/user/AppsHub';
 import UpgradeModal from './components/user/UpgradeModal';
 import MobileStats from './components/user/MobileStats';
 import CareerCalendar from './components/user/CareerCalendar'; 
-import { auth, getUserData, saveUserData, getProductsCatalog } from './services/firebase';
+import { auth, getUserData, saveUserData, getProductsCatalog, findUserByEmail, deleteUserDoc } from './services/firebase';
 import { onAuthStateChanged, sendEmailVerification } from '@firebase/auth';
 
 const App: React.FC = () => {
@@ -48,6 +49,7 @@ const App: React.FC = () => {
   const desktopNotifRef = useRef<HTMLDivElement>(null);
   const [resendingEmail, setResendingEmail] = useState(false);
   const [hideVerificationReminder, setHideVerificationReminder] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // NEW: State for mobile sidebar
 
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
     setToast({ message, type });
@@ -89,6 +91,7 @@ const App: React.FC = () => {
   const handleNavigate = (tab: string, subTab?: string) => {
     setActiveTab(tab);
     setSkillsSubTab(subTab || undefined);
+    setIsSidebarOpen(false); // Close sidebar on navigate
   };
 
   const navigateToLegal = (type: 'privacy' | 'terms' | null) => {
@@ -137,16 +140,19 @@ const App: React.FC = () => {
         return;
       }
       try {
-        const userData = await getUserData(authUser.uid);
+        let userData = await getUserData(authUser.uid);
         const catalog = await getProductsCatalog() || DEFAULT_PRODUCTS;
         
-        if (userData) {
-          const userEmail = authUser.email?.toLowerCase().trim() || "";
-          if (userEmail === 'rojibfauzi@gmail.com' && userData.role !== UserRole.SUPERADMIN) {
-              userData.role = UserRole.USER;
+        if (!userData && authUser.email) {
+          const existingByEmail = await findUserByEmail(authUser.email);
+          if (existingByEmail && existingByEmail.uid !== authUser.uid) {
+            userData = { ...existingByEmail, uid: authUser.uid };
+            await saveUserData(authUser.uid, userData);
           }
+        }
 
-          const currentPlanConfig = catalog.find(p => p.tier === userData.plan);
+        if (userData) {
+          const currentPlanConfig = catalog.find(p => p.tier === userData!.plan);
           if (currentPlanConfig) {
              userData.planPermissions = Array.from(new Set([...(userData.planPermissions || []), ...(currentPlanConfig.allowedModules || [])]));
              userData.planLimits = currentPlanConfig.limits;
@@ -155,10 +161,8 @@ const App: React.FC = () => {
              if (userData.planPermissions.includes('cv_generator') && !userData.planPermissions.includes('cv')) userData.planPermissions.push('cv');
           }
           
-          if (userData.uid === authUser.uid) setData(userData);
-          else setData({ ...getCleanInitialData(), uid: authUser.uid });
-
-          if (userData.role === UserRole.SUPERADMIN) {
+          setData(userData);
+          if (userData.role === UserRole.SUPERADMIN && activeTab === 'dashboard') {
               setActiveTab('admin_dashboard');
           }
         } else {
@@ -166,6 +170,9 @@ const App: React.FC = () => {
           const joinedAt = new Date();
           const trialExpiry = new Date();
           trialExpiry.setDate(joinedAt.getDate() + 7);
+
+          const pendingRegRaw = localStorage.getItem('pending_registration');
+          const pendingReg = pendingRegRaw ? JSON.parse(pendingRegRaw) : {};
 
           const newData: AppData = { 
             ...getCleanInitialData(), 
@@ -178,10 +185,16 @@ const App: React.FC = () => {
             expiryDate: trialExpiry.toISOString(),
             planPermissions: freePlan?.allowedModules || ['dashboard', 'profile', 'daily', 'skills', 'todo', 'calendar', 'work_reflection', 'loker', 'cv', 'networking', 'projects', 'career', 'reports', 'achievements', 'ai_insights', 'reviews'],
             planLimits: freePlan?.limits || { dailyLogs: 3, skills: 2, projects: 2, jobTracker: 2, careerCalendar: 2, networking: 2, todoList: 2, workExperience: 2, education: 2, trainingHistory: 2, certification: 2, careerPath: 2, cvExports: 1, achievements: 1 },
-            profile: { ...INITIAL_DATA.profile, email: authUser.email || '', name: authUser.displayName || 'User' }
+            profile: { 
+              ...INITIAL_DATA.profile, 
+              email: authUser.email || pendingReg.email || '', 
+              name: pendingReg.name || authUser.displayName || 'User',
+              phone: pendingReg.phone || ''
+            }
           };
           await saveUserData(authUser.uid, newData);
           setData(newData);
+          localStorage.removeItem('pending_registration');
         }
         setUser(authUser);
       } catch (err) {
@@ -288,6 +301,7 @@ const App: React.FC = () => {
       case 'admin_admins': return <AdminPanel initialMode="admin_admins" userRole={data.role} />;
       case 'admin_transactions': return <AdminPanel initialMode="admin_transactions" userRole={data.role} />;
       case 'duitku': return <AdminPanel initialMode="duitku" userRole={data.role} />;
+      case 'admin_followup': return <AdminPanel initialMode="followup" userRole={data.role} />;
       case 'admin_ai': return <AdminPanel initialMode="ai" userRole={data.role} />;
       case 'admin_products': return <AdminPanel initialMode="products" userRole={data.role} />;
       case 'admin_integrations': return <AdminPanel initialMode="integrations" userRole={data.role} />;
@@ -296,20 +310,20 @@ const App: React.FC = () => {
       
       case 'apps_hub': return withPermission('apps_hub', <AppsHub onNavigate={handleNavigate} />);
       case 'mobile_stats': return withPermission('mobile_stats', <MobileStats data={data} />);
-      case 'profile': return withPermission('profile', <ProfileView profile={data.profile} workExperiences={data.workExperiences} educations={data.educations} onUpdateProfile={(p) => setData(prev => ({...prev, profile: p}))} onAddWork={(w) => setData(prev => ({...prev, workExperiences: [...prev.workExperiences, w]}))} onUpdateWork={(w) => setData(prev => ({...prev, workExperiences: prev.workExperiences.map(i => i.id === w.id ? w : i)}))} onDeleteWork={(id) => setData(prev => ({...prev, workExperiences: prev.workExperiences.filter(i => i.id !== id)}))} onAddEducation={(e) => setData(prev => ({...prev, educations: [...prev.educations, e]}))} onUpdateEducation={(e) => setData(prev => ({...prev, educations: prev.educations.map(i => i.id === e.id ? e : i)}))} onDeleteEducation={(id) => setData(prev => ({...prev, educations: prev.educations.filter(e => e.id !== id)}))} appData={data} />);
+      case 'profile': return withPermission('profile', <ProfileView profile={data.profile} workExperiences={data.workExperiences} educations={data.educations} onUpdateProfile={(p) => setData(prev => ({...prev, profile: p}))} onAddWork={(w) => setData(prev => ({...prev, workExperiences: [...prev.workExperiences, w]}))} onUpdateWork={(w) => setData(prev => ({...prev, workExperiences: prev.workExperiences.map(i => i.id === w.id ? w : i)}))} onDeleteWork={(id) => setData(prev => ({...prev, workExperiences: prev.workExperiences.filter(i => i !== id)}))} onAddEducation={(e) => setData(prev => ({...prev, educations: [...prev.educations, e]}))} onUpdateEducation={(e) => setData(prev => ({...prev, educations: prev.educations.map(i => i.id === e.id ? e : i)}))} onDeleteEducation={(id) => setData(prev => ({...prev, educations: prev.educations.filter(e => e.id !== id)}))} appData={data} />);
       case 'daily': return withPermission('daily', <DailyLogs logs={data.dailyReports} categories={data.workCategories} onAdd={(l) => setData(prev => ({...prev, dailyReports: [...prev.dailyReports, l]}))} onUpdate={(l) => setData(prev => ({...prev, dailyReports: prev.dailyReports.map(i => i.id === l.id ? l : i)}))} onDelete={(id) => setData(prev => ({...prev, dailyReports: prev.dailyReports.filter(i => i.id !== id)}))} onAddCategory={(c) => setData(prev => ({...prev, workCategories: [...prev.workCategories, c]}))} onDeleteCategory={(c) => setData(prev => ({...prev, workCategories: prev.workCategories.filter(i => i !== c)}))} affirmation={data.affirmations[0]} appData={data} onUpgrade={commonProps.onUpgrade} />);
-      case 'work_reflection': return withPermission('work_reflection', <WorkReflectionView reflections={data.dailyReflections} skills={data.skills} onAdd={(r) => setData(prev => ({...prev, dailyReflections: [...prev.dailyReflections, r]}))} onUpdateSkill={(s) => setData(prev => ({...prev, skills: prev.skills.map(i => i.id === s.id ? s : i)}))} onAddTodo={(t) => setData(prev => ({...prev, todoList: [...prev.todoList, t]}))} onAddAchievement={(a) => setData(prev => ({...prev, achievements: [...prev.achievements, a]}))} appData={data} />);
+      case 'work_reflection': return withPermission('work_reflection', <WorkReflectionView reflections={data.dailyReflections} skills={data.skills} onAdd={(r) => setData(prev => ({...prev, dailyReflections: [...data.dailyReflections, r]}))} onUpdateSkill={(s) => setData(prev => ({...prev, skills: prev.skills.map(i => i.id === s.id ? s : i)}))} onAddTodo={(t) => setData(prev => ({...prev, todoList: [...prev.todoList, t]}))} onAddAchievement={(a) => setData(prev => ({...prev, achievements: [...prev.achievements, a]}))} appData={data} />);
       case 'reports': return withPermission('reports', <PerformanceReports data={data} />);
       case 'ai_insights': return withPermission('ai_insights', <AiInsightActivity data={data} onUpdateInsights={(ins) => setData(prev => ({...prev, aiInsights: ins}))} onAddAchievement={(ach) => setData(prev => ({...prev, achievements: [...prev.achievements, ach]}))} onUpgrade={commonProps.onUpgrade} />);
-      case 'todo_list': return withPermission('todo', <ToDoList tasks={data.todoList} categories={data.todoCategories} onAdd={(t) => setData(prev => ({...prev, todoList: [...prev.todoList, t]}))} onUpdate={(t) => setData(prev => ({...prev, todoList: prev.todoList.map(i => i.id === t.id ? t : i)}))} onDelete={(id) => setData(prev => ({...prev, todoList: prev.todoList.filter(i => i.id !== id)}))} onAddCategory={(c) => setData(prev => ({...prev, todoCategories: [...prev.todoCategories, c]}))} onUpdateCategory={(o, n) => setData(prev => ({...prev, todoCategories: prev.todoCategories.map(i => i === o ? n : i)}))} onDeleteCategory={(c) => setData(prev => ({...prev, todoCategories: prev.todoCategories.filter(i => i !== c)}))} appData={data} onUpgrade={commonProps.onUpgrade} />);
+      case 'todo_list': return withPermission('todo', <ToDoList tasks={data.todoList} categories={data.todoCategories} onAdd={(t) => setData(prev => ({...prev, todoList: [...prev.todoList, t]}))} onUpdate={(t) => setData(prev => ({...prev, todoList: prev.todoList.map(i => i.id === t.id ? t : i)}))} onDelete={(id) => setData(prev => ({...prev, todoList: prev.todoList.filter(i => i.id !== id)}))} onAddCategory={(c) => setData(prev => ({...prev, todoCategories: [...prev.todoCategories, c]}))} onUpdateCategory={(o, n) => setData(prev => ({...prev, toolCategories: prev.todoCategories.map(i => i === o ? n : i)}))} onDeleteCategory={(c) => setData(prev => ({...prev, todoCategories: prev.todoCategories.filter(i => i !== c)}))} appData={data} onUpgrade={commonProps.onUpgrade} />);
       case 'calendar': return withPermission('calendar', <CareerCalendar data={data} onAddEvent={(e) => setData(prev => ({...prev, careerEvents: [...(prev.careerEvents || []), e]}))} onDeleteEvent={(id) => setData(prev => ({...prev, careerEvents: (prev.careerEvents || []).filter(i => i.id !== id)}))} onUpgrade={commonProps.onUpgrade} onUpdateJobStatus={(id, s) => setData(prev => ({...prev, jobApplications: prev.jobApplications.map(j => j.id === id ? {...j, status: s} : j)}))} />);
-      case 'skills': return withPermission('skills', <SkillTracker skills={data.skills} trainings={data.trainings} certs={data.certifications} onAddSkill={(s) => setData(prev => ({...prev, skills: [...prev.skills, s]}))} onUpdateSkill={(s) => setData(prev => ({...prev, skills: prev.skills.map(i => i.id === s.id ? s : i)}))} onDeleteSkill={(id) => setData(prev => ({...prev, skills: prev.skills.filter(i => i.id !== id)}))} onAddTraining={(t) => setData(prev => ({...prev, trainings: [...prev.trainings, t]}))} onUpdateTraining={(t) => setData(prev => ({...prev, trainings: prev.trainings.map(i => i.id === t.id ? t : i)}))} onDeleteTraining={(id) => setData(prev => ({...prev, trainings: prev.trainings.filter(i => i.id !== id)}))} onAddCert={(c) => setData(prev => ({...prev, certifications: [...prev.certifications, c]}))} onUpdateCert={(c) => setData(prev => ({...prev, certifications: prev.certifications.map(i => i.id === c.id ? c : i)}))} onDeleteCert={(id) => setData(prev => ({...prev, certifications: prev.certifications.filter(i => i.id !== id)}))} onAddTodo={(t) => setData(prev => ({...prev, todoList: [...prev.todoList, t]}))} onSaveStrategy={(s: AiStrategy) => setData(prev => ({...prev, aiStrategies: [s, ...(prev.aiStrategies || [])]}))} showToast={showToast} data={data} initialSubTab={skillsSubTab as any} onUpgrade={commonProps.onUpgrade} onAddCalendarEvent={commonProps.onAddCalendarEvent} />);
-      case 'career': return withPermission('career', <CareerPlanner paths={data.careerPaths} appData={data} onAddPath={(p) => setData(prev => ({...prev, careerPaths: [...prev.careerPaths, p]}))} onUpdatePath={(p) => setData(prev => ({...prev, careerPaths: prev.careerPaths.map(i => i.id === p.id ? p : i)}))} onDeletePath={(id) => setData(prev => ({...prev, careerPaths: prev.careerPaths.filter(i => i.id !== id)}))} onUpgrade={commonProps.onUpgrade} />);
-      case 'networking': return withPermission('networking', <Networking contacts={data.contacts} onAdd={(c) => setData(prev => ({...prev, contacts: [...prev.contacts, c]}))} onUpdate={(c) => setData(prev => ({...prev, contacts: prev.contacts.map(i => i.id === c.id ? c : i)}))} onDelete={(id) => setData(prev => ({...prev, contacts: prev.contacts.filter(i => i.id !== id)}))} appData={data} onUpgrade={commonProps.onUpgrade} />);
-      case 'achievements': return withPermission('achievements', <AchievementTracker achievements={data.achievements} profile={data.profile} workExperiences={data.workExperiences} onAdd={(a) => setData(prev => ({...prev, achievements: [...prev.achievements, a]}))} onUpdate={(a) => setData(prev => ({...prev, achievements: prev.achievements.map(i => i.id === a.id ? a : i)}))} onDelete={(id) => setData(prev => ({...prev, achievements: prev.achievements.filter(i => i.id !== id)}))} appData={data} onUpgrade={commonProps.onUpgrade} />);
-      case 'loker': return withPermission('loker', <JobTracker applications={data.jobApplications} careerEvents={data.careerEvents || []} onAdd={(j) => setData(prev => ({...prev, jobApplications: [...prev.jobApplications, j]}))} onUpdate={(j) => setData(prev => ({...prev, jobApplications: prev.jobApplications.map(i => i.id === j.id ? j : i)}))} onDelete={(id) => setData(prev => ({...prev, jobApplications: prev.jobApplications.filter(i => i.id !== id)}))} onAddCalendarEvent={commonProps.onAddCalendarEvent} appData={data} onUpgrade={commonProps.onUpgrade} />);
-      case 'projects': return withPermission('projects', <PersonalProjectTracker projects={data.personalProjects} onAdd={(p) => setData(prev => ({...prev, personalProjects: [...prev.personalProjects, p]}))} onUpdate={(p) => setData(prev => ({...prev, personalProjects: prev.personalProjects.map(i => i.id === p.id ? p : i)}))} onDelete={(id) => setData(prev => ({...prev, personalProjects: prev.personalProjects.filter(i => i.id !== id)}))} appData={data} onUpgrade={commonProps.onUpgrade} />);
-      case 'reviews': return withPermission('reviews', <Reviews reviews={data.monthlyReviews} onAdd={(r) => setData(prev => ({...prev, monthlyReviews: [...prev.monthlyReviews, r]}))} onDelete={(id) => setData(prev => ({...prev, monthlyReviews: prev.monthlyReviews.filter(i => i.id !== id)}))} />);
+      case 'skills': return withPermission('skills', <SkillTracker skills={data.skills} trainings={data.trainings} certs={data.certifications} onAddSkill={(s) => setData(prev => ({...prev, skills: [...prev.skills, s]}))} onUpdateSkill={(s) => setData(prev => ({...prev, skills: prev.skills.map(i => i.id === s.id ? s : i)}))} onDeleteSkill={(id) => setData(prev => ({...prev, skills: prev.skills.filter(i => i !== id)}))} onAddTraining={(t) => setData(prev => ({...prev, trainings: [...prev.trainings, t]}))} onUpdateTraining={(t) => setData(prev => ({...prev, trainings: prev.trainings.map(i => i.id === t.id ? t : i)}))} onDeleteTraining={(id) => setData(prev => ({...prev, trainings: prev.trainings.filter(i => i !== id)}))} onAddCert={(c) => setData(prev => ({...prev, certifications: [...prev.certifications, c]}))} onUpdateCert={(c) => setData(prev => ({...prev, certifications: prev.certifications.map(i => i.id === c.id ? c : i)}))} onDeleteCert={(id) => setData(prev => ({...prev, certifications: prev.certifications.filter(i => i !== id)}))} onAddTodo={(t) => setData(prev => ({...prev, todoList: [...prev.todoList, t]}))} onSaveStrategy={(s: AiStrategy) => setData(prev => ({...prev, aiStrategies: [s, ...(prev.aiStrategies || [])]}))} showToast={showToast} data={data} initialSubTab={skillsSubTab as any} onUpgrade={commonProps.onUpgrade} onAddCalendarEvent={commonProps.onAddCalendarEvent} />);
+      case 'career': return withPermission('career', <CareerPlanner paths={data.careerPaths} appData={data} onAddPath={(p) => setData(prev => ({...prev, careerPaths: [...prev.careerPaths, p]}))} onUpdatePath={(p) => setData(prev => ({...prev, careerPaths: prev.careerPaths.map(i => i.id === p.id ? p : i)}))} onDeletePath={(id) => setData(prev => ({...prev, careerPaths: prev.careerPaths.filter(i => i !== id)}))} onUpgrade={commonProps.onUpgrade} />);
+      case 'networking': return withPermission('networking', <Networking contacts={data.contacts} onAdd={(c) => setData(prev => ({...prev, contacts: [...prev.contacts, c]}))} onUpdate={(c) => setData(prev => ({...prev, contacts: prev.contacts.map(i => i.id === c.id ? c : i)}))} onDelete={(id) => setData(prev => ({...prev, contacts: prev.contacts.filter(i => i !== id)}))} appData={data} onUpgrade={commonProps.onUpgrade} />);
+      case 'achievements': return withPermission('achievements', <AchievementTracker achievements={data.achievements} profile={data.profile} workExperiences={data.workExperiences} onAdd={(a) => setData(prev => ({...prev, achievements: [...prev.achievements, a]}))} onUpdate={(a) => setData(prev => ({...prev, achievements: prev.achievements.map(i => i.id === a.id ? a : i)}))} onDelete={(id) => setData(prev => ({...prev, achievements: prev.achievements.filter(i => i !== id)}))} appData={data} onUpgrade={commonProps.onUpgrade} />);
+      case 'loker': return withPermission('loker', <JobTracker applications={data.jobApplications} careerEvents={data.careerEvents || []} onAdd={(j) => setData(prev => ({...prev, jobApplications: [...prev.jobApplications, j]}))} onUpdate={(j) => setData(prev => ({...prev, jobApplications: prev.jobApplications.map(i => i.id === j.id ? j : i)}))} onDelete={(id) => setData(prev => ({...prev, jobApplications: prev.jobApplications.filter(i => i !== id)}))} onAddCalendarEvent={commonProps.onAddCalendarEvent} appData={data} onUpgrade={commonProps.onUpgrade} />);
+      case 'projects': return withPermission('projects', <PersonalProjectTracker projects={data.personalProjects} onAdd={(p) => setData(prev => ({...prev, personalProjects: [...prev.personalProjects, p]}))} onUpdate={(p) => setData(prev => ({...prev, personalProjects: prev.personalProjects.map(i => i.id === p.id ? p : i)}))} onDelete={(id) => setData(prev => ({...prev, personalProjects: prev.personalProjects.filter(i => i !== id)}))} appData={data} onUpgrade={commonProps.onUpgrade} />);
+      case 'reviews': return withPermission('reviews', <Reviews reviews={data.monthlyReviews} onAdd={(r) => setData(prev => ({...prev, monthlyReviews: [...prev.monthlyReviews, r]}))} onDelete={(id) => setData(prev => ({...prev, monthlyReviews: prev.monthlyReviews.filter(i => i !== id)}))} />);
       case 'cv_generator': return withPermission('cv', <CVGenerator data={data} />);
       case 'online_cv': return withPermission('cv', <OnlineCVBuilder data={data} onUpdateConfig={(c) => setData(prev => ({...prev, onlineCV: c}))} />);
       case 'settings': return <AccountSettings reminderConfig={data.reminderConfig} onUpdateReminders={(c) => setData(prev => ({...prev, reminderConfig: c}))} />;
@@ -320,9 +334,25 @@ const App: React.FC = () => {
 
   const handleLogout = () => { auth.signOut(); window.location.href = "/"; };
 
+  const getAdminTitle = () => {
+    const titles: Record<string, string> = {
+      'admin_dashboard': 'Dashboard Admin',
+      'admin_users': 'Kelola User',
+      'admin_admins': 'Kelola Admin',
+      'admin_transactions': 'Manajemen Transaksi',
+      'duitku': 'Integrasi Duitku',
+      'admin_followup': 'Follow Up Manager',
+      'admin_ai': 'AI Architecture',
+      'admin_products': 'Product Matrix',
+      'admin_settings': 'Pengaturan Admin',
+      'admin_health': 'System Health'
+    };
+    return titles[activeTab] || 'Admin Hub';
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col lg:flex-row overflow-x-hidden font-sans">
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} onLogout={handleLogout} isAdmin={isAdmin} />
+      <Sidebar activeTab={activeTab} setActiveTab={handleNavigate} onLogout={handleLogout} isAdmin={isAdmin} isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
       <main className="flex-1 lg:ml-64">
         {!user.emailVerified && !isAdmin && !hideVerificationReminder && (
           <div className="px-6 py-6 lg:px-10 lg:pt-8 animate-in slide-in-from-top-full duration-700 relative z-[200]">
@@ -342,9 +372,9 @@ const App: React.FC = () => {
           </div>
         )}
 
-        <div className={`${!isAdmin ? 'pt-0' : 'p-4 lg:p-8'}`}>
+        <div className={`${!isAdmin ? 'pt-0' : 'p-4 lg:p-8 pt-2'}`}>
           {!isAdmin && <MobileHeader profile={data.profile} notificationCount={activeAlerts.length} onNavigate={handleNavigate} activeTab={activeTab} alerts={activeAlerts} />}
-          <div className={`${!isAdmin ? 'p-4 lg:p-8 pt-6' : ''}`}>
+          <div className={`${!isAdmin ? 'p-4 lg:p-8 pt-6' : 'pt-0'}`}>
             {isUpgradeModalOpen && (
               <UpgradeModal 
                 products={publicProducts} 
@@ -355,9 +385,16 @@ const App: React.FC = () => {
                 userName={data.profile.name} 
               />
             )}
-            <div className="hidden lg:flex items-center justify-between mb-8">
-               <div><h2 className="text-xl font-black text-slate-900 tracking-tight uppercase">{activeTab.replace('_', ' ')}</h2><p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">FokusKarir Control Center</p></div>
-               <div className="flex items-center gap-6">
+            <div className={`hidden lg:flex items-center justify-between ${!isAdmin ? 'mb-8' : 'mb-8'}`}>
+               <div className="animate-in slide-in-from-left duration-500">
+                 <h2 className="text-xl lg:text-3xl font-black text-slate-900 tracking-tight uppercase">
+                    {isAdmin ? getAdminTitle() : activeTab.replace('_', ' ')}
+                 </h2>
+                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                   {isAdmin ? 'Sistem Administrasi FokusKarir.' : 'FokusKarir Control Center'}
+                 </p>
+               </div>
+               <div className="flex items-center gap-6 ml-auto">
                   <div className="relative" ref={desktopNotifRef}>
                      <button onClick={() => setIsNotifOpen(!isNotifOpen)} className={`w-10 h-10 rounded-full flex items-center justify-center transition-all relative border ${isNotifOpen ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg' : 'bg-white text-slate-400 border-slate-100 hover:text-indigo-600'}`}><i className={`bi ${isNotifOpen ? 'bi-bell-fill' : 'bi-bell'}`}></i>{activeAlerts.length > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white text-[8px] font-black rounded-full flex items-center justify-center border-2 border-white">{activeAlerts.length}</span>}</button>
                      {isNotifOpen && (
@@ -375,7 +412,7 @@ const App: React.FC = () => {
           </div>
         </div>
       </main>
-      <MobileNav activeTab={activeTab} setActiveTab={handleNavigate} onLogout={handleLogout} isAdmin={isAdmin} />
+      <MobileNav activeTab={activeTab} setActiveTab={handleNavigate} onLogout={handleLogout} isAdmin={isAdmin} onOpenSidebar={() => setIsSidebarOpen(true)} />
       {toast && <div className={`fixed top-4 right-4 z-[6000] px-6 py-3 rounded-2xl shadow-2xl border text-white font-black text-[10px] uppercase tracking-widest animate-in slide-in-from-right-4 ${toast.type === 'success' ? 'bg-emerald-600 border-emerald-500' : toast.type === 'error' ? 'bg-rose-600 border-rose-500' : 'bg-blue-600 border-blue-500'}`}>{toast.message}</div>}
     </div>
   );
