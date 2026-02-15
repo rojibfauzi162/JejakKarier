@@ -1,3 +1,4 @@
+
 import { GoogleGenAI, Type } from "@google/genai";
 import { AppData, AiConfig, WorkReflection } from "../types";
 import { getAiConfig, auth, recordAiTokens } from "./firebase";
@@ -9,7 +10,6 @@ async function callAI(prompt: string, schema?: any) {
   let config: AiConfig | null = cachedAiConfig;
   const now = Date.now();
 
-  // Refresh config setiap 1 menit
   if (!config || (now - lastConfigFetch > 60000)) {
     try {
       const fetchedConfig = await getAiConfig();
@@ -31,13 +31,12 @@ async function callAI(prompt: string, schema?: any) {
     const targetModel = config.modelName || "google/gemini-2.0-flash-exp:free";
     const safeMaxTokens = Math.min(Number(config.maxTokens) || 4096, 8192);
 
-    // Perbaikan: Masukkan instruksi struktur JSON langsung ke prompt untuk OpenRouter
     const enrichedPrompt = schema 
-      ? `${prompt}\n\nSTRICT REQUIREMENT: Respond ONLY with a valid JSON object matching this structure: ${JSON.stringify(schema)}. Ensure all fields are filled with meaningful, descriptive content. Do not return empty strings for required analysis fields. EVERYTHING MUST BE IN THE REQUESTED LANGUAGE.`
+      ? `${prompt}\n\nSTRICT REQUIREMENT: Respond ONLY with a valid JSON object matching this structure: ${JSON.stringify(schema)}. Ensure all fields are filled with meaningful, descriptive content. EVERYTHING MUST BE IN THE REQUESTED LANGUAGE.`
       : prompt;
 
     const systemMessage = schema
-      ? "You are a senior career path strategist. Your output MUST be a valid, minified JSON object. No conversational text, no markdown code blocks, just the raw JSON."
+      ? "You are a senior career path strategist. Your output MUST be a valid JSON object. No conversational text, no markdown code blocks."
       : "You are a helpful career assistant.";
 
     try {
@@ -73,12 +72,10 @@ async function callAI(prompt: string, schema?: any) {
         let text = json.choices[0].message?.content || "";
         
         if (schema) {
-          // Robust Cleaning: Hapus blok markdown jika AI tetap menyertakannya
           const cleanJson = text.replace(/```json\n?|```/g, "").trim();
           try {
             return JSON.parse(cleanJson);
           } catch (e) {
-            // Fallback: Cari kurung kurawal pertama dan terakhir
             const match = cleanJson.match(/\{[\s\S]*\}/);
             if (match) return JSON.parse(match[0]);
             throw new Error("AI returned invalid JSON format");
@@ -87,45 +84,44 @@ async function callAI(prompt: string, schema?: any) {
         return text;
       } else {
         const errorData = await response.json().catch(() => ({}));
-        console.error("[AI SERVICE] OpenRouter error:", errorData);
         throw new Error(`AI Gagal Merespon: ${errorData.error?.message || 'Gangguan Provider AI'}`);
       }
     } catch (error: any) {
       clearTimeout(timeoutId);
-      console.error("[AI SERVICE] Fetch error:", error.message);
       throw error;
     }
   }
 
-  // FALLBACK KE NATIVE SDK
-  if (!process.env.API_KEY && (!config || !config.openRouterKey)) {
-    throw new Error("Layanan AI Belum Dikonfigurasi. Silakan hubungi Superadmin untuk setting API Key.");
-  }
-
-  // Correct initialization as per coding guidelines
+  // NATIVE SDK FALLBACK
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   try {
     const response = await ai.models.generateContent({
-      // Use gemini-3-flash-preview for basic text tasks as per guidelines
-      model: 'gemini-3-flash-preview',
+      model: 'gemini-3-pro-preview', // Upgrade ke Pro untuk analisis kompleks
       contents: prompt,
-      config: schema ? { responseMimeType: "application/json", responseSchema: schema } : undefined
+      config: {
+        // Aturan: Jika maxOutputTokens disetel, wajib sertakan thinkingBudget
+        maxOutputTokens: 2000,
+        thinkingConfig: { thinkingBudget: 1000 },
+        responseMimeType: schema ? "application/json" : undefined,
+        responseSchema: schema || undefined
+      }
     });
     
     if (response.usageMetadata && auth.currentUser) {
       recordAiTokens(auth.currentUser.uid, response.usageMetadata.totalTokenCount || 0);
     }
     
-    // Correctly access .text property as per guidelines
     let text = response.text?.trim() || '';
     if (schema) {
-      const cleanJson = text.replace(/```json\n?|```/g, "").trim();
-      const match = cleanJson.match(/\{[\s\S]*\}/);
-      return match ? JSON.parse(match[0]) : JSON.parse(cleanJson);
+      try {
+        return JSON.parse(text);
+      } catch (e) {
+        const match = text.match(/\{[\s\S]*\}/);
+        return match ? JSON.parse(match[0]) : JSON.parse(text);
+      }
     }
     return text;
   } catch (error: any) {
-    console.error("[AI SERVICE] Native SDK error:", error.message);
     throw new Error(`Kesalahan Layanan AI: ${error.message}`);
   }
 }
@@ -144,20 +140,7 @@ export async function analyzeSkillGap(data: AppData, lang: 'id' | 'en' = 'id') {
 
   const languageName = lang === 'id' ? 'BAHASA INDONESIA' : 'ENGLISH';
 
-  const prompt = `ANALYZE CAREER QUALIFICATION FOR ${data.profile.name}. 
-  TARGET POSITION: ${data.profile.shortTermTarget || data.profile.currentPosition}. 
-  USER DATA: ${JSON.stringify(slimData)}. 
-  
-  REQUIRED OUTPUT LANGUAGE: ${languageName}.
-  MANDATORY: ALL string values in the JSON output MUST be in ${languageName}.
-  
-  1. Detailed readiness score (0-100).
-  2. Professional explanation of the score.
-  3. SPECIFIC education recommendations (e.g. "S1 Akuntansi", not just "Relevant Degree").
-  4. At least 3 training and 3 certification names that are popular in the industry right now.
-  5. 3 immediate micro-actions for this week, this month, and next month.
-  
-  MANDATORY: Provide high-quality content for every single field. Do not use placeholders. Ensure Indonesian terms are used if language is set to ID.`;
+  const prompt = `ANALYZE CAREER QUALIFICATION FOR ${data.profile.name}. TARGET POSITION: ${data.profile.shortTermTarget || data.profile.currentPosition}. USER DATA: ${JSON.stringify(slimData)}. REQUIRED OUTPUT LANGUAGE: ${languageName}.`;
   
   const schema = {
     type: Type.OBJECT,
@@ -186,19 +169,7 @@ export async function summarizeMonthlyReview(reviewText: string) {
 }
 
 export async function generateCareerInsight(data: AppData, audience: 'self' | 'supervisor', period: 'weekly' | 'monthly', contexts: string[]) {
-  const prompt = `GENERATE A COMPREHENSIVE PERFORMANCE INSIGHT REPORT for user: ${data.profile.name}.
-  CONTEXT: ${contexts.join(', ')}
-  AUDIENCE: ${audience}
-  PERIOD: ${period}
-  
-  ACTIVITY LOG DATA: ${JSON.stringify(data.dailyReports)}
-  
-  STRICT MANDATORY RULES:
-  1. The 'summary' field MUST NOT BE EMPTY. You MUST write a 3-4 sentence professional executive summary of the user's progress and achievements during this period based on the log data.
-  2. If audience is 'supervisor', use formal business language. If 'self', use reflective and motivating language.
-  3. Analyze the metrics and categories in the logs to provide specific insights.
-  4. Detected Achievements section should highlight concretely what was finished.
-  5. LANGUAGE: ALL output fields must be in BAHASA INDONESIA.`;
+  const prompt = `GENERATE A COMPREHENSIVE PERFORMANCE INSIGHT REPORT for user: ${data.profile.name}. ACTIVITY LOG DATA: ${JSON.stringify(data.dailyReports)}. LANGUAGE: BAHASA INDONESIA.`;
   
   const schema = {
     type: Type.OBJECT,

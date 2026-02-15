@@ -1,6 +1,7 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { DuitkuConfig } from '../../types';
+import { getDuitkuConfig } from '../../services/firebase';
 
 interface DuitkuIntegrationProps {
   initialConfig: DuitkuConfig;
@@ -10,14 +11,29 @@ interface DuitkuIntegrationProps {
 
 const DuitkuIntegration: React.FC<DuitkuIntegrationProps> = ({ initialConfig, onSave, isSaving }) => {
   const [form, setForm] = useState<DuitkuConfig>(initialConfig);
+  
+  // URL Default berdasarkan hasil deploy Cloud Functions
+  const DEFAULT_CALLBACK = "https://us-central1-jejakkarir-11379.cloudfunctions.net/duitkuCallback";
+  const DEFAULT_RETURN = window.location.origin + "/billing";
+
+  useEffect(() => {
+    // Memastikan jika config kosong, gunakan default
+    if (!form.callbackUrl) setForm(prev => ({ ...prev, callbackUrl: DEFAULT_CALLBACK }));
+    if (!form.returnUrl) setForm(prev => ({ ...prev, returnUrl: DEFAULT_RETURN }));
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSave(form);
   };
 
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    alert("URL disalin ke clipboard!");
+  };
+
   return (
-    <div className="bg-white p-8 lg:p-12 rounded-[3.5rem] border border-slate-100 shadow-sm max-w-4xl">
+    <div className="bg-white p-8 lg:p-12 rounded-[3.5rem] border border-slate-100 shadow-sm max-w-4xl animate-in fade-in duration-500">
        <div className="flex items-center gap-6 mb-10 pb-8 border-b border-slate-50">
           <div className="w-16 h-16 bg-indigo-600 text-white rounded-[1.75rem] flex items-center justify-center text-3xl shadow-xl">
              <i className="bi bi-credit-card-2-front-fill"></i>
@@ -73,23 +89,34 @@ const DuitkuIntegration: React.FC<DuitkuIntegrationProps> = ({ initialConfig, on
              </div>
           </div>
 
-          <div className="p-8 bg-blue-50/50 rounded-[2.5rem] border border-blue-100">
-             <h4 className="text-[11px] font-black text-blue-900 uppercase tracking-widest mb-4 flex items-center gap-2">
+          <div className="p-8 bg-blue-50/50 rounded-[2.5rem] border border-blue-100 space-y-6">
+             <h4 className="text-[11px] font-black text-blue-900 uppercase tracking-widest flex items-center gap-2">
                 <i className="bi bi-info-circle-fill"></i> Callback Configuration
              </h4>
+             
              <div className="space-y-4">
-                <div className="flex flex-col gap-1">
-                   <span className="text-[9px] font-black text-slate-400 uppercase ml-1">Webhook URL (Callback)</span>
-                   <div className="flex gap-2">
-                      <div className="flex-1 bg-white px-5 py-3 rounded-xl border border-blue-200 font-mono text-[10px] text-blue-600 truncate">{window.location.origin}/api/callback/duitku</div>
-                      <button type="button" onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/api/callback/duitku`); alert("URL disalin!"); }} className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-[10px] font-black uppercase">Copy</button>
+                <div className="space-y-2">
+                   <div className="flex justify-between items-center px-1">
+                      <span className="text-[9px] font-black text-slate-400 uppercase">Webhook URL (Duitku Callback)</span>
+                      <button type="button" onClick={() => copyToClipboard(form.callbackUrl || DEFAULT_CALLBACK)} className="text-[9px] font-black text-indigo-600 uppercase hover:underline">Copy URL</button>
                    </div>
+                   <input 
+                      className="w-full px-5 py-3 rounded-xl border border-blue-200 bg-white font-mono text-[10px] text-blue-600 outline-none"
+                      value={form.callbackUrl || DEFAULT_CALLBACK}
+                      onChange={e => setForm({...form, callbackUrl: e.target.value})}
+                   />
+                   <p className="text-[8px] text-slate-400 italic">Masukkan URL ini di Dashboard Duitku > Project > Callback URL.</p>
                 </div>
-                <div className="flex flex-col gap-1">
-                   <span className="text-[9px] font-black text-slate-400 uppercase ml-1">Return URL (Redirect)</span>
-                   <div className="flex gap-2">
-                      <div className="flex-1 bg-white px-5 py-3 rounded-xl border border-blue-200 font-mono text-[10px] text-blue-600 truncate">{window.location.origin}/dashboard</div>
+
+                <div className="space-y-2">
+                   <div className="flex justify-between items-center px-1">
+                      <span className="text-[9px] font-black text-slate-400 uppercase">Return URL (Redirect setelah bayar)</span>
                    </div>
+                   <input 
+                      className="w-full px-5 py-3 rounded-xl border border-blue-200 bg-white font-mono text-[10px] text-slate-600 outline-none"
+                      value={form.returnUrl || DEFAULT_RETURN}
+                      onChange={e => setForm({...form, returnUrl: e.target.value})}
+                   />
                 </div>
              </div>
           </div>
