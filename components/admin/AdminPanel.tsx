@@ -35,6 +35,11 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard', user
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<AppData | null>(null);
 
+  // PRODUCT STATES
+  const [isProductModalOpen, setIsProductModalOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<SubscriptionProduct | null>(null);
+  const [isSavingProduct, setIsSavingProduct] = useState(false);
+
   const [aiConfig, setAiConfigState] = useState<AiConfig>({
     openRouterKey: '', modelName: 'google/gemini-2.0-pro-exp-02-05:free', maxTokens: 4096
   });
@@ -161,6 +166,44 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard', user
     }
   };
 
+  const handleSaveProduct = async (productData: Partial<SubscriptionProduct>) => {
+    setIsSavingProduct(true);
+    try {
+      let updatedProducts;
+      if (editingProduct) {
+        updatedProducts = products.map(p => p.id === editingProduct.id ? { ...p, ...productData } as SubscriptionProduct : p);
+      } else {
+        const newProduct = { 
+          ...productData, 
+          id: 'p_' + Date.now().toString() 
+        } as SubscriptionProduct;
+        updatedProducts = [...products, newProduct];
+      }
+      await saveProductsCatalog(updatedProducts);
+      setProducts(updatedProducts);
+      setIsProductModalOpen(false);
+      triggerToast("Katalog produk diperbarui! 📦");
+    } catch (e) {
+      triggerToast("Gagal menyimpan produk.", "error");
+    } finally {
+      setIsSavingProduct(false);
+    }
+  };
+
+  const handleDeleteProduct = async () => {
+    if (!editingProduct) return;
+    if (!confirm("Hapus paket ini secara permanen dari katalog? Tindakan ini tidak dapat dibatalkan.")) return;
+    try {
+      const updatedProducts = products.filter(p => p.id !== editingProduct.id);
+      await saveProductsCatalog(updatedProducts);
+      setProducts(updatedProducts);
+      setIsProductModalOpen(false);
+      triggerToast("Produk berhasil dihapus dari sistem.");
+    } catch (e) {
+      triggerToast("Gagal menghapus produk.", "error");
+    }
+  };
+
   const handleSaveUserMetadata = async (metadata: Partial<AppData>) => {
     if (!editingUser?.uid) return;
     try {
@@ -191,12 +234,13 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard', user
       {initialMode === 'tracking' && <TrackingSettings onToast={triggerToast} />}
       {initialMode === 'followup' && <FollowUpManager initialConfig={followUpConfig} onSave={handleSaveFollowUpConfig} isSaving={isSavingFollowUp} />}
       {initialMode === 'admin_transactions' && <TransactionManagement users={users} products={products} onUpdateMetadata={async (uid, fields) => { await updateAdminMetadata(uid, fields); fetchUsersAndConfig(true); }} onManageUser={(u) => { setEditingUser(u); setIsUserModalOpen(true); }} followUpConfig={followUpConfig} />}
-      {initialMode === 'products' && <ProductMatrix products={products} setEditingProduct={()=>{}} setIsProductModalOpen={()=>{}} />}
+      {initialMode === 'products' && <ProductMatrix products={products} setEditingProduct={setEditingProduct} setIsProductModalOpen={setIsProductModalOpen} />}
       {initialMode === 'ai' && <AiArchitecture aiConfig={aiConfig} setAiConfigState={setAiConfigState} handleSaveAiConfig={handleSaveAiConfig} isSavingAi={isSavingAi} isFetchingModels={false} isModelDropdownOpen={false} setIsModelDropdownOpen={()=>{}} modelSearchTerm="" setModelSearchTerm={()=>{}} filteredOpenRouterModels={[]} handleModelSelect={()=>{}} dropdownRef={dropdownRef} />}
       {initialMode === 'settings' && <AdminSettings />}
       {initialMode === 'integrations' && <MayarIntegration />}
       {initialMode === 'admin_admins' && <AdminManagement users={users} onUpdateMetadata={async (uid, fields) => { await updateAdminMetadata(uid, fields); fetchUsersAndConfig(true); }} />}
 
+      {/* USER MANAGEMENT MODAL */}
       {isUserModalOpen && editingUser && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[2000] p-4">
           <div className="bg-white w-full max-w-xl rounded-[2.5rem] shadow-2xl p-8 lg:p-12 animate-in zoom-in duration-300">
@@ -235,6 +279,27 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard', user
                 </div>
                 <button onClick={() => handleSaveUserMetadata(editingUser)} className="w-full py-4 bg-slate-900 text-white font-black rounded-2xl uppercase text-[10px] shadow-xl">Simpan Perubahan</button>
              </div>
+          </div>
+        </div>
+      )}
+
+      {/* PRODUCT MANAGEMENT MODAL */}
+      {isProductModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[2000] p-4">
+          <div className="bg-white w-full max-w-5xl rounded-[3rem] shadow-2xl p-8 lg:p-14 animate-in zoom-in duration-300 overflow-y-auto max-h-[95vh] no-scrollbar">
+            <div className="flex justify-between items-start mb-8">
+              <h3 className="text-3xl font-black text-slate-900 uppercase tracking-tighter leading-none">
+                {editingProduct ? 'Edit Konfigurasi Paket' : 'Tambah Paket Langganan'}
+              </h3>
+              <button onClick={() => setIsProductModalOpen(false)} className="w-10 h-10 rounded-full bg-slate-50 text-slate-400 flex items-center justify-center font-black">✕</button>
+            </div>
+            
+            <ProductForm 
+              initialData={editingProduct}
+              onCancel={() => setIsProductModalOpen(false)}
+              onSubmit={handleSaveProduct}
+              onDelete={editingProduct ? handleDeleteProduct : undefined}
+            />
           </div>
         </div>
       )}

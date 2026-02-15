@@ -114,11 +114,6 @@ const TransactionManagement: React.FC<TransactionManagementProps> = ({ users, pr
 
   const getSafeDuration = (tx: ManualTransaction): number => {
     if (tx.durationDays && tx.durationDays > 0) return tx.durationDays;
-    if (tx.planTier === SubscriptionPlan.PRO) {
-      if (tx.amount >= 140000) return 365;
-      if (tx.amount >= 90000) return 90;
-      return 30;
-    }
     return 30;
   };
 
@@ -133,39 +128,29 @@ const TransactionManagement: React.FC<TransactionManagementProps> = ({ users, pr
     const fields: Partial<AppData> = { manualTransactions: updatedTxs };
 
     if (newStatus === PaymentStatus.PAID) {
-      if (user.role === UserRole.SUPERADMIN) {
-        fields.activeFrom = user.activeFrom || new Date().toISOString();
-        fields.plan = SubscriptionPlan.PRO;
-        fields.status = AccountStatus.ACTIVE;
-        alert(`Validasi Berhasil!\n\nUser adalah Administrator. Akses disetel sebagai PERMANEN.`);
-      } else {
-        const allPaidTxs = updatedTxs.filter(t => t.status === PaymentStatus.PAID);
-        const totalPaidDays = allPaidTxs.reduce((acc, curr) => acc + getSafeDuration(curr), 0);
-        
-        const currentTx = updatedTxs.find(t => t.id === txId);
-        const selectedProduct = products.find(p => p.tier === currentTx?.planTier);
-        
-        const now = new Date();
-        const sortedPaid = [...allPaidTxs].sort((a,b) => a.date.localeCompare(b.date));
-        const baseDateStr = user.activeFrom || (sortedPaid.length > 0 ? sortedPaid[0].date : now.toISOString());
-        
-        const baseDate = new Date(baseDateStr);
-        const expiryTime = baseDate.getTime() + (totalPaidDays * 24 * 60 * 60 * 1000);
-        const expiry = new Date(expiryTime);
-        
-        fields.activeFrom = baseDateStr;
-        fields.plan = currentTx?.planTier || user.plan;
-        fields.status = AccountStatus.ACTIVE;
-        fields.expiryDate = expiry.toISOString();
-        
-        if (selectedProduct) {
-          fields.planPermissions = Array.from(new Set([...(user.planPermissions || []), ...(selectedProduct.allowedModules || [])]));
-          fields.planLimits = selectedProduct.limits;
-        }
-
-        const daysRemainingNow = Math.ceil((expiry.getTime() - now.getTime()) / (1000 * 3600 * 24));
-        alert(`Validasi Berhasil!\n\nTarget Update: ${user.profile?.email}\nTotal Akumulasi: ${totalPaidDays} Hari\nBerlaku s/d: ${expiry.toLocaleDateString('id-ID', {day:'numeric', month:'long', year:'numeric'})}\nSisa Masa Aktif: ${daysRemainingNow} Hari.`);
+      const currentTx = updatedTxs.find(t => t.id === txId);
+      const days = currentTx?.durationDays || 30;
+      
+      let baseDate = new Date();
+      // Jika user sudah pro dan masa aktif belum habis, tambahkan dari tanggal expired lama (Extension Mode)
+      if (user.expiryDate && new Date(user.expiryDate) > baseDate) {
+        baseDate = new Date(user.expiryDate);
       }
+
+      const expiry = new Date(baseDate.getTime() + (days * 24 * 60 * 60 * 1000));
+      
+      fields.status = AccountStatus.ACTIVE;
+      fields.plan = currentTx?.planTier || user.plan;
+      fields.expiryDate = expiry.toISOString();
+      
+      // Update Permissions dari matrix produk
+      const product = products.find(p => p.tier === fields.plan);
+      if (product) {
+        fields.planPermissions = product.allowedModules;
+        fields.planLimits = product.limits;
+      }
+      
+      alert(`VALIDASI BERHASIL!\n\nUser: ${user.profile?.email}\nDurasi: +${days} Hari\nBerlaku s/d: ${expiry.toLocaleDateString('id-ID', {day:'numeric', month:'long', year:'numeric'})}`);
     }
 
     await onUpdateMetadata(uid, fields);
@@ -201,25 +186,17 @@ const TransactionManagement: React.FC<TransactionManagementProps> = ({ users, pr
     const fields: Partial<AppData> = { manualTransactions: updatedTxs };
 
     if (manualForm.status === PaymentStatus.PAID) {
-      if (user.role === UserRole.SUPERADMIN) {
-        fields.activeFrom = user.activeFrom || new Date().toISOString();
-        fields.plan = targetProduct.tier;
-        fields.status = AccountStatus.ACTIVE;
-      } else {
-        const allPaidTxs = updatedTxs.filter(t => t.status === PaymentStatus.PAID);
-        const totalPaidDays = allPaidTxs.reduce((sum, tx) => sum + getSafeDuration(tx), 0);
-        const now = new Date();
-        const baseDateStr = user.activeFrom || now.toISOString();
-        const baseDate = new Date(baseDateStr);
-        const expiry = new Date(baseDate.getTime() + (totalPaidDays * 24 * 60 * 60 * 1000));
-        
-        fields.activeFrom = baseDateStr;
-        fields.plan = targetProduct.tier;
-        fields.status = AccountStatus.ACTIVE;
-        fields.expiryDate = expiry.toISOString();
-        fields.planPermissions = targetProduct.allowedModules;
-        fields.planLimits = targetProduct.limits;
+      let baseDate = new Date();
+      if (user.expiryDate && new Date(user.expiryDate) > baseDate) {
+        baseDate = new Date(user.expiryDate);
       }
+      const expiry = new Date(baseDate.getTime() + (newTx.durationDays! * 24 * 60 * 60 * 1000));
+      
+      fields.plan = targetProduct.tier;
+      fields.status = AccountStatus.ACTIVE;
+      fields.expiryDate = expiry.toISOString();
+      fields.planPermissions = targetProduct.allowedModules;
+      fields.planLimits = targetProduct.limits;
     }
 
     await onUpdateMetadata(selectedUserUid, fields);
@@ -307,29 +284,6 @@ const TransactionManagement: React.FC<TransactionManagementProps> = ({ users, pr
                  </select>
               </div>
            </div>
-
-           {timeFilterMode === 'range' && (
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 animate-in slide-in-from-top-2 duration-300">
-                <div className="space-y-1.5">
-                   <label className="text-[9px] font-black uppercase text-slate-400 ml-1">Mulai Dari</label>
-                   <input 
-                      type="date" 
-                      className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none font-bold text-[11px]"
-                      value={customStartDate}
-                      onChange={e => { setCustomStartDate(e.target.value); setCurrentPage(1); }}
-                   />
-                </div>
-                <div className="space-y-1.5">
-                   <label className="text-[9px] font-black uppercase text-slate-400 ml-1">Hingga Tanggal</label>
-                   <input 
-                      type="date" 
-                      className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none font-bold text-[11px]"
-                      value={customEndDate}
-                      onChange={e => { setCustomEndDate(e.target.value); setCurrentPage(1); }}
-                   />
-                </div>
-             </div>
-           )}
         </div>
 
         {/* DESKTOP TABLE */}
@@ -406,7 +360,7 @@ const TransactionManagement: React.FC<TransactionManagementProps> = ({ users, pr
                          <span className={`px-2 py-0.5 rounded text-[7px] font-black uppercase ${t.paymentMethod === 'Duitku' ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-100 text-slate-500'}`}>
                            {t.paymentMethod || 'Manual'}
                          </span>
-                         <p className="text-[9px] font-bold text-slate-400 truncate max-w-[150px]">{t.userEmail}</p>
+                         <p className="text-[9px] font-bold text-slate-400 truncate max-w-[120px]">{t.userEmail}</p>
                       </div>
                    </div>
                    <div className={`px-3 py-1 rounded-lg text-[8px] font-black uppercase border ${
@@ -447,58 +401,6 @@ const TransactionManagement: React.FC<TransactionManagementProps> = ({ users, pr
         </div>
 
         {filteredTransactions.length === 0 && <div className="p-20 text-center text-slate-300 font-bold uppercase tracking-widest text-xs italic">Data transaksi tidak ditemukan.</div>}
-
-        {/* Pagination UI */}
-        <div className="p-8 border-t border-slate-50 flex flex-col md:flex-row items-center justify-between bg-slate-50/30 gap-6">
-           <div className="flex items-center gap-6">
-              <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                 Halaman {currentPage} dari {totalPages || 1}
-              </div>
-              <div className="flex items-center gap-3">
-                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Tampilkan:</span>
-                 <select 
-                    className="px-3 py-1 bg-white border border-slate-200 rounded-lg text-[10px] font-bold outline-none cursor-pointer"
-                    value={itemsPerPage}
-                    onChange={e => { setItemsPerPage(parseInt(e.target.value)); setCurrentPage(1); }}
-                 >
-                    <option value={10}>10</option>
-                    <option value={20}>20</option>
-                    <option value={50}>50</option>
-                    <option value={100}>100</option>
-                 </select>
-              </div>
-           </div>
-
-           {totalPages > 1 && (
-              <div className="flex gap-2">
-                 <button 
-                    disabled={currentPage === 1}
-                    onClick={() => setCurrentPage(p => p - 1)}
-                    className="px-4 py-2 rounded-xl bg-white border border-slate-200 text-[10px] font-black uppercase text-slate-400 hover:text-indigo-600 disabled:opacity-30 transition-all"
-                 >
-                    Sebelumnya
-                 </button>
-                 <div className="flex gap-1">
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                       <button 
-                          key={page}
-                          onClick={() => setCurrentPage(page)}
-                          className={`w-8 h-8 rounded-lg text-[10px] font-black transition-all ${currentPage === page ? 'bg-indigo-600 text-white shadow-lg' : 'bg-white text-slate-400 border border-slate-100'}`}
-                       >
-                          {page}
-                       </button>
-                    )).slice(Math.max(0, currentPage - 3), Math.min(totalPages, currentPage + 2))}
-                 </div>
-                 <button 
-                    disabled={currentPage === totalPages}
-                    onClick={() => setCurrentPage(p => p + 1)}
-                    className="px-4 py-2 rounded-xl bg-white border border-slate-200 text-[10px] font-black uppercase text-slate-400 hover:text-indigo-600 disabled:opacity-30 transition-all"
-                 >
-                    Berikutnya
-                 </button>
-              </div>
-           )}
-        </div>
       </div>
 
       {/* VALIDATION CONFIRMATION MODAL */}
@@ -511,20 +413,24 @@ const TransactionManagement: React.FC<TransactionManagementProps> = ({ users, pr
                  </div>
                  <h3 className="text-xl font-black text-slate-900 uppercase">Konfirmasi Validasi</h3>
                  <p className="text-slate-400 text-xs font-bold mt-2 uppercase text-center leading-relaxed">
-                   Anda akan memvalidasi pembayaran untuk: <br/>
+                   Anda akan memvalidasi pembayaran secara manual untuk: <br/>
                    <span className="text-indigo-600 font-black">{validatingTx.userEmail}</span>
                  </p>
               </div>
 
+              <div className="bg-rose-50 p-4 rounded-xl border border-rose-100 mb-6 flex items-start gap-3">
+                 <i className="bi bi-exclamation-triangle-fill text-rose-500 mt-0.5"></i>
+                 <p className="text-[10px] font-bold text-rose-700 leading-relaxed uppercase">Catatan: Validasi manual hanya mengubah status di database aplikasi. Status pada link pembayaran Duitku tidak akan berubah (tetap Pending).</p>
+              </div>
+
               <div className="bg-slate-50 p-6 rounded-[2rem] border border-slate-100 mb-8 space-y-3">
-                 <div className="flex justify-between items-center"><span className="text-[9px] font-black text-slate-400 uppercase">Pelanggan</span><span className="text-xs font-bold text-slate-800">{validatingTx.userName}</span></div>
                  <div className="flex justify-between items-center"><span className="text-[9px] font-black text-slate-400 uppercase">Paket</span><span className="text-xs font-black text-indigo-600 uppercase">{validatingTx.planTier}</span></div>
                  <div className="flex justify-between items-center"><span className="text-[9px] font-black text-slate-400 uppercase">Total</span><span className="text-sm font-black text-slate-900">Rp {validatingTx.amount?.toLocaleString('id-ID')}</span></div>
               </div>
 
               <div className="flex gap-4">
                  <button onClick={() => setValidatingTx(null)} className="flex-1 py-4 bg-slate-50 text-slate-400 font-black rounded-2xl uppercase text-[10px]">Batal</button>
-                 <button onClick={() => handleUpdatePaymentStatus(validatingTx.uid, validatingTx.id, PaymentStatus.PAID)} className="flex-[2] py-4 bg-emerald-600 text-white font-black rounded-2xl uppercase text-[10px] shadow-xl">Konfirmasi Valid</button>
+                 <button onClick={() => handleUpdatePaymentStatus(validatingTx.uid, validatingTx.id, PaymentStatus.PAID)} className="flex-[2] py-4 bg-emerald-600 text-white font-black rounded-2xl uppercase text-[10px] shadow-xl">Konfirmasi Paid ✅</button>
               </div>
            </div>
         </div>
@@ -560,10 +466,12 @@ const TransactionManagement: React.FC<TransactionManagementProps> = ({ users, pr
                           <p className="text-xs font-black text-slate-700">{getSafeDuration(viewingTx)} Hari</p>
                        </div>
                     </div>
-                    <div className="pt-3 border-t border-slate-200 flex justify-between items-center">
-                       <p className="text-[10px] font-black text-slate-400 uppercase">Total Bayar</p>
-                       <p className="text-xl font-black text-slate-900">Rp {viewingTx.amount?.toLocaleString('id-ID')}</p>
-                    </div>
+                    {viewingTx.paymentMethod === 'Duitku' && viewingTx.status !== 'Paid' && (
+                       <div className="pt-3 border-t border-slate-200">
+                          <p className="text-[9px] font-black text-slate-400 uppercase mb-2">Sinkronisasi Gateway</p>
+                          <a href="https://passport.duitku.com/merchant" target="_blank" rel="noreferrer" className="text-[10px] font-black text-indigo-600 hover:underline">Cek Status Real-time di Dashboard Duitku ↗</a>
+                       </div>
+                    )}
                  </div>
 
                  <div className="flex gap-4 pt-4">
@@ -572,55 +480,6 @@ const TransactionManagement: React.FC<TransactionManagementProps> = ({ users, pr
                  </div>
               </div>
            </div>
-        </div>
-      )}
-
-      {showManualModal && (
-        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md flex items-center justify-center z-[2000] p-4">
-          <div className="bg-white w-full max-w-lg rounded-[2.5rem] p-8 lg:p-10 shadow-2xl animate-in zoom-in duration-300">
-             <h3 className="text-2xl font-black text-slate-900 uppercase mb-8">Tambah Transaksi Manual</h3>
-             <form onSubmit={handleAddManualTransaction} className="space-y-6">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Pilih Target User</label>
-                  <select 
-                    className="w-full px-5 py-3 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs cursor-pointer"
-                    value={selectedUserUid}
-                    onChange={e => setSelectedUserUid(e.target.value)}
-                    required
-                  >
-                    <option value="">-- Pilih User --</option>
-                    {users.map(u => <option key={u.uid} value={u.uid}>{u.profile?.name} ({u.profile?.email})</option>)}
-                  </select>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                   <div className="space-y-2">
-                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Pilih Produk</label>
-                      <select 
-                        className="w-full px-5 py-3 rounded-2xl bg-white border border-slate-200 outline-none font-bold text-sm"
-                        value={selectedProductId}
-                        onChange={e => {
-                            const pId = e.target.value;
-                            setSelectedProductId(pId);
-                            const prod = products.find(p => p.id === pId);
-                            if (prod) setManualForm({...manualForm, amount: prod.price, planTier: prod.tier});
-                        }}
-                        required
-                      >
-                        <option value="">-- Pilih Produk --</option>
-                        {products.map(p => <option key={p.id} value={p.id}>{p.name} ({p.durationDays} Hari)</option>)}
-                      </select>
-                   </div>
-                   <div className="space-y-2">
-                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Harga (Rp)</label>
-                      <input type="number" className="w-full px-5 py-3 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs" value={manualForm.amount} onChange={e => setManualForm({...manualForm, amount: parseInt(e.target.value) || 0})} required />
-                   </div>
-                </div>
-                <div className="flex gap-4 pt-4">
-                   <button type="button" onClick={() => setShowManualModal(false)} className="flex-1 py-4 bg-slate-50 text-slate-400 font-black rounded-2xl uppercase text-[10px]">Batal</button>
-                   <button type="submit" className="flex-[2] py-4 bg-indigo-600 text-white font-black rounded-2xl uppercase text-[10px] shadow-xl">Simpan & Aktifkan</button>
-                </div>
-             </form>
-          </div>
         </div>
       )}
     </div>
