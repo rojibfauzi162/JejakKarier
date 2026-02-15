@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { AppData, UserRole, AccountStatus, SubscriptionPlan, AiConfig, SubscriptionProduct, DuitkuConfig, FollowUpConfig } from '../../types';
+import { DEFAULT_PRODUCTS } from '../../constants';
 import { getAllUsers, updateAdminMetadata, getAiConfig, saveAiConfig, getProductsCatalog, saveProductsCatalog, getDuitkuConfig, saveDuitkuConfig, getFollowUpConfig, saveFollowUpConfig } from '../../services/firebase';
 
 // Sub-modules import
@@ -35,10 +36,11 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard', user
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<AppData | null>(null);
 
-  // PRODUCT STATES
+  // PRODUCT STATES - Initialize with DEFAULT_PRODUCTS from constants
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<SubscriptionProduct | null>(null);
   const [isSavingProduct, setIsSavingProduct] = useState(false);
+  const [products, setProducts] = useState<SubscriptionProduct[]>(DEFAULT_PRODUCTS);
 
   const [aiConfig, setAiConfigState] = useState<AiConfig>({
     openRouterKey: '', modelName: 'google/gemini-2.0-pro-exp-02-05:free', maxTokens: 4096
@@ -59,7 +61,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard', user
   const [isSavingFollowUp, setIsSavingFollowUp] = useState(false);
   
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const [products, setProducts] = useState<SubscriptionProduct[]>([]);
 
   const triggerToast = (message: string, type: 'success' | 'error' = 'success') => {
     setAdminToast({ message, type });
@@ -81,7 +82,12 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard', user
 
       setUsers(usersData);
       if (configData) setAiConfigState(configData);
-      if (productsData) setProducts(productsData);
+      
+      // Only override the default products if there's actual data in Firestore
+      if (productsData && productsData.length > 0) {
+        setProducts(productsData);
+      }
+      
       if (duitkuData) setDuitkuConfigState(duitkuData);
       if (followUpData) setFollowUpConfigState(followUpData);
       

@@ -75,6 +75,8 @@ app.post("/createInquiry", async (req, res) => {
       return res.status(400).json({statusCode: "400", statusMessage: "UID dan Plan ID wajib diisi."});
     }
 
+    console.log(`[INQUIRY] Request for UID: ${uid}, Plan: ${planId}`);
+
     // 1. Ambil Config & Catalog
     const [configSnap, catalogSnap] = await Promise.all([
       db.doc("system_metadata/duitku_configuration").get(),
@@ -89,13 +91,23 @@ app.post("/createInquiry", async (req, res) => {
     const catalogData = catalogSnap.exists ? catalogSnap.data() : {list: []};
     
     // Cari paket dengan perbandingan string yang aman
-    const plan = (catalogData.list || []).find((p) => String(p.id) === String(planId));
+    const plans = catalogData.list || [];
+    console.log(`[INQUIRY] Found ${plans.length} plans in Firestore.`);
+    
+    let plan = plans.find((p) => String(p.id) === String(planId));
+
+    // Fallback: Jika ID tidak ketemu, coba cari berdasarkan tier jika planId terlihat seperti tier (misal 'Pro')
+    if (!plan && (planId === "Pro" || planId === "Free")) {
+        console.log(`[INQUIRY] ID not found, trying fallback by Tier: ${planId}`);
+        plan = plans.find((p) => String(p.tier) === String(planId));
+    }
 
     if (!plan) {
-      console.error(`[ERROR] Plan ID ${planId} tidak ditemukan di database Firestore.`);
+      console.error(`[ERROR] Plan ID "${planId}" tidak ditemukan di database Firestore.`);
+      console.log("[INQUIRY] Available Plan IDs in DB:", plans.map(p => p.id).join(', '));
       return res.status(400).json({
         statusCode: "404", 
-        statusMessage: "Paket tidak ditemukan dalam katalog database. Silakan masuk ke Admin Panel > Product Matrix dan klik 'Update Katalog Produk'."
+        statusMessage: `Paket "${planId}" tidak ditemukan dalam katalog database. Silakan masuk ke Admin Panel > Product Matrix dan klik 'Update Katalog Produk'.`
       });
     }
 
@@ -113,7 +125,6 @@ app.post("/createInquiry", async (req, res) => {
     const callbackUrl = config.callbackUrl || fallbackCallback;
     const returnUrl = config.returnUrl || "https://fokuskarir.web.id/billing";
 
-    // CRITICAL: ItemDetails wajib dikirim agar transaksi muncul di Dashboard Merchant Laporan
     const itemDetails = [
       {
         name: plan.name,
@@ -128,7 +139,7 @@ app.post("/createInquiry", async (req, res) => {
       paymentMethod: paymentMethod,
       merchantOrderId: orderId,
       productDetails: "Berlangganan " + plan.name,
-      itemDetails: itemDetails, // Menambahkan detail item sesuai permintaan
+      itemDetails: itemDetails,
       email: email || "customer@mail.com",
       customerVaName: customerName || "Customer FokusKarir",
       callbackUrl: callbackUrl,
@@ -141,8 +152,6 @@ app.post("/createInquiry", async (req, res) => {
     const prodInq = "https://passport.duitku.com/webapi/api/merchant/v2/inquiry";
     const sandInq = "https://sandbox.duitku.com/webapi/api/merchant/v2/inquiry";
     const url = config.environment === "production" ? prodInq : sandInq;
-
-    console.log("[DUITKU] Sending Payload:", JSON.stringify(payload));
 
     // 3. Request ke Duitku
     const response = await fetch(url, {
