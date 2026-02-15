@@ -25,7 +25,6 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
   const [showManualSuccess, setShowManualSuccess] = useState(false);
   const [adminPhone, setAdminPhone] = useState('628123456789');
 
-  // URL ini didapat dari terminal setelah menjalankan 'firebase deploy'
   const CLOUD_FUNCTIONS_URL = "https://us-central1-jejakkarir-11379.cloudfunctions.net/api";
 
   useEffect(() => {
@@ -61,24 +60,22 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
     setLoading(true);
     setError('');
     try {
-      // Sekarang memanggil backend kita sendiri, bukan langsung ke Duitku
       const response = await fetch(`${CLOUD_FUNCTIONS_URL}/getMethods`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ amount: plan.price })
       });
 
-      if (!response.ok) throw new Error("Backend tidak merespon.");
-      
       const res = await response.json();
-      if (res.responseCode === '00') {
+      
+      if (response.ok && res.responseCode === '00') {
         setPaymentMethods(res.paymentFee || []);
         setShowMethods(true);
       } else {
-        setError(res.responseMessage || "Gagal mengambil metode pembayaran.");
+        setError(res.responseMessage || res.message || "Gagal mengambil metode pembayaran. Pastikan Admin sudah mengatur Config Duitku.");
       }
     } catch (err: any) {
-      setError(`Kesalahan: ${err.message}`);
+      setError(`Koneksi Gagal: ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -101,16 +98,15 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
         })
       });
 
-      if (!response.ok) throw new Error("Gagal membuat invoice.");
-
       const res = await response.json();
-      if (res.statusCode === '00') {
+
+      if (response.ok && res.statusCode === '00') {
         window.location.href = res.paymentUrl;
       } else {
-        setError(res.statusMessage || "Duitku menolak permintaan.");
+        setError(res.statusMessage || "Duitku menolak permintaan atau Konfigurasi Produk belum lengkap.");
       }
     } catch (err: any) {
-      setError("Gagal menghubungi gateway pembayaran.");
+      setError("Gagal menghubungi server backend.");
     } finally {
       setLoading(false);
     }
@@ -170,6 +166,8 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
         <div className="p-8 lg:p-14 bg-white flex flex-col justify-center overflow-y-auto no-scrollbar max-h-[90vh]">
           {user ? (
             <div className="text-center space-y-10">
+              {error && <div className="p-4 bg-rose-50 text-rose-600 text-[10px] font-bold rounded-2xl border border-rose-100 uppercase animate-bounce">⚠️ {error}</div>}
+              
               {!showMethods ? (
                 <>
                   <div className="space-y-4">
@@ -177,7 +175,7 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
                     <h3 className="text-2xl font-black text-slate-900 uppercase">Pilih Cara Bayar</h3>
                     <p className="text-slate-400 text-sm">Akun: <span className="text-indigo-600 font-black">{user.email}</span></p>
                   </div>
-                  {error && <div className="p-4 bg-rose-50 text-rose-600 text-[10px] font-bold rounded-2xl border border-rose-100 uppercase">{error}</div>}
+                  
                   <div className="space-y-4">
                     <button onClick={handleFetchPaymentMethods} disabled={loading} className="w-full py-5 bg-indigo-600 text-white font-black uppercase tracking-widest rounded-2xl shadow-xl hover:bg-indigo-700 transition-all flex items-center justify-center gap-3">
                       {loading ? 'Processing...' : <><i className="bi bi-credit-card-2-back-fill text-lg"></i> Bayar Otomatis</>}
@@ -213,6 +211,7 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
                 <button onClick={() => setIsLogin(false)} className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase transition-all ${!isLogin ? 'bg-white text-slate-900 shadow-md' : 'text-slate-400'}`}>Daftar</button>
                 <button onClick={() => setIsLogin(true)} className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase transition-all ${isLogin ? 'bg-white text-slate-900 shadow-md' : 'text-slate-400'}`}>Masuk</button>
               </div>
+              {error && <div className="p-4 bg-rose-50 text-rose-600 text-[10px] font-bold rounded-2xl border border-rose-100 uppercase">⚠️ {error}</div>}
               <form onSubmit={handleAuth} className="space-y-5">
                 {!isLogin && <input className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-sm" placeholder="Nama Lengkap" value={name} onChange={e => setName(e.target.value)} required />}
                 {!isLogin && <input type="tel" className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-sm" placeholder="WhatsApp (08...)" value={phone} onChange={e => setPhone(e.target.value)} required />}

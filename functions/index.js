@@ -21,13 +21,17 @@ const md5 = (str) => crypto.createHash("md5").update(str).digest("hex");
 app.post("/getMethods", async (req, res) => {
   try {
     const {amount} = req.body;
-    const configDoc = "system_metadata/duitku_configuration";
-    const configSnap = await db.doc(configDoc).get();
+    const configSnap = await db.doc("system_metadata/duitku_configuration").get();
+    
     if (!configSnap.exists) {
-      return res.status(500).json({message: "Config Duitku missing"});
+      console.error("Duitku Config not found in Firestore");
+      return res.status(400).json({
+        responseCode: "404",
+        responseMessage: "Konfigurasi Duitku belum diatur di Admin Panel.",
+      });
     }
+    
     const config = configSnap.data();
-
     const datetime = new Date().toISOString().slice(0, 19).replace("T", " ");
     const sigBase = config.merchantCode + amount + datetime + config.apiKey;
     const signature = crypto.createHash("sha256").update(sigBase).digest("hex");
@@ -55,6 +59,7 @@ app.post("/getMethods", async (req, res) => {
     const data = await response.json();
     return res.json(data);
   } catch (error) {
+    console.error("getMethods Error:", error);
     return res.status(500).json({message: error.message});
   }
 });
@@ -66,19 +71,32 @@ app.post("/createInquiry", async (req, res) => {
   try {
     const {uid, planId, paymentMethod, email, customerName} = req.body;
 
-    const configSnap = await db.doc("system_metadata/duitku_configuration")
-        .get();
+    // 1. Ambil Config & Catalog
+    const configSnap = await db.doc("system_metadata/duitku_configuration").get();
     const catalogSnap = await db.doc("system_metadata/products_catalog").get();
 
-    const config = configSnap.data();
-    const plan = catalogSnap.data().list.find((p) => p.id === planId);
+    if (!configSnap.exists) {
+      return res.status(400).json({statusCode: "404", statusMessage: "Config Duitku belum disetel di Admin."});
+    }
+    if (!catalogSnap.exists) {
+      return res.status(400).json({statusCode: "404", statusMessage: "Katalog produk belum disetel di Admin."});
+    }
 
+    const config = configSnap.data();
+    const catalogData = catalogSnap.data();
+    const plan = (catalogData.list || []).find((p) => p.id === planId);
+
+    if (!plan) {
+      return res.status(400).json({statusCode: "404", statusMessage: "Paket tidak ditemukan dalam katalog."});
+    }
+
+    // 2. Setup Data Transaksi
     const orderId = "FK-" + Date.now();
     const amount = Math.floor(plan.price);
-    const signature = md5(config.merchantCode + orderId + amount +
-      config.apiKey);
+    
+    // SIGNATURE INQUIRY V2: md5(merchantcode + merchantOrderId + paymentAmount + apiKey)
+    const signature = md5(config.merchantCode + orderId + amount + config.apiKey);
 
-    // Prioritaskan URL dari database, jika tidak ada baru gunakan fallback deploy
     const region = "us-central1";
     const projectId = process.env.GCP_PROJECT || "jejakkarir-11379";
     const fallbackCallback = `https://${region}-${projectId}.cloudfunctions.net/duitkuCallback`;
@@ -105,6 +123,7 @@ app.post("/createInquiry", async (req, res) => {
     const sandInq = "https://sandbox.duitku.com/webapi/api/merchant/v2/inquiry";
     const url = config.environment === "production" ? prodInq : sandInq;
 
+    // 3. Request ke Duitku
     const response = await fetch(url, {
       method: "POST",
       headers: {"Content-Type": "application/json"},
@@ -113,34 +132,40 @@ app.post("/createInquiry", async (req, res) => {
 
     const data = await response.json();
 
+    // 4. Jika Sukses, Simpan ke History User sebagai 'Pending'
     if (data.statusCode === "00") {
       const userRef = db.collection("users").doc(uid);
       const userSnap = await userRef.get();
-      const userData = userSnap.data();
-      const currentTxs = userData.manualTransactions || [];
+      
+      if (userSnap.exists) {
+        const userData = userSnap.data();
+        const currentTxs = userData.manualTransactions || [];
 
-      await userRef.update({
-        manualTransactions: [...currentTxs, {
-          id: orderId,
-          amount,
-          date: new Date().toISOString(),
-          status: "Pending",
-          planTier: plan.tier,
-          durationDays: plan.durationDays,
-          paymentMethod: "Duitku",
-          reference: data.reference,
-        }],
-      });
+        await userRef.update({
+          manualTransactions: [...currentTxs, {
+            id: orderId,
+            amount: amount,
+            date: new Date().toISOString(),
+            status: "Pending",
+            planTier: plan.tier,
+            durationDays: plan.durationDays,
+            paymentMethod: "Duitku",
+            reference: data.reference,
+            checkoutUrl: data.paymentUrl
+          }],
+          updatedAt: new Date().toISOString()
+        });
+      }
     }
 
     return res.json(data);
   } catch (error) {
-    console.error("Inquiry Error:", error);
-    return res.status(500).json({message: error.message});
+    console.error("FATAL Inquiry Error:", error);
+    return res.status(500).json({statusCode: "500", statusMessage: "Internal Server Error: " + error.message});
   }
 });
 
-// Export Express App as a single Cloud Function
+// Export Express App
 exports.api = functions.https.onRequest(app);
 
 /**
@@ -148,17 +173,17 @@ exports.api = functions.https.onRequest(app);
  */
 exports.duitkuCallback = functions.https.onRequest(async (req, res) => {
   try {
-    const {amount, merchantOrderId, signature, resultCode, additionalParam} =
-      req.body;
+    const {amount, merchantOrderId, signature, resultCode, additionalParam} = req.body;
     
-    console.log("[DUITKU CALLBACK] Received:", req.body);
+    console.log("[DUITKU CALLBACK] Body:", req.body);
 
-    const configSnap = await db.doc("system_metadata/duitku_configuration")
-        .get();
+    const configSnap = await db.doc("system_metadata/duitku_configuration").get();
+    if (!configSnap.exists) return res.status(500).send("Config missing");
+    
     const config = configSnap.data();
 
-    const sigBase = config.merchantCode + amount + merchantOrderId +
-      config.apiKey;
+    // Verify Callback Signature: md5(merchantCode + amount + merchantOrderId + apiKey)
+    const sigBase = config.merchantCode + amount + merchantOrderId + config.apiKey;
     const calcSignature = md5(sigBase);
 
     if (signature !== calcSignature) {
@@ -172,7 +197,7 @@ exports.duitkuCallback = functions.https.onRequest(async (req, res) => {
       
       if (userSnap.exists) {
         const userData = userSnap.data();
-        const transactions = userData.manualTransactions || [];
+        let transactions = userData.manualTransactions || [];
 
         const txIndex = transactions.findIndex((t) => t.id === merchantOrderId);
         if (txIndex > -1 && transactions[txIndex].status !== "Paid") {
@@ -180,6 +205,7 @@ exports.duitkuCallback = functions.https.onRequest(async (req, res) => {
 
           const days = transactions[txIndex].durationDays || 30;
           let baseDate = new Date();
+          // Jika masih berlangganan, tambahkan dari tanggal expired lama
           if (userData.expiryDate && new Date(userData.expiryDate) > baseDate) {
             baseDate = new Date(userData.expiryDate);
           }
@@ -194,13 +220,13 @@ exports.duitkuCallback = functions.https.onRequest(async (req, res) => {
             expiryDate: newExpiry.toISOString(),
             updatedAt: new Date().toISOString(),
           });
-          console.log(`[DUITKU CALLBACK] Success. User ${additionalParam} activated.`);
+          console.log(`[DUITKU CALLBACK] SUCCESS: User ${additionalParam} activated.`);
         }
       }
     }
     return res.status(200).send("OK");
   } catch (error) {
-    console.error("Callback Error:", error);
-    return res.status(500).send("Error");
+    console.error("[DUITKU CALLBACK] ERROR:", error);
+    return res.status(500).send("Internal Server Error");
   }
 });
