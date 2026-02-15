@@ -101,6 +101,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout, is
               <SidebarItem id="admin_admins" active={activeTab === 'admin_admins'} onClick={() => setActiveTab('admin_admins')} icon={<i className="bi bi-shield-lock"></i>} label="Kelola Admin" color="rose" />
               <SidebarItem id="admin_transactions" active={activeTab === 'admin_transactions'} onClick={() => setActiveTab('admin_transactions')} icon={<i className="bi bi-currency-dollar"></i>} label="Kelola Transaksi" color="blue" />
               <SidebarItem id="duitku" active={activeTab === 'duitku'} onClick={() => setActiveTab('duitku')} icon={<i className="bi bi-credit-card"></i>} label="Integrasi Duitku" color="blue" />
+              <SidebarItem id="admin_tracking" active={activeTab === 'admin_tracking'} onClick={() => setActiveTab('admin_tracking')} icon={<i className="bi bi-bar-chart-steps"></i>} label="Tracking Ads" color="blue" />
               <SidebarItem id="admin_followup" active={activeTab === 'admin_followup'} onClick={() => setActiveTab('admin_followup')} icon={<i className="bi bi-chat-left-dots"></i>} label="Follow Up Script" color="rose" />
               <SidebarItem id="admin_ai" active={activeTab === 'admin_ai'} onClick={() => setActiveTab('admin_ai')} icon={<i className="bi bi-cpu"></i>} label="AI Architecture" color="blue" />
               <SidebarItem id="admin_products" active={activeTab === 'admin_products'} onClick={() => setActiveTab('admin_products')} icon={<i className="bi bi-box-seam"></i>} label="Product Matrix" color="blue" />
@@ -157,7 +158,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout, is
                               (item.type === 'daily' && (activeTab === 'daily' || activeTab === 'reports' || activeTab === 'ai_insights' || activeTab === 'work_reflection')) ||
                               (item.type === 'cv' && (activeTab === 'cv_generator' || activeTab === 'online_cv'))
                                 ? 'bg-indigo-600/10 text-indigo-400 border border-indigo-500/20' 
-                                : 'text-slate-500 hover:bg-white/5 hover:text-white border border-transparent'
+                                : 'text-slate-50 hover:bg-white/5 hover:text-white border border-transparent'
                             }`}
                           >
                             <div className="flex items-center gap-3">
@@ -222,36 +223,36 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout, is
             <span>Logout</span>
           </button>
         </div>
+      </nav>
 
-        {showLogoutModal && (
-          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 overflow-y-auto">
-            <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm" onClick={() => setShowLogoutModal(false)}></div>
-            <div className="relative bg-white w-full max-w-sm rounded-[2.5rem] p-8 lg:p-10 shadow-2xl animate-in zoom-in duration-300">
-              <div className="text-center mb-8">
-                <div className="w-16 h-16 bg-rose-50 text-rose-500 rounded-3xl flex items-center justify-center mx-auto mb-4 text-2xl shadow-inner">
-                  <i className="bi bi-door-open-fill"></i>
-                </div>
-                <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Keluar Sesi?</h3>
-                <p className="text-slate-400 text-xs font-bold leading-relaxed mt-2 uppercase tracking-widest text-center">Apakah Anda yakin ingin mengakhiri sesi kerja saat ini?</p>
+      {showLogoutModal && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm" onClick={() => setShowLogoutModal(false)}></div>
+          <div className="relative bg-white w-full max-w-sm rounded-[2.5rem] p-8 lg:p-10 shadow-2xl animate-in zoom-in duration-300">
+            <div className="text-center mb-8">
+              <div className="w-16 h-16 bg-rose-50 text-rose-500 rounded-3xl flex items-center justify-center mx-auto mb-4 text-2xl shadow-inner">
+                <i className="bi bi-door-open-fill"></i>
               </div>
-              <div className="flex gap-4">
-                <button 
-                  onClick={() => setShowLogoutModal(false)} 
-                  className="flex-1 py-4 bg-slate-50 text-slate-400 font-black rounded-2xl uppercase text-[10px] tracking-widest hover:bg-slate-100 transition-all"
-                >
-                  Batal
-                </button>
-                <button 
-                  onClick={() => { setShowLogoutModal(false); onLogout(); }} 
-                  className="flex-[2] py-4 bg-rose-600 text-white font-black rounded-2xl uppercase text-[10px] tracking-widest shadow-xl shadow-rose-100 hover:bg-rose-700 active:scale-95 transition-all"
-                >
-                  Ya, Logout
-                </button>
-              </div>
+              <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Keluar Sesi?</h3>
+              <p className="text-slate-400 text-xs font-bold leading-relaxed mt-2 uppercase tracking-widest text-center">Apakah Anda yakin ingin mengakhiri sesi kerja saat ini?</p>
+            </div>
+            <div className="flex gap-4">
+              <button 
+                onClick={() => setShowLogoutModal(false)} 
+                className="flex-1 py-4 bg-slate-50 text-slate-400 font-black rounded-2xl uppercase text-[10px] tracking-widest hover:bg-slate-100 transition-all"
+              >
+                Batal
+              </button>
+              <button 
+                onClick={() => { setShowLogoutModal(false); onLogout(); }} 
+                className="flex-[2] py-4 bg-rose-600 text-white font-black rounded-2xl uppercase text-[10px] tracking-widest shadow-xl shadow-rose-100 hover:bg-rose-700 active:scale-95 transition-all"
+              >
+                Ya, Logout
+              </button>
             </div>
           </div>
-        )}
-      </nav>
+        </div>
+      )}
     </>
   );
 };

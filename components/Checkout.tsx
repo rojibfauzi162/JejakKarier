@@ -1,12 +1,14 @@
+
 import React, { useState, useEffect } from 'react';
 import { SubscriptionProduct, SubscriptionPlan, PaymentStatus, AccountStatus, ManualTransaction, AppData } from '../types';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, sendEmailVerification } from '@firebase/auth';
 import { auth, signInWithGoogle, saveUserData, getUserData, getDuitkuConfig, getLandingPageConfig } from '../services/firebase';
+import { trackingService } from '../services/trackingService';
 
 // --- FULL SELF-CONTAINED HASHING HELPERS ---
 
 // MD5 Implementation (untuk Inquiry/Transaksi)
-const md5 = (string: string) => {
+export const md5 = (string: string) => {
   function add32(a: number, b: number) { return (a + b) & 0xFFFFFFFF; }
   function rot(a: number, b: number) { return (a << b) | (a >>> (32 - b)); }
   function ff(a: number, b: number, c: number, d: number, x: number, s: number, t: number) { return add32(rot(add32(add32(a, (b & c) | (~b & d)), add32(x, t)), s), b); }
@@ -87,6 +89,8 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
         setAdminPhone(cfg.adminWhatsApp);
       }
     });
+    // Tracking InitiateCheckout
+    trackingService.trackEvent('InitiateCheckout', { value: plan.price, currency: 'IDR', content_name: plan.name });
   }, []);
 
   const handleAuth = async (e: React.FormEvent) => {
@@ -173,11 +177,12 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
     setLoading(true);
     setError('');
     try {
-      // Order ID unik berbasis timestamp
+      // Order ID unik berbasis timestamp agar unik di Duitku
       const orderId = "FK-" + Date.now();
+      const amount = Math.floor(plan.price);
       
       // Signature MD5 Sesuai PHP: md5($merchantCode . $merchantOrderId . $paymentAmount . $apiKey)
-      const signatureStr = duitkuConfig.merchantCode + orderId + plan.price.toString() + duitkuConfig.apiKey;
+      const signatureStr = duitkuConfig.merchantCode + orderId + amount.toString() + duitkuConfig.apiKey;
       const signature = md5(signatureStr);
       
       const userData = await getUserData(user.uid);
@@ -186,15 +191,23 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
       // Inquiry Params (v2)
       const payload = {
         merchantCode: duitkuConfig.merchantCode,
-        paymentAmount: plan.price,
+        paymentAmount: amount,
         paymentMethod: methodCode,
         merchantOrderId: orderId,
         productDetails: `Langganan FokusKarir ${plan.name}`,
         email: user.email,
         customerVaName: customerName,
         callbackUrl: duitkuConfig.callbackUrl || `${window.location.origin}/api/callback`,
-        returnUrl: `${window.location.origin}`,
+        returnUrl: `${window.location.origin}/billing`,
         expiryPeriod: 60,
+        additionalParam: user.uid, // SANGAT PENTING: Untuk identifikasi user di callback
+        itemDetails: [
+          {
+            name: plan.name,
+            quantity: 1,
+            price: amount
+          }
+        ],
         signature: signature
       };
 
@@ -217,7 +230,7 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
         // Catat transaksi PENDING ke database lokal (Firestore)
         const newTx: ManualTransaction = {
           id: orderId,
-          amount: plan.price,
+          amount: amount,
           date: new Date().toISOString(),
           status: PaymentStatus.PENDING,
           planTier: plan.tier,
@@ -249,12 +262,13 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
     setLoading(true);
     try {
       const orderId = `TX-MANUAL-${Date.now()}`;
+      const amount = Math.floor(plan.price);
       const userData = await getUserData(user.uid);
       const customerName = user.displayName || userData?.profile?.name || "Customer";
       
       const newTx: ManualTransaction = {
         id: orderId,
-        amount: plan.price,
+        amount: amount,
         date: new Date().toISOString(),
         status: PaymentStatus.PENDING,
         planTier: plan.tier,

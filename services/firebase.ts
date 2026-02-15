@@ -2,7 +2,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, signInWithPopup } from '@firebase/auth';
 import { getFirestore, doc, setDoc, getDoc, collection, getDocs, updateDoc, increment, query, where, limit, deleteDoc } from "firebase/firestore";
-import { AppData, AiConfig, SubscriptionProduct, AccountStatus, LegalConfig, UserRole, LandingPageConfig, MayarConfig, DuitkuConfig, FollowUpConfig } from "../types";
+import { AppData, AiConfig, SubscriptionProduct, AccountStatus, LegalConfig, UserRole, LandingPageConfig, MayarConfig, DuitkuConfig, FollowUpConfig, TrackingConfig } from "../types";
 
 // KONFIGURASI FIREBASE
 const firebaseConfig = {
@@ -178,6 +178,30 @@ export const getDuitkuConfig = async (): Promise<DuitkuConfig | null> => {
 export const saveDuitkuConfig = async (config: DuitkuConfig) => {
   try {
     const docRef = doc(db, "system_metadata", "duitku_configuration");
+    const dataToSave = sanitizeData({
+      ...config,
+      updatedAt: new Date().toISOString()
+    });
+    await setDoc(docRef, dataToSave, { merge: true });
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getTrackingConfig = async (): Promise<TrackingConfig | null> => {
+  try {
+    const docRef = doc(db, "system_metadata", "tracking_configuration");
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) return docSnap.data() as TrackingConfig;
+  } catch (error: any) {
+    console.warn("[FIREBASE] Config Tracking error:", error.message);
+  }
+  return { metaPixelId: '', googleAnalyticsId: '', tiktokPixelId: '' };
+};
+
+export const saveTrackingConfig = async (config: TrackingConfig) => {
+  try {
+    const docRef = doc(db, "system_metadata", "tracking_configuration");
     const dataToSave = sanitizeData({
       ...config,
       updatedAt: new Date().toISOString()

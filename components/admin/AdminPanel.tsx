@@ -16,9 +16,10 @@ import AdminSettings from './AdminSettings';
 import MayarIntegration from './MayarIntegration';
 import DuitkuIntegration from './DuitkuIntegration';
 import FollowUpManager from './FollowUpManager';
+import TrackingSettings from './TrackingSettings';
 
 interface AdminPanelProps {
-  initialMode?: 'dashboard' | 'users' | 'products' | 'health' | 'ai' | 'admin_transactions' | 'admin_admins' | 'settings' | 'integrations' | 'duitku' | 'followup';
+  initialMode?: 'dashboard' | 'users' | 'products' | 'health' | 'ai' | 'admin_transactions' | 'admin_admins' | 'settings' | 'integrations' | 'duitku' | 'followup' | 'tracking';
   userRole?: UserRole;
 }
 
@@ -178,7 +179,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard', user
     <div className="space-y-8 animate-in fade-in duration-700 pb-20 px-4 lg:px-0">
       {adminToast && (
         <div className="fixed top-10 right-10 z-[3000] animate-in slide-in-from-right-4">
-           <div className={`px-8 py-4 rounded-2xl shadow-2xl border flex items-center gap-4 ${adminToast.type === 'success' ? 'bg-emerald-600 border-emerald-500 text-white' : 'bg-rose-600 border-rose-500 text-white'}`}>
+           <div className={`px-8 py-4 rounded-2xl shadow-2xl border flex items-center gap-4 ${adminToast.type === 'success' ? 'bg-emerald-600 border-emerald-50 text-white' : 'bg-rose-600 border-rose-500 text-white'}`}>
              <span className="font-black text-[10px] uppercase tracking-widest">{adminToast.message}</span>
            </div>
         </div>
@@ -187,6 +188,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard', user
       {initialMode === 'dashboard' && <AdminDashboard stats={{ total: users.length, activeToday: 0, totalTokens: 0, totalAiOps: 0 }} users={users} />}
       {initialMode === 'users' && <UserManagement users={filteredUsers} searchQuery={searchQuery} setSearchQuery={setSearchQuery} onManage={(u) => { setEditingUser(u); setIsUserModalOpen(true); }} followUpConfig={followUpConfig} />}
       {initialMode === 'duitku' && <DuitkuIntegration initialConfig={duitkuConfig} onSave={handleSaveDuitkuConfig} isSaving={isSavingDuitku} />}
+      {initialMode === 'tracking' && <TrackingSettings onToast={triggerToast} />}
       {initialMode === 'followup' && <FollowUpManager initialConfig={followUpConfig} onSave={handleSaveFollowUpConfig} isSaving={isSavingFollowUp} />}
       {initialMode === 'admin_transactions' && <TransactionManagement users={users} products={products} onUpdateMetadata={async (uid, fields) => { await updateAdminMetadata(uid, fields); fetchUsersAndConfig(true); }} onManageUser={(u) => { setEditingUser(u); setIsUserModalOpen(true); }} followUpConfig={followUpConfig} />}
       {initialMode === 'products' && <ProductMatrix products={products} setEditingProduct={()=>{}} setIsProductModalOpen={()=>{}} />}

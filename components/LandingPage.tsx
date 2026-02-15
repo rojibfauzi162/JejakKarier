@@ -2,6 +2,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { SubscriptionProduct, LandingPageConfig, MayarConfig } from '../types';
 import { getLandingPageConfig, getMayarConfig, getProductsCatalog } from '../services/firebase';
+import { trackingService } from '../services/trackingService';
 
 interface LandingPageProps {
   onStart: () => void;
@@ -26,6 +27,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
     getMayarConfig().then(res => {
        if (res) setMayarConfig(res);
     });
+    // Tracking PageView
+    trackingService.trackEvent('PageView');
   }, []);
 
   // LOGIC: Filter produk berdasarkan status Aktif dan Tampilkan di Landing Page yang diatur oleh Super Admin

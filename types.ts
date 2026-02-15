@@ -1,3 +1,4 @@
+
 export enum SkillStatus {
   GAP = 'gap',
   ON_PROGRESS = 'on progress',
@@ -350,6 +351,13 @@ export interface DuitkuConfig {
   environment: 'sandbox' | 'production';
   callbackUrl?: string;
   returnUrl?: string;
+  updatedAt?: string;
+}
+
+export interface TrackingConfig {
+  metaPixelId: string;
+  googleAnalyticsId: string;
+  tiktokPixelId: string;
   updatedAt?: string;
 }
 

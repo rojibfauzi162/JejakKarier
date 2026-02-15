@@ -32,8 +32,9 @@ import AppsHub from './components/user/AppsHub';
 import UpgradeModal from './components/user/UpgradeModal';
 import MobileStats from './components/user/MobileStats';
 import CareerCalendar from './components/user/CareerCalendar'; 
-import { auth, getUserData, saveUserData, getProductsCatalog, findUserByEmail, deleteUserDoc } from './services/firebase';
+import { auth, getUserData, saveUserData, getProductsCatalog, findUserByEmail, deleteUserDoc, getTrackingConfig } from './services/firebase';
 import { onAuthStateChanged, sendEmailVerification } from '@firebase/auth';
+import { trackingService } from './services/trackingService';
 
 const App: React.FC = () => {
   const [user, setUser] = useState<any>(null);
@@ -65,7 +66,7 @@ const App: React.FC = () => {
     } catch (err: any) {
       showToast(err.message, "error");
     } finally {
-      setResendingEmail(false);
+      resendingEmail && setResendingEmail(false);
     }
   };
 
@@ -128,6 +129,10 @@ const App: React.FC = () => {
     getProductsCatalog().then(p => {
       if (p && p.length > 0) setPublicProducts(p);
     });
+    // Inisialisasi Tracking Pixel
+    getTrackingConfig().then(cfg => {
+      if (cfg) trackingService.init(cfg);
+    });
   }, []);
 
   useEffect(() => {
@@ -165,6 +170,17 @@ const App: React.FC = () => {
           if (userData.role === UserRole.SUPERADMIN && activeTab === 'dashboard') {
               setActiveTab('admin_dashboard');
           }
+
+          // Tracking Logic: Jika baru saja bayar (PAID), tembak Purchase event satu kali
+          const lastTx = userData.manualTransactions?.slice().reverse()[0];
+          if (lastTx && lastTx.status === 'Paid') {
+             const firedKey = `fired_purchase_${lastTx.id}`;
+             if (!localStorage.getItem(firedKey)) {
+                trackingService.trackEvent('Purchase', { value: lastTx.amount, currency: 'IDR' });
+                localStorage.setItem(firedKey, 'true');
+             }
+          }
+
         } else {
           const freePlan = catalog.find(p => p.tier === SubscriptionPlan.FREE);
           const joinedAt = new Date();
@@ -300,6 +316,7 @@ const App: React.FC = () => {
       case 'admin_users': return <AdminPanel initialMode="users" userRole={data.role} />;
       case 'admin_admins': return <AdminPanel initialMode="admin_admins" userRole={data.role} />;
       case 'admin_transactions': return <AdminPanel initialMode="admin_transactions" userRole={data.role} />;
+      case 'admin_tracking': return <AdminPanel initialMode="tracking" userRole={data.role} />;
       case 'duitku': return <AdminPanel initialMode="duitku" userRole={data.role} />;
       case 'admin_followup': return <AdminPanel initialMode="followup" userRole={data.role} />;
       case 'admin_ai': return <AdminPanel initialMode="ai" userRole={data.role} />;
@@ -340,6 +357,7 @@ const App: React.FC = () => {
       'admin_users': 'Kelola User',
       'admin_admins': 'Kelola Admin',
       'admin_transactions': 'Manajemen Transaksi',
+      'admin_tracking': 'Tracking & Pixels',
       'duitku': 'Integrasi Duitku',
       'admin_followup': 'Follow Up Manager',
       'admin_ai': 'AI Architecture',
@@ -413,7 +431,7 @@ const App: React.FC = () => {
         </div>
       </main>
       <MobileNav activeTab={activeTab} setActiveTab={handleNavigate} onLogout={handleLogout} isAdmin={isAdmin} onOpenSidebar={() => setIsSidebarOpen(true)} />
-      {toast && <div className={`fixed top-4 right-4 z-[6000] px-6 py-3 rounded-2xl shadow-2xl border text-white font-black text-[10px] uppercase tracking-widest animate-in slide-in-from-right-4 ${toast.type === 'success' ? 'bg-emerald-600 border-emerald-500' : toast.type === 'error' ? 'bg-rose-600 border-rose-500' : 'bg-blue-600 border-blue-500'}`}>{toast.message}</div>}
+      {toast && <div className={`fixed top-4 right-4 z-[6000] px-6 py-3 rounded-2xl shadow-2xl border text-white font-black text-[10px] uppercase tracking-widest animate-in slide-in-from-right-4 ${toast.type === 'success' ? 'bg-emerald-600 border-emerald-50' : toast.type === 'error' ? 'bg-rose-600 border-rose-50' : 'bg-blue-600 border-blue-50'}`}>{toast.message}</div>}
     </div>
   );
 };
