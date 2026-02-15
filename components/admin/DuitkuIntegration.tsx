@@ -105,7 +105,7 @@ const DuitkuIntegration: React.FC<DuitkuIntegrationProps> = ({ initialConfig, on
                       value={form.callbackUrl || DEFAULT_CALLBACK}
                       onChange={e => setForm({...form, callbackUrl: e.target.value})}
                    />
-                   <p className="text-[8px] text-slate-400 italic">Masukkan URL ini di Dashboard Duitku > Project > Callback URL.</p>
+                   <p className="text-[8px] text-slate-400 italic">Masukkan URL ini di Dashboard Duitku &gt; Project &gt; Callback URL.</p>
                 </div>
 
                 <div className="space-y-2">
