@@ -68,11 +68,11 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
 
       const res = await response.json();
       
-      if (response.ok && res.responseCode === '00') {
+      if (response.ok && (res.responseCode === '00' || res.responseCode === '0')) {
         setPaymentMethods(res.paymentFee || []);
         setShowMethods(true);
       } else {
-        setError(res.responseMessage || res.message || "Gagal mengambil metode pembayaran. Pastikan Admin sudah mengatur Config Duitku.");
+        setError(res.responseMessage || res.statusMessage || "Gagal mengambil metode pembayaran. Pastikan konfigurasi Duitku sudah benar.");
       }
     } catch (err: any) {
       setError(`Koneksi Gagal: ${err.message}`);
@@ -103,10 +103,10 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
       if (response.ok && res.statusCode === '00') {
         window.location.href = res.paymentUrl;
       } else {
-        setError(res.statusMessage || "Duitku menolak permintaan atau Konfigurasi Produk belum lengkap.");
+        setError(res.statusMessage || "Permintaan ditolak oleh server (Error 500/400). Periksa logs admin.");
       }
     } catch (err: any) {
-      setError("Gagal menghubungi server backend.");
+      setError("Gagal menghubungi server backend: " + err.message);
     } finally {
       setLoading(false);
     }
@@ -166,7 +166,15 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
         <div className="p-8 lg:p-14 bg-white flex flex-col justify-center overflow-y-auto no-scrollbar max-h-[90vh]">
           {user ? (
             <div className="text-center space-y-10">
-              {error && <div className="p-4 bg-rose-50 text-rose-600 text-[10px] font-bold rounded-2xl border border-rose-100 uppercase animate-bounce">⚠️ {error}</div>}
+              {error && (
+                <div className="p-6 bg-rose-50 text-rose-600 text-xs font-bold rounded-[2rem] border border-rose-100 flex items-start gap-4 text-left animate-in slide-in-from-top-2">
+                  <i className="bi bi-exclamation-triangle-fill text-xl"></i>
+                  <div className="space-y-1">
+                    <p className="uppercase tracking-widest font-black text-[10px]">Kesalahan Transaksi</p>
+                    <p className="opacity-80 leading-relaxed">{error}</p>
+                  </div>
+                </div>
+              )}
               
               {!showMethods ? (
                 <>
@@ -178,7 +186,9 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
                   
                   <div className="space-y-4">
                     <button onClick={handleFetchPaymentMethods} disabled={loading} className="w-full py-5 bg-indigo-600 text-white font-black uppercase tracking-widest rounded-2xl shadow-xl hover:bg-indigo-700 transition-all flex items-center justify-center gap-3">
-                      {loading ? 'Processing...' : <><i className="bi bi-credit-card-2-back-fill text-lg"></i> Bayar Otomatis</>}
+                      {loading ? (
+                         <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      ) : <><i className="bi bi-credit-card-2-back-fill text-lg"></i> Bayar Otomatis</>}
                     </button>
                     <div className="relative"><div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-100"></div></div><div className="relative flex justify-center text-[10px] font-black uppercase tracking-widest"><span className="bg-white px-4 text-slate-300">Atau</span></div></div>
                     <button onClick={handlePayManual} disabled={loading} className="w-full py-5 bg-slate-900 text-white font-black uppercase rounded-2xl shadow-xl hover:bg-black transition-all">Konfirmasi Manual (WhatsApp)</button>

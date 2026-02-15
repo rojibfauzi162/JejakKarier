@@ -24,7 +24,6 @@ app.post("/getMethods", async (req, res) => {
     const configSnap = await db.doc("system_metadata/duitku_configuration").get();
     
     if (!configSnap.exists) {
-      console.error("Duitku Config not found in Firestore");
       return res.status(400).json({
         responseCode: "404",
         responseMessage: "Konfigurasi Duitku belum diatur di Admin Panel.",
@@ -43,10 +42,8 @@ app.post("/getMethods", async (req, res) => {
       signature: signature,
     };
 
-    const prodUrl = "https://passport.duitku.com/webapi/api/merchant/" +
-      "paymentmethod/getpaymentmethod";
-    const sandUrl = "https://sandbox.duitku.com/webapi/api/merchant/" +
-      "paymentmethod/getpaymentmethod";
+    const prodUrl = "https://passport.duitku.com/webapi/api/merchant/paymentmethod/getpaymentmethod";
+    const sandUrl = "https://sandbox.duitku.com/webapi/api/merchant/paymentmethod/getpaymentmethod";
 
     const url = config.environment === "production" ? prodUrl : sandUrl;
 
@@ -60,7 +57,7 @@ app.post("/getMethods", async (req, res) => {
     return res.json(data);
   } catch (error) {
     console.error("getMethods Error:", error);
-    return res.status(500).json({message: error.message});
+    return res.status(500).json({message: "Gagal mengambil metode pembayaran: " + error.message});
   }
 });
 
@@ -71,28 +68,35 @@ app.post("/createInquiry", async (req, res) => {
   try {
     const {uid, planId, paymentMethod, email, customerName} = req.body;
 
+    if (!uid || !planId) {
+      return res.status(400).json({statusCode: "400", statusMessage: "UID dan Plan ID wajib diisi."});
+    }
+
     // 1. Ambil Config & Catalog
-    const configSnap = await db.doc("system_metadata/duitku_configuration").get();
-    const catalogSnap = await db.doc("system_metadata/products_catalog").get();
+    const [configSnap, catalogSnap] = await Promise.all([
+      db.doc("system_metadata/duitku_configuration").get(),
+      db.doc("system_metadata/products_catalog").get(),
+    ]);
 
     if (!configSnap.exists) {
       return res.status(400).json({statusCode: "404", statusMessage: "Config Duitku belum disetel di Admin."});
     }
-    if (!catalogSnap.exists) {
-      return res.status(400).json({statusCode: "404", statusMessage: "Katalog produk belum disetel di Admin."});
-    }
-
+    
     const config = configSnap.data();
-    const catalogData = catalogSnap.data();
+    const catalogData = catalogSnap.exists ? catalogSnap.data() : {list: []};
     const plan = (catalogData.list || []).find((p) => p.id === planId);
 
     if (!plan) {
-      return res.status(400).json({statusCode: "404", statusMessage: "Paket tidak ditemukan dalam katalog."});
+      return res.status(400).json({statusCode: "404", statusMessage: "Paket tidak ditemukan dalam katalog database."});
+    }
+
+    if (!plan.price || plan.price <= 0) {
+      return res.status(400).json({statusCode: "400", statusMessage: "Harga paket tidak valid di database."});
     }
 
     // 2. Setup Data Transaksi
     const orderId = "FK-" + Date.now();
-    const amount = Math.floor(plan.price);
+    const amount = Math.floor(Number(plan.price));
     
     // SIGNATURE INQUIRY V2: md5(merchantcode + merchantOrderId + paymentAmount + apiKey)
     const signature = md5(config.merchantCode + orderId + amount + config.apiKey);
@@ -110,8 +114,8 @@ app.post("/createInquiry", async (req, res) => {
       paymentMethod: paymentMethod,
       merchantOrderId: orderId,
       productDetails: "Premium - " + plan.name,
-      email: email,
-      customerVaName: customerName,
+      email: email || "customer@mail.com",
+      customerVaName: customerName || "Customer FokusKarir",
       callbackUrl: callbackUrl,
       returnUrl: returnUrl,
       expiryPeriod: 60,
@@ -130,10 +134,20 @@ app.post("/createInquiry", async (req, res) => {
       body: JSON.stringify(payload),
     });
 
-    const data = await response.json();
+    let data;
+    const responseText = await response.text();
+    try {
+      data = JSON.parse(responseText);
+    } catch (e) {
+      console.error("[DUITKU ERROR] Non-JSON Response:", responseText);
+      return res.status(502).json({
+        statusCode: "502",
+        statusMessage: "Duitku memberikan respon tidak valid (Gateway Error).",
+      });
+    }
 
     // 4. Jika Sukses, Simpan ke History User sebagai 'Pending'
-    if (data.statusCode === "00") {
+    if (data && data.statusCode === "00") {
       const userRef = db.collection("users").doc(uid);
       const userSnap = await userRef.get();
       
@@ -148,10 +162,10 @@ app.post("/createInquiry", async (req, res) => {
             date: new Date().toISOString(),
             status: "Pending",
             planTier: plan.tier,
-            durationDays: plan.durationDays,
+            durationDays: plan.durationDays || 30,
             paymentMethod: "Duitku",
-            reference: data.reference,
-            checkoutUrl: data.paymentUrl
+            reference: data.reference || "",
+            checkoutUrl: data.paymentUrl || ""
           }],
           updatedAt: new Date().toISOString()
         });
@@ -161,7 +175,10 @@ app.post("/createInquiry", async (req, res) => {
     return res.json(data);
   } catch (error) {
     console.error("FATAL Inquiry Error:", error);
-    return res.status(500).json({statusCode: "500", statusMessage: "Internal Server Error: " + error.message});
+    return res.status(500).json({
+      statusCode: "500", 
+      statusMessage: "Terjadi kesalahan internal pada server: " + error.message
+    });
   }
 });
 
@@ -175,20 +192,18 @@ exports.duitkuCallback = functions.https.onRequest(async (req, res) => {
   try {
     const {amount, merchantOrderId, signature, resultCode, additionalParam} = req.body;
     
-    console.log("[DUITKU CALLBACK] Body:", req.body);
+    console.log("[DUITKU CALLBACK] Received payload:", req.body);
 
     const configSnap = await db.doc("system_metadata/duitku_configuration").get();
-    if (!configSnap.exists) return res.status(500).send("Config missing");
+    if (!configSnap.exists) return res.status(500).send("Configuration missing");
     
     const config = configSnap.data();
-
-    // Verify Callback Signature: md5(merchantCode + amount + merchantOrderId + apiKey)
     const sigBase = config.merchantCode + amount + merchantOrderId + config.apiKey;
     const calcSignature = md5(sigBase);
 
     if (signature !== calcSignature) {
-      console.error("[DUITKU CALLBACK] Invalid Signature");
-      return res.status(400).send("Invalid Signature");
+      console.error("[DUITKU CALLBACK] Invalid Signature mismatch");
+      return res.status(400).send("Bad Signature");
     }
 
     if (resultCode === "00") {
@@ -205,7 +220,6 @@ exports.duitkuCallback = functions.https.onRequest(async (req, res) => {
 
           const days = transactions[txIndex].durationDays || 30;
           let baseDate = new Date();
-          // Jika masih berlangganan, tambahkan dari tanggal expired lama
           if (userData.expiryDate && new Date(userData.expiryDate) > baseDate) {
             baseDate = new Date(userData.expiryDate);
           }
@@ -220,13 +234,13 @@ exports.duitkuCallback = functions.https.onRequest(async (req, res) => {
             expiryDate: newExpiry.toISOString(),
             updatedAt: new Date().toISOString(),
           });
-          console.log(`[DUITKU CALLBACK] SUCCESS: User ${additionalParam} activated.`);
+          console.log(`[DUITKU CALLBACK] SUCCESS: Account ${additionalParam} activated via ${merchantOrderId}.`);
         }
       }
     }
     return res.status(200).send("OK");
   } catch (error) {
-    console.error("[DUITKU CALLBACK] ERROR:", error);
-    return res.status(500).send("Internal Server Error");
+    console.error("[DUITKU CALLBACK] FATAL ERROR:", error);
+    return res.status(500).send("Internal Error");
   }
 });
