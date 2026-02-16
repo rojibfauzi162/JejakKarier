@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { CareerPath, CareerType, AppData, CareerStatus, SubscriptionPlan } from '../types';
 import { analyzeSkillGap } from '../services/geminiService';
@@ -44,7 +45,7 @@ const CareerPlanner: React.FC<CareerPlannerProps> = ({ paths, appData, onAddPath
 
   const openForm = (path?: CareerPath) => {
     // VALIDASI LIMIT DATABASE PAKET FREE
-    const limit = appData?.planLimits?.careerPath || 2;
+    const limit = appData?.planLimits?.careerPath || 10;
     if (!path) {
       if (appData?.plan === SubscriptionPlan.FREE && paths.length >= Number(limit)) {
         alert(`Batas target karir tercapai (${limit}). Silakan upgrade paket untuk perencanaan lebih mendalam.`);
@@ -90,7 +91,7 @@ const CareerPlanner: React.FC<CareerPlannerProps> = ({ paths, appData, onAddPath
     return deadlineDate < currentDate;
   };
 
-  const limit = appData?.planLimits?.careerPath || 2;
+  const limit = appData?.planLimits?.careerPath || 10;
 
   return (
     <div className="space-y-8 animate-in slide-in-from-right duration-500 pb-20">
@@ -98,7 +99,7 @@ const CareerPlanner: React.FC<CareerPlannerProps> = ({ paths, appData, onAddPath
         <div>
           <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">Career Path Planner</h2>
           <p className="text-slate-500 mt-2 italic font-medium">
-            "Tentukan posisi impian, skill yang harus di-upgrade, dan target waktu pencapaianmu."
+            "Tentukan posisi impian, skill yang harus di-upgrade, dan target waktu pencahaianmu."
           </p>
         </div>
         <button 
@@ -390,7 +391,7 @@ const CareerForm: React.FC<{ initialData: CareerPath | null, onSubmit: (data: Pa
         </div>
         <div>
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block ml-1">Status Progress</label>
-          <select className="w-full px-5 py-4 rounded-2xl border border-slate-200 outline-none bg-white font-bold" value={formData.status} onChange={e => setFormData({ ...formData, status: e.target.value as CareerStatus })}>
+          <select className="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-white font-bold text-sm cursor-pointer" value={formData.status} onChange={e => setFormData({ ...formData, status: e.target.value as CareerStatus })}>
             <option value={CareerStatus.NOT_STARTED}>Belum Mulai</option>
             <option value={CareerStatus.ON_PROGRESS}>On Progress</option>
             <option value={CareerStatus.ACHIEVED}>Tercapai</option>

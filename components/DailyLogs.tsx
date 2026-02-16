@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { DailyReport, AppData, SubscriptionPlan } from '../types';
 
@@ -9,6 +10,7 @@ interface DailyLogsProps {
   onUpdate: (log: DailyReport) => void;
   onDelete: (id: string) => void;
   onAddCategory: (cat: string) => void;
+  onUpdateCategory?: (old: string, next: string) => void;
   onDeleteCategory: (cat: string) => void;
   affirmation: string;
   targetDate?: string;
@@ -32,7 +34,7 @@ interface ActivityLine {
   useCustomOutput?: boolean;
 }
 
-const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany, onAdd, onUpdate, onDelete, onAddCategory, onDeleteCategory, affirmation, targetDate, appData, onUpgrade }) => {
+const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany, onAdd, onUpdate, onDelete, onAddCategory, onUpdateCategory, onDeleteCategory, affirmation, targetDate, appData, onUpgrade }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingLogId, setEditingLogId] = useState<string | null>(null);
   const [isManageCatsOpen, setIsManageCatsOpen] = useState(false);
@@ -40,6 +42,10 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
   const [isExecutingPlan, setIsExecutingPlan] = useState(false);
   const [showHistoryFor, setShowHistoryFor] = useState<string | null>(null);
   
+  // Category management internal states
+  const [editingCat, setEditingCat] = useState<string | null>(null);
+  const [editCatInput, setEditCatInput] = useState('');
+
   // History Modal States
   const [historySearch, setHistorySearch] = useState('');
   const [historyPage, setHistoryPage] = useState(1);
@@ -407,13 +413,37 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
 
   const dayNames = ['S', 'S', 'R', 'K', 'J', 'S', 'M'];
 
+  // Handle Category Actions
+  const handleAddCategory = () => {
+    if (!newCatInput.trim()) return;
+    onAddCategory(newCatInput.trim());
+    setNewCatInput('');
+  };
+
+  const handleStartEditCat = (cat: string) => {
+    setEditingCat(cat);
+    setEditCatInput(cat);
+  };
+
+  const handleSaveEditCat = () => {
+    if (!editingCat || !editCatInput.trim() || !onUpdateCategory) return;
+    onUpdateCategory(editingCat, editCatInput.trim());
+    setEditingCat(null);
+  };
+
+  const handleDeleteCat = (cat: string) => {
+    if (confirm(`Hapus kategori "${cat}"? Pastikan tidak ada log yang masih menggunakan kategori ini.`)) {
+      onDeleteCategory(cat);
+    }
+  };
+
   return (
     <div className="space-y-8 animate-in slide-in-from-bottom duration-500 pb-20">
       {/* Banner Header */}
       <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-6 lg:p-8 rounded-[2rem] lg:rounded-[2.5rem] text-white relative overflow-hidden shadow-xl shadow-blue-500/10">
         <div className="relative z-10 senior-header-content flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
-            <h2 className="text-2xl lg:text-3xl font-black tracking-tight">Aktivitas Harian</h2>
+            <h2 className="text-2xl lg:text-3xl font-black tracking-tight uppercase">Aktivitas Harian</h2>
             <p className="opacity-80 max-w-lg mt-2 italic text-xs lg:text-sm font-medium">"{affirmation}"</p>
           </div>
           <div className="flex gap-2 lg:gap-3">
@@ -596,6 +626,58 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
           </div>
         )}
       </div>
+
+      {/* MODAL MANAJEMEN KATEGORI */}
+      {isManageCatsOpen && (
+        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-xl flex items-center justify-center z-[500] p-4">
+          <div className="bg-white w-full max-w-lg rounded-[3rem] shadow-2xl p-8 lg:p-10 animate-in zoom-in duration-300 overflow-hidden">
+             <div className="flex justify-between items-center mb-8">
+                <h3 className="text-2xl font-black text-slate-900 uppercase">Kelola Kategori</h3>
+                <button onClick={() => { setIsManageCatsOpen(false); setEditingCat(null); }} className="text-slate-400 hover:text-rose-600"><i className="bi bi-x-lg text-xl"></i></button>
+             </div>
+
+             <div className="space-y-6">
+                <div className="flex gap-2">
+                   <input 
+                    className="flex-1 px-5 py-3 rounded-2xl bg-slate-50 border border-slate-200 font-bold text-xs outline-none focus:border-indigo-400"
+                    placeholder="Nama kategori baru..."
+                    value={newCatInput}
+                    onChange={e => setNewCatInput(e.target.value)}
+                   />
+                   <button onClick={handleAddCategory} className="px-6 py-3 bg-indigo-600 text-white rounded-2xl font-black text-[10px] uppercase shadow-lg shadow-indigo-100 hover:bg-indigo-700 active:scale-95 transition-all">Tambah</button>
+                </div>
+
+                <div className="max-h-[350px] overflow-y-auto no-scrollbar space-y-2.5">
+                   {categories.map((cat) => (
+                     <div key={cat} className="group p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between transition-all hover:bg-white hover:shadow-md">
+                        {editingCat === cat ? (
+                           <div className="flex-1 flex gap-2 animate-in slide-in-from-left-2">
+                              <input 
+                                className="flex-1 px-4 py-2 rounded-xl bg-white border border-indigo-200 font-bold text-xs outline-none"
+                                value={editCatInput}
+                                onChange={e => setEditCatInput(e.target.value)}
+                                autoFocus
+                              />
+                              <button onClick={handleSaveEditCat} className="text-indigo-600 px-3 py-1 font-black text-[10px] uppercase border border-indigo-100 rounded-lg hover:bg-indigo-50">OK</button>
+                              <button onClick={() => setEditingCat(null)} className="text-slate-400 px-3 py-1 font-black text-[10px] uppercase border border-slate-100 rounded-lg">Batal</button>
+                           </div>
+                        ) : (
+                           <>
+                              <span className="text-xs font-black text-slate-700 uppercase tracking-tight">{cat}</span>
+                              <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                 <button onClick={() => handleStartEditCat(cat)} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-white rounded-lg transition-all shadow-sm border border-transparent hover:border-slate-100"><i className="bi bi-pencil-square"></i></button>
+                                 <button onClick={() => handleDeleteCat(cat)} className="p-2 text-slate-400 hover:text-rose-600 hover:bg-white rounded-lg transition-all shadow-sm border border-transparent hover:border-slate-100"><i className="bi bi-trash"></i></button>
+                              </div>
+                           </>
+                        )}
+                     </div>
+                   ))}
+                   {categories.length === 0 && <p className="text-center text-[10px] font-bold text-slate-300 uppercase py-10">Belum ada kategori kustom.</p>}
+                </div>
+             </div>
+          </div>
+        </div>
+      )}
 
       {/* MULTI-ACTIVITY MODAL */}
       {isModalOpen && (

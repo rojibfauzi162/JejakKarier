@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { Contact, AppData, SubscriptionPlan } from '../types';
 
@@ -25,7 +26,7 @@ const Networking: React.FC<NetworkingProps> = ({ contacts, onAdd, onUpdate, onDe
 
   const openAddForm = () => {
     // VALIDASI LIMIT DATABASE PAKET FREE
-    const limit = appData?.planLimits?.networking || 2;
+    const limit = appData?.planLimits?.networking || 10;
     if (appData?.plan === SubscriptionPlan.FREE && contacts.length >= Number(limit)) {
       alert(`Batas kontak networking tercapai (${limit}). Silakan upgrade paket untuk mengelola lebih banyak relasi.`);
       onUpgrade?.();
@@ -46,7 +47,7 @@ const Networking: React.FC<NetworkingProps> = ({ contacts, onAdd, onUpdate, onDe
     </svg>
   );
 
-  const limit = appData?.planLimits?.networking || 2;
+  const limit = appData?.planLimits?.networking || 10;
 
   return (
     <div className="space-y-8 animate-in fade-in duration-700 pb-24 lg:pb-20">
@@ -292,7 +293,7 @@ const ContactForm: React.FC<{ initialData: Contact | null; onSubmit: (data: Part
         </div>
       </div>
       <div className="flex gap-4 pt-4 lg:pt-6">
-        <button onClick={onCancel} className="flex-1 py-4 lg:py-5 text-slate-400 font-black uppercase tracking-widest hover:bg-slate-50 rounded-2xl text-xs">Batal</button>
+        <button onClick={onCancel} className="flex-1 py-4 lg:py-5 text-slate-400 font-black rounded-2xl text-xs">Batal</button>
         <button onClick={() => onSubmit(formData)} className="flex-1 py-4 lg:py-5 bg-slate-900 text-white font-black uppercase tracking-widest rounded-2xl shadow-xl hover:bg-black text-xs">Simpan</button>
       </div>
     </div>

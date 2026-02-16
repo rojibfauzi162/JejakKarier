@@ -8,6 +8,7 @@ export const INITIAL_DATA: AppData = Object.freeze({
   status: AccountStatus.ACTIVE,
   joinedAt: new Date().toISOString(),
   lastLogin: new Date().toISOString(),
+  planPermissions: ['dashboard', 'profile', 'daily', 'skills', 'todo_list', 'calendar', 'work_reflection', 'loker', 'cv_generator', 'online_cv', 'networking', 'projects', 'career', 'reports', 'achievements', 'ai_insights', 'reviews'],
   aiUsage: {
     cvGenerated: 0,
     coverLetters: 0,
@@ -86,20 +87,20 @@ export const DEFAULT_PRODUCTS: SubscriptionProduct[] = [
     durationDays: 7, 
     allowedModules: ['dashboard', 'profile', 'daily', 'skills', 'todo_list', 'calendar', 'work_reflection', 'loker', 'cv_generator', 'online_cv', 'networking', 'projects', 'career', 'reports', 'achievements', 'ai_insights', 'reviews'], 
     limits: { 
-      dailyLogs: 3, 
-      skills: 2, 
-      projects: 2, 
-      cvExports: 1,
-      trainingHistory: 2,
-      certification: 2,
-      careerPath: 2,
-      jobTracker: 2,
-      networking: 2,
-      todoList: 2,
-      workExperience: 2,
-      education: 2,
-      careerCalendar: 2,
-      achievements: 1 // Fixed for Free
+      dailyLogs: 10, 
+      skills: 10, 
+      projects: 10, 
+      cvExports: 10,
+      trainingHistory: 10,
+      certification: 10,
+      careerPath: 10,
+      jobTracker: 10,
+      networking: 10,
+      todoList: 10,
+      workExperience: 10,
+      education: 10,
+      careerCalendar: 10,
+      achievements: 10
     },
     isActive: true,
     showOnLanding: false, 
@@ -128,7 +129,7 @@ export const DEFAULT_PRODUCTS: SubscriptionProduct[] = [
       workExperience: 'unlimited',
       education: 'unlimited',
       careerCalendar: 'unlimited',
-      achievements: 'unlimited' // Fixed for Pro
+      achievements: 'unlimited'
     }, 
     mayarProductId: 'paket-bulanan-jejakkarir-40840', 
     isActive: true, 
@@ -158,7 +159,7 @@ export const DEFAULT_PRODUCTS: SubscriptionProduct[] = [
       workExperience: 'unlimited',
       education: 'unlimited',
       careerCalendar: 'unlimited',
-      achievements: 'unlimited' // Fixed for Pro
+      achievements: 'unlimited'
     }, 
     mayarProductId: 'paket-3-bulanan-jejakkarir-40841', 
     isActive: true, 
@@ -188,7 +189,7 @@ export const DEFAULT_PRODUCTS: SubscriptionProduct[] = [
       workExperience: 'unlimited',
       education: 'unlimited',
       careerCalendar: 'unlimited',
-      achievements: 'unlimited' // Fixed for Pro
+      achievements: 'unlimited'
     }, 
     mayarProductId: 'paket-tahunan-jejakkarir-40842', 
     isActive: true, 

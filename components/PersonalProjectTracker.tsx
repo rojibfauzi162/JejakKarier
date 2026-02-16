@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { PersonalProject, ProjectStatus, AppData, SubscriptionPlan } from '../types';
 
@@ -15,7 +16,7 @@ const PersonalProjectTracker: React.FC<PersonalProjectTrackerProps> = ({ project
   const [editingItem, setEditingItem] = useState<PersonalProject | null>(null);
 
   // LOGIC LIMITASI - HANYA UNTUK PAKET FREE
-  const limit = appData?.planLimits?.projects || 5;
+  const limit = appData?.planLimits?.projects || 10;
   const isLimitReached = appData?.plan === SubscriptionPlan.FREE && limit !== 'unlimited' && projects.length >= Number(limit);
 
   const openAddForm = () => {
@@ -296,7 +297,7 @@ const ProjectForm: React.FC<{ initialData: PersonalProject | null; onSubmit: (da
         </div>
       </div>
       <div className="flex gap-4 pt-4 lg:pt-6">
-        <button onClick={onCancel} className="flex-1 py-4 lg:py-5 text-slate-400 font-black uppercase tracking-widest hover:bg-slate-50 rounded-2xl text-xs">Batal</button>
+        <button onClick={onCancel} className="flex-1 py-4 lg:py-5 text-slate-400 font-black rounded-2xl text-xs">Batal</button>
         <button onClick={() => onSubmit(formData)} className="flex-1 py-4 lg:py-5 bg-slate-900 text-white font-black uppercase tracking-widest rounded-2xl shadow-xl hover:bg-black text-xs">Simpan</button>
       </div>
     </div>

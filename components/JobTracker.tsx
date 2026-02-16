@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { JobApplication, JobStatus, CareerEvent, EventType, ImportanceLevel, AppData, SubscriptionPlan } from '../types';
 
@@ -69,7 +70,7 @@ const JobTracker: React.FC<JobTrackerProps> = ({ applications, careerEvents, onA
 
   const openAddForm = () => {
     // VALIDASI LIMIT DATABASE PAKET FREE
-    const limit = appData?.planLimits?.jobTracker || 2;
+    const limit = appData?.planLimits?.jobTracker || 10;
     if (appData?.plan === SubscriptionPlan.FREE && applications.length >= Number(limit)) {
       alert(`Batas lamaran kerja tercapai (${limit}). Silakan upgrade paket untuk melacak lebih banyak peluang.`);
       onUpgrade?.();
@@ -145,7 +146,7 @@ const JobTracker: React.FC<JobTrackerProps> = ({ applications, careerEvents, onA
     alert(`Status ${selectedIds.size} lamaran berhasil diperbarui!`);
   };
 
-  const limit = appData?.planLimits?.jobTracker || 2;
+  const limit = appData?.planLimits?.jobTracker || 10;
 
   return (
     <div className="space-y-6 animate-in fade-in duration-700 pb-24 lg:pb-16">

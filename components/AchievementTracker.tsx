@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { Achievement, AchievementCategory, UserProfile, WorkExperience, AppData, SubscriptionPlan } from '../types';
 
@@ -30,7 +31,7 @@ const AchievementTracker: React.FC<AchievementTrackerProps> = ({ achievements, p
 
   // SINKRONISASI LIMITASI DARI SUPERADMIN
   const limit = useMemo(() => {
-    return appData?.planLimits?.achievements || 5;
+    return appData?.planLimits?.achievements || 10;
   }, [appData]);
 
   const isLimitReached = useMemo(() => {

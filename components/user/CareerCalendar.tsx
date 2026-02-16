@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { AppData, CareerEvent, EventType, ImportanceLevel, JobStatus, SubscriptionPlan } from '../../types';
 

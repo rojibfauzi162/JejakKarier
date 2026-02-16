@@ -163,11 +163,15 @@ const App: React.FC = () => {
         if (userData) {
           const currentPlanConfig = catalog.find(p => p.tier === userData!.plan);
           if (currentPlanConfig) {
-             userData.planPermissions = Array.from(new Set([...(userData.planPermissions || []), ...(currentPlanConfig.allowedModules || [])]));
+             // SINKRONISASI PERIZINAN MODUL DARI KATALOG
+             const catalogModules = currentPlanConfig.allowedModules || [];
+             userData.planPermissions = Array.from(new Set([...(userData.planPermissions || []), ...catalogModules]));
              userData.planLimits = currentPlanConfig.limits;
              
+             // NORMALISASI KUNCI PERIZINAN (Legacy fix)
              if (userData.planPermissions.includes('todo_list') && !userData.planPermissions.includes('todo')) userData.planPermissions.push('todo');
              if (userData.planPermissions.includes('cv_generator') && !userData.planPermissions.includes('cv')) userData.planPermissions.push('cv');
+             if (userData.planPermissions.includes('online_cv') && !userData.planPermissions.includes('cv')) userData.planPermissions.push('cv');
           }
           
           setData(userData);
@@ -195,6 +199,13 @@ const App: React.FC = () => {
           const pendingRegRaw = localStorage.getItem('pending_registration');
           const pendingReg = pendingRegRaw ? JSON.parse(pendingRegRaw) : {};
 
+          // Kunci perizinan default yang harus dibuka (Sesuai Catalog)
+          const defaultPermissions = freePlan?.allowedModules || ['dashboard', 'profile', 'daily', 'skills', 'todo_list', 'calendar', 'work_reflection', 'loker', 'cv_generator', 'online_cv', 'networking', 'projects', 'career', 'reports', 'achievements', 'ai_insights', 'reviews'];
+          
+          // Tambahkan alias kunci untuk kompatibilitas pengecekan withPermission
+          if (defaultPermissions.includes('todo_list') && !defaultPermissions.includes('todo')) defaultPermissions.push('todo');
+          if (defaultPermissions.includes('cv_generator') && !defaultPermissions.includes('cv')) defaultPermissions.push('cv');
+
           const newData: AppData = { 
             ...getCleanInitialData(), 
             uid: authUser.uid, 
@@ -204,7 +215,7 @@ const App: React.FC = () => {
             joinedAt: joinedAt.toISOString(), 
             lastLogin: joinedAt.toISOString(),
             expiryDate: trialExpiry.toISOString(),
-            planPermissions: freePlan?.allowedModules || ['dashboard', 'profile', 'daily', 'skills', 'todo', 'calendar', 'work_reflection', 'loker', 'cv', 'networking', 'projects', 'career', 'reports', 'achievements', 'ai_insights', 'reviews'],
+            planPermissions: defaultPermissions,
             planLimits: freePlan?.limits || { dailyLogs: 3, skills: 2, projects: 2, jobTracker: 2, careerCalendar: 2, networking: 2, todoList: 2, workExperience: 2, education: 2, trainingHistory: 2, certification: 2, careerPath: 2, cvExports: 1, achievements: 1 },
             profile: { 
               ...INITIAL_DATA.profile, 
@@ -269,10 +280,11 @@ const App: React.FC = () => {
   })();
 
   const withPermission = (moduleKey: string, content: React.ReactNode) => {
-    // MODUL DASAR YANG SELALU BISA DIAKSES MESKIPUN BELUM VERIFIKASI
+    // MODUL DASAR (Tapi Sekarang Di-Lock jika Belum Verifikasi sesuai permintaan user)
     const basicModules = ['dashboard', 'profile', 'apps_hub', 'billing', 'settings', 'calendar'];
 
-    if (user && !user.emailVerified && !isAdmin && !basicModules.includes(moduleKey)) {
+    // LOCK TOTAL JIKA BELUM VERIFIKASI EMAIL (Kecuali Admin)
+    if (user && !user.emailVerified && !isAdmin) {
       return (
         <div className="relative min-h-[500px] flex items-center justify-center bg-white rounded-[3rem] p-10 text-center animate-in zoom-in duration-500 border border-slate-100 shadow-sm">
            <div className="space-y-6">
@@ -280,9 +292,9 @@ const App: React.FC = () => {
                 <i className="bi bi-shield-lock-fill"></i>
               </div>
               <div className="space-y-2">
-                <h3 className="text-2xl lg:text-3xl font-black text-slate-900 uppercase tracking-tight">Fitur Terkunci</h3>
+                <h3 className="text-2xl lg:text-3xl font-black text-slate-900 uppercase tracking-tight">Email Belum Terverifikasi</h3>
                 <p className="text-slate-500 font-medium max-w-sm mx-auto leading-relaxed">
-                  Selesaikan verifikasi email Anda (<span className="font-bold text-indigo-600">{user.email}</span>) untuk membuka akses ke modul <span className="font-black uppercase">{moduleKey.replace('_', ' ')}</span> dan seluruh ekosistem FokusKarir.
+                  Mohon selesaikan verifikasi email Anda (<span className="font-bold text-indigo-600">{user.email}</span>) untuk membuka akses ke seluruh sistem dan modul FokusKarir.
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row justify-center gap-3 pt-4">
@@ -294,17 +306,25 @@ const App: React.FC = () => {
       );
     }
 
-    if (isAdmin || data.plan !== SubscriptionPlan.FREE) return content;
-    const permissions = data.planPermissions || [];
+    if (isAdmin) return content;
     if (basicModules.includes(moduleKey)) return content;
-    if (!permissions.includes(moduleKey)) {
+    
+    // CEK PERIZINAN BERDASARKAN ARRAY planPermissions
+    const permissions = data.planPermissions || [];
+    
+    // Normalisasi kunci pencarian agar lebih cerdas
+    const isAllowed = permissions.includes(moduleKey) || 
+                      (moduleKey === 'todo' && permissions.includes('todo_list')) ||
+                      (moduleKey === 'cv' && (permissions.includes('cv_generator') || permissions.includes('online_cv')));
+
+    if (!isAllowed) {
       return (
-        <div className="relative min-h-[500px] flex items-center justify-center bg-white rounded-[3rem] p-10 text-center">
+        <div className="relative min-h-[500px] flex items-center justify-center bg-white rounded-[3rem] p-10 text-center animate-in zoom-in duration-500 border border-slate-100 shadow-sm">
            <div className="space-y-6">
               <div className="w-20 h-20 bg-slate-50 text-slate-300 rounded-[2rem] flex items-center justify-center text-3xl mx-auto"><i className="bi bi-lock-fill"></i></div>
-              <h3 className="text-2xl font-black text-slate-900 uppercase">Fitur Khusus Member Pro</h3>
-              <p className="text-slate-500 font-medium max-w-sm">Upgrade akun Anda untuk membuka akses ke modul ini.</p>
-              <button onClick={() => setIsUpgradeModalOpen(true)} className="px-8 py-4 bg-indigo-600 text-white font-black rounded-2xl uppercase text-[10px] tracking-widest shadow-xl">Upgrade Sekarang</button>
+              <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Fitur Khusus Member Pro</h3>
+              <p className="text-slate-500 font-medium max-w-sm mx-auto leading-relaxed">Upgrade akun Anda untuk membuka akses ke modul <span className="font-black uppercase">{moduleKey.replace('_', ' ')}</span> dan fitur analisis cerdas lainnya.</p>
+              <button onClick={() => setIsUpgradeModalOpen(true)} className="px-8 py-4 bg-indigo-600 text-white font-black rounded-2xl uppercase text-[10px] tracking-widest shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95">Upgrade Sekarang</button>
            </div>
         </div>
       );
@@ -335,11 +355,11 @@ const App: React.FC = () => {
       case 'apps_hub': return withPermission('apps_hub', <AppsHub onNavigate={handleNavigate} />);
       case 'mobile_stats': return withPermission('mobile_stats', <MobileStats data={data} />);
       case 'profile': return withPermission('profile', <ProfileView profile={data.profile} workExperiences={data.workExperiences} educations={data.educations} onUpdateProfile={(p) => setData(prev => ({...prev, profile: p}))} onAddWork={(w) => setData(prev => ({...prev, workExperiences: [...prev.workExperiences, w]}))} onUpdateWork={(w) => setData(prev => ({...prev, workExperiences: prev.workExperiences.map(i => i.id === w.id ? w : i)}))} onDeleteWork={(id) => setData(prev => ({...prev, workExperiences: prev.workExperiences.filter(i => i.id !== id)}))} onAddEducation={(e) => setData(prev => ({...prev, educations: [...prev.educations, e]}))} onUpdateEducation={(e) => setData(prev => ({...prev, educations: prev.educations.map(i => i.id === e.id ? e : i)}))} onDeleteEducation={(id) => setData(prev => ({...prev, educations: prev.educations.filter(e => e.id !== id)}))} appData={data} />);
-      case 'daily': return withPermission('daily', <DailyLogs logs={data.dailyReports} categories={data.workCategories} onAdd={(l) => setData(prev => ({...prev, dailyReports: [...prev.dailyReports, l]}))} onUpdate={(l) => setData(prev => ({...prev, dailyReports: prev.dailyReports.map(i => i.id === l.id ? l : i)}))} onDelete={(id) => setData(prev => ({...prev, dailyReports: prev.dailyReports.filter(i => i.id !== id)}))} onAddCategory={(c) => setData(prev => ({...prev, workCategories: [...prev.workCategories, c]}))} onDeleteCategory={(c) => setData(prev => ({...prev, workCategories: prev.workCategories.filter(i => i !== c)}))} affirmation={data.affirmations[0]} appData={data} onUpgrade={commonProps.onUpgrade} />);
+      case 'daily': return withPermission('daily', <DailyLogs logs={data.dailyReports} categories={data.workCategories} onAdd={(l) => setData(prev => ({...prev, dailyReports: [...prev.dailyReports, l]}))} onUpdate={(l) => setData(prev => ({...prev, dailyReports: prev.dailyReports.map(i => i.id === l.id ? l : i)}))} onDelete={(id) => setData(prev => ({...prev, dailyReports: prev.dailyReports.filter(i => i.id !== id)}))} onAddCategory={(c) => setData(prev => ({...prev, workCategories: [...prev.workCategories, c]}))} onUpdateCategory={(old, next) => setData(prev => ({...prev, workCategories: prev.workCategories.map(c => c === old ? next : c)}))} onDeleteCategory={(c) => setData(prev => ({...prev, workCategories: prev.workCategories.filter(i => i !== c)}))} affirmation={data.affirmations[0]} appData={data} onUpgrade={commonProps.onUpgrade} />);
       case 'work_reflection': return withPermission('work_reflection', <WorkReflectionView reflections={data.dailyReflections} skills={data.skills} onAdd={(r) => setData(prev => ({...prev, dailyReflections: [...data.dailyReflections, r]}))} onUpdateSkill={(s) => setData(prev => ({...prev, skills: prev.skills.map(i => i.id === s.id ? s : i)}))} onAddTodo={(t) => setData(prev => ({...prev, todoList: [...prev.todoList, t]}))} onAddAchievement={(a) => setData(prev => ({...prev, achievements: [...prev.achievements, a]}))} appData={data} />);
       case 'reports': return withPermission('reports', <PerformanceReports data={data} />);
       case 'ai_insights': return withPermission('ai_insights', <AiInsightActivity data={data} onUpdateInsights={(ins) => setData(prev => ({...prev, aiInsights: ins}))} onAddAchievement={(ach) => setData(prev => ({...prev, achievements: [...prev.achievements, ach]}))} onUpgrade={commonProps.onUpgrade} />);
-      case 'todo_list': return withPermission('todo', <ToDoList tasks={data.todoList} categories={data.todoCategories} onAdd={(t) => setData(prev => ({...prev, todoList: [...prev.todoList, t]}))} onUpdate={(t) => setData(prev => ({...prev, todoList: prev.todoList.map(i => i.id === t.id ? t : i)}))} onDelete={(id) => setData(prev => ({...prev, todoList: prev.todoList.filter(i => i.id !== id)}))} onAddCategory={(c) => setData(prev => ({...prev, todoCategories: [...prev.todoCategories, c]}))} onUpdateCategory={(o, n) => setData(prev => ({...prev, toolCategories: prev.todoCategories.map(i => i === o ? n : i)}))} onDeleteCategory={(c) => setData(prev => ({...prev, todoCategories: prev.todoCategories.filter(i => i !== c)}))} appData={data} onUpgrade={commonProps.onUpgrade} />);
+      case 'todo_list': return withPermission('todo_list', <ToDoList tasks={data.todoList} categories={data.todoCategories} onAdd={(t) => setData(prev => ({...prev, todoList: [...prev.todoList, t]}))} onUpdate={(t) => setData(prev => ({...prev, todoList: prev.todoList.map(i => i.id === t.id ? t : i)}))} onDelete={(id) => setData(prev => ({...prev, todoList: prev.todoList.filter(i => i.id !== id)}))} onAddCategory={(c) => setData(prev => ({...prev, todoCategories: [...prev.todoCategories, c]}))} onUpdateCategory={(o, n) => setData(prev => ({...prev, todoCategories: prev.todoCategories.map(i => i === o ? n : i)}))} onDeleteCategory={(c) => setData(prev => ({...prev, todoCategories: prev.todoCategories.filter(i => i !== c)}))} appData={data} onUpgrade={commonProps.onUpgrade} />);
       case 'calendar': return withPermission('calendar', <CareerCalendar data={data} onAddEvent={(e) => setData(prev => ({...prev, careerEvents: [...(prev.careerEvents || []), e]}))} onDeleteEvent={(id) => setData(prev => ({...prev, careerEvents: (prev.careerEvents || []).filter(i => i.id !== id)}))} onUpgrade={commonProps.onUpgrade} onUpdateJobStatus={(id, s) => setData(prev => ({...prev, jobApplications: prev.jobApplications.map(j => j.id === id ? {...j, status: s} : j)}))} />);
       case 'skills': return withPermission('skills', <SkillTracker skills={data.skills} trainings={data.trainings} certs={data.certifications} onAddSkill={(s) => setData(prev => ({...prev, skills: [...prev.skills, s]}))} onUpdateSkill={(s) => setData(prev => ({...prev, skills: prev.skills.map(i => i.id === s.id ? s : i)}))} onDeleteSkill={(id) => setData(prev => ({...prev, skills: prev.skills.filter(i => i.id !== id)}))} onAddTraining={(t) => setData(prev => ({...prev, trainings: [...prev.trainings, t]}))} onUpdateTraining={(t) => setData(prev => ({...prev, trainings: prev.trainings.map(i => i.id === t.id ? t : i)}))} onDeleteTraining={(id) => setData(prev => ({...prev, trainings: prev.trainings.filter(i => i.id !== id)}))} onAddCert={(c) => setData(prev => ({...prev, certifications: [...prev.certifications, c]}))} onUpdateCert={(c) => setData(prev => ({...prev, certifications: prev.certifications.map(i => i.id === c.id ? c : i)}))} onDeleteCert={(id) => setData(prev => ({...prev, certifications: prev.certifications.filter(i => i.id !== id)}))} onAddTodo={(t) => setData(prev => ({...prev, todoList: [...prev.todoList, t]}))} onSaveStrategy={(s: AiStrategy) => setData(prev => ({...prev, aiStrategies: [s, ...(prev.aiStrategies || [])]}))} showToast={showToast} data={data} initialSubTab={skillsSubTab as any} onUpgrade={commonProps.onUpgrade} onAddCalendarEvent={commonProps.onAddCalendarEvent} />);
       case 'career': return withPermission('career', <CareerPlanner paths={data.careerPaths} appData={data} onAddPath={(p) => setData(prev => ({...prev, careerPaths: [...prev.careerPaths, p]}))} onUpdatePath={(p) => setData(prev => ({...prev, careerPaths: prev.careerPaths.map(i => i.id === p.id ? p : i)}))} onDeletePath={(id) => setData(prev => ({...prev, careerPaths: prev.careerPaths.filter(i => i.id !== id)}))} onUpgrade={commonProps.onUpgrade} />);
@@ -348,9 +368,9 @@ const App: React.FC = () => {
       case 'loker': return withPermission('loker', <JobTracker applications={data.jobApplications} careerEvents={data.careerEvents || []} onAdd={(j) => setData(prev => ({...prev, jobApplications: [...prev.jobApplications, j]}))} onUpdate={(j) => setData(prev => ({...prev, jobApplications: prev.jobApplications.map(i => i.id === j.id ? j : i)}))} onDelete={(id) => setData(prev => ({...prev, jobApplications: prev.jobApplications.filter(i => i.id !== id)}))} onAddCalendarEvent={commonProps.onAddCalendarEvent} appData={data} onUpgrade={commonProps.onUpgrade} />);
       case 'projects': return withPermission('projects', <PersonalProjectTracker projects={data.personalProjects} onAdd={(p) => setData(prev => ({...prev, personalProjects: [...prev.personalProjects, p]}))} onUpdate={(p) => setData(prev => ({...prev, personalProjects: prev.personalProjects.map(i => i.id === p.id ? p : i)}))} onDelete={(id) => setData(prev => ({...prev, personalProjects: prev.personalProjects.filter(i => i.id !== id)}))} appData={data} onUpgrade={commonProps.onUpgrade} />);
       case 'reviews': return withPermission('reviews', <Reviews reviews={data.monthlyReviews} onAdd={(r) => setData(prev => ({...prev, monthlyReviews: [...prev.monthlyReviews, r]}))} onDelete={(id) => setData(prev => ({...prev, monthlyReviews: prev.monthlyReviews.filter(i => i.id !== id)}))} />);
-      case 'cv_generator': return withPermission('cv', <CVGenerator data={data} />);
-      case 'online_cv': return withPermission('cv', <OnlineCVBuilder data={data} onUpdateConfig={(c) => setData(prev => ({...prev, onlineCV: c}))} />);
-      case 'settings': return <AccountSettings reminderConfig={data.reminderConfig} onUpdateReminders={(c) => setData(prev => ({...prev, reminderConfig: c}))} />;
+      case 'cv_generator': return withPermission('cv_generator', <CVGenerator data={data} />);
+      case 'online_cv': return withPermission('online_cv', <OnlineCVBuilder data={data} onUpdateConfig={(c) => setData(prev => ({...prev, onlineCV: c}))} />);
+      case 'settings': return withPermission('settings', <AccountSettings reminderConfig={data.reminderConfig} onUpdateReminders={(c) => setData(prev => ({...prev, reminderConfig: c}))} />);
       case 'billing': return withPermission('billing', <Billing data={data} products={publicProducts} onSelectPlan={(p) => setCheckoutPlan(p)} />);
       default: return withPermission('dashboard', <Dashboard data={data} onNavigate={handleNavigate} />);
     }
