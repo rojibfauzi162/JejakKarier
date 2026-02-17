@@ -17,7 +17,9 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
   const [mayarConfig, setMayarConfig] = useState<MayarConfig | null>(null);
   const [activeVideo, setActiveVideo] = useState<string | null>(null);
 
+  // LOGIC: Ambil konfigurasi landing page dari database Firestore
   useEffect(() => {
+    // Memastikan pengambilan data segar dari Firestore saat landing page dimuat
     const loadConfig = async () => {
       const res = await getLandingPageConfig();
       if (res) setLandingConfig(res);
@@ -73,6 +75,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
     return "Promo Terbatas";
   };
 
+  // CATEGORIZED FEATURES DATA
   const featureCategories = [
     {
       id: 'core',
@@ -128,20 +131,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
             <span className="text-xl font-black tracking-tighter">FokusKarir</span>
           </div>
           <div className="flex items-center gap-8">
-            <a 
-              href="/login" 
-              onClick={(e) => { e.preventDefault(); onLogin(); }} 
-              className="hidden md:block text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-indigo-600 transition-colors"
-            >
-              Masuk
-            </a>
-            <a 
-              href="/register" 
-              onClick={(e) => { e.preventDefault(); onStart(); }} 
-              className="px-6 py-3 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:bg-black transition-all active:scale-95 text-center"
-            >
-              Mulai Sekarang
-            </a>
+            <button onClick={onLogin} className="hidden md:block text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-indigo-600 transition-colors">Masuk</button>
+            <button onClick={onStart} className="px-6 py-3 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:bg-black transition-all active:scale-95">Mulai Sekarang</button>
           </div>
         </div>
       </nav>
@@ -164,14 +155,10 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
               "Karier yang hebat tidak dibangun dalam semalam, tapi melalui setiap kontribusi harian yang tercatat secara cerdas."
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <a 
-                href="/register" 
-                onClick={(e) => { e.preventDefault(); onStart(); }} 
-                className="px-8 py-4 bg-indigo-600 text-white font-black rounded-[2rem] uppercase text-[10px] tracking-[0.2em] shadow-2xl shadow-indigo-100 hover:bg-indigo-700 transition-all flex items-center justify-center gap-4 group"
-              >
+              <button onClick={onStart} className="px-8 py-4 bg-indigo-600 text-white font-black rounded-[2rem] uppercase text-[10px] tracking-[0.2em] shadow-2xl shadow-indigo-100 hover:bg-indigo-700 transition-all flex items-center justify-center gap-4 group">
                 Buat Portofolio Anda 
                 <span className="group-hover:translate-x-2 transition-transform">→</span>
-              </a>
+              </button>
               <div className="flex items-center gap-4 px-2">
                 <div className="flex -space-x-3">
                   {[1,2,3].map(i => <div key={i} className="w-9 h-9 rounded-full border-2 border-white bg-slate-200"></div>)}
@@ -197,7 +184,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
                       <p className="text-[8px] font-black uppercase tracking-[0.2em] leading-relaxed italic opacity-80">"Data mengalahkan asumsi."</p>
                    </div>
                    <div className="aspect-[4/5] rounded-[2.5rem] overflow-hidden shadow-2xl border-4 border-white bg-slate-100">
-                      <img src="https://images.unsplash.com/photo-1581091226825-aee158?q=80&w=600&auto=format&fit=crop" className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700" alt="Profesional Indonesia Pria" />
+                      <img src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?q=80&w=600&auto=format&fit=crop" className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700" alt="Profesional Indonesia Pria" />
                    </div>
                 </div>
              </div>
@@ -255,6 +242,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
                    <p className="text-white text-xl font-black italic">"Kapan terakhir kali aku bangga dengan kinerjaku sendiri?"</p>
                 </div>
              </div>
+             {/* Floating Badge */}
              <div className="absolute -bottom-6 -left-6 bg-white p-6 rounded-3xl shadow-2xl border border-slate-100 max-w-[200px] animate-bounce">
                 <p className="text-[10px] font-black text-rose-600 uppercase mb-1">Career Alert</p>
                 <p className="text-xs font-bold text-slate-800">74% profesional lupa 60% pencapaian mereka dalam 1 tahun.</p>
@@ -274,6 +262,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
           <div className="w-24 h-1.5 bg-indigo-600 mx-auto rounded-full"></div>
         </div>
 
+        {/* SYSTEM MOCKUP / DASHBOARD IMAGES */}
         <div className="max-w-6xl mx-auto px-6 animate-in slide-in-from-bottom-12 duration-1000">
            <div className="relative p-2 bg-slate-200 rounded-[3rem] shadow-inner border-2 border-slate-300">
               <div className="bg-white rounded-[2.5rem] overflow-hidden shadow-2xl border border-slate-100 min-h-[300px] lg:min-h-[500px] relative">
@@ -368,7 +357,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
         </div>
       </section>
 
-      {/* PRICING SECTION */}
+      {/* PRICING SECTION - SINKRON DENGAN ADMIN */}
       <section className="py-20 px-6 lg:px-12 max-w-7xl mx-auto overflow-hidden">
         <div className="text-center max-w-2xl mx-auto space-y-4 mb-16">
           <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-indigo-600">Investasi Karir</h2>
@@ -409,6 +398,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
           )}
         </div>
 
+        {/* SECTION: PREMIUM INCLUSIONS */}
         <div className="mt-24 p-10 lg:p-16 bg-slate-900 rounded-[4rem] text-white shadow-2xl relative overflow-hidden animate-in fade-in duration-1000">
            <div className="relative z-10">
               <div className="text-center max-w-3xl mx-auto space-y-6 mb-16">
@@ -445,25 +435,28 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
               <div className="flex gap-3">
                  <i className="bi bi-geo-alt-fill text-indigo-600 mt-1 shrink-0"></i>
                  <p className="text-sm font-medium text-slate-500 leading-relaxed">
-                   {landingConfig?.businessAddress || <span className="italic opacity-40">Alamat kantor belum disetel.</span>}
+                   Mutihan, RT.02, Wirokerten, Banguntapan Bantul
                  </p>
               </div>
+              
               <div className="flex gap-3 items-center">
                  <i className="bi bi-whatsapp text-emerald-500 shrink-0"></i>
                  <p className="text-sm font-bold text-slate-600">
-                    {landingConfig?.adminWhatsApp ? <a href={`https://wa.me/${landingConfig.adminWhatsApp}`} target="_blank" rel="noreferrer" className="hover:text-indigo-600 transition-colors">+{landingConfig.adminWhatsApp} (WhatsApp Support)</a> : <span className="italic opacity-40 font-normal">WhatsApp belum disetel.</span>}
+                    <a href="https://wa.me/62895321367374" target="_blank" rel="noreferrer" className="hover:text-indigo-600 transition-colors">+62 895-3213-67374 (WhatsApp Support)</a>
                  </p>
               </div>
+
               <div className="flex gap-3 items-center">
                  <i className="bi bi-telephone-fill text-indigo-600 shrink-0"></i>
                  <p className="text-sm font-bold text-slate-600">
-                    {landingConfig?.businessPhone ? <a href={`tel:${landingConfig.businessPhone}`} className="hover:text-indigo-600 transition-colors">{landingConfig.businessPhone}</a> : <span className="italic opacity-40 font-normal">Telepon belum disetel.</span>}
+                    <a href="tel:+62895321367374" className="hover:text-indigo-600 transition-colors">+62 895-3213-67374</a>
                  </p>
               </div>
+
               <div className="flex gap-3 items-center">
                  <i className="bi bi-envelope-at-fill text-indigo-600 shrink-0"></i>
                  <p className="text-sm font-bold text-slate-600">
-                    {landingConfig?.businessEmail ? <a href={`mailto:${landingConfig.businessEmail}`} className="hover:text-indigo-600 transition-colors">{landingConfig.businessEmail}</a> : <span className="italic opacity-40 font-normal">Email support belum disetel.</span>}
+                    <a href="mailto:support@fokuskarir.web.id" className="hover:text-indigo-600 transition-colors">support@fokuskarir.web.id</a>
                  </p>
               </div>
             </div>
@@ -472,8 +465,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
           <div className="md:col-span-2 space-y-6">
             <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Navigasi</h4>
             <ul className="space-y-4">
-              <li><a href="/login" onClick={(e) => { e.preventDefault(); onLogin(); }} className="text-sm font-bold text-slate-600 hover:text-indigo-600 transition-colors">Masuk Akun</a></li>
-              <li><a href="/register" onClick={(e) => { e.preventDefault(); onStart(); }} className="text-sm font-bold text-slate-600 hover:text-indigo-600 transition-colors">Daftar Baru</a></li>
+              <li><button type="button" onClick={onLogin} className="text-sm font-bold text-slate-600 hover:text-indigo-600 transition-colors">Masuk Akun</button></li>
+              <li><button type="button" onClick={onStart} className="text-sm font-bold text-slate-600 hover:text-indigo-600 transition-colors">Daftar Baru</button></li>
             </ul>
           </div>
 
@@ -504,7 +497,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
           <div className="md:col-span-4 space-y-6">
              <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Connect With Us</h4>
              <div className="flex gap-4">
-                <a href={landingConfig?.adminWhatsApp ? `https://wa.me/${landingConfig.adminWhatsApp}` : "#"} target="_blank" rel="noreferrer" className="w-12 h-12 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-xl text-emerald-600 shadow-sm hover:shadow-lg transition-all"><i className="bi bi-whatsapp"></i></a>
+                <a href="https://wa.me/62895321367374" target="_blank" rel="noreferrer" className="w-12 h-12 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-xl text-emerald-600 shadow-sm hover:shadow-lg transition-all"><i className="bi bi-whatsapp"></i></a>
                 <a href="#" className="w-12 h-12 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-xl text-indigo-600 shadow-sm hover:shadow-lg transition-all"><i className="bi bi-instagram"></i></a>
                 <a href="#" className="w-12 h-12 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-xl text-blue-600 shadow-sm hover:shadow-lg transition-all"><i className="bi bi-linkedin"></i></a>
              </div>
