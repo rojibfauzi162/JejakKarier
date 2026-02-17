@@ -384,6 +384,7 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
       days.push(
         <button
           key={d}
+          type="button"
           onClick={() => handleDayClick(dayStr)}
           className={`h-10 w-full flex flex-col items-center justify-center rounded-xl text-[11px] font-black transition-all relative group
             ${isSelectedStart || isSelectedEnd ? 'bg-blue-600 text-white shadow-lg' : ''}
@@ -441,19 +442,21 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
     <div className="space-y-8 animate-in slide-in-from-bottom duration-500 pb-20">
       {/* Banner Header */}
       <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-6 lg:p-8 rounded-[2rem] lg:rounded-[2.5rem] text-white relative overflow-hidden shadow-xl shadow-blue-500/10">
-        <div className="relative z-10 senior-header-content flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
             <h2 className="text-2xl lg:text-3xl font-black tracking-tight uppercase">Aktivitas Harian</h2>
             <p className="opacity-80 max-w-lg mt-2 italic text-xs lg:text-sm font-medium">"{affirmation}"</p>
           </div>
-          <div className="flex gap-2 lg:gap-3">
+          <div className="flex gap-2 lg:gap-3 relative z-20">
             <button 
+              type="button"
               onClick={() => setIsManageCatsOpen(true)}
-              className="flex-1 lg:flex-none px-4 lg:px-6 py-3 lg:py-4 bg-white/10 backdrop-blur-md text-white border border-white/20 font-black rounded-xl lg:rounded-2xl hover:bg-white/20 transition-all active:scale-95 text-[10px] lg:text-xs uppercase tracking-widest"
+              className="flex-1 lg:flex-none px-4 lg:px-6 py-3 lg:py-4 bg-white/10 backdrop-blur-md text-white border border-white/20 font-black rounded-xl lg:rounded-2xl hover:bg-white/20 transition-all active:scale-95 text-[10px] lg:text-xs uppercase tracking-widest flex items-center justify-center gap-2"
             >
               ⚙️ Kategori
             </button>
             <button 
+              type="button"
               onClick={() => handleOpenModal()}
               className="flex-1 lg:flex-none px-4 lg:px-8 py-3 lg:py-4 bg-white text-blue-600 font-black rounded-xl lg:rounded-2xl shadow-lg hover:bg-slate-50 transition-all active:scale-95 whitespace-nowrap uppercase tracking-widest text-[10px] lg:text-xs"
             >
@@ -479,6 +482,7 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
               </div>
            </div>
            <button 
+              type="button"
               onClick={onUpgrade}
               className="w-full sm:w-auto px-8 py-3 bg-white text-indigo-600 font-black rounded-xl text-[10px] uppercase tracking-widest shadow-sm border border-indigo-100 hover:bg-indigo-50 transition-all active:scale-95"
            >
@@ -537,11 +541,11 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
                 <div className="md:col-span-8 space-y-6 relative z-10">
                     <div className="flex items-center justify-between px-2">
                         <div className="flex gap-2">
-                            <button onClick={() => setCalDate(new Date(calDate.getFullYear(), calDate.getMonth() - 1))} className="w-8 h-8 rounded-full hover:bg-slate-200 flex items-center justify-center text-slate-400">←</button>
+                            <button type="button" onClick={() => setCalDate(new Date(calDate.getFullYear(), calDate.getMonth() - 1))} className="w-8 h-8 rounded-full hover:bg-slate-200 flex items-center justify-center text-slate-400">←</button>
                             <h4 className="text-sm font-black text-slate-800 uppercase tracking-tight w-32 text-center">
                                 {calDate.toLocaleString('id-ID', { month: 'long', year: 'numeric' })}
                             </h4>
-                            <button onClick={() => setCalDate(new Date(calDate.getFullYear(), calDate.getMonth() + 1))} className="w-8 h-8 rounded-full hover:bg-slate-200 flex items-center justify-center text-slate-400">→</button>
+                            <button type="button" onClick={() => setCalDate(new Date(calDate.getFullYear(), calDate.getMonth() + 1))} className="w-8 h-8 rounded-full hover:bg-slate-200 flex items-center justify-center text-slate-400">→</button>
                         </div>
                     </div>
                     <div className="grid grid-cols-7 gap-1 text-center border-t border-slate-200 pt-4">
@@ -554,7 +558,7 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
                         <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60 mb-2">Terdeteksi</p>
                         <p className="text-4xl font-black tracking-tighter">{totalPages} <span className="text-lg opacity-40">Hari</span></p>
                     </div>
-                    <button onClick={() => handleSetTimeFilter('all')} className="text-[9px] font-black uppercase tracking-widest text-indigo-300 hover:text-white">× Reset Filter</button>
+                    <button type="button" onClick={() => handleSetTimeFilter('all')} className="text-[9px] font-black uppercase tracking-widest text-indigo-300 hover:text-white">× Reset Filter</button>
                 </div>
             </div>
         )}
@@ -574,6 +578,7 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
                  </div>
               </div>
               <button 
+                type="button"
                 onClick={() => handleOpenModal(currentDayGroup[1][0], true)} 
                 className="px-8 py-3 bg-emerald-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-emerald-100 hover:bg-emerald-700 active:scale-95 transition-all"
               >
@@ -597,7 +602,6 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                     {currentDayGroup[1].map((log, index) => {
-                    const isPercentage = log.metricLabel.includes('%') || log.metricLabel.toLowerCase().includes('persen');
                     return (
                         <tr key={log.id} className={`hover:bg-slate-50/50 transition-colors group ${log.isPlan ? 'bg-amber-50/5 italic' : ''}`}>
                             <td className="px-10 py-6 text-center font-black text-slate-300 text-sm">{index + 1}</td>
@@ -608,8 +612,8 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
                             <td className="px-6 py-6 text-center"><span className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-[10px] font-black uppercase tracking-wider">{log.metricValue} {log.metricLabel}</span></td>
                             <td className="px-10 py-6 text-center">
                               <div className="flex items-center justify-center gap-2">
-                                  <button onClick={() => handleOpenModal(log)} className="p-2.5 bg-white border border-slate-200 text-slate-400 hover:text-blue-600 rounded-xl transition-all shadow-sm">✎</button>
-                                  <button onClick={() => onDelete(log.id)} className="p-2.5 bg-white border border-slate-200 text-slate-400 hover:text-rose-600 rounded-xl transition-all shadow-sm">✕</button>
+                                  <button type="button" onClick={() => handleOpenModal(log)} className="p-2.5 bg-white border border-slate-200 text-slate-400 hover:text-blue-600 rounded-xl transition-all shadow-sm">✎</button>
+                                  <button type="button" onClick={() => onDelete(log.id)} className="p-2.5 bg-white border border-slate-200 text-slate-400 hover:text-rose-600 rounded-xl transition-all shadow-sm">✕</button>
                               </div>
                             </td>
                         </tr>
@@ -618,11 +622,17 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
                 </tbody>
                 </table>
             </div>
+
+            {/* Mobile Pagination Typo Fix */}
+            <div className="lg:hidden p-4 border-t border-slate-50 flex justify-center gap-4">
+              <button disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)} className="px-6 py-2 bg-slate-100 rounded-xl text-[10px] font-black uppercase tracking-widest disabled:opacity-30">← Prev</button>
+              <button disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)} className="px-6 py-2 bg-slate-100 rounded-xl text-[10px] font-black uppercase tracking-widest disabled:opacity-30">Next →</button>
+            </div>
           </div>
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center py-32 space-y-6">
              <div className="text-7xl opacity-20 grayscale">🕯️</div>
-             <button onClick={() => handleOpenModal()} className="px-10 py-4 bg-blue-600 text-white font-black uppercase tracking-widest text-[10px] rounded-2xl shadow-xl shadow-blue-100 hover:bg-blue-700 transition-all">+ Catat Aktivitas</button>
+             <button type="button" onClick={() => handleOpenModal()} className="px-10 py-4 bg-blue-600 text-white font-black uppercase tracking-widest text-[10px] rounded-2xl shadow-xl shadow-blue-100 hover:bg-blue-700 transition-all">+ Catat Aktivitas</button>
           </div>
         )}
       </div>
@@ -633,7 +643,7 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
           <div className="bg-white w-full max-w-lg rounded-[3rem] shadow-2xl p-8 lg:p-10 animate-in zoom-in duration-300 overflow-hidden">
              <div className="flex justify-between items-center mb-8">
                 <h3 className="text-2xl font-black text-slate-900 uppercase">Kelola Kategori</h3>
-                <button onClick={() => { setIsManageCatsOpen(false); setEditingCat(null); }} className="text-slate-400 hover:text-rose-600"><i className="bi bi-x-lg text-xl"></i></button>
+                <button type="button" onClick={() => { setIsManageCatsOpen(false); setEditingCat(null); }} className="text-slate-400 hover:text-rose-600"><i className="bi bi-x-lg text-xl"></i></button>
              </div>
 
              <div className="space-y-6">
@@ -644,7 +654,7 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
                     value={newCatInput}
                     onChange={e => setNewCatInput(e.target.value)}
                    />
-                   <button onClick={handleAddCategory} className="px-6 py-3 bg-indigo-600 text-white rounded-2xl font-black text-[10px] uppercase shadow-lg shadow-indigo-100 hover:bg-indigo-700 active:scale-95 transition-all">Tambah</button>
+                   <button type="button" onClick={handleAddCategory} className="px-6 py-3 bg-indigo-600 text-white rounded-2xl font-black text-[10px] uppercase shadow-lg shadow-indigo-100 hover:bg-indigo-700 active:scale-95 transition-all">Tambah</button>
                 </div>
 
                 <div className="max-h-[350px] overflow-y-auto no-scrollbar space-y-2.5">
@@ -658,15 +668,15 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
                                 onChange={e => setEditCatInput(e.target.value)}
                                 autoFocus
                               />
-                              <button onClick={handleSaveEditCat} className="text-indigo-600 px-3 py-1 font-black text-[10px] uppercase border border-indigo-100 rounded-lg hover:bg-indigo-50">OK</button>
-                              <button onClick={() => setEditingCat(null)} className="text-slate-400 px-3 py-1 font-black text-[10px] uppercase border border-slate-100 rounded-lg">Batal</button>
+                              <button type="button" onClick={handleSaveEditCat} className="text-indigo-600 px-3 py-1 font-black text-[10px] uppercase border border-indigo-100 rounded-lg hover:bg-indigo-50">OK</button>
+                              <button type="button" onClick={() => setEditingCat(null)} className="text-slate-400 px-3 py-1 font-black text-[10px] uppercase border border-slate-100 rounded-lg">Batal</button>
                            </div>
                         ) : (
                            <>
                               <span className="text-xs font-black text-slate-700 uppercase tracking-tight">{cat}</span>
-                              <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                                 <button onClick={() => handleStartEditCat(cat)} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-white rounded-lg transition-all shadow-sm border border-transparent hover:border-slate-100"><i className="bi bi-pencil-square"></i></button>
-                                 <button onClick={() => handleDeleteCat(cat)} className="p-2 text-slate-400 hover:text-rose-600 hover:bg-white rounded-lg transition-all shadow-sm border border-transparent hover:border-slate-100"><i className="bi bi-trash"></i></button>
+                              <div className="flex gap-1.5 opacity-100 lg:opacity-0 group-hover:opacity-100 transition-opacity">
+                                 <button type="button" onClick={() => handleStartEditCat(cat)} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-white rounded-lg transition-all shadow-sm border border-transparent hover:border-slate-100"><i className="bi bi-pencil-square"></i></button>
+                                 <button type="button" onClick={() => handleDeleteCat(cat)} className="p-2 text-slate-400 hover:text-rose-600 hover:bg-white rounded-lg transition-all shadow-sm border border-transparent hover:border-slate-100"><i className="bi bi-trash"></i></button>
                               </div>
                            </>
                         )}
@@ -688,7 +698,7 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
                 <h3 className="text-3xl lg:text-4xl font-black text-slate-900 tracking-tighter uppercase leading-none">{editingLogId ? 'Ubah Catatan' : 'Catat Pekerjaan Baru'}</h3>
                 <p className="text-slate-400 font-bold uppercase text-[10px] tracking-[0.3em]">Log Aktivitas Produktivitas v2.0</p>
               </div>
-              <button onClick={() => setIsModalOpen(false)} className="w-12 h-12 flex items-center justify-center bg-slate-50 text-slate-400 hover:text-rose-600 rounded-full transition-colors text-xl font-black">✕</button>
+              <button type="button" onClick={() => setIsModalOpen(false)} className="w-12 h-12 flex items-center justify-center bg-slate-50 text-slate-400 hover:text-rose-600 rounded-full transition-colors text-xl font-black">✕</button>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-10">

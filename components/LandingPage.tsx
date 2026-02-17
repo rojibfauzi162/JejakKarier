@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { SubscriptionProduct, LandingPageConfig, MayarConfig } from '../types';
-import { getLandingPageConfig, getMayarConfig, getProductsCatalog } from '../services/firebase';
+import { getLandingPageConfig, getMayarConfig } from '../services/firebase';
 import { trackingService } from '../services/trackingService';
 
 interface LandingPageProps {
@@ -13,30 +13,25 @@ interface LandingPageProps {
 }
 
 const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal, onBuyPlan, products }) => {
-  // Logic: Diubah ke true agar semua fitur tampil otomatis tanpa interaksi user
-  const [showAllFeatures, setShowAllFeatures] = useState(true);
   const [landingConfig, setLandingConfig] = useState<LandingPageConfig | null>(null);
   const [mayarConfig, setMayarConfig] = useState<MayarConfig | null>(null);
   const [activeVideo, setActiveVideo] = useState<string | null>(null);
 
-  // LOGIC: Ambil konfigurasi landing page dari database Firestore
   useEffect(() => {
-    getLandingPageConfig().then(res => {
+    const loadConfig = async () => {
+      const res = await getLandingPageConfig();
       if (res) setLandingConfig(res);
-    });
-    getMayarConfig().then(res => {
-       if (res) setMayarConfig(res);
-    });
-    // Tracking PageView
+      
+      const mRes = await getMayarConfig();
+      if (mRes) setMayarConfig(mRes);
+    };
+    
+    loadConfig();
     trackingService.trackEvent('PageView');
   }, []);
 
-  // LOGIC: Filter produk berdasarkan status Aktif dan Tampilkan di Landing Page yang diatur oleh Super Admin
-  // Data diambil dari prop 'products' yang sudah dikelola oleh App.tsx (sinkron dengan Firestore)
   const paidProducts = useMemo(() => {
     const list = products || [];
-    
-    // ATURAN SINKRONISASI: Hanya ambil yang AKTIF dan ditandai TAMPIL DI LANDING oleh Super Admin di Product Matrix
     return list
       .filter(p => p.isActive !== false && p.showOnLanding === true) 
       .sort((a, b) => a.price - b.price);
@@ -51,7 +46,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
 
   const handlePay = (plan?: SubscriptionProduct) => {
     if (!plan) {
-      alert("Produk ini belum dikonfigurasi di Admin Panel. Silakan hubungi administrator.");
+      alert("Produk ini belum dikonfigurasi.");
       return;
     }
 
@@ -78,7 +73,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
     return "Promo Terbatas";
   };
 
-  // CATEGORIZED FEATURES DATA
   const featureCategories = [
     {
       id: 'core',
@@ -100,7 +94,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
       desc: "Gunakan sistem pintar untuk merancang jalur karir masa depan.",
       bg: "bg-slate-50",
       features: [
-        { id: 'ai-strategist', icon: "bi-cpu", title: "AI Strategist", desc: "Asisten cerdas yang memindai gap skill Anda dan memberikan rekomendasi roadmap pelatihan paling relevan." },
+        { id: 'ai-strategist', icon: "bi-cpu", title: "AI Strategist", desc: "Asisten cerdas yang memindai gap skill Anda and memberikan rekomendasi roadmap pelatihan paling relevan." },
         { id: 'skill-matrix', icon: "bi-bullseye", title: "Skill Matrix Tracker", desc: "Petakan tingkat penguasaan kompetensi Anda dalam bentuk radar chart untuk melihat area yang perlu ditingkatkan." },
         { id: 'career-roadmap', icon: "bi-rocket-takeoff", title: "Career Roadmap", desc: "Visualisasikan perjalanan karir Anda dari posisi saat ini hingga target jabatan impian di masa depan." },
         { id: 'monthly-review', icon: "bi-calendar-check", title: "Monthly Review", desc: "Evaluasi bulanan terstruktur yang merangkum pencapaian dan kegagalan untuk rencana pertumbuhan yang lebih baik." },
@@ -134,8 +128,20 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
             <span className="text-xl font-black tracking-tighter">FokusKarir</span>
           </div>
           <div className="flex items-center gap-8">
-            <button onClick={onLogin} className="hidden md:block text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-indigo-600 transition-colors">Masuk</button>
-            <button onClick={onStart} className="px-6 py-3 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:bg-black transition-all active:scale-95">Mulai Sekarang</button>
+            <a 
+              href="/login" 
+              onClick={(e) => { e.preventDefault(); onLogin(); }} 
+              className="hidden md:block text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-indigo-600 transition-colors"
+            >
+              Masuk
+            </a>
+            <a 
+              href="/register" 
+              onClick={(e) => { e.preventDefault(); onStart(); }} 
+              className="px-6 py-3 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:bg-black transition-all active:scale-95 text-center"
+            >
+              Mulai Sekarang
+            </a>
           </div>
         </div>
       </nav>
@@ -158,10 +164,14 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
               "Karier yang hebat tidak dibangun dalam semalam, tapi melalui setiap kontribusi harian yang tercatat secara cerdas."
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <button onClick={onStart} className="px-8 py-4 bg-indigo-600 text-white font-black rounded-[2rem] uppercase text-[10px] tracking-[0.2em] shadow-2xl shadow-indigo-100 hover:bg-indigo-700 transition-all flex items-center justify-center gap-4 group">
+              <a 
+                href="/register" 
+                onClick={(e) => { e.preventDefault(); onStart(); }} 
+                className="px-8 py-4 bg-indigo-600 text-white font-black rounded-[2rem] uppercase text-[10px] tracking-[0.2em] shadow-2xl shadow-indigo-100 hover:bg-indigo-700 transition-all flex items-center justify-center gap-4 group"
+              >
                 Buat Portofolio Anda 
                 <span className="group-hover:translate-x-2 transition-transform">→</span>
-              </button>
+              </a>
               <div className="flex items-center gap-4 px-2">
                 <div className="flex -space-x-3">
                   {[1,2,3].map(i => <div key={i} className="w-9 h-9 rounded-full border-2 border-white bg-slate-200"></div>)}
@@ -245,7 +255,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
                    <p className="text-white text-xl font-black italic">"Kapan terakhir kali aku bangga dengan kinerjaku sendiri?"</p>
                 </div>
              </div>
-             {/* Floating Badge */}
              <div className="absolute -bottom-6 -left-6 bg-white p-6 rounded-3xl shadow-2xl border border-slate-100 max-w-[200px] animate-bounce">
                 <p className="text-[10px] font-black text-rose-600 uppercase mb-1">Career Alert</p>
                 <p className="text-xs font-bold text-slate-800">74% profesional lupa 60% pencapaian mereka dalam 1 tahun.</p>
@@ -265,7 +274,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
           <div className="w-24 h-1.5 bg-indigo-600 mx-auto rounded-full"></div>
         </div>
 
-        {/* SYSTEM MOCKUP / DASHBOARD IMAGES */}
         <div className="max-w-6xl mx-auto px-6 animate-in slide-in-from-bottom-12 duration-1000">
            <div className="relative p-2 bg-slate-200 rounded-[3rem] shadow-inner border-2 border-slate-300">
               <div className="bg-white rounded-[2.5rem] overflow-hidden shadow-2xl border border-slate-100 min-h-[300px] lg:min-h-[500px] relative">
@@ -360,7 +368,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
         </div>
       </section>
 
-      {/* PRICING SECTION - SINKRON DENGAN ADMIN */}
+      {/* PRICING SECTION */}
       <section className="py-20 px-6 lg:px-12 max-w-7xl mx-auto overflow-hidden">
         <div className="text-center max-w-2xl mx-auto space-y-4 mb-16">
           <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-indigo-600">Investasi Karir</h2>
@@ -371,8 +379,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
           {paidProducts.length > 0 ? (
             paidProducts.map((p) => {
               const monthlyPrice = p.durationDays >= 30 ? Math.round(p.price / (p.durationDays / 30)) : null;
-              
-              // LOGIC LABEL: Diganti menjadi "Paling Hemat" untuk item yang di-highlight
               let badgeLabel = p.isHighlighted ? "Paling Hemat" : undefined;
               
               return (
@@ -383,7 +389,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
                   label={badgeLabel}
                   originalPrice={p.originalPrice ? p.originalPrice.toLocaleString('id-ID') : undefined}
                   price={p.price.toLocaleString('id-ID')} 
-                  monthlyEquivalent={p.durationDays >= 365 ? monthlyPrice : null} // Hanya untuk paket 1 tahun
+                  monthlyEquivalent={p.durationDays >= 365 ? monthlyPrice : null}
                   discount={getDiscountLabel(p)}
                   limits={p.limits}
                   moduleCount={p.allowedModules.length}
@@ -403,7 +409,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
           )}
         </div>
 
-        {/* SECTION: PREMIUM INCLUSIONS - MENAMPILKAN SELURUH FITUR UNGGULAN */}
         <div className="mt-24 p-10 lg:p-16 bg-slate-900 rounded-[4rem] text-white shadow-2xl relative overflow-hidden animate-in fade-in duration-1000">
            <div className="relative z-10">
               <div className="text-center max-w-3xl mx-auto space-y-6 mb-16">
@@ -412,7 +417,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-12 gap-x-12">
                  <InclusionItem title="AI Career Strategist" desc="Analisis gap skill mendalam dan rekomendasi roadmap karier otomatis berbasis data pasar terkini." icon="bi-cpu-fill" />
-                 <InclusionItem title="Unlimited Work Tracking" desc="Dokumentasikan setiap aktivitas, output, dan metrik harian tanpa batas kapasitas penyimpanan." icon="bi-infinity" />
+                 <InclusionItem title="Unlimited Work Tracking" desc="Dokumentasikan setiap aktivitas, output, and metrik harian tanpa batas kapasitas penyimpanan." icon="bi-infinity" />
                  <InclusionItem title="Digital Presence Hub" desc="Ubah database karier Anda menjadi landing page portfolio publik yang elegan untuk branding." icon="bi-globe-asia-australia" />
                  <InclusionItem title="AI Performance Insight" desc="Laporan performa cerdas mingguan dan bulanan yang siap dipresentasikan untuk kenaikan gaji/jabatan." icon="bi-bar-chart-fill" />
                  <InclusionItem title="One-Click CV Generator" desc="Ekspor data karier Anda menjadi CV PDF profesional dengan berbagai pilihan template modern." icon="bi-file-earmark-pdf-fill" />
@@ -425,65 +430,81 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
                  <InclusionItem title="Career Calendar" desc="Jadwalkan interview, tenggat sertifikasi, dan evaluasi dalam kalender karir yang terintegrasi." icon="bi-calendar3" />
               </div>
            </div>
-           <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-600/10 rounded-full blur-[100px] -mr-48 -mt-48"></div>
-           <div className="absolute bottom-0 left-0 w-96 h-96 bg-blue-600/10 rounded-full blur-[100px] -ml-48 -mb-48"></div>
         </div>
       </section>
 
       {/* FOOTER */}
-      <footer className="py-20 border-t border-slate-100 bg-slate-50/50 px-6 lg:px-12">
+      <footer className="py-20 border-t border-slate-100 bg-slate-50/50 px-6 lg:px-12 relative z-20">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-12 lg:gap-20">
-          {/* Brand & Address */}
           <div className="md:col-span-4 space-y-6">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-black shadow-lg">F</div>
               <span className="text-xl font-black tracking-tighter text-slate-900">FokusKarir</span>
             </div>
             <div className="space-y-4">
-              {landingConfig?.businessAddress && (
-                <div className="flex gap-3">
-                   <i className="bi bi-geo-alt-fill text-indigo-600 mt-1"></i>
-                   <p className="text-sm font-medium text-slate-500 leading-relaxed">{landingConfig.businessAddress}</p>
-                </div>
-              )}
-              {landingConfig?.businessPhone && (
-                <div className="flex gap-3 items-center">
-                   <i className="bi bi-telephone-fill text-indigo-600"></i>
-                   <p className="text-sm font-bold text-slate-600">{landingConfig.businessPhone}</p>
-                </div>
-              )}
-              {landingConfig?.businessEmail && (
-                <div className="flex gap-3 items-center">
-                   <i className="bi bi-envelope-at-fill text-indigo-600"></i>
-                   <p className="text-sm font-bold text-slate-600">{landingConfig.businessEmail}</p>
-                </div>
-              )}
+              <div className="flex gap-3">
+                 <i className="bi bi-geo-alt-fill text-indigo-600 mt-1 shrink-0"></i>
+                 <p className="text-sm font-medium text-slate-500 leading-relaxed">
+                   {landingConfig?.businessAddress || <span className="italic opacity-40">Alamat kantor belum disetel.</span>}
+                 </p>
+              </div>
+              <div className="flex gap-3 items-center">
+                 <i className="bi bi-whatsapp text-emerald-500 shrink-0"></i>
+                 <p className="text-sm font-bold text-slate-600">
+                    {landingConfig?.adminWhatsApp ? <a href={`https://wa.me/${landingConfig.adminWhatsApp}`} target="_blank" rel="noreferrer" className="hover:text-indigo-600 transition-colors">+{landingConfig.adminWhatsApp} (WhatsApp Support)</a> : <span className="italic opacity-40 font-normal">WhatsApp belum disetel.</span>}
+                 </p>
+              </div>
+              <div className="flex gap-3 items-center">
+                 <i className="bi bi-telephone-fill text-indigo-600 shrink-0"></i>
+                 <p className="text-sm font-bold text-slate-600">
+                    {landingConfig?.businessPhone ? <a href={`tel:${landingConfig.businessPhone}`} className="hover:text-indigo-600 transition-colors">{landingConfig.businessPhone}</a> : <span className="italic opacity-40 font-normal">Telepon belum disetel.</span>}
+                 </p>
+              </div>
+              <div className="flex gap-3 items-center">
+                 <i className="bi bi-envelope-at-fill text-indigo-600 shrink-0"></i>
+                 <p className="text-sm font-bold text-slate-600">
+                    {landingConfig?.businessEmail ? <a href={`mailto:${landingConfig.businessEmail}`} className="hover:text-indigo-600 transition-colors">{landingConfig.businessEmail}</a> : <span className="italic opacity-40 font-normal">Email support belum disetel.</span>}
+                 </p>
+              </div>
             </div>
           </div>
 
-          {/* Quick Links */}
           <div className="md:col-span-2 space-y-6">
             <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Navigasi</h4>
             <ul className="space-y-4">
-              <li><button onClick={onLogin} className="text-sm font-bold text-slate-600 hover:text-indigo-600 transition-colors">Masuk Akun</button></li>
-              <li><button onClick={onStart} className="text-sm font-bold text-slate-600 hover:text-indigo-600 transition-colors">Daftar Baru</button></li>
+              <li><a href="/login" onClick={(e) => { e.preventDefault(); onLogin(); }} className="text-sm font-bold text-slate-600 hover:text-indigo-600 transition-colors">Masuk Akun</a></li>
+              <li><a href="/register" onClick={(e) => { e.preventDefault(); onStart(); }} className="text-sm font-bold text-slate-600 hover:text-indigo-600 transition-colors">Daftar Baru</a></li>
             </ul>
           </div>
 
-          {/* Legal Links */}
           <div className="md:col-span-2 space-y-6">
             <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Legalitas</h4>
-            <ul className="space-y-4">
-              <li><button onClick={() => onShowLegal?.('privacy')} className="text-sm font-bold text-slate-600 hover:text-indigo-600 transition-colors">Kebijakan Privasi</button></li>
-              <li><button onClick={() => onShowLegal?.('terms')} className="text-sm font-bold text-slate-600 hover:text-indigo-600 transition-colors">Syarat & Layanan</button></li>
+            <ul className="space-y-4 relative z-30">
+              <li>
+                <a 
+                  href="/privacy" 
+                  onClick={(e) => { e.preventDefault(); onShowLegal?.('privacy'); }} 
+                  className="text-sm font-bold text-slate-600 hover:text-indigo-600 transition-colors cursor-pointer"
+                >
+                  Kebijakan Privasi
+                </a>
+              </li>
+              <li>
+                <a 
+                  href="/terms" 
+                  onClick={(e) => { e.preventDefault(); onShowLegal?.('terms'); }} 
+                  className="text-sm font-bold text-slate-600 hover:text-indigo-600 transition-colors cursor-pointer"
+                >
+                  Syarat & Layanan
+                </a>
+              </li>
             </ul>
           </div>
 
-          {/* Connect */}
           <div className="md:col-span-4 space-y-6">
              <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Connect With Us</h4>
              <div className="flex gap-4">
-                <a href={`https://wa.me/${landingConfig?.adminWhatsApp}`} target="_blank" className="w-12 h-12 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-xl text-emerald-600 shadow-sm hover:shadow-lg transition-all"><i className="bi bi-whatsapp"></i></a>
+                <a href={landingConfig?.adminWhatsApp ? `https://wa.me/${landingConfig.adminWhatsApp}` : "#"} target="_blank" rel="noreferrer" className="w-12 h-12 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-xl text-emerald-600 shadow-sm hover:shadow-lg transition-all"><i className="bi bi-whatsapp"></i></a>
                 <a href="#" className="w-12 h-12 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-xl text-indigo-600 shadow-sm hover:shadow-lg transition-all"><i className="bi bi-instagram"></i></a>
                 <a href="#" className="w-12 h-12 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-xl text-blue-600 shadow-sm hover:shadow-lg transition-all"><i className="bi bi-linkedin"></i></a>
              </div>
@@ -562,13 +583,10 @@ const PricingCard = ({ title, duration, originalPrice, price, monthlyEquivalent,
           </p>
         )}
       </div>
-
-      {/* MODULES HEADER - Diganti menjadi "Benefit Unggulan" dengan limit 4 poin utama */}
       <div className="flex justify-between items-center mb-4 border-b border-slate-100 pb-2">
          <p className={`text-[9px] font-black uppercase tracking-widest ${highlight ? 'text-indigo-300' : 'text-indigo-600'}`}>Benefit Unggulan</p>
          <span className={`text-[8px] font-black px-2 py-0.5 rounded-full ${highlight ? 'bg-white/10 text-white' : 'bg-slate-100 text-slate-400'}`}>TOP PRIORITY</span>
       </div>
-
       <ul className="space-y-3.5 mb-10">
         {features.slice(0, 4).map((f: string, i: number) => (
           <li key={i} className="flex items-start gap-3 text-[10px] font-bold tracking-tight">

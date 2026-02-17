@@ -50,7 +50,7 @@ const App: React.FC = () => {
   const desktopNotifRef = useRef<HTMLDivElement>(null);
   const [resendingEmail, setResendingEmail] = useState(false);
   const [hideVerificationReminder, setHideVerificationReminder] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // NEW: State for mobile sidebar
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
     setToast({ message, type });
@@ -89,10 +89,15 @@ const App: React.FC = () => {
     return null;
   });
 
+  const [showAuth, setShowAuth] = useState(() => {
+    const path = window.location.pathname;
+    return path === '/login' || path === '/register';
+  });
+
   const handleNavigate = (tab: string, subTab?: string) => {
     setActiveTab(tab);
     setSkillsSubTab(subTab || undefined);
-    setIsSidebarOpen(false); // Close sidebar on navigate
+    setIsSidebarOpen(false);
   };
 
   const navigateToLegal = (type: 'privacy' | 'terms' | null) => {
@@ -101,12 +106,19 @@ const App: React.FC = () => {
     setPublicLegalPage(type);
   };
 
+  const navigateToAuth = (show: boolean, mode: 'login' | 'register' = 'login') => {
+    if (show) window.history.pushState({}, '', `/${mode}`);
+    else window.history.pushState({}, '', '/');
+    setShowAuth(show);
+  };
+
   useEffect(() => {
     const handlePopState = () => {
       const path = window.location.pathname;
-      if (path === '/privacy') setPublicLegalPage('privacy');
-      else if (path === '/terms') setPublicLegalPage('terms');
-      else setPublicLegalPage(null);
+      if (path === '/privacy') { setPublicLegalPage('privacy'); setShowAuth(false); }
+      else if (path === '/terms') { setPublicLegalPage('terms'); setShowAuth(false); }
+      else if (path === '/login' || path === '/register') { setShowAuth(true); setPublicLegalPage(null); }
+      else { setPublicLegalPage(null); setShowAuth(false); }
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
@@ -122,14 +134,12 @@ const App: React.FC = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const [showAuth, setShowAuth] = useState(false);
   const [publicProducts, setPublicProducts] = useState<SubscriptionProduct[]>(DEFAULT_PRODUCTS);
 
   useEffect(() => {
     getProductsCatalog().then(p => {
       if (p && p.length > 0) setPublicProducts(p);
     });
-    // Inisialisasi Tracking Pixel
     getTrackingConfig().then(cfg => {
       if (cfg) trackingService.init(cfg);
     });
@@ -145,7 +155,6 @@ const App: React.FC = () => {
         return;
       }
       
-      // SET USER SECEPAT MUNGKIN AGAR LAYAR BERPINDAH
       setUser(authUser);
 
       try {
@@ -163,12 +172,10 @@ const App: React.FC = () => {
         if (userData) {
           const currentPlanConfig = catalog.find(p => p.tier === userData!.plan);
           if (currentPlanConfig) {
-             // SINKRONISASI PERIZINAN MODUL DARI KATALOG
              const catalogModules = currentPlanConfig.allowedModules || [];
              userData.planPermissions = Array.from(new Set([...(userData.planPermissions || []), ...catalogModules]));
              userData.planLimits = currentPlanConfig.limits;
              
-             // NORMALISASI KUNCI PERIZINAN (Legacy fix)
              if (userData.planPermissions.includes('todo_list') && !userData.planPermissions.includes('todo')) userData.planPermissions.push('todo');
              if (userData.planPermissions.includes('cv_generator') && !userData.planPermissions.includes('cv')) userData.planPermissions.push('cv');
              if (userData.planPermissions.includes('online_cv') && !userData.planPermissions.includes('cv')) userData.planPermissions.push('cv');
@@ -179,7 +186,6 @@ const App: React.FC = () => {
               setActiveTab('admin_dashboard');
           }
 
-          // Tracking Logic: Jika baru saja bayar (PAID), tembak Purchase event satu kali
           const lastTx = userData.manualTransactions?.slice().reverse()[0];
           if (lastTx && lastTx.status === 'Paid') {
              const firedKey = `fired_purchase_${lastTx.id}`;
@@ -190,7 +196,6 @@ const App: React.FC = () => {
           }
 
         } else {
-          // PROSES DATA BARU (REGISTRASI)
           const freePlan = catalog.find(p => p.tier === SubscriptionPlan.FREE);
           const joinedAt = new Date();
           const trialExpiry = new Date();
@@ -199,10 +204,8 @@ const App: React.FC = () => {
           const pendingRegRaw = localStorage.getItem('pending_registration');
           const pendingReg = pendingRegRaw ? JSON.parse(pendingRegRaw) : {};
 
-          // Kunci perizinan default yang harus dibuka (Sesuai Catalog)
           const defaultPermissions = freePlan?.allowedModules || ['dashboard', 'profile', 'daily', 'skills', 'todo_list', 'calendar', 'work_reflection', 'loker', 'cv_generator', 'online_cv', 'networking', 'projects', 'career', 'reports', 'achievements', 'ai_insights', 'reviews'];
           
-          // Tambahkan alias kunci untuk kompatibilitas pengecekan withPermission
           if (defaultPermissions.includes('todo_list') && !defaultPermissions.includes('todo')) defaultPermissions.push('todo');
           if (defaultPermissions.includes('cv_generator') && !defaultPermissions.includes('cv')) defaultPermissions.push('cv');
 
@@ -265,8 +268,8 @@ const App: React.FC = () => {
 
   if (checkoutPlan) return <Checkout plan={checkoutPlan} user={user} onBack={() => setCheckoutPlan(null)} />;
   if (!user) {
-    if (showAuth) return <Auth onBack={() => setShowAuth(false)} />;
-    return <LandingPage onStart={() => setShowAuth(true)} onLogin={() => setShowAuth(true)} onShowLegal={(type) => navigateToLegal(type)} onBuyPlan={(plan) => setCheckoutPlan(plan)} products={publicProducts} />;
+    if (showAuth) return <Auth onBack={() => navigateToAuth(false)} />;
+    return <LandingPage onStart={() => navigateToAuth(true, 'register')} onLogin={() => navigateToAuth(true, 'login')} onShowLegal={(type) => navigateToLegal(type)} onBuyPlan={(plan) => setCheckoutPlan(plan)} products={publicProducts} />;
   }
 
   const isAdmin = data.role === UserRole.SUPERADMIN;
@@ -280,10 +283,8 @@ const App: React.FC = () => {
   })();
 
   const withPermission = (moduleKey: string, content: React.ReactNode) => {
-    // MODUL DASAR (Tapi Sekarang Di-Lock jika Belum Verifikasi sesuai permintaan user)
     const basicModules = ['dashboard', 'profile', 'apps_hub', 'billing', 'settings', 'calendar'];
 
-    // LOCK TOTAL JIKA BELUM VERIFIKASI EMAIL (Kecuali Admin)
     if (user && !user.emailVerified && !isAdmin) {
       return (
         <div className="relative min-h-[500px] flex items-center justify-center bg-white rounded-[3rem] p-10 text-center animate-in zoom-in duration-500 border border-slate-100 shadow-sm">
@@ -309,10 +310,7 @@ const App: React.FC = () => {
     if (isAdmin) return content;
     if (basicModules.includes(moduleKey)) return content;
     
-    // CEK PERIZINAN BERDASARKAN ARRAY planPermissions
     const permissions = data.planPermissions || [];
-    
-    // Normalisasi kunci pencarian agar lebih cerdas
     const isAllowed = permissions.includes(moduleKey) || 
                       (moduleKey === 'todo' && permissions.includes('todo_list')) ||
                       (moduleKey === 'cv' && (permissions.includes('cv_generator') || permissions.includes('online_cv')));
@@ -351,7 +349,6 @@ const App: React.FC = () => {
       case 'admin_integrations': return <AdminPanel initialMode="integrations" userRole={data.role} />;
       case 'admin_settings': return <AdminPanel initialMode="settings" userRole={data.role} />;
       case 'admin_health': return <AdminPanel initialMode="health" userRole={data.role} />;
-      
       case 'apps_hub': return withPermission('apps_hub', <AppsHub onNavigate={handleNavigate} />);
       case 'mobile_stats': return withPermission('mobile_stats', <MobileStats data={data} />);
       case 'profile': return withPermission('profile', <ProfileView profile={data.profile} workExperiences={data.workExperiences} educations={data.educations} onUpdateProfile={(p) => setData(prev => ({...prev, profile: p}))} onAddWork={(w) => setData(prev => ({...prev, workExperiences: [...prev.workExperiences, w]}))} onUpdateWork={(w) => setData(prev => ({...prev, workExperiences: prev.workExperiences.map(i => i.id === w.id ? w : i)}))} onDeleteWork={(id) => setData(prev => ({...prev, workExperiences: prev.workExperiences.filter(i => i.id !== id)}))} onAddEducation={(e) => setData(prev => ({...prev, educations: [...prev.educations, e]}))} onUpdateEducation={(e) => setData(prev => ({...prev, educations: prev.educations.map(i => i.id === e.id ? e : i)}))} onDeleteEducation={(id) => setData(prev => ({...prev, educations: prev.educations.filter(e => e.id !== id)}))} appData={data} />);

@@ -237,8 +237,8 @@ const ProfileView: React.FC<ProfileViewProps> = ({
                 </select>
               </div>
 
-              <InputGroup label="Current Company" value={formData.currentCompany} onChange={v => setFormData({ ...formData, currentCompany: v })} placeholder="e.g. Tax Solutions Global" />
-              <InputGroup label="Current Title" value={formData.currentPosition} onChange={v => setFormData({ ...formData, currentPosition: v })} placeholder="e.g. Tax Associate" />
+              <InputGroup label="Perusahaan / Instansi Sekarang" value={formData.currentCompany} onChange={v => setFormData({ ...formData, currentCompany: v })} placeholder="e.g. Tax Solutions Global" />
+              <InputGroup label="Jabatan Sekarang" value={formData.currentPosition} onChange={v => setFormData({ ...formData, currentPosition: v })} placeholder="e.g. Tax Associate" />
               
               <div className="md:col-span-2 space-y-3">
                 <div className="flex justify-between items-end px-1">
