@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, sendEmailVerification, sendPasswordResetEmail } from '@firebase/auth';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, sendEmailVerification, sendPasswordResetEmail } from 'firebase/auth';
 import { auth, signInWithGoogle } from '../services/firebase';
 
 interface AuthProps {
@@ -16,6 +16,7 @@ const Auth: React.FC<AuthProps> = ({ onBack }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [name, setName] = useState('');
   const [error, setError] = useState('');
+  const [errorCode, setErrorCode] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -27,36 +28,58 @@ const Auth: React.FC<AuthProps> = ({ onBack }) => {
 
     try {
       if (isLogin) {
+        // DEMO MODE BYPASS
+        if (email === 'demo@fokuskarir.com' && password === 'demo123') {
+          localStorage.setItem('demo_mode', 'true');
+          window.location.reload();
+          return;
+        }
         await signInWithEmailAndPassword(auth, email, password);
       } else {
-        // Simpan detail ke localStorage sebelum membuat akun agar App.tsx bisa mengambilnya
         localStorage.setItem('pending_registration', JSON.stringify({ name, email, phone }));
-        
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         await updateProfile(userCredential.user, { displayName: name });
-        
-        // FITUR: Kirim Verifikasi Email (Dilakukan di background)
         try {
           await sendEmailVerification(userCredential.user);
         } catch (mailErr: any) {
           console.warn("Gagal mengirim email verifikasi:", mailErr.message);
         }
-        // Jangan setSuccessMsg di sini jika ingin langsung masuk ke dashboard tanpa interupsi
       }
     } catch (err: any) {
       let friendlyMessage = 'Terjadi kesalahan saat menghubungi server. Silakan coba lagi.';
-      switch (err.code) {
-        case 'auth/invalid-email': friendlyMessage = 'Format alamat email tidak benar.'; break;
+      const code = err.code || '';
+      setErrorCode(code);
+      
+      switch (code) {
+        case 'auth/invalid-email': 
+          friendlyMessage = 'Format alamat email tidak benar. Pastikan email ditulis dengan benar (contoh: nama@email.com).'; 
+          break;
         case 'auth/user-not-found':
         case 'auth/wrong-password':
-        case 'auth/invalid-credential': friendlyMessage = 'Email atau Password salah.'; break;
-        case 'auth/email-already-in-use': friendlyMessage = 'Email ini sudah terdaftar.'; break;
-        case 'auth/weak-password': friendlyMessage = 'Password terlalu lemah (min. 6 karakter).'; break;
-        default: friendlyMessage = err.message || 'Maaf, terjadi kendala.';
+        case 'auth/invalid-credential': 
+          friendlyMessage = 'Email atau Password salah. Silakan periksa kembali detail login Anda.'; 
+          break;
+        case 'auth/email-already-in-use': 
+          friendlyMessage = 'Email ini sudah terdaftar. Silakan gunakan email lain atau masuk ke akun yang sudah ada.'; 
+          break;
+        case 'auth/weak-password': 
+          friendlyMessage = 'Password terlalu lemah. Gunakan minimal 6 karakter untuk keamanan akun Anda.'; 
+          break;
+        case 'auth/network-request-failed':
+          friendlyMessage = 'Gagal terhubung ke server (Network Error). Ini biasanya terjadi jika koneksi internet tidak stabil atau domain Firebase diblokir oleh provider/browser Anda.';
+          break;
+        case 'auth/too-many-requests':
+          friendlyMessage = 'Terlalu banyak percobaan masuk yang gagal. Silakan tunggu beberapa saat sebelum mencoba lagi.';
+          break;
+        case 'auth/operation-not-allowed':
+          friendlyMessage = 'Metode masuk ini belum diaktifkan. Silakan hubungi administrator.';
+          break;
+        default: 
+          friendlyMessage = err.message || 'Maaf, terjadi kendala teknis. Silakan coba beberapa saat lagi.';
       }
       setError(friendlyMessage);
       if (!isLogin) localStorage.removeItem('pending_registration');
-      setLoading(false); // Hentikan loading hanya jika terjadi error
+      setLoading(false);
     }
     // Jika sukses, loading tidak perlu di-false-kan secara manual karena komponen akan unmount oleh App.tsx
   };
@@ -88,7 +111,14 @@ const Auth: React.FC<AuthProps> = ({ onBack }) => {
     try {
       await signInWithGoogle();
     } catch (err: any) {
-      setError(err.message || 'Gagal masuk dengan Google.');
+      const code = err.code || '';
+      setErrorCode(code);
+      let msg = 'Gagal masuk dengan Google.';
+      if (code === 'auth/popup-closed-by-user') msg = 'Proses login dibatalkan karena jendela popup ditutup.';
+      else if (code === 'auth/network-request-failed') msg = 'Koneksi internet terganggu. Silakan coba lagi.';
+      else if (code === 'auth/cancelled-popup-request') msg = 'Permintaan login dibatalkan.';
+      
+      setError(msg || err.message);
       setLoading(false);
     }
   };
@@ -144,7 +174,35 @@ const Auth: React.FC<AuthProps> = ({ onBack }) => {
 
         {error && (
           <div className="bg-rose-500/10 border border-rose-500/20 text-rose-500 p-4 rounded-2xl text-xs font-bold mb-6 animate-in slide-in-from-top-2">
-            ⚠️ {error}
+            <div className="flex items-start gap-2">
+              <span>⚠️</span>
+              <div className="flex-1">
+                <p>{error}</p>
+                {errorCode === 'auth/network-request-failed' && (
+                  <div className="mt-3 flex flex-col gap-2">
+                    <button 
+                      type="button"
+                      onClick={() => window.location.reload()}
+                      className="text-indigo-400 hover:text-indigo-300 text-[10px] font-black uppercase tracking-widest flex items-center gap-2"
+                    >
+                      <i className="bi bi-arrow-clockwise"></i> Refresh Halaman
+                    </button>
+                    <button 
+                      type="button"
+                      onClick={() => {
+                        setEmail('demo@fokuskarir.com');
+                        setPassword('demo123');
+                        setError('');
+                        setSuccessMsg('Gunakan email: demo@fokuskarir.com & password: demo123 untuk mencoba Demo Mode.');
+                      }}
+                      className="text-slate-400 hover:text-white text-[10px] font-black uppercase tracking-widest flex items-center gap-2"
+                    >
+                      <i className="bi bi-play-circle-fill"></i> Gunakan Demo Mode?
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         )}
 

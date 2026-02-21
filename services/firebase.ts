@@ -1,13 +1,13 @@
 
 import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider, signInWithPopup } from '@firebase/auth';
+import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { getFirestore, doc, setDoc, getDoc, collection, getDocs, updateDoc, increment, query, where, limit, deleteDoc } from "firebase/firestore";
 import { AppData, AiConfig, SubscriptionProduct, AccountStatus, LegalConfig, UserRole, LandingPageConfig, MayarConfig, DuitkuConfig, FollowUpConfig, TrackingConfig } from "../types";
 
 // KONFIGURASI FIREBASE
 const firebaseConfig = {
   apiKey: "AIzaSyCDvX0tJX24etCFWS9D-IG9B3_BV6xFGEk",
-  authDomain: "jejakkarir-11379.firebaseapp.com", 
+  authDomain: "jejakkarir-11379.web.app", 
   projectId: "jejakkarir-11379",
   storageBucket: "jejakkarir-11379.firebasestorage.app",
   messagingSenderId: "1099213790353",
@@ -143,7 +143,15 @@ export const recordAiTokens = async (uid: string, count: number) => {
 export const getAiConfig = async (): Promise<AiConfig | null> => {
   try {
     const docRef = doc(db, "system_metadata", "ai_configuration");
-    const docSnap = await getDoc(docRef);
+    
+    // Tambahkan timeout untuk fetch config (10 detik)
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error("Timeout fetching config")), 10000)
+    );
+    
+    const docSnapPromise = getDoc(docRef);
+    const docSnap = await Promise.race([docSnapPromise, timeoutPromise]) as any;
+    
     if (docSnap.exists()) return docSnap.data() as AiConfig;
   } catch (error: any) {
     console.warn("[FIREBASE] Config AI error:", error.message);

@@ -203,6 +203,8 @@ export interface Skill {
   lastUsed: string;
   actionPlan: string;
   isRelevant?: boolean;
+  relatedTrainingId?: string;
+  relatedCertId?: string;
 }
 
 export interface Training {
@@ -426,6 +428,30 @@ export interface AiStrategy {
   educationRecommendation?: { strata: string; major: string; detail: string };
 }
 
+export interface CareerSwitchAnalysis {
+  matchScore: number;
+  riskLevel: 'Low' | 'Medium' | 'High';
+  summary: string;
+  skillComparison: {
+    userTopSkills: string[];
+    targetRequiredSkills: string[];
+    matchingSkills: string[];
+    missingSkills: string[];
+  };
+  financialReadiness: string;
+  psychologicalInsight: string;
+  estimatedTransitionMonths: number;
+  roadmap: { step: string; detail: string }[];
+}
+
+export interface CareerMoveDiagnosis {
+  stayProbability: number;
+  jobChangeProbability: number;
+  careerSwitchProbability: number;
+  topRecommendation: 'stay' | 'move' | 'switch';
+  rationalExplanation: string;
+}
+
 export interface AiInsightRecord {
   id: string;
   date: string;
@@ -521,6 +547,8 @@ export interface AppData {
   workCategories: string[];
   onlineCV: OnlineCVConfig;
   aiStrategies?: AiStrategy[];
+  careerSwitchDecisions?: { date: string; result: CareerSwitchAnalysis; inputs: any }[];
+  careerMoveAnalyses?: { date: string; diagnosis: CareerMoveDiagnosis; inputs: any }[];
   reminderConfig: ReminderConfig;
   completedAiMilestones: string[];
   isDeleted?: boolean;

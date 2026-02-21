@@ -1,9 +1,11 @@
 import React, { useState, useMemo } from 'react';
-import { Skill, SkillStatus, SkillCategory, SkillPriority, AppData, SubscriptionPlan } from '../../../types';
+import { Skill, SkillStatus, SkillCategory, SkillPriority, AppData, SubscriptionPlan, Training, Certification } from '../../../types';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 
 interface SkillMatrixProps {
   skills: Skill[];
+  trainings?: Training[];
+  certifications?: Certification[];
   onAddSkill: (s: Skill) => void;
   onUpdateSkill: (s: Skill) => void;
   onDeleteSkill: (id: string) => void;
@@ -12,7 +14,7 @@ interface SkillMatrixProps {
   onUpgrade?: () => void;
 }
 
-const SkillMatrix: React.FC<SkillMatrixProps> = ({ skills, onAddSkill, onUpdateSkill, onDeleteSkill, showToast, appData, onUpgrade }) => {
+const SkillMatrix: React.FC<SkillMatrixProps> = ({ skills, trainings = [], certifications = [], onAddSkill, onUpdateSkill, onDeleteSkill, showToast, appData, onUpgrade }) => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Skill | null>(null);
 
@@ -179,7 +181,27 @@ const SkillMatrix: React.FC<SkillMatrixProps> = ({ skills, onAddSkill, onUpdateS
                   <td className="px-8 py-6">
                     <div className="flex flex-col">
                       <span className="font-bold text-slate-800 text-base">{skill.name}</span>
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{skill.category}</span>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{skill.category}</span>
+                        {skill.relatedTrainingId && (
+                          <>
+                            <span className="text-slate-300">•</span>
+                            <span className="text-[9px] font-black text-indigo-500 uppercase tracking-widest bg-indigo-50 px-2 py-0.5 rounded-md">
+                              <i className="bi bi-journal-bookmark mr-1"></i>
+                              {trainings.find(t => t.id === skill.relatedTrainingId)?.name || 'Training'}
+                            </span>
+                          </>
+                        )}
+                        {skill.relatedCertId && (
+                          <>
+                            <span className="text-slate-300">•</span>
+                            <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest bg-emerald-50 px-2 py-0.5 rounded-md">
+                              <i className="bi bi-patch-check mr-1"></i>
+                              {certifications.find(c => c.id === skill.relatedCertId)?.name || 'Sertifikasi'}
+                            </span>
+                          </>
+                        )}
+                      </div>
                     </div>
                   </td>
                   <td className="px-6 py-6 text-center">
@@ -219,7 +241,19 @@ const SkillMatrix: React.FC<SkillMatrixProps> = ({ skills, onAddSkill, onUpdateS
                 <div className="flex justify-between items-start">
                    <div>
                       <h4 className="font-black text-slate-800 text-base leading-tight">{skill.name}</h4>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">{skill.category}</p>
+                      <div className="flex flex-wrap items-center gap-2 mt-1">
+                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{skill.category}</p>
+                         {skill.relatedTrainingId && (
+                           <span className="text-[9px] font-black text-indigo-500 uppercase tracking-widest bg-indigo-50 px-2 py-0.5 rounded-md">
+                             {trainings.find(t => t.id === skill.relatedTrainingId)?.name || 'Training'}
+                           </span>
+                         )}
+                         {skill.relatedCertId && (
+                           <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest bg-emerald-50 px-2 py-0.5 rounded-md">
+                             {certifications.find(c => c.id === skill.relatedCertId)?.name || 'Sertifikasi'}
+                           </span>
+                         )}
+                      </div>
                    </div>
                    <div className="flex gap-2">
                       <button onClick={() => openEditForm(skill)} className="w-8 h-8 flex items-center justify-center bg-white rounded-lg text-slate-400 hover:text-blue-600 shadow-sm border border-slate-100">✎</button>
@@ -257,6 +291,8 @@ const SkillMatrix: React.FC<SkillMatrixProps> = ({ skills, onAddSkill, onUpdateS
              <h3 className="text-2xl font-black text-slate-900 uppercase mb-8">{editingItem ? 'Edit Skill' : 'Tambah Skill Baru'}</h3>
              <SkillForm 
                initialData={editingItem} 
+               trainings={trainings}
+               certifications={certifications}
                onSubmit={(data: any) => {
                  if (editingItem) onUpdateSkill({ ...editingItem, ...data } as Skill);
                  else onAddSkill({ ...data, id: Math.random().toString(36).substr(2,9) } as Skill);
@@ -272,14 +308,44 @@ const SkillMatrix: React.FC<SkillMatrixProps> = ({ skills, onAddSkill, onUpdateS
   );
 };
 
-const SkillForm = ({ initialData, onSubmit, onCancel }: any) => {
-  const [form, setForm] = useState(initialData || { name: '', category: SkillCategory.HARD, currentLevel: 3, status: SkillStatus.ON_PROGRESS, priority: SkillPriority.MEDIUM, isRelevant: true });
+const SkillForm = ({ initialData, trainings = [], certifications = [], onSubmit, onCancel }: any) => {
+  const [form, setForm] = useState(initialData || { name: '', category: SkillCategory.HARD, currentLevel: 3, status: SkillStatus.ON_PROGRESS, priority: SkillPriority.MEDIUM, isRelevant: true, relatedTrainingId: '', relatedCertId: '' });
   return (
     <div className="space-y-6">
       <div className="space-y-1.5">
         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nama Skill</label>
         <input className="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-slate-50 font-bold text-xs" value={form.name} onChange={e => setForm({...form, name: e.target.value})} required />
       </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-1.5">
+          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Related Training (Optional)</label>
+          <select 
+            className="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-white font-bold text-xs" 
+            value={form.relatedTrainingId || ''} 
+            onChange={e => setForm({...form, relatedTrainingId: e.target.value})}
+          >
+            <option value="">-- Pilih Training Terkait --</option>
+            {trainings.map((t: Training) => (
+              <option key={t.id} value={t.id}>{t.name} ({t.provider})</option>
+            ))}
+          </select>
+        </div>
+        <div className="space-y-1.5">
+          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Related Certification (Optional)</label>
+          <select 
+            className="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-white font-bold text-xs" 
+            value={form.relatedCertId || ''} 
+            onChange={e => setForm({...form, relatedCertId: e.target.value})}
+          >
+            <option value="">-- Pilih Sertifikasi Terkait --</option>
+            {certifications.map((c: Certification) => (
+              <option key={c.id} value={c.id}>{c.name} ({c.issuer})</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-1.5">
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Kategori</label>

@@ -283,7 +283,7 @@ const SidebarStandaloneItem = ({ id, active, onClick, icon, label }: any) => (
     id={id}
     onClick={onClick}
     className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-2xl transition-all duration-300 group ${
-      active ? 'bg-indigo-600/10 text-indigo-400 border border-indigo-500/20' : 'text-slate-500 hover:bg-white/5 hover:text-white border-transparent'
+      active ? 'bg-indigo-600/10 text-indigo-400 border border-indigo-500/20' : 'text-slate-50 hover:bg-white/5 hover:text-white border border-transparent'
     }`}
   >
     <span className="opacity-60 group-hover:opacity-100 transition-opacity text-sm">{icon}</span>

@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { SubscriptionProduct, SubscriptionPlan, PaymentStatus, AccountStatus, ManualTransaction, AppData } from '../types';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, sendEmailVerification } from '@firebase/auth';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, sendEmailVerification } from 'firebase/auth';
 import { auth, signInWithGoogle, saveUserData, getUserData, getLandingPageConfig } from '../services/firebase';
 import { trackingService } from '../services/trackingService';
 

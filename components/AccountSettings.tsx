@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { updateProfile, updatePassword, User } from '@firebase/auth';
+import { updateProfile, updatePassword, User } from 'firebase/auth';
 import { auth, getLegalConfig, saveLegalConfig } from '../services/firebase';
 import { ReminderConfig, UserRole, LegalConfig } from '../types';
 

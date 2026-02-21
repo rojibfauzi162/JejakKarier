@@ -27,6 +27,7 @@ const AppsHub: React.FC<AppsHubProps> = ({ onNavigate }) => {
         { id: 'skills', sub: 'learning', label: 'Training History', icon: 'bi-journal-bookmark', color: 'bg-blue-50 text-blue-600' },
         { id: 'skills', sub: 'certs', label: 'Certification', icon: 'bi-patch-check', color: 'bg-emerald-50 text-emerald-600' },
         { id: 'skills', sub: 'ai', label: 'AI Strategist', icon: 'bi-magic', color: 'bg-indigo-50 text-indigo-600' },
+        { id: 'skills', sub: 'mapping', label: 'Skill Mapping', icon: 'bi-radar', color: 'bg-rose-50 text-rose-600' },
       ]
     },
     {

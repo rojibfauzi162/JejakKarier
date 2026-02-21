@@ -33,7 +33,7 @@ import UpgradeModal from './components/user/UpgradeModal';
 import MobileStats from './components/user/MobileStats';
 import CareerCalendar from './components/user/CareerCalendar'; 
 import { auth, getUserData, saveUserData, getProductsCatalog, findUserByEmail, deleteUserDoc, getTrackingConfig } from './services/firebase';
-import { onAuthStateChanged, sendEmailVerification } from '@firebase/auth';
+import { onAuthStateChanged, sendEmailVerification } from 'firebase/auth';
 import { trackingService } from './services/trackingService';
 
 const App: React.FC = () => {
@@ -138,6 +138,32 @@ const App: React.FC = () => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (authUser) => {
       setLoading(true);
+      
+      // CHECK DEMO MODE FIRST
+      const isDemo = localStorage.getItem('demo_mode') === 'true';
+      if (isDemo) {
+        const demoUser = {
+          uid: 'demo-user-123',
+          email: 'demo@fokuskarir.com',
+          displayName: 'Demo User',
+          emailVerified: true
+        };
+        setUser(demoUser);
+        setData({
+          ...getCleanInitialData(),
+          uid: demoUser.uid,
+          profile: {
+            ...INITIAL_DATA.profile,
+            name: 'Demo User',
+            email: 'demo@fokuskarir.com'
+          },
+          plan: SubscriptionPlan.PRO, // Give pro access in demo
+          planPermissions: DEFAULT_PRODUCTS.find(p => p.tier === SubscriptionPlan.PRO)?.allowedModules || []
+        });
+        setLoading(false);
+        return;
+      }
+
       if (!authUser) {
         setUser(null);
         setData(getCleanInitialData());
@@ -376,7 +402,11 @@ const App: React.FC = () => {
     }
   };
 
-  const handleLogout = () => { auth.signOut(); window.location.href = "/"; };
+  const handleLogout = () => { 
+    localStorage.removeItem('demo_mode');
+    auth.signOut(); 
+    window.location.href = "/"; 
+  };
 
   const getAdminTitle = () => {
     const titles: Record<string, string> = {
@@ -442,7 +472,7 @@ const App: React.FC = () => {
                {user && (
                  <div className="flex items-center gap-6 ml-auto">
                     <div className="relative" ref={desktopNotifRef}>
-                       <button onClick={() => setIsNotifOpen(!isNotifOpen)} className={`w-10 h-10 rounded-full flex items-center justify-center transition-all relative border ${isNotifOpen ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg' : 'bg-white text-slate-400 border-slate-100 hover:text-indigo-600'}`}><i className={`bi ${isNotifOpen ? 'bi-bell-fill' : 'bi-bell'}`}></i>{activeAlerts.length > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white text-[8px] font-black rounded-full flex items-center justify-center border-2 border-white">{activeAlerts.length}</span>}</button>
+                       <button onClick={() => setIsNotifOpen(!isNotifOpen)} className={`w-10 h-10 rounded-full flex items-center justify-center transition-all relative border ${isNotifOpen ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg' : 'bg-white text-slate-400 border-slate-100 hover:text-indigo-600'}`}><i className={`bi ${isNotifOpen ? 'bi-bell-fill' : 'bi-bell'} text-lg`}></i>{activeAlerts.length > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white text-[8px] font-black rounded-full flex items-center justify-center border-2 border-white">{activeAlerts.length}</span>}</button>
                        {isNotifOpen && (
                           <div className="absolute right-0 mt-3 w-80 bg-white border border-slate-100 rounded-[2.5rem] shadow-2xl p-4 animate-in slide-in-from-top-2 duration-300 z-[120]">
                              <div className="p-4 border-b border-slate-50 mb-3 flex justify-between items-center"><h4 className="text-[10px] font-black text-slate-900 uppercase tracking-widest">Pusat Notifikasi</h4></div>

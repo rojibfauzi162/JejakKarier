@@ -7,6 +7,7 @@ import SkillMatrix from './skill-learning/SkillMatrix';
 import TrainingHistory from './skill-learning/TrainingHistory';
 import CertificationModule from './skill-learning/Certification';
 import AiStrategist from './skill-learning/AiStrategist';
+import SkillGapRadar from './skill-learning/SkillGapRadar';
 
 interface SkillTrackerProps {
   data?: AppData;
@@ -25,18 +26,18 @@ interface SkillTrackerProps {
   onAddTodo?: (t: ToDoTask) => void;
   onSaveStrategy?: (strategy: AiStrategy) => void;
   showToast: (m: string, t?: 'success' | 'error' | 'info') => void;
-  initialSubTab?: 'skills' | 'learning' | 'certs' | 'ai';
+  initialSubTab?: 'skills' | 'learning' | 'certs' | 'ai' | 'mapping' | 'radar';
   onUpgrade?: () => void;
   onAddCalendarEvent?: (e: CareerEvent) => void;
 }
 
 const SkillTracker: React.FC<SkillTrackerProps> = (props) => {
-  const [activeSubTab, setActiveSubTab] = useState<'skills' | 'learning' | 'certs' | 'ai'>(props.initialSubTab || 'skills');
+  const [activeSubTab, setActiveSubTab] = useState<'skills' | 'learning' | 'certs' | 'ai' | 'mapping'>(props.initialSubTab === 'radar' ? 'mapping' : (props.initialSubTab as any) || 'skills');
 
   // Sync sub-tab if initialSubTab prop changes (navigated from apps hub)
   useEffect(() => {
     if (props.initialSubTab) {
-      setActiveSubTab(props.initialSubTab);
+      setActiveSubTab(props.initialSubTab === 'radar' ? 'mapping' : (props.initialSubTab as any));
     }
   }, [props.initialSubTab]);
 
@@ -51,6 +52,7 @@ const SkillTracker: React.FC<SkillTrackerProps> = (props) => {
               <SubTabButton active={activeSubTab === 'learning'} onClick={() => setActiveSubTab('learning')} label="Training History" icon="📖" />
               <SubTabButton active={activeSubTab === 'certs'} onClick={() => setActiveSubTab('certs')} label="Certification" icon="📜" />
               <SubTabButton active={activeSubTab === 'ai'} onClick={() => setActiveSubTab('ai')} label="AI Strategist" icon="🧠" />
+              <SubTabButton active={activeSubTab === 'mapping'} onClick={() => setActiveSubTab('mapping')} label="Skill Mapping" icon="📡" />
             </div>
           </div>
         </div>
@@ -61,6 +63,8 @@ const SkillTracker: React.FC<SkillTrackerProps> = (props) => {
         {activeSubTab === 'skills' && (
           <SkillMatrix 
             skills={props.skills} 
+            trainings={props.trainings}
+            certifications={props.certs}
             onAddSkill={props.onAddSkill} 
             onUpdateSkill={props.onUpdateSkill} 
             onDeleteSkill={props.onDeleteSkill} 
@@ -98,6 +102,13 @@ const SkillTracker: React.FC<SkillTrackerProps> = (props) => {
             onAddTraining={props.onAddTraining}
             onAddCert={props.onAddCert}
             showToast={props.showToast}
+          />
+        )}
+        {activeSubTab === 'mapping' && props.data && (
+          <SkillGapRadar 
+            data={props.data} 
+            onSwitchTab={(tab) => setActiveSubTab(tab as any)} 
+            onAddSkill={props.onAddSkill}
           />
         )}
       </div>
