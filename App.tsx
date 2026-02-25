@@ -32,6 +32,7 @@ import AppsHub from './components/user/AppsHub';
 import UpgradeModal from './components/user/UpgradeModal';
 import MobileStats from './components/user/MobileStats';
 import CareerCalendar from './components/user/CareerCalendar'; 
+import InterviewIntelligenceScript from './components/user/InterviewIntelligenceScript';
 import { auth, getUserData, saveUserData, getProductsCatalog, findUserByEmail, deleteUserDoc, getTrackingConfig } from './services/firebase';
 import { onAuthStateChanged, sendEmailVerification } from 'firebase/auth';
 import { trackingService } from './services/trackingService';
@@ -141,21 +142,64 @@ const App: React.FC = () => {
       
       // CHECK DEMO MODE FIRST
       const isDemo = localStorage.getItem('demo_mode') === 'true';
-      if (isDemo) {
-        const demoUser = {
-          uid: 'demo-user-123',
-          email: 'demo@fokuskarir.com',
-          displayName: 'Demo User',
-          emailVerified: true
-        };
+      const isAdminDemo = localStorage.getItem('admin_demo_mode') === 'true';
+      const localSessionEmail = localStorage.getItem('local_session_user');
+      
+      // Clear any lingering demo/local session if a real user is now authenticated
+      if (authUser && (isDemo || isAdminDemo || localSessionEmail)) {
+        localStorage.removeItem('demo_mode');
+        localStorage.removeItem('admin_demo_mode');
+        localStorage.removeItem('local_session_user');
+        // Reload to ensure a clean state without demo interference
+        window.location.reload();
+        return;
+      }
+
+      if (isDemo || isAdminDemo || localSessionEmail) { // Only check if no real authUser
+        let demoUser: any;
+        const isAdminEmail = localSessionEmail === 'admin@jejakkarir.com';
+        
+        if (localSessionEmail) {
+          // Attempt to restore session from email
+          demoUser = {
+            uid: `local-${btoa(localSessionEmail)}`,
+            email: localSessionEmail,
+            displayName: localSessionEmail.split('@')[0],
+            emailVerified: true
+          };
+        } else {
+          demoUser = {
+            uid: isAdminDemo ? 'admin-demo-123' : 'demo-user-123',
+            email: isAdminDemo ? 'admin@jejakkarir.com' : 'demo@fokuskarir.com',
+            displayName: isAdminDemo ? 'Super Admin Demo' : 'Demo User',
+            emailVerified: true
+          };
+        }
+
         setUser(demoUser);
+        
+        // If it's a local session, we need to fetch the real data from Firestore
+        if (localSessionEmail) {
+          try {
+            const existingData = await findUserByEmail(localSessionEmail);
+            if (existingData) {
+              setData(existingData);
+              setLoading(false);
+              return;
+            }
+          } catch (e) {
+            console.error("Failed to fetch local session data:", e);
+          }
+        }
+
         setData({
           ...getCleanInitialData(),
           uid: demoUser.uid,
+          role: (isAdminDemo || isAdminEmail) ? UserRole.SUPERADMIN : UserRole.USER,
           profile: {
             ...INITIAL_DATA.profile,
-            name: 'Demo User',
-            email: 'demo@fokuskarir.com'
+            name: demoUser.displayName,
+            email: demoUser.email
           },
           plan: SubscriptionPlan.PRO, // Give pro access in demo
           planPermissions: DEFAULT_PRODUCTS.find(p => p.tier === SubscriptionPlan.PRO)?.allowedModules || []
@@ -341,6 +385,7 @@ const App: React.FC = () => {
     // Normalisasi kunci pencarian agar lebih cerdas
     const isAllowed = permissions.includes(moduleKey) || 
                       (moduleKey === 'todo' && permissions.includes('todo_list')) ||
+                      (moduleKey === 'interview_script') ||
                       (moduleKey === 'cv' && (permissions.includes('cv_generator') || permissions.includes('online_cv')));
 
     if (!isAllowed) {
@@ -396,15 +441,32 @@ const App: React.FC = () => {
       case 'reviews': return withPermission('reviews', <Reviews reviews={data.monthlyReviews} onAdd={(r) => setData(prev => ({...prev, monthlyReviews: [...prev.monthlyReviews, r]}))} onDelete={(id) => setData(prev => ({...prev, monthlyReviews: prev.monthlyReviews.filter(i => i.id !== id)}))} />);
       case 'cv_generator': return withPermission('cv_generator', <CVGenerator data={data} />);
       case 'online_cv': return withPermission('online_cv', <OnlineCVBuilder data={data} onUpdateConfig={(c) => setData(prev => ({...prev, onlineCV: c}))} />);
+      case 'interview_script': return withPermission('interview_script', <InterviewIntelligenceScript data={data} onUpdateScripts={(s) => setData(prev => ({...prev, interviewScripts: s}))} onUpgrade={commonProps.onUpgrade} />);
       case 'settings': return withPermission('settings', <AccountSettings reminderConfig={data.reminderConfig} onUpdateReminders={(c) => setData(prev => ({...prev, reminderConfig: c}))} />);
       case 'billing': return withPermission('billing', <Billing data={data} products={publicProducts} onSelectPlan={(p) => setCheckoutPlan(p)} />);
       default: return withPermission('dashboard', <Dashboard data={data} onNavigate={handleNavigate} />);
     }
   };
 
-  const handleLogout = () => { 
+  const handleLogout = async () => { 
     localStorage.removeItem('demo_mode');
-    auth.signOut(); 
+    localStorage.removeItem('admin_demo_mode');
+    localStorage.removeItem('local_session_user');
+    
+    try {
+      await auth.signOut();
+      // Attempt to clear Firebase IndexedDB to prevent stale sessions
+      if (window.indexedDB && window.indexedDB.databases) {
+        const dbs = await window.indexedDB.databases();
+        dbs.forEach(db => {
+          if (db.name && db.name.includes('firebase')) {
+            window.indexedDB.deleteDatabase(db.name);
+          }
+        });
+      }
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
     window.location.href = "/"; 
   };
 
@@ -427,7 +489,15 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col lg:flex-row overflow-x-hidden font-sans">
-      <Sidebar activeTab={activeTab} setActiveTab={handleNavigate} onLogout={handleLogout} isAdmin={isAdmin} isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+      <Sidebar 
+        activeTab={activeTab} 
+        setActiveTab={handleNavigate} 
+        onLogout={handleLogout} 
+        isAdmin={isAdmin} 
+        isOpen={isSidebarOpen} 
+        onClose={() => setIsSidebarOpen(false)} 
+        isBypassMode={!!localStorage.getItem('local_session_user') || !!localStorage.getItem('admin_demo_mode')}
+      />
       <main className="flex-1 lg:ml-64">
         {!user?.emailVerified && !isAdmin && !hideVerificationReminder && user && (
           <div className="px-6 py-6 lg:px-10 lg:pt-8 animate-in slide-in-from-top-full duration-700 relative z-[200]">

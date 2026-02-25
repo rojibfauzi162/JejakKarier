@@ -8,9 +8,10 @@ interface SidebarProps {
   isAdmin?: boolean;
   isOpen?: boolean; // NEW: Controls mobile visibility
   onClose?: () => void; // NEW: Close handler
+  isBypassMode?: boolean; // NEW: Check if in bypass mode
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout, isAdmin, isOpen, onClose }) => {
+const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout, isAdmin, isOpen, onClose, isBypassMode }) => {
   const [dailyDropdownOpen, setDailyDropdownOpen] = useState(activeTab === 'daily' || activeTab === 'reports' || activeTab === 'ai_insights' || activeTab === 'work_reflection');
   const [cvDropdownOpen, setCvDropdownOpen] = useState(activeTab === 'cv_generator' || activeTab === 'online_cv');
   const [showLogoutModal, setShowLogoutModal] = useState(false); 
@@ -51,6 +52,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout, is
       items: [
         { id: 'loker', label: 'Loker Tracker', icon: <i className="bi bi-briefcase"></i> },
         { id: 'cv_root', label: 'CV Generator', icon: <i className="bi bi-file-earmark-pdf"></i>, hasSub: true, type: 'cv' },
+        { id: 'interview_script', label: 'Interview Script', icon: <i className="bi bi-mic"></i> },
         { id: 'networking', label: 'Networking', icon: <i className="bi bi-people"></i> },
       ]
     },
@@ -212,7 +214,16 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout, is
           )}
         </div>
         
-        <div className="p-6 border-t border-white/5 bg-slate-950/50 backdrop-blur-md">
+        <div className="p-6 border-t border-white/5 bg-slate-950/50 backdrop-blur-md space-y-3">
+          {isBypassMode && (
+            <button 
+              onClick={onLogout}
+              className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-2xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500 hover:text-white transition-all duration-500 font-black text-[10px] uppercase tracking-widest group"
+            >
+              <i className="bi bi-arrow-left-right text-xs"></i>
+              <span>Ganti Akun</span>
+            </button>
+          )}
           <button 
             onClick={() => setShowLogoutModal(true)}
             className="w-full flex items-center justify-center gap-3 px-4 py-3.5 rounded-2xl bg-rose-50/5 text-rose-500 border border-rose-500/10 hover:bg-rose-500 hover:text-white transition-all duration-500 font-black text-[10px] uppercase tracking-widest group"

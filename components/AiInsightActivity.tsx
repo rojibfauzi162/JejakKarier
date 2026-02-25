@@ -378,7 +378,103 @@ const AiInsightActivity: React.FC<AiInsightActivityProps> = ({ data, onUpdateIns
                  </div>
                  <div className="hidden md:flex w-20 h-20 bg-indigo-50 text-indigo-600 rounded-[2.5rem] items-center justify-center text-3xl shrink-0">✨</div>
               </div>
-              {/* Additional result UI mapping original logic */}
+              <div className="space-y-12">
+                {/* Executive Summary */}
+                <div className="space-y-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-1.5 h-8 bg-indigo-600 rounded-full"></div>
+                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Executive Summary</h4>
+                  </div>
+                  <p className="text-xl lg:text-2xl font-medium text-slate-700 leading-relaxed italic border-l-4 border-slate-100 pl-8">
+                    "{insightResult.summary}"
+                  </p>
+                </div>
+
+                {/* Metrics Grid */}
+                {insightResult.metrics && insightResult.metrics.length > 0 && (
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                    {insightResult.metrics.map((metric: any, i: number) => (
+                      <div key={i} className="bg-slate-50 p-6 rounded-3xl border border-slate-100 text-center space-y-2">
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{metric.label}</p>
+                        <p className="text-2xl font-black text-slate-900">{metric.value}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Detailed Sections */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                  {insightResult.sections?.map((section: any, i: number) => (
+                    <div key={i} className="space-y-4">
+                      <h5 className="text-xs font-black text-slate-900 uppercase tracking-widest flex items-center gap-3">
+                        <span className="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-[10px]">{i + 1}</span>
+                        {section.label}
+                      </h5>
+                      <div className="bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100">
+                        <p className="text-sm text-slate-600 font-medium leading-relaxed">{section.content}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Detected Achievements */}
+                {insightResult.detectedAchievements && insightResult.detectedAchievements.length > 0 && (
+                  <div className="space-y-6 pt-6 border-t border-slate-50">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-[10px] font-black text-emerald-600 uppercase tracking-[0.3em] flex items-center gap-3">
+                        <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+                        Detected Potential Achievements
+                      </h4>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {insightResult.detectedAchievements.map((ach: any, i: number) => (
+                        <div key={i} className="bg-emerald-50/30 p-8 rounded-[2.5rem] border border-emerald-100/50 flex flex-col justify-between group hover:bg-emerald-50 transition-all">
+                          <div className="space-y-4">
+                            <div className="flex justify-between items-start">
+                              <span className="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-[8px] font-black uppercase tracking-widest">{ach.category}</span>
+                              <span className="text-[8px] font-black text-emerald-600/50 uppercase tracking-widest">{ach.scope}</span>
+                            </div>
+                            <h5 className="text-lg font-black text-slate-900 leading-tight">{ach.title}</h5>
+                            <p className="text-xs text-slate-600 font-medium leading-relaxed italic">"{ach.impact}"</p>
+                          </div>
+                          <div className="mt-8 pt-6 border-t border-emerald-100/50 flex justify-between items-center">
+                            <button 
+                              onClick={() => handleAddAchievement(ach, i)}
+                              disabled={addedAchievementIds.has(i)}
+                              className={`px-6 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${addedAchievementIds.has(i) ? 'bg-emerald-600 text-white' : 'bg-white text-emerald-600 border border-emerald-200 hover:bg-emerald-600 hover:text-white shadow-sm'}`}
+                            >
+                              {addedAchievementIds.has(i) ? '✓ Added to Records' : '+ Add to Achievements'}
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* AI Reflection */}
+                <div className="bg-slate-900 p-10 lg:p-14 rounded-[3.5rem] text-white relative overflow-hidden">
+                  <div className="relative z-10 space-y-6">
+                    <div className="flex items-center gap-4">
+                      <span className="text-3xl">💡</span>
+                      <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">AI Strategic Reflection</h4>
+                    </div>
+                    <p className="text-lg lg:text-xl font-medium leading-relaxed italic opacity-90 border-l-4 border-indigo-500 pl-8">
+                      "{insightResult.aiReflection}"
+                    </p>
+                  </div>
+                  <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-indigo-600/20 rounded-full blur-[80px]"></div>
+                </div>
+
+                <div className="flex justify-center pt-8">
+                  <button 
+                    onClick={() => window.print()} 
+                    className="px-10 py-4 bg-white border-2 border-slate-900 text-slate-900 font-black rounded-2xl uppercase tracking-[0.2em] text-[10px] shadow-xl hover:bg-slate-50 transition-all active:scale-95"
+                  >
+                    Download Report (.PDF)
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         )}

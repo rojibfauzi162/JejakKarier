@@ -1,13 +1,13 @@
 
 import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, signInWithPopup, setPersistence, browserLocalPersistence } from 'firebase/auth';
 import { getFirestore, doc, setDoc, getDoc, collection, getDocs, updateDoc, increment, query, where, limit, deleteDoc } from "firebase/firestore";
 import { AppData, AiConfig, SubscriptionProduct, AccountStatus, LegalConfig, UserRole, LandingPageConfig, MayarConfig, DuitkuConfig, FollowUpConfig, TrackingConfig } from "../types";
 
 // KONFIGURASI FIREBASE
 const firebaseConfig = {
   apiKey: "AIzaSyCDvX0tJX24etCFWS9D-IG9B3_BV6xFGEk",
-  authDomain: "jejakkarir-11379.web.app", 
+  authDomain: "jejakkarir-11379.firebaseapp.com", 
   projectId: "jejakkarir-11379",
   storageBucket: "jejakkarir-11379.firebasestorage.app",
   messagingSenderId: "1099213790353",
@@ -17,6 +17,9 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
+setPersistence(auth, browserLocalPersistence).catch((error) => {
+  console.error("Firebase persistence error:", error);
+});
 export const db = getFirestore(app);
 
 const googleProvider = new GoogleAuthProvider();

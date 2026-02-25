@@ -43,16 +43,28 @@ const DuitkuIntegration: React.FC<DuitkuIntegrationProps> = ({ initialConfig, on
             <p className="text-slate-400 font-medium text-sm mt-1">Otomatisasi pembayaran via Duitku Payment Gateway.</p>
           </div>
           <a 
-            href="https://passport.duitku.com/merchant" 
+            href={form.environment === 'sandbox' ? "https://sandbox.duitku.com/merchant" : "https://passport.duitku.com/merchant"} 
             target="_blank" 
             rel="noreferrer"
-            className="px-5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[10px] font-black text-slate-500 uppercase hover:bg-white hover:text-indigo-600 transition-all shadow-sm"
+            className={`px-5 py-2.5 border rounded-xl text-[10px] font-black uppercase transition-all shadow-sm flex items-center gap-2 ${form.environment === 'sandbox' ? 'bg-amber-50 border-amber-200 text-amber-600 hover:bg-amber-100' : 'bg-indigo-50 border-indigo-200 text-indigo-600 hover:bg-indigo-100'}`}
           >
-            Dashboard Duitku ↗
+            {form.environment === 'sandbox' ? 'Login Sandbox Dashboard ↗' : 'Login Production Dashboard ↗'}
           </a>
        </div>
 
        <form onSubmit={handleSubmit} className="space-y-8">
+          {/* Warning Alert */}
+          <div className={`p-4 rounded-2xl border flex items-start gap-3 ${form.environment === 'sandbox' ? 'bg-amber-50 border-amber-100 text-amber-700' : 'bg-blue-50 border-blue-100 text-blue-700'}`}>
+            <i className={`bi ${form.environment === 'sandbox' ? 'bi-exclamation-triangle-fill' : 'bi-info-circle-fill'} text-lg`}></i>
+            <div className="space-y-1">
+              <p className="text-[10px] font-black uppercase tracking-widest">{form.environment === 'sandbox' ? 'Mode Sandbox (Testing)' : 'Mode Production (Live)'}</p>
+              <p className="text-xs leading-relaxed opacity-90">
+                {form.environment === 'sandbox' 
+                  ? "Transaksi hanya akan muncul di Dashboard Sandbox. Gunakan kartu kredit test / simulator Duitku. Jangan gunakan uang asli." 
+                  : "Transaksi akan muncul di Dashboard Production (Passport). Pastikan Merchant Code & API Key adalah versi Production."}
+              </p>
+            </div>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
              <div className="space-y-2">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Merchant Code</label>

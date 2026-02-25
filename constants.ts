@@ -8,7 +8,7 @@ export const INITIAL_DATA: AppData = Object.freeze({
   status: AccountStatus.ACTIVE,
   joinedAt: new Date().toISOString(),
   lastLogin: new Date().toISOString(),
-  planPermissions: ['dashboard', 'profile', 'daily', 'skills', 'todo_list', 'calendar', 'work_reflection', 'loker', 'cv_generator', 'online_cv', 'networking', 'projects', 'career', 'reports', 'achievements', 'ai_insights', 'reviews'],
+  planPermissions: ['dashboard', 'profile', 'daily', 'skills', 'todo_list', 'calendar', 'work_reflection', 'loker', 'cv_generator', 'online_cv', 'interview_script', 'networking', 'projects', 'career', 'reports', 'achievements', 'ai_insights', 'reviews'],
   aiUsage: {
     cvGenerated: 0,
     coverLetters: 0,
@@ -48,6 +48,7 @@ export const INITIAL_DATA: AppData = Object.freeze({
   jobApplications: [],
   personalProjects: [],
   todoList: [],
+  interviewScripts: [],
   todoCategories: ['Pendukung Kerja', 'Pengembangan Diri', 'Buka Peluang', 'Keseimbangan Hidup'],
   careerEvents: [],
   affirmations: ["I am capable of achieving my professional goals", "Every challenge is an opportunity to grow"],
@@ -85,7 +86,7 @@ export const DEFAULT_PRODUCTS: SubscriptionProduct[] = [
     tier: SubscriptionPlan.FREE, 
     price: 0, 
     durationDays: 7, 
-    allowedModules: ['dashboard', 'profile', 'daily', 'skills', 'todo_list', 'calendar', 'work_reflection', 'loker', 'cv_generator', 'online_cv', 'networking', 'projects', 'career', 'reports', 'achievements', 'ai_insights', 'reviews'], 
+    allowedModules: ['dashboard', 'profile', 'daily', 'skills', 'todo_list', 'calendar', 'work_reflection', 'loker', 'cv_generator', 'online_cv', 'interview_script', 'networking', 'projects', 'career', 'reports', 'achievements', 'ai_insights', 'reviews'], 
     limits: { 
       dailyLogs: 10, 
       skills: 10, 
@@ -114,7 +115,7 @@ export const DEFAULT_PRODUCTS: SubscriptionProduct[] = [
     price: 39000, 
     originalPrice: 48750, 
     durationDays: 30, 
-    allowedModules: ['dashboard', 'profile', 'daily', 'skills', 'todo_list', 'career', 'loker', 'cv_generator', 'online_cv', 'networking', 'projects', 'reviews', 'ai_insights', 'calendar', 'work_reflection', 'reports', 'achievements'], 
+    allowedModules: ['dashboard', 'profile', 'daily', 'skills', 'todo_list', 'career', 'loker', 'cv_generator', 'online_cv', 'interview_script', 'networking', 'projects', 'reviews', 'ai_insights', 'calendar', 'work_reflection', 'reports', 'achievements'], 
     limits: { 
       dailyLogs: 'unlimited', 
       skills: 'unlimited', 
@@ -144,7 +145,7 @@ export const DEFAULT_PRODUCTS: SubscriptionProduct[] = [
     price: 99000, 
     originalPrice: 165000, 
     durationDays: 90, 
-    allowedModules: ['dashboard', 'profile', 'daily', 'skills', 'todo_list', 'career', 'loker', 'cv_generator', 'online_cv', 'networking', 'projects', 'reviews', 'ai_insights', 'calendar', 'work_reflection', 'reports', 'achievements'], 
+    allowedModules: ['dashboard', 'profile', 'daily', 'skills', 'todo_list', 'career', 'loker', 'cv_generator', 'online_cv', 'interview_script', 'networking', 'projects', 'reviews', 'ai_insights', 'calendar', 'work_reflection', 'reports', 'achievements'], 
     limits: { 
       dailyLogs: 'unlimited', 
       skills: 'unlimited', 
@@ -174,7 +175,7 @@ export const DEFAULT_PRODUCTS: SubscriptionProduct[] = [
     price: 149000, 
     originalPrice: 496667, 
     durationDays: 365, 
-    allowedModules: ['dashboard', 'profile', 'daily', 'skills', 'todo_list', 'career', 'loker', 'cv_generator', 'online_cv', 'networking', 'projects', 'reviews', 'ai_insights', 'calendar', 'work_reflection', 'reports', 'achievements'], 
+    allowedModules: ['dashboard', 'profile', 'daily', 'skills', 'todo_list', 'career', 'loker', 'cv_generator', 'online_cv', 'interview_script', 'networking', 'projects', 'reviews', 'ai_insights', 'calendar', 'work_reflection', 'reports', 'achievements'], 
     limits: { 
       dailyLogs: 'unlimited', 
       skills: 'unlimited', 

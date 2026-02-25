@@ -74,7 +74,6 @@ async function callAI(prompt: string, schema?: any) {
           const cleanJson = text.replace(/```json\n?|```/g, "").trim();
           try {
             const parsed = JSON.parse(cleanJson);
-            if (parsed.recommendations && !schema.properties.recommendations) return parsed.recommendations;
             return parsed;
           } catch (e) {
             const match = cleanJson.match(/\{[\s\S]*\}/);
@@ -203,7 +202,8 @@ export async function getCareerSwitchRecommendations(userData: any, stats: any) 
     required: ["recommendations"]
   };
 
-  return await callAI(prompt, schema);
+  const result = await callAI(prompt, schema);
+  return result?.recommendations || [];
 }
 
 export async function generateProfileBio(data: AppData) {
@@ -387,6 +387,79 @@ export async function generateCareerInsight(data: AppData, audience: 'self' | 's
     },
     required: ["title", "summary", "startDate", "endDate", "sections", "metrics", "aiReflection"]
   };
+  return await callAI(prompt, schema);
+}
+
+export async function generateInterviewScript(data: AppData, targetRole: string, targetIndustry: string, language: 'ID' | 'EN', tone: 'Formal' | 'Casual' | 'Corporate') {
+  const slimData = {
+    profile: {
+      name: data.profile.name,
+      pos: data.profile.currentPosition,
+      exp: data.workExperiences.slice(0, 2).map(w => `${w.position} @ ${w.company}`)
+    },
+    skills: data.skills.sort((a, b) => b.currentLevel - a.currentLevel).slice(0, 3).map(s => s.name),
+    achievements: data.achievements.slice(0, 2).map(a => a.title)
+  };
+
+  const prompt = `GENERATE INTERVIEW SCRIPT.
+  
+  CONTEXT:
+  - User: ${JSON.stringify(slimData)}
+  - Target: ${targetRole} in ${targetIndustry}
+  - Lang: ${language === 'ID' ? 'ID' : 'EN'}
+  - Tone: ${tone}
+  
+  INSTRUCTIONS:
+  1. First, identify the most relevant interview questions for this role.
+  2. Then, provide answers based on user's real data.
+  3. Format as JSON. Use user's data ONLY. No fake info.`;
+
+  const schema = {
+    type: Type.OBJECT,
+    properties: {
+      elevatorPitch: { type: Type.STRING },
+      commonQuestions: {
+        type: Type.ARRAY,
+        items: {
+          type: Type.OBJECT,
+          properties: {
+            question: { type: Type.STRING },
+            answer: { type: Type.STRING }
+          }
+        }
+      },
+      behavioralQuestions: {
+        type: Type.ARRAY,
+        items: {
+          type: Type.OBJECT,
+          properties: {
+            question: { type: Type.STRING },
+            starAnswer: {
+              type: Type.OBJECT,
+              properties: {
+                situation: { type: Type.STRING },
+                task: { type: Type.STRING },
+                action: { type: Type.STRING },
+                result: { type: Type.STRING }
+              }
+            }
+          }
+        }
+      },
+      questionsForInterviewer: { type: Type.ARRAY, items: { type: Type.STRING } },
+      topHighlights: { type: Type.ARRAY, items: { type: Type.STRING } },
+      weaknessFraming: {
+        type: Type.OBJECT,
+        properties: {
+          weakness: { type: Type.STRING },
+          framing: { type: Type.STRING },
+          improvementPlan: { type: Type.STRING }
+        }
+      }
+    },
+    required: ["elevatorPitch", "commonQuestions", "behavioralQuestions", "questionsForInterviewer", "topHighlights", "weaknessFraming"]
+  };
+
   return await callAI(prompt, schema);
 }
 

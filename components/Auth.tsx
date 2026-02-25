@@ -66,7 +66,7 @@ const Auth: React.FC<AuthProps> = ({ onBack }) => {
           friendlyMessage = 'Password terlalu lemah. Gunakan minimal 6 karakter untuk keamanan akun Anda.'; 
           break;
         case 'auth/network-request-failed':
-          friendlyMessage = 'Gagal terhubung ke server (Network Error). Ini biasanya terjadi jika koneksi internet tidak stabil atau domain Firebase diblokir oleh provider/browser Anda.';
+          friendlyMessage = 'Gagal terhubung ke server (Network Error). Pastikan koneksi internet Anda stabil. Jika Anda menggunakan VPN atau AdBlocker, coba matikan sementara. Pastikan juga domain "firebaseapp.com" tidak diblokir oleh provider internet Anda.';
           break;
         case 'auth/too-many-requests':
           friendlyMessage = 'Terlalu banyak percobaan masuk yang gagal. Silakan tunggu beberapa saat sebelum mencoba lagi.';

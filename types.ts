@@ -504,6 +504,36 @@ export interface SubscriptionProduct {
   };
 }
 
+export interface InterviewScript {
+  id: string;
+  targetRole: string;
+  targetIndustry: string;
+  language: 'ID' | 'EN';
+  tone: 'Formal' | 'Casual' | 'Corporate';
+  generatedAt: string;
+  elevatorPitch: string;
+  commonQuestions: {
+    question: string;
+    answer: string;
+  }[];
+  behavioralQuestions: {
+    question: string;
+    starAnswer: {
+      situation: string;
+      task: string;
+      action: string;
+      result: string;
+    };
+  }[];
+  questionsForInterviewer: string[];
+  topHighlights: string[];
+  weaknessFraming: {
+    weakness: string;
+    framing: string;
+    improvementPlan: string;
+  };
+}
+
 export interface AppData {
   uid?: string;
   role: UserRole;
@@ -547,6 +577,7 @@ export interface AppData {
   workCategories: string[];
   onlineCV: OnlineCVConfig;
   aiStrategies?: AiStrategy[];
+  interviewScripts?: InterviewScript[];
   careerSwitchDecisions?: { date: string; result: CareerSwitchAnalysis; inputs: any }[];
   careerMoveAnalyses?: { date: string; diagnosis: CareerMoveDiagnosis; inputs: any }[];
   reminderConfig: ReminderConfig;
