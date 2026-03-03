@@ -165,6 +165,7 @@ export interface DailyReport {
   id: string;
   date: string;
   activity: string;
+  description?: string;
   category: string; 
   context: 'Perusahaan' | 'Personal' | 'Sampingan';
   companyName?: string;
@@ -506,11 +507,17 @@ export interface SubscriptionProduct {
 
 export interface InterviewScript {
   id: string;
+  title?: string;
   targetRole: string;
   targetIndustry: string;
   language: 'ID' | 'EN';
   tone: 'Formal' | 'Casual' | 'Corporate';
   generatedAt: string;
+  dynamicRole?: string;
+  dynamicIndustry?: string;
+  dynamicCompany?: string;
+  dynamicSalaryMin?: string;
+  dynamicSalaryMax?: string;
   elevatorPitch: string;
   commonQuestions: {
     question: string;

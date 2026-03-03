@@ -23,6 +23,7 @@ type TimeFilter = 'all' | 'today' | '7days' | '30days' | 'quarter' | 'range';
 interface ActivityLine {
   tempId: string;
   activity: string;
+  description?: string;
   category: string;
   output: string;
   metricValue: number;
@@ -106,6 +107,7 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
     {
       tempId: Math.random().toString(36).substr(2, 9),
       activity: '',
+      description: '',
       category: categories[0] || 'Operasional',
       output: '',
       metricValue: 0,
@@ -129,6 +131,7 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
     setActivityLines([...activityLines, {
       tempId: Math.random().toString(36).substr(2, 9),
       activity: '',
+      description: '',
       category: categories[0] || 'Operasional',
       output: '',
       metricValue: 0,
@@ -175,6 +178,7 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
       setActivityLines(dailyLogs.map(item => ({
         tempId: item.id,
         activity: item.activity,
+        description: item.description || '',
         category: item.category,
         output: item.output || item.activity,
         metricValue: item.metricValue,
@@ -195,6 +199,7 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
       setActivityLines([{
         tempId: log.id,
         activity: log.activity,
+        description: log.description || '',
         category: log.category,
         output: log.output,
         metricValue: log.metricValue,
@@ -215,6 +220,7 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
       setActivityLines([{
         tempId: Math.random().toString(36).substr(2, 9),
         activity: '',
+        description: '',
         category: categories[0] || 'Operasional',
         output: '',
         metricValue: 0,
@@ -253,6 +259,7 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
         context: headerData.context,
         companyName: headerData.companyName,
         activity: line.activity,
+        description: line.description,
         category: line.category,
         output: (!line.isPlan && !line.useCustomOutput) ? line.activity : line.output,
         metricValue: line.metricValue,
@@ -780,6 +787,16 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
                                  </div>
                                )}
                              </div>
+                          </div>
+                          
+                          <div className="space-y-2">
+                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Deskripsi (Opsional)</label>
+                             <textarea 
+                               placeholder="Tambahkan detail pekerjaan..." 
+                               className="w-full px-6 py-4 rounded-2xl border border-slate-200 bg-white font-medium text-sm focus:ring-4 focus:ring-blue-500/5 transition-all shadow-sm resize-none h-24"
+                               value={line.description || ''}
+                               onChange={e => updateLine(line.tempId, { description: e.target.value })}
+                             />
                           </div>
                         </div>
 

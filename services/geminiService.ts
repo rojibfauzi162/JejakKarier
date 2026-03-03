@@ -390,7 +390,7 @@ export async function generateCareerInsight(data: AppData, audience: 'self' | 's
   return await callAI(prompt, schema);
 }
 
-export async function generateInterviewScript(data: AppData, targetRole: string, targetIndustry: string, language: 'ID' | 'EN', tone: 'Formal' | 'Casual' | 'Corporate') {
+export async function generateInterviewScript(data: AppData, language: 'ID' | 'EN') {
   const slimData = {
     profile: {
       name: data.profile.name,
@@ -401,18 +401,48 @@ export async function generateInterviewScript(data: AppData, targetRole: string,
     achievements: data.achievements.slice(0, 2).map(a => a.title)
   };
 
-  const prompt = `GENERATE INTERVIEW SCRIPT.
+  const prompt = `GENERATE MASTER INTERVIEW SCRIPT.
   
   CONTEXT:
   - User: ${JSON.stringify(slimData)}
-  - Target: ${targetRole} in ${targetIndustry}
   - Lang: ${language === 'ID' ? 'ID' : 'EN'}
-  - Tone: ${tone}
   
   INSTRUCTIONS:
-  1. First, identify the most relevant interview questions for this role.
-  2. Then, provide answers based on user's real data.
-  3. Format as JSON. Use user's data ONLY. No fake info.`;
+  1. Generate a versatile interview script suitable for various roles.
+  2. CRITICAL: USE PLACEHOLDERS EXACTLY AS WRITTEN BELOW:
+     - Use "[Role]" whenever referring to the specific job title.
+     - Use "[Industri]" whenever referring to the industry.
+     - Use "[Perusahaan]" whenever referring to the company name.
+     - Use "[GajiMin]" for minimum salary expectation.
+     - Use "[GajiMax]" for maximum salary expectation.
+  3. GENERATE CONTENT FOR THESE SPECIFIC QUESTIONS (Translate to ${language === 'ID' ? 'Indonesian' : 'English'}):
+     
+     [ABOUT SELF]
+     - "Tell me about yourself" -> Put in 'elevatorPitch'
+     - "Strengths & Weaknesses" -> Put Strengths in 'commonQuestions', Weaknesses in 'weaknessFraming'
+     - "Motivation for this role" -> 'commonQuestions' (Use [Role] placeholder)
+     
+     [EXPERIENCE]
+     - "Last work experience" -> 'commonQuestions'
+     - "Biggest achievement" -> 'commonQuestions'
+     - "Reason for leaving" -> 'commonQuestions'
+     
+     [SKILLS & WORK STYLE]
+     - "Relevant skills" -> 'commonQuestions'
+     - "Handling pressure/deadlines" -> 'behavioralQuestions' (STAR)
+     - "Teamwork experience" -> 'behavioralQuestions' (STAR)
+     
+     [SITUATIONAL]
+     - "Conflict resolution" -> 'behavioralQuestions' (STAR)
+     - "Handling mistakes" -> 'behavioralQuestions' (STAR)
+     
+     [CLOSING]
+     - "Salary expectation" -> 'commonQuestions'. MUST USE THIS EXACT QUESTION: "Berapa harapan gaji yang anda inginkan ?". AND USE THIS EXACT INDONESIAN TEMPLATE FOR ANSWER: "Berdasarkan riset yang saya lakukan dan pengalaman saya selama [jumlah tahun] tahun di industri ini, serta mempertimbangkan kompleksitas dari posisi [Role] ini, saya memproyeksikan angka kompensasi yang sesuai berada di kisaran Rp [GajiMin] hingga Rp [GajiMax].\n\nTentu saya juga sangat terbuka untuk berdiskusi. Saya percaya angka ini bisa dinegosiasikan, terutama jika ada komponen benefit non-gaji lain seperti [Sebutkan, misal: asuransi, bonus kinerja, atau program pelatihan] yang bisa dipertimbangkan secara keseluruhan. Yang terpenting bagi saya adalah paket kompensasi yang sesuai dengan kontribusi yang akan saya berikan.\n\nTips Rentang:\n· Buatlah rentang yang tidak terlalu lebar (misal: 10-12 juta, bukan 10-15 juta).\n· Pastikan angka terendah Anda adalah batas minimal yang Anda mau, jangan lebih rendah."
+     - "Availability" -> 'commonQuestions'
+     - "Questions for us" -> Generate list for 'questionsForInterviewer'
+
+  4. Provide answers based on user's real data.
+  5. Format as JSON. Use user's data ONLY. No fake info.`;
 
   const schema = {
     type: Type.OBJECT,

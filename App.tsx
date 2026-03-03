@@ -324,7 +324,7 @@ const App: React.FC = () => {
       <div className="relative flex flex-col items-center gap-12 animate-in fade-in zoom-in duration-700">
         <div className="w-24 h-24 bg-indigo-600 rounded-[2.2rem] flex items-center justify-center text-white text-4xl font-black shadow-xl animate-bounce">F</div>
         <div className="space-y-4 text-center">
-          <h2 className="text-xl font-black text-slate-900 tracking-[0.25em] uppercase">Sinkronisasi Sesi...</h2>
+          <h2 className="text-xl font-black text-slate-900 tracking-[0.25em] uppercase">Loading...</h2>
           <div className="w-64 h-1.5 bg-slate-100 rounded-full overflow-hidden border border-white">
              <div className="h-full bg-indigo-600 rounded-full w-full animate-loading-bar origin-left"></div>
           </div>

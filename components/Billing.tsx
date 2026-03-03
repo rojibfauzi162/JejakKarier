@@ -18,6 +18,24 @@ const Billing: React.FC<BillingProps> = ({ data, products, onSelectPlan }) => {
   // Ambil transaksi milik user ini saja
   const myTransactions = [...(data.manualTransactions || [])].sort((a, b) => b.date.localeCompare(a.date));
 
+  // State untuk Pagination & Filter
+  const [currentPage, setCurrentPage] = React.useState(1);
+  const [filterStatus, setFilterStatus] = React.useState('ALL');
+  const itemsPerPage = 5;
+
+  // Logic Filter
+  const filteredTransactions = myTransactions.filter(tx => {
+    if (filterStatus === 'ALL') return true;
+    return tx.status === filterStatus;
+  });
+
+  // Logic Pagination
+  const totalPages = Math.ceil(filteredTransactions.length / itemsPerPage);
+  const paginatedTransactions = filteredTransactions.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   const handleExtend = (product: SubscriptionProduct) => {
     if (onSelectPlan) {
       onSelectPlan(product);
@@ -85,7 +103,7 @@ const Billing: React.FC<BillingProps> = ({ data, products, onSelectPlan }) => {
          <div className="flex flex-col md:flex-row justify-between items-end gap-4 px-2">
             <div>
                <h3 className="text-xl font-black text-slate-900 uppercase">Pilihan Paket Masa Depan</h3>
-               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Upgrade untuk membuka lebih banyak fitur AI & limitasi data.</p>
+               <p className="text-slate-400 font-medium text-[10px] uppercase tracking-widest">Upgrade untuk membuka lebih banyak fitur AI & limitasi data.</p>
             </div>
             <p className="text-[9px] font-black text-blue-600 uppercase tracking-widest flex items-center gap-2">
                <span className="w-1.5 h-1.5 bg-blue-600 rounded-full animate-pulse"></span>
@@ -144,9 +162,28 @@ const Billing: React.FC<BillingProps> = ({ data, products, onSelectPlan }) => {
 
       {/* TRANSACTION HISTORY TABLE */}
       <div className="space-y-6">
-         <div className="px-2">
-            <h3 className="text-xl font-black text-slate-900 uppercase">Riwayat Transaksi Akun</h3>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Pantau status pembayaran dan aktivasi paket Anda.</p>
+         <div className="px-2 flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div>
+               <h3 className="text-xl font-black text-slate-900 uppercase">Riwayat Transaksi Akun</h3>
+               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Pantau status pembayaran dan aktivasi paket Anda.</p>
+            </div>
+            
+            {/* Filter Controls */}
+            <div className="flex bg-slate-100 p-1 rounded-xl">
+               {['ALL', 'Paid', 'Pending', 'Failed'].map(status => (
+                  <button
+                     key={status}
+                     onClick={() => { setFilterStatus(status); setCurrentPage(1); }}
+                     className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase transition-all ${
+                        filterStatus === status 
+                        ? 'bg-white text-slate-900 shadow-sm' 
+                        : 'text-slate-400 hover:text-slate-600'
+                     }`}
+                  >
+                     {status === 'ALL' ? 'Semua' : status}
+                  </button>
+               ))}
+            </div>
          </div>
 
          <div className="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden">
@@ -163,7 +200,7 @@ const Billing: React.FC<BillingProps> = ({ data, products, onSelectPlan }) => {
                      </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-50">
-                     {myTransactions.length > 0 ? myTransactions.map(tx => (
+                     {paginatedTransactions.length > 0 ? paginatedTransactions.map(tx => (
                         <tr key={tx.id} className="hover:bg-slate-50/50 transition-colors">
                            <td className="px-8 py-5 font-mono text-[10px] font-bold text-slate-400">{tx.id}</td>
                            <td className="px-6 py-5">
@@ -172,7 +209,7 @@ const Billing: React.FC<BillingProps> = ({ data, products, onSelectPlan }) => {
                            </td>
                            <td className="px-6 py-5">
                               <span className="px-2 py-1 bg-slate-100 rounded text-[8px] font-black uppercase text-slate-500">
-                                 {tx.paymentMethod || 'Manual'}
+                                 {tx.paymentMethod === 'Duitku' ? 'Konfirmasi Otomatis' : (tx.paymentMethod || 'Manual')}
                               </span>
                            </td>
                            <td className="px-6 py-5 font-black text-slate-700 text-xs">
@@ -194,13 +231,36 @@ const Billing: React.FC<BillingProps> = ({ data, products, onSelectPlan }) => {
                      )) : (
                         <tr>
                            <td colSpan={6} className="px-8 py-12 text-center text-slate-300 font-bold uppercase tracking-widest text-[10px] italic">
-                              Belum ada riwayat transaksi terdeteksi.
+                              {myTransactions.length === 0 ? 'Belum ada riwayat transaksi terdeteksi.' : 'Tidak ada transaksi yang cocok dengan filter.'}
                            </td>
                         </tr>
                      )}
                   </tbody>
                </table>
             </div>
+            
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+               <div className="px-8 py-4 border-t border-slate-50 flex items-center justify-between">
+                  <button 
+                     onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                     disabled={currentPage === 1}
+                     className="px-4 py-2 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-indigo-600 disabled:opacity-30 transition-colors"
+                  >
+                     ← Previous
+                  </button>
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                     Page {currentPage} of {totalPages}
+                  </span>
+                  <button 
+                     onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                     disabled={currentPage === totalPages}
+                     className="px-4 py-2 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-indigo-600 disabled:opacity-30 transition-colors"
+                  >
+                     Next →
+                  </button>
+               </div>
+            )}
          </div>
       </div>
 
