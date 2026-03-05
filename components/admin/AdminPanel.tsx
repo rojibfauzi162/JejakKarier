@@ -19,8 +19,10 @@ import DuitkuIntegration from './DuitkuIntegration';
 import FollowUpManager from './FollowUpManager';
 import TrackingSettings from './TrackingSettings';
 
+import EmailMarketing from './EmailMarketing';
+
 interface AdminPanelProps {
-  initialMode?: 'dashboard' | 'users' | 'products' | 'health' | 'ai' | 'admin_transactions' | 'admin_admins' | 'settings' | 'integrations' | 'duitku' | 'followup' | 'tracking';
+  initialMode?: 'dashboard' | 'users' | 'products' | 'health' | 'ai' | 'admin_transactions' | 'admin_admins' | 'settings' | 'integrations' | 'duitku' | 'followup' | 'tracking' | 'email_marketing';
   userRole?: UserRole;
 }
 
@@ -244,6 +246,14 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard', user
       {initialMode === 'ai' && <AiArchitecture aiConfig={aiConfig} setAiConfigState={setAiConfigState} handleSaveAiConfig={handleSaveAiConfig} isSavingAi={isSavingAi} isFetchingModels={false} isModelDropdownOpen={false} setIsModelDropdownOpen={()=>{}} modelSearchTerm="" setModelSearchTerm={()=>{}} filteredOpenRouterModels={[]} handleModelSelect={()=>{}} dropdownRef={dropdownRef} />}
       {initialMode === 'settings' && <AdminSettings />}
       {initialMode === 'integrations' && <MayarIntegration />}
+      {initialMode === 'email_marketing' && users.length > 0 && (
+        <EmailMarketing 
+          data={users.find(u => u.role === UserRole.SUPERADMIN) || users[0]} 
+          onUpdateData={async (data) => {
+             fetchUsersAndConfig(true);
+          }} 
+        />
+      )}
       {initialMode === 'admin_admins' && <AdminManagement users={users} onUpdateMetadata={async (uid, fields) => { await updateAdminMetadata(uid, fields); fetchUsersAndConfig(true); }} />}
 
       {/* USER MANAGEMENT MODAL */}

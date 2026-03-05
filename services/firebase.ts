@@ -2,7 +2,8 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, signInWithPopup, setPersistence, browserLocalPersistence } from 'firebase/auth';
 import { getFirestore, doc, setDoc, getDoc, collection, getDocs, updateDoc, increment, query, where, limit, deleteDoc } from "firebase/firestore";
-import { AppData, AiConfig, SubscriptionProduct, AccountStatus, LegalConfig, UserRole, LandingPageConfig, MayarConfig, DuitkuConfig, FollowUpConfig, TrackingConfig } from "../types";
+import { getStorage, ref, uploadBytes, getDownloadURL, uploadBytesResumable } from "firebase/storage";
+import { AppData, AiConfig, SubscriptionProduct, AccountStatus, LegalConfig, UserRole, LandingPageConfig, MayarConfig, DuitkuConfig, FollowUpConfig, TrackingConfig, EmailSettings, EmailCampaign, EmailLog, SystemTraining } from "../types";
 
 // KONFIGURASI FIREBASE
 const firebaseConfig = {
@@ -21,23 +22,81 @@ setPersistence(auth, browserLocalPersistence).catch((error) => {
   console.error("Firebase persistence error:", error);
 });
 export const db = getFirestore(app);
+export const storage = getStorage(app);
+
+export const uploadImage = async (file: File | Blob, path: string, onProgress?: (progress: number) => void): Promise<string> => {
+  const storageRef = ref(storage, path);
+  
+  if (onProgress) {
+    return new Promise((resolve, reject) => {
+      const uploadTask = uploadBytesResumable(storageRef, file);
+      
+      uploadTask.on('state_changed', 
+        (snapshot) => {
+          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          onProgress(progress);
+        }, 
+        (error) => {
+          console.error("Upload error:", error);
+          reject(error);
+        }, 
+        async () => {
+          try {
+            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+            resolve(downloadURL);
+          } catch (error) {
+            reject(error);
+          }
+        }
+      );
+    });
+  } else {
+    await uploadBytes(storageRef, file);
+    return getDownloadURL(storageRef);
+  }
+};
 
 const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: 'select_account' });
 
-const sanitizeData = (obj: any): any => {
-  if (Array.isArray(obj)) {
-    return obj.map(item => sanitizeData(item));
-  } else if (obj !== null && typeof obj === 'object') {
-    const sanitized: any = {};
-    Object.keys(obj).forEach(key => {
-      if (obj[key] !== undefined) {
-        sanitized[key] = sanitizeData(obj[key]);
-      }
-    });
-    return sanitized;
+const sanitizeData = (obj: any, visited = new WeakSet()): any => {
+  if (obj === null || typeof obj !== 'object') {
+    return obj;
   }
-  return obj;
+
+  // Handle Date objects
+  if (obj instanceof Date) {
+    return obj.toISOString();
+  }
+
+  // Detect circular references
+  if (visited.has(obj)) {
+    return '[Circular]';
+  }
+  visited.add(obj);
+
+  // Handle Arrays
+  if (Array.isArray(obj)) {
+    return obj.map(item => sanitizeData(item, visited));
+  }
+
+  // Handle DOM nodes (basic check)
+  if (obj.nodeType && typeof obj.nodeName === 'string') {
+    return '[DOM Node]';
+  }
+
+  // Handle React Synthetic Events (basic check)
+  if (obj._reactName && obj.nativeEvent) {
+    return '[React Event]';
+  }
+
+  const sanitized: any = {};
+  Object.keys(obj).forEach(key => {
+    if (obj[key] !== undefined) {
+      sanitized[key] = sanitizeData(obj[key], visited);
+    }
+  });
+  return sanitized;
 };
 
 export const signInWithGoogle = async () => {
@@ -95,10 +154,12 @@ export const getUserData = async (uid: string): Promise<AppData | null> => {
 export const getAllUsers = async (): Promise<AppData[]> => {
   try {
     const querySnapshot = await getDocs(collection(db, "users"));
-    return querySnapshot.docs.map(doc => ({
-      ...(doc.data() as AppData),
-      uid: doc.id
-    }));
+    return querySnapshot.docs
+      .map(doc => ({
+        ...(doc.data() as AppData),
+        uid: doc.id
+      }))
+      .filter(u => u.profile); // Ensure profile exists
   } catch (error: any) {
     if (error.code === 'permission-denied') return [];
     throw error;
@@ -331,5 +392,140 @@ export const saveProductsCatalog = async (products: SubscriptionProduct[]) => {
     await setDoc(docRef, sanitized);
   } catch (e) {
     throw e;
+  }
+};
+
+export const getEmailConfig = async (): Promise<EmailSettings | null> => {
+  try {
+    const docRef = doc(db, "system_metadata", "email_configuration");
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) return docSnap.data() as EmailSettings;
+  } catch (error: any) {
+    console.warn("[FIREBASE] Config Email error:", error.message);
+  }
+  return null;
+};
+
+export const saveEmailConfig = async (config: EmailSettings) => {
+  try {
+    const docRef = doc(db, "system_metadata", "email_configuration");
+    const dataToSave = sanitizeData({
+      ...config,
+      updatedAt: new Date().toISOString()
+    });
+    await setDoc(docRef, dataToSave, { merge: true });
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getEmailCampaigns = async (): Promise<EmailCampaign[]> => {
+  try {
+    const docRef = doc(db, "system_metadata", "email_campaigns_list");
+    const snap = await getDoc(docRef);
+    if (snap.exists()) return snap.data().list || [];
+    return [];
+  } catch (error) {
+    console.error("Error getting email campaigns:", error);
+    return [];
+  }
+};
+
+export const saveEmailCampaign = async (campaign: EmailCampaign) => {
+  try {
+    const docRef = doc(db, "system_metadata", "email_campaigns_list");
+    const snap = await getDoc(docRef);
+    let list: EmailCampaign[] = [];
+    if (snap.exists()) {
+      list = snap.data().list || [];
+    }
+    
+    const index = list.findIndex((c: EmailCampaign) => c.id === campaign.id);
+    if (index >= 0) {
+      list[index] = campaign;
+    } else {
+      list.push(campaign);
+    }
+    
+    await setDoc(docRef, { list: sanitizeData(list), updatedAt: new Date().toISOString() });
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getEmailLogs = async (): Promise<EmailLog[]> => {
+  try {
+    const docRef = doc(db, "system_metadata", "email_logs_list");
+    const snap = await getDoc(docRef);
+    if (snap.exists()) return snap.data().list || [];
+    return [];
+  } catch (error) {
+    console.error("Error getting email logs:", error);
+    return [];
+  }
+};
+
+export const saveEmailLog = async (log: EmailLog) => {
+  try {
+    const docRef = doc(db, "system_metadata", "email_logs_list");
+    const snap = await getDoc(docRef);
+    let list: EmailLog[] = [];
+    if (snap.exists()) {
+      list = snap.data().list || [];
+    }
+    list.push(log);
+    
+    // Limit logs to last 1000 to prevent explosion
+    if (list.length > 1000) list = list.slice(-1000);
+    
+    await setDoc(docRef, { list: sanitizeData(list), updatedAt: new Date().toISOString() });
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getSystemTrainings = async (): Promise<SystemTraining[]> => {
+  try {
+    const querySnapshot = await getDocs(collection(db, "trainings"));
+    return querySnapshot.docs.map(doc => ({
+      ...(doc.data() as SystemTraining),
+      id: doc.id
+    }));
+  } catch (error) {
+    console.error("Error getting trainings:", error);
+    return [];
+  }
+};
+
+export const getSystemTrainingById = async (id: string): Promise<SystemTraining | null> => {
+  try {
+    const docRef = doc(db, "trainings", id);
+    const snap = await getDoc(docRef);
+    if (snap.exists()) {
+      return { ...(snap.data() as SystemTraining), id: snap.id } as SystemTraining;
+    }
+    return null;
+  } catch (error) {
+    console.error("Error getting training by id:", error);
+    return null;
+  }
+};
+
+export const saveSystemTraining = async (training: SystemTraining) => {
+  try {
+    const sanitized = sanitizeData(training);
+    await setDoc(doc(db, "trainings", training.id), sanitized, { merge: true });
+  } catch (error) {
+    console.error("Error saving training:", error);
+    throw error;
+  }
+};
+
+export const deleteSystemTraining = async (id: string) => {
+  try {
+    await deleteDoc(doc(db, "trainings", id));
+  } catch (error) {
+    console.error("Error deleting training:", error);
+    throw error;
   }
 };

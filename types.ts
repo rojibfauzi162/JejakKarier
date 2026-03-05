@@ -159,6 +159,10 @@ export interface UserProfile {
   description: string;
   photoUrl?: string;
   jobCategory?: string;
+  skillTags?: string[];
+  companyCategory?: string[];
+  trainingInterest?: string[];
+  emailMarketingOptIn?: boolean;
 }
 
 export interface DailyReport {
@@ -541,6 +545,69 @@ export interface InterviewScript {
   };
 }
 
+export interface EmailSettings {
+  smtpHost?: string;
+  smtpPort?: number;
+  smtpUser?: string;
+  smtpPass?: string;
+  brevoApiKey?: string;
+  senderEmail: string;
+  senderName: string;
+}
+
+export interface EmailCampaign {
+  id: string;
+  title: string;
+  subject: string;
+  content: string; // HTML content
+  createdAt: string;
+  createdBy: string;
+  filters: {
+    skillTags?: string[];
+    companyCategory?: string[];
+    trainingInterest?: string[];
+    experienceLevel?: string[];
+    manualUserIds?: string[];
+  };
+  status: 'draft' | 'scheduled' | 'sent';
+  scheduledAt?: string;
+  sentAt?: string;
+  recipientCount?: number;
+}
+
+export interface EmailLog {
+  id: string;
+  campaignId?: string;
+  userId: string;
+  userEmail: string;
+  status: 'sent' | 'failed' | 'opened' | 'clicked';
+  sentAt: string;
+  error?: string;
+  type: 'notification' | 'marketing';
+}
+
+export interface SystemTraining {
+  id: string;
+  title: string;
+  description: string;
+  instructor: string;
+  date: string; // ISO YYYY-MM-DD
+  time: string;
+  duration: string;
+  location: string; // Link or Address
+  price: number;
+  image?: string;
+  category: string;
+  tags: string[];
+  maxParticipants?: number;
+  currentParticipants?: number;
+  registrationLink?: string;
+  isInternalRegistration?: boolean;
+  status: 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface AppData {
   uid?: string;
   role: UserRole;
@@ -591,4 +658,7 @@ export interface AppData {
   completedAiMilestones: string[];
   isDeleted?: boolean;
   deletedAt?: string;
+  emailCampaigns?: EmailCampaign[];
+  emailLogs?: EmailLog[];
+  emailSettings?: EmailSettings;
 }

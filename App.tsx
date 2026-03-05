@@ -33,6 +33,9 @@ import UpgradeModal from './components/user/UpgradeModal';
 import MobileStats from './components/user/MobileStats';
 import CareerCalendar from './components/user/CareerCalendar'; 
 import InterviewIntelligenceScript from './components/user/InterviewIntelligenceScript';
+import TrainingManagement from './components/admin/TrainingManagement';
+import TrainingList from './components/public/TrainingList';
+import TrainingDetail from './components/public/TrainingDetail';
 import { auth, getUserData, saveUserData, getProductsCatalog, findUserByEmail, deleteUserDoc, getTrackingConfig } from './services/firebase';
 import { onAuthStateChanged, sendEmailVerification } from 'firebase/auth';
 import { trackingService } from './services/trackingService';
@@ -90,6 +93,13 @@ const App: React.FC = () => {
     return null;
   });
 
+  const [publicTrainingPage, setPublicTrainingPage] = useState<{ type: 'list' | 'detail', id?: string } | null>(() => {
+    const path = window.location.pathname;
+    if (path === '/trainings') return { type: 'list' };
+    if (path.startsWith('/trainings/')) return { type: 'detail', id: path.split('/')[2] };
+    return null;
+  });
+
   const handleNavigate = (tab: string, subTab?: string) => {
     setActiveTab(tab);
     setSkillsSubTab(subTab || undefined);
@@ -108,6 +118,10 @@ const App: React.FC = () => {
       if (path === '/privacy') setPublicLegalPage('privacy');
       else if (path === '/terms') setPublicLegalPage('terms');
       else setPublicLegalPage(null);
+
+      if (path === '/trainings') setPublicTrainingPage({ type: 'list' });
+      else if (path.startsWith('/trainings/')) setPublicTrainingPage({ type: 'detail', id: path.split('/')[2] });
+      else setPublicTrainingPage(null);
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
@@ -318,6 +332,8 @@ const App: React.FC = () => {
   }, [data, user, loading]);
 
   if (publicLegalPage) return <PublicLegalView type={publicLegalPage} onBack={() => navigateToLegal(null)} />;
+  if (publicTrainingPage?.type === 'list') return <TrainingList />;
+  if (publicTrainingPage?.type === 'detail' && publicTrainingPage.id) return <TrainingDetail id={publicTrainingPage.id} />;
   if (loading) return (
     <div className="h-screen w-full bg-white flex flex-col items-center justify-center relative overflow-hidden font-sans">
       <div className="absolute top-1/4 left-1/4 w-[40rem] h-[40rem] bg-indigo-50/50 rounded-full blur-[100px] animate-pulse"></div>
@@ -422,6 +438,8 @@ const App: React.FC = () => {
       case 'admin_integrations': return <AdminPanel initialMode="integrations" userRole={data.role} />;
       case 'admin_settings': return <AdminPanel initialMode="settings" userRole={data.role} />;
       case 'admin_health': return <AdminPanel initialMode="health" userRole={data.role} />;
+      case 'email_marketing': return <AdminPanel initialMode="email_marketing" userRole={data.role} />;
+      case 'admin_trainings': return <TrainingManagement onToast={(msg, type) => showToast(msg, type)} />;
       
       case 'apps_hub': return withPermission('apps_hub', <AppsHub onNavigate={handleNavigate} />);
       case 'mobile_stats': return withPermission('mobile_stats', <MobileStats data={data} />);
@@ -482,7 +500,9 @@ const App: React.FC = () => {
       'admin_ai': 'AI Architecture',
       'admin_products': 'Product Matrix',
       'admin_settings': 'Pengaturan Admin',
-      'admin_health': 'System Health'
+      'admin_health': 'System Health',
+      'email_marketing': 'Email Marketing',
+      'admin_trainings': 'Training Management'
     };
     return titles[activeTab] || 'Admin Hub';
   };
