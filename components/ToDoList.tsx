@@ -66,6 +66,7 @@ const ToDoList: React.FC<ToDoListProps> = ({
   // Category Management States
   const [newCatName, setNewCatName] = useState('');
   const [editingCat, setEditingCat] = useState<{old: string, next: string} | null>(null);
+  const [newTaskDate, setNewTaskDate] = useState(new Date().toISOString().split('T')[0]);
 
   const handleAddTask = (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,7 +86,7 @@ const ToDoList: React.FC<ToDoListProps> = ({
       description: newTaskDesc,
       category: selectedCategory,
       status: 'Pending',
-      createdAt: new Date().toISOString(),
+      createdAt: new Date(newTaskDate).toISOString(),
       source: 'Manual',
       isFocusToday: false
     };
@@ -93,7 +94,34 @@ const ToDoList: React.FC<ToDoListProps> = ({
     onAdd(newTask);
     setNewTaskText('');
     setNewTaskDesc('');
+    setNewTaskDate(new Date().toISOString().split('T')[0]);
     setCurrentPage(1); // Jump to first page to see the new task
+  };
+
+  const handleAddCategory = () => {
+    if (!newCatName.trim()) return;
+    if (categories.includes(newCatName.trim())) {
+      alert("Kategori sudah ada!");
+      return;
+    }
+    onAddCategory?.(newCatName.trim());
+    setNewCatName('');
+  };
+
+  const handleUpdateCategory = () => {
+    if (!editingCat || !editingCat.next.trim()) return;
+    if (categories.includes(editingCat.next.trim()) && editingCat.next.trim() !== editingCat.old) {
+      alert("Nama kategori sudah digunakan!");
+      return;
+    }
+    onUpdateCategory?.(editingCat.old, editingCat.next.trim());
+    setEditingCat(null);
+  };
+
+  const handleDeleteCategory = (cat: string) => {
+    if (window.confirm(`Hapus kategori "${cat}"? Langkah pengembangan dengan kategori ini tidak akan terhapus, namun kategorinya mungkin hilang.`)) {
+      onDeleteCategory?.(cat);
+    }
   };
 
   const toggleStatus = (task: ToDoTask) => {
@@ -353,15 +381,26 @@ const ToDoList: React.FC<ToDoListProps> = ({
                     />
                  </div>
               </div>
-              <div className="space-y-1.5">
-                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Keterangan Detil (Opsional)</label>
-                 <textarea 
-                  rows={2}
-                  placeholder="Berikan deskripsi atau catatan tambahan..."
-                  className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-sm focus:ring-4 focus:ring-blue-500/5 transition-all resize-none"
-                  value={newTaskDesc}
-                  onChange={(e) => setNewTaskDesc(e.target.value)}
-                 />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                 <div className="md:col-span-2 space-y-1.5">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Keterangan Detil (Opsional)</label>
+                    <input 
+                      type="text"
+                      placeholder="Berikan deskripsi atau catatan tambahan..."
+                      className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-sm focus:ring-4 focus:ring-blue-500/5 transition-all"
+                      value={newTaskDesc}
+                      onChange={(e) => setNewTaskDesc(e.target.value)}
+                    />
+                 </div>
+                 <div className="space-y-1.5">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tanggal Target</label>
+                    <input 
+                      type="date"
+                      className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-sm focus:ring-4 focus:ring-blue-500/5 transition-all"
+                      value={newTaskDate}
+                      onChange={(e) => setNewTaskDate(e.target.value)}
+                    />
+                 </div>
               </div>
               <div className="flex justify-between items-center">
                 <button 
@@ -376,6 +415,101 @@ const ToDoList: React.FC<ToDoListProps> = ({
                   + Tambah Langkah
                 </button>
               </div>
+
+              {isFilterVisible && (
+                <div className="pt-8 border-t border-slate-50 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-in slide-in-from-top-2">
+                   <div className="space-y-1.5">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Cari Langkah</label>
+                      <div className="relative">
+                         <i className="bi bi-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                         <input 
+                           type="text" 
+                           placeholder="Cari..." 
+                           className="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs focus:ring-2 focus:ring-indigo-500/10"
+                           value={searchQuery}
+                           onChange={(e) => setSearchQuery(e.target.value)}
+                         />
+                      </div>
+                   </div>
+                   <div className="space-y-1.5">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Filter Kategori</label>
+                      <select 
+                        className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs focus:ring-2 focus:ring-indigo-500/10"
+                        value={filterCat}
+                        onChange={(e) => setFilterCat(e.target.value)}
+                      >
+                        <option value="all">Semua Kategori</option>
+                        {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                      </select>
+                   </div>
+                   <div className="space-y-1.5">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Status</label>
+                      <select 
+                        className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs focus:ring-2 focus:ring-indigo-500/10"
+                        value={filterStatus}
+                        onChange={(e) => setFilterStatus(e.target.value)}
+                      >
+                        <option value="all">Semua Status</option>
+                        <option value="Pending">Belum Selesai</option>
+                        <option value="Completed">Selesai</option>
+                      </select>
+                   </div>
+                   <div className="space-y-1.5">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Waktu</label>
+                      <select 
+                        className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs focus:ring-2 focus:ring-indigo-500/10"
+                        value={filterTime}
+                        onChange={(e) => setFilterTime(e.target.value as TimeFilter)}
+                      >
+                        <option value="all">Semua Waktu</option>
+                        <option value="today">Hari Ini</option>
+                        <option value="7days">7 Hari Terakhir</option>
+                        <option value="30days">30 Hari Terakhir</option>
+                        <option value="range">Rentang Tanggal</option>
+                      </select>
+                   </div>
+                   
+                   <div className="space-y-1.5">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Bulan</label>
+                      <select 
+                        className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs focus:ring-2 focus:ring-indigo-500/10"
+                        value={searchMonth}
+                        onChange={(e) => setSearchMonth(e.target.value)}
+                      >
+                        {monthsList.map(m => <option key={m.v} value={m.v}>{m.l}</option>)}
+                      </select>
+                   </div>
+                   <div className="space-y-1.5">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tahun</label>
+                      <select 
+                        className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs focus:ring-2 focus:ring-indigo-500/10"
+                        value={searchYear}
+                        onChange={(e) => setSearchYear(e.target.value)}
+                      >
+                        <option value="all">Semua Tahun</option>
+                        <option value="2024">2024</option>
+                        <option value="2025">2025</option>
+                        <option value="2026">2026</option>
+                      </select>
+                   </div>
+
+                   {filterTime === 'range' && (
+                      <div className="md:col-span-2 lg:col-span-4 pt-4 border-t border-slate-50">
+                         <div className="flex justify-between items-center mb-4">
+                            <button type="button" onClick={() => setCalDate(new Date(calDate.setMonth(calDate.getMonth() - 1)))} className="p-2 hover:bg-slate-100 rounded-lg"><i className="bi bi-chevron-left"></i></button>
+                            <span className="font-black text-sm uppercase tracking-widest">{monthsList.find(m => m.v === calDate.getMonth().toString())?.l} {calDate.getFullYear()}</span>
+                            <button type="button" onClick={() => setCalDate(new Date(calDate.setMonth(calDate.getMonth() + 1)))} className="p-2 hover:bg-slate-100 rounded-lg"><i className="bi bi-chevron-right"></i></button>
+                         </div>
+                         <div className="grid grid-cols-7 gap-2">
+                            {['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'].map(d => (
+                               <div key={d} className="text-center text-[10px] font-black text-slate-300 uppercase py-2">{d}</div>
+                            ))}
+                            {renderCalendarGrid()}
+                         </div>
+                      </div>
+                   )}
+                </div>
+              )}
             </form>
           </div>
 
@@ -393,15 +527,21 @@ const ToDoList: React.FC<ToDoListProps> = ({
                 <div className="divide-y divide-slate-50">
                    {currentDayGroup.list.map(task => (
                       <div key={task.id} className={`p-6 flex items-center gap-6 group transition-all ${task.status === 'Completed' ? 'bg-slate-50/30' : ''}`}>
-                         <button onClick={() => toggleStatus(task)} className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all ${task.status === 'Completed' ? 'bg-emerald-50 border-emerald-500 text-white shadow-lg' : 'bg-white border-slate-200 text-transparent hover:border-indigo-400'}`}>
-                           <i className="bi bi-check-lg"></i>
+                         <button onClick={() => toggleStatus(task)} className={`w-8 h-8 rounded-lg border-2 flex items-center justify-center transition-all ${task.status === 'Completed' ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg' : 'bg-white border-slate-200 text-transparent hover:border-indigo-400'}`}>
+                           <i className="bi bi-check-lg text-lg"></i>
                          </button>
                          <div className="flex-1">
                             <div className="flex items-center gap-3">
                                <p className={`text-sm font-black text-slate-800 uppercase ${task.status === 'Completed' ? 'line-through text-slate-300' : ''}`}>{task.task}</p>
                                {task.isFocusToday && <span className="px-2 py-0.5 bg-amber-100 text-amber-600 rounded text-[8px] font-black uppercase tracking-widest animate-pulse">Focus Today</span>}
                             </div>
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">{task.category} {task.source === 'AI' && <span className="text-indigo-400 ml-2">✨ AI Generated</span>}</p>
+                            <div className="flex items-center gap-3 mt-1">
+                              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{task.category} {task.source === 'AI' && <span className="text-indigo-400 ml-2">✨ AI Generated</span>}</p>
+                              <span className="text-[10px] font-bold text-slate-300">•</span>
+                              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1">
+                                <i className="bi bi-calendar-event"></i> {new Date(task.createdAt).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'short' })}
+                              </p>
+                            </div>
                          </div>
                          <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                             <button onClick={() => toggleFocus(task)} className={`p-2 rounded-lg border ${task.isFocusToday ? 'bg-amber-50 border-amber-100 text-amber-500' : 'bg-slate-50 border-slate-100 text-slate-300'}`} title="Set as Focus Today"><i className="bi bi-lightning-fill"></i></button>
@@ -420,8 +560,60 @@ const ToDoList: React.FC<ToDoListProps> = ({
           </div>
         </div>
       ) : (
-        <div className="bg-white p-8 rounded-[3rem] border border-slate-100 text-center py-20 italic text-slate-400">
-          Kategori manajemen akan segera hadir.
+        <div className="space-y-8">
+          <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100">
+            <div className="flex flex-col md:flex-row gap-6 items-end">
+              <div className="flex-1 space-y-1.5 w-full">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tambah Kategori Baru</label>
+                <input 
+                  type="text"
+                  placeholder="Nama kategori..."
+                  className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-sm focus:ring-4 focus:ring-blue-500/5 transition-all"
+                  value={newCatName}
+                  onChange={(e) => setNewCatName(e.target.value)}
+                />
+              </div>
+              <button 
+                onClick={handleAddCategory}
+                disabled={!newCatName.trim()}
+                className="px-8 py-4 bg-indigo-600 text-white font-black rounded-2xl uppercase text-[10px] tracking-widest shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                + Tambah
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {categories.map((cat, idx) => (
+              <div key={idx} className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm flex items-center justify-between group hover:border-indigo-100 transition-all">
+                {editingCat?.old === cat ? (
+                  <div className="flex items-center gap-2 w-full">
+                    <input 
+                      autoFocus
+                      className="flex-1 bg-slate-50 px-3 py-2 rounded-xl text-sm font-bold outline-none border border-indigo-200"
+                      value={editingCat.next}
+                      onChange={(e) => setEditingCat({...editingCat, next: e.target.value})}
+                    />
+                    <button onClick={handleUpdateCategory} className="p-2 bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-100"><i className="bi bi-check-lg"></i></button>
+                    <button onClick={() => setEditingCat(null)} className="p-2 bg-slate-50 text-slate-400 rounded-lg hover:bg-slate-100"><i className="bi bi-x-lg"></i></button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-2xl bg-slate-50 text-slate-400 flex items-center justify-center font-black text-sm">
+                        {cat.charAt(0).toUpperCase()}
+                      </div>
+                      <span className="font-bold text-slate-700">{cat}</span>
+                    </div>
+                    <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button onClick={() => setEditingCat({old: cat, next: cat})} className="p-2 text-slate-300 hover:text-indigo-600 transition-colors"><i className="bi bi-pencil-square"></i></button>
+                      <button onClick={() => handleDeleteCategory(cat)} className="p-2 text-slate-300 hover:text-rose-600 transition-colors"><i className="bi bi-trash"></i></button>
+                    </div>
+                  </>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>

@@ -31,16 +31,36 @@ export const uploadImage = async (file: File | Blob, path: string, onProgress?: 
     return new Promise((resolve, reject) => {
       const uploadTask = uploadBytesResumable(storageRef, file);
       
+      // Timeout after 15 seconds if no completion (reduced for better UX)
+      let isTimedOut = false;
+      const timeoutId = setTimeout(() => {
+        isTimedOut = true;
+        uploadTask.cancel();
+        reject(new Error("Upload timed out (15s). Switching to simple upload..."));
+      }, 15000);
+
       uploadTask.on('state_changed', 
         (snapshot) => {
           const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
           onProgress(progress);
         }, 
         (error) => {
-          console.error("Upload error:", error);
-          reject(error);
+          clearTimeout(timeoutId);
+          // Ignore cancellation error if it was caused by our timeout
+          if (error.code === 'storage/canceled' && isTimedOut) {
+            return;
+          }
+          
+          if (error.code !== 'storage/canceled') {
+            console.error("Upload error:", error);
+          }
+          
+          if (!isTimedOut) {
+            reject(error);
+          }
         }, 
         async () => {
+          clearTimeout(timeoutId);
           try {
             const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
             resolve(downloadURL);
@@ -51,8 +71,24 @@ export const uploadImage = async (file: File | Blob, path: string, onProgress?: 
       );
     });
   } else {
-    await uploadBytes(storageRef, file);
-    return getDownloadURL(storageRef);
+    try {
+      await uploadBytes(storageRef, file);
+      return await getDownloadURL(storageRef);
+    } catch (error) {
+      console.error("Upload error:", error);
+      throw error;
+    }
+  }
+};
+
+export const uploadImageSimple = async (file: File | Blob, path: string): Promise<string> => {
+  try {
+    const storageRef = ref(storage, path);
+    const snapshot = await uploadBytes(storageRef, file);
+    return await getDownloadURL(snapshot.ref);
+  } catch (error) {
+    console.error("Simple upload error:", error);
+    throw error;
   }
 };
 

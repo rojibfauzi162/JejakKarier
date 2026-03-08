@@ -36,6 +36,7 @@ import InterviewIntelligenceScript from './components/user/InterviewIntelligence
 import TrainingManagement from './components/admin/TrainingManagement';
 import TrainingList from './components/public/TrainingList';
 import TrainingDetail from './components/public/TrainingDetail';
+import OnboardingFlow from './components/user/OnboardingFlow';
 import { auth, getUserData, saveUserData, getProductsCatalog, findUserByEmail, deleteUserDoc, getTrackingConfig } from './services/firebase';
 import { onAuthStateChanged, sendEmailVerification } from 'firebase/auth';
 import { trackingService } from './services/trackingService';
@@ -55,6 +56,7 @@ const App: React.FC = () => {
   const [resendingEmail, setResendingEmail] = useState(false);
   const [hideVerificationReminder, setHideVerificationReminder] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); // NEW: State for mobile sidebar
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
     setToast({ message, type });
@@ -99,6 +101,29 @@ const App: React.FC = () => {
     if (path.startsWith('/trainings/')) return { type: 'detail', id: path.split('/')[2] };
     return null;
   });
+
+  const checkProfileCompletion = (profile: any) => {
+    const fields = [
+      'name', 'birthPlace', 'birthDate', 'maritalStatus', 'email', 
+      'phone', 'domicile', 'currentCompany', 'currentPosition', 
+      'shortTermTarget', 'longTermTarget', 'description', 'photoUrl', 'jobCategory'
+    ];
+    const filled = fields.filter(f => profile[f] && profile[f].toString().trim() !== '').length;
+    return (filled / fields.length) > 0.5;
+  };
+
+  useEffect(() => {
+    if (user && data && !data.onboardingCompleted) {
+      if (checkProfileCompletion(data.profile)) {
+        // Auto-complete onboarding if profile is already > 50% filled
+        const updatedData = { ...data, onboardingCompleted: true };
+        setData(updatedData);
+        if (data.uid) {
+          saveUserData(data.uid, updatedData);
+        }
+      }
+    }
+  }, [user, data.profile, data.onboardingCompleted]);
 
   const handleNavigate = (tab: string, subTab?: string) => {
     setActiveTab(tab);
@@ -425,7 +450,7 @@ const App: React.FC = () => {
       onAddCalendarEvent: (e: CareerEvent) => setData(prev => ({...prev, careerEvents: [...(prev.careerEvents || []), e]}))
     };
     switch (activeTab) {
-      case 'dashboard': return withPermission('dashboard', <Dashboard data={data} onNavigate={handleNavigate} />);
+      case 'dashboard': return withPermission('dashboard', <Dashboard data={data} onNavigate={handleNavigate} onOpenOnboarding={() => setShowOnboarding(true)} />);
       case 'admin_dashboard': return <AdminPanel initialMode="dashboard" userRole={data.role} />;
       case 'admin_users': return <AdminPanel initialMode="users" userRole={data.role} />;
       case 'admin_admins': return <AdminPanel initialMode="admin_admins" userRole={data.role} />;
@@ -548,6 +573,15 @@ const App: React.FC = () => {
                 currentPlan={data.plan} 
                 userEmail={user.email} 
                 userName={data.profile.name} 
+              />
+            )}
+            {user && user.emailVerified && !isAdmin && (!data.onboardingCompleted || showOnboarding) && (
+              <OnboardingFlow 
+                data={data} 
+                onComplete={(updatedData) => {
+                  setData(updatedData);
+                  setShowOnboarding(false);
+                }} 
               />
             )}
             <div className={`hidden lg:flex items-center justify-between ${!isAdmin ? 'mb-8' : 'mb-8'}`}>

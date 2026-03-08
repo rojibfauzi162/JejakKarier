@@ -130,6 +130,13 @@ const AccountSettings: React.FC<AccountSettingsProps> = ({ role, reminderConfig,
             </div>
             <button disabled={loading} className="w-full py-5 bg-slate-900 text-white font-black uppercase tracking-widest rounded-2xl text-[10px] shadow-xl hover:bg-black transition-all disabled:opacity-50">Simpan Profil</button>
           </form>
+
+          <div className="pt-6 border-t border-slate-50">
+             <TimezoneSelector 
+               value={reminderConfig.timezone || 'Asia/Jakarta'} 
+               onChange={(val: string) => updateReminderValue('timezone', val)} 
+             />
+          </div>
         </section>
 
         {/* Intelligence Reminders Protocol */}
@@ -142,10 +149,6 @@ const AccountSettings: React.FC<AccountSettingsProps> = ({ role, reminderConfig,
            </div>
 
            <div className="space-y-6">
-              <TimezoneSelector 
-                value={reminderConfig.timezone || 'Asia/Jakarta'} 
-                onChange={(val: string) => updateReminderValue('timezone', val)} 
-              />
               <ReminderTimeSelector 
                 label="Check-in Aktivitas Kerja" 
                 sub="Ingatkan jika log harian kosong setelah jam ini."
@@ -309,7 +312,7 @@ const TimezoneSelector = ({ value, onChange }: { value: string, onChange: (val: 
     <div className="flex items-center justify-between p-5 rounded-3xl bg-slate-50 border border-slate-100 group hover:border-indigo-200 transition-all">
        <div className="flex-1">
           <p className="text-xs font-black uppercase text-slate-700 tracking-tight">Zona Waktu Lokal</p>
-          <p className="text-[9px] font-bold text-slate-400 mt-0.5 uppercase tracking-widest leading-none">Menyesuaikan jadwal protokol pengingat harian.</p>
+          <p className="text-[9px] font-bold text-slate-400 mt-0.5 uppercase tracking-widest leading-none">Pengaturan waktu untuk akun Anda.</p>
        </div>
        <div className="ml-4 shrink-0">
           <select 

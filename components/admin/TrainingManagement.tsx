@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { SystemTraining } from '../../types';
-import { getSystemTrainings, saveSystemTraining, deleteSystemTraining, uploadImage } from '../../services/firebase';
+import { getSystemTrainings, saveSystemTraining, deleteSystemTraining, uploadImage, uploadImageSimple } from '../../services/firebase';
 
 interface TrainingManagementProps {
   onToast: (msg: string, type: 'success' | 'error') => void;
@@ -14,6 +14,7 @@ const TrainingManagement: React.FC<TrainingManagementProps> = ({ onToast }) => {
   const [formData, setFormData] = useState<Partial<SystemTraining>>({});
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [statusText, setStatusText] = useState('');
 
   useEffect(() => {
     fetchTrainings();
@@ -121,28 +122,88 @@ const TrainingManagement: React.FC<TrainingManagementProps> = ({ onToast }) => {
     });
   };
 
+  const blobToBase64 = (blob: Blob): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  };
+
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setUploading(true);
     setUploadProgress(0);
+    setStatusText('Compressing image...');
+
     try {
-        const compressedBlob = await compressImage(file);
+        let blobToUpload: Blob = file;
+        try {
+            // Add timeout for compression (5 seconds)
+            const compressionPromise = compressImage(file);
+            const timeoutPromise = new Promise<Blob>((_, reject) => 
+                setTimeout(() => reject(new Error("Compression timed out")), 5000)
+            );
+            
+            blobToUpload = await Promise.race([compressionPromise, timeoutPromise]);
+        } catch (compressError) {
+            console.warn('Compression failed or timed out, uploading original file', compressError);
+            // Fallback to original file
+            blobToUpload = file;
+        }
+
+        setStatusText('Starting upload...');
         const path = `trainings/${Date.now()}_${file.name}`;
         
-        const url = await uploadImage(compressedBlob, path, (progress) => {
-            setUploadProgress(progress);
-        });
+        let url = '';
+        try {
+            // Try 1: Resumable Upload
+            url = await uploadImage(blobToUpload, path, (progress) => {
+                setUploadProgress(progress);
+                setStatusText(`Uploading... ${Math.round(progress)}%`);
+            });
+        } catch (uploadError) {
+            console.warn('Resumable upload failed, trying simple upload...', uploadError);
+            setStatusText('Retrying with simple upload (please wait)...');
+            
+            try {
+                // Try 2: Simple Upload
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                url = await uploadImageSimple(blobToUpload, path);
+            } catch (simpleError) {
+                console.warn('Simple upload failed, falling back to Base64...', simpleError);
+                setStatusText('Upload failed. Using offline mode (Base64)...');
+                
+                // Try 3: Base64 Fallback
+                try {
+                    // Check size limit for Firestore (approx 1MB)
+                    if (blobToUpload.size > 800000) {
+                         // If too big, try to compress again very aggressively or fail
+                         throw new Error("Image too large for offline mode. Please use a smaller image (< 800KB).");
+                    }
+                    
+                    url = await blobToBase64(blobToUpload);
+                    onToast('Network upload failed. Saved as offline image (Base64).', 'success');
+                } catch (base64Error) {
+                    throw new Error("All upload methods failed. Please check your connection or use a smaller image.");
+                }
+            }
+        }
         
         setFormData({ ...formData, image: url });
-        onToast('Image uploaded successfully', 'success');
+        if (!url.startsWith('data:')) {
+            onToast('Image uploaded successfully', 'success');
+        }
     } catch (error) {
         console.error('Upload error:', error);
-        onToast('Failed to upload image', 'error');
+        onToast(`Failed to upload image: ${(error as Error).message}`, 'error');
     } finally {
         setUploading(false);
         setUploadProgress(0);
+        setStatusText('');
     }
   };
 
@@ -313,7 +374,7 @@ const TrainingManagement: React.FC<TrainingManagementProps> = ({ onToast }) => {
                                 <div className="w-full bg-gray-200 rounded-full h-2.5">
                                     <div className="bg-indigo-600 h-2.5 rounded-full" style={{ width: `${uploadProgress}%` }}></div>
                                 </div>
-                                <p className="text-xs text-indigo-600 mt-1">Uploading... {Math.round(uploadProgress)}%</p>
+                                <p className="text-xs text-indigo-600 mt-1">{statusText}</p>
                             </div>
                         )}
                     </div>

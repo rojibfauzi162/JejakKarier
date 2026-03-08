@@ -661,4 +661,5 @@ export interface AppData {
   emailCampaigns?: EmailCampaign[];
   emailLogs?: EmailLog[];
   emailSettings?: EmailSettings;
+  onboardingCompleted?: boolean;
 }

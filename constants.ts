@@ -76,7 +76,8 @@ export const INITIAL_DATA: AppData = Object.freeze({
     todoReminderTime: "20:00",
     timezone: "Asia/Jakarta"
   },
-  completedAiMilestones: []
+  completedAiMilestones: [],
+  onboardingCompleted: false
 });
 
 export const DEFAULT_PRODUCTS: SubscriptionProduct[] = [

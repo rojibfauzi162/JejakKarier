@@ -134,14 +134,27 @@ const InterviewIntelligenceScript: React.FC<InterviewIntelligenceScriptProps> = 
     if (field === 'dynamicSalaryMin') setDynamicSalaryMin(value);
     if (field === 'dynamicSalaryMax') setDynamicSalaryMax(value);
     if (field === 'title') setScriptTitle(value);
+  };
 
-    const updatedScript = { ...activeScript, [field]: value };
+  const handleSave = () => {
+    if (!activeScript) return;
+
+    const updatedScript = { 
+      ...activeScript, 
+      title: scriptTitle,
+      dynamicRole,
+      dynamicIndustry,
+      dynamicCompany,
+      dynamicSalaryMin,
+      dynamicSalaryMax
+    };
     setActiveScript(updatedScript);
     
     const updatedScripts = (data.interviewScripts || []).map(s => 
       s.id === activeScript.id ? updatedScript : s
     );
     onUpdateScripts(updatedScripts);
+    alert("Perubahan berhasil disimpan!");
   };
 
   const handleExportPDF = () => {
@@ -479,6 +492,14 @@ const InterviewIntelligenceScript: React.FC<InterviewIntelligenceScriptProps> = 
                               className="w-full px-4 py-3 bg-slate-50 rounded-xl border-none font-bold text-sm focus:ring-2 focus:ring-indigo-500 transition-all"
                             />
                          </div>
+                      </div>
+                      <div className="flex justify-end mt-6 pt-6 border-t border-slate-100">
+                        <button 
+                          onClick={handleSave}
+                          className="px-6 py-3 bg-indigo-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 active:scale-95 flex items-center gap-2"
+                        >
+                          <CheckCircle2 className="w-4 h-4" /> Simpan Perubahan
+                        </button>
                       </div>
                    </div>
                 </div>
