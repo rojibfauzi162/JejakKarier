@@ -53,7 +53,7 @@ const ProductMatrix: React.FC<ProductMatrixProps> = ({ products, setEditingProdu
                            ) : (
                               <span className="px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[8px] font-black uppercase rounded border border-emerald-100">Live</span>
                            )}
-                           {p.showOnLanding && (
+                           {p.showOnLanding !== false && (
                               <span className="px-2 py-0.5 bg-blue-50 text-blue-600 text-[8px] font-black uppercase rounded border border-blue-100">Public</span>
                            )}
                         </div>

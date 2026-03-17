@@ -224,10 +224,10 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
               </div>
               {error && <div className="p-4 bg-rose-50 text-rose-600 text-[10px] font-bold rounded-2xl border border-rose-100 uppercase">⚠️ {error}</div>}
               <form onSubmit={handleAuth} className="space-y-5">
-                {!isLogin && <input className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-sm" placeholder="Nama Lengkap" value={name} onChange={e => setName(e.target.value)} required />}
-                {!isLogin && <input type="tel" className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-sm" placeholder="WhatsApp (08...)" value={phone} onChange={e => setPhone(e.target.value)} required />}
-                <input className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-sm" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required type="email" />
-                <input className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-sm" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} required type="password" />
+                {!isLogin && <input className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-sm" placeholder="Nama Lengkap" value={name || ''} onChange={e => setName(e.target.value)} required />}
+                {!isLogin && <input type="tel" className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-sm" placeholder="WhatsApp (08...)" value={phone || ''} onChange={e => setPhone(e.target.value)} required />}
+                <input className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-sm" placeholder="Email" value={email || ''} onChange={e => setEmail(e.target.value)} required type="email" />
+                <input className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-sm" placeholder="Password" value={password || ''} onChange={e => setPassword(e.target.value)} required type="password" />
                 <button disabled={loading} className="w-full py-5 bg-slate-900 text-white font-black rounded-2xl shadow-xl">{loading ? 'Processing...' : isLogin ? 'Masuk Sekarang' : 'Daftar Akun'}</button>
               </form>
               <button onClick={async () => { setLoading(true); try { await signInWithGoogle(); } catch(e){} finally { setLoading(false); } }} className="w-full py-4 border-2 border-slate-100 rounded-2xl text-[10px] font-black uppercase flex items-center justify-center gap-3 hover:bg-slate-50 transition-all"><img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-4 h-4" alt="Google" /> Daftar via Google</button>

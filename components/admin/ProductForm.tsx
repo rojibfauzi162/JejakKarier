@@ -97,11 +97,11 @@ const ProductForm = ({ initialData, onCancel, onSubmit, onDelete }: any) => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
             <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Nama Paket Langganan</label>
-            <input className="w-full px-6 py-4 rounded-2xl border border-slate-200 bg-slate-50 font-bold text-sm outline-none focus:border-indigo-500 transition-all" value={form.name} onChange={e => setForm({...form, name: e.target.value})} placeholder="Misal: Elite Pro Yearly" required />
+            <input className="w-full px-6 py-4 rounded-2xl border border-slate-200 bg-slate-50 font-bold text-sm outline-none focus:border-indigo-500 transition-all" value={form.name || ''} onChange={e => setForm({...form, name: e.target.value})} placeholder="Misal: Elite Pro Yearly" required />
           </div>
           <div className="space-y-2">
             <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Kategori Tier</label>
-            <select className="w-full px-6 py-4 rounded-2xl border border-slate-200 bg-white font-bold text-sm outline-none cursor-pointer" value={form.tier} onChange={e => setForm({...form, tier: e.target.value as SubscriptionPlan})}>
+            <select className="w-full px-6 py-4 rounded-2xl border border-slate-200 bg-white font-bold text-sm outline-none cursor-pointer" value={form.tier || ''} onChange={e => setForm({...form, tier: e.target.value as SubscriptionPlan})}>
               {Object.values(SubscriptionPlan).map(t => <option key={t} value={t}>{t}</option>)}
             </select>
           </div>
@@ -126,7 +126,7 @@ const ProductForm = ({ initialData, onCancel, onSubmit, onDelete }: any) => {
           </div>
           <div className="space-y-2">
             <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Durasi Akses (Hari)</label>
-            <input type="number" className="w-full px-6 py-4 rounded-2xl border border-slate-200 bg-slate-50 font-bold text-sm outline-none" value={form.durationDays} onChange={e => setForm({...form, durationDays: Number(e.target.value)})} required />
+            <input type="number" className="w-full px-6 py-4 rounded-2xl border border-slate-200 bg-slate-50 font-bold text-sm outline-none" value={form.durationDays || ''} onChange={e => setForm({...form, durationDays: Number(e.target.value)})} required />
           </div>
         </div>
 

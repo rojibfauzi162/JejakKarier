@@ -51,7 +51,7 @@ const Reviews: React.FC<ReviewsProps> = ({ reviews, onAdd, onDelete }) => {
               <label className="text-xs font-bold text-slate-400 uppercase">Month</label>
               <select 
                 className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none bg-white"
-                value={formData.month}
+                value={formData.month || ''}
                 onChange={e => setFormData({ ...formData, month: e.target.value })}
               >
                 {MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
@@ -62,16 +62,16 @@ const Reviews: React.FC<ReviewsProps> = ({ reviews, onAdd, onDelete }) => {
               <input 
                 type="number"
                 className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none"
-                value={formData.year}
+                value={formData.year || ''}
                 onChange={e => setFormData({ ...formData, year: e.target.value })}
               />
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <ReviewField label="What went well?" value={formData.positives} onChange={v => setFormData({ ...formData, positives: v })} />
-            <ReviewField label="What to improve?" value={formData.improvements} onChange={v => setFormData({ ...formData, improvements: v })} />
-            <ReviewField label="Key obstacles" value={formData.obstacles} onChange={v => setFormData({ ...formData, obstacles: v })} />
-            <ReviewField label="Next month plan" value={formData.nextMonthPlan} onChange={v => setFormData({ ...formData, nextMonthPlan: v })} />
+            <ReviewField label="What went well?" value={formData.positives || ''} onChange={v => setFormData({ ...formData, positives: v })} />
+            <ReviewField label="What to improve?" value={formData.improvements || ''} onChange={v => setFormData({ ...formData, improvements: v })} />
+            <ReviewField label="Key obstacles" value={formData.obstacles || ''} onChange={v => setFormData({ ...formData, obstacles: v })} />
+            <ReviewField label="Next month plan" value={formData.nextMonthPlan || ''} onChange={v => setFormData({ ...formData, nextMonthPlan: v })} />
           </div>
           <button 
             disabled={isSummarizing}
@@ -120,7 +120,7 @@ const ReviewField: React.FC<{ label: string; value: string; onChange: (v: string
     <textarea 
       rows={3}
       className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none"
-      value={value}
+      value={value || ''}
       onChange={e => onChange(e.target.value)}
     />
   </div>

@@ -40,7 +40,7 @@ const AiArchitecture: React.FC<AiArchitectureProps> = ({
                <input 
                 type="password" 
                 className="w-full px-6 py-5 bg-slate-50 border border-slate-200 rounded-[1.75rem] outline-none font-bold text-xs focus:border-indigo-400 transition-all" 
-                value={aiConfig.openRouterKey}
+                value={aiConfig.openRouterKey || ''}
                 onChange={e => setAiConfigState({...aiConfig, openRouterKey: e.target.value})}
                 placeholder="sk-or-v1-..."
                />
@@ -60,7 +60,7 @@ const AiArchitecture: React.FC<AiArchitectureProps> = ({
                   {isModelDropdownOpen && (
                     <div className="absolute top-[calc(100%+8px)] left-0 right-0 bg-white border border-slate-100 rounded-3xl shadow-2xl z-[1000] overflow-hidden max-h-[300px] overflow-y-auto">
                       <div className="p-4 border-b border-slate-50 sticky top-0 bg-white z-10">
-                         <input placeholder="Cari model..." className="w-full px-4 py-2 border rounded-xl text-xs font-bold" value={modelSearchTerm} onChange={e => setModelSearchTerm(e.target.value)} />
+                         <input placeholder="Cari model..." className="w-full px-4 py-2 border rounded-xl text-xs font-bold" value={modelSearchTerm || ''} onChange={e => setModelSearchTerm(e.target.value)} />
                       </div>
                       {filteredOpenRouterModels.map(m => (
                         <div key={m.id} onClick={() => handleModelSelect(m)} className="px-6 py-4 hover:bg-indigo-50 cursor-pointer border-b border-slate-50">
@@ -77,7 +77,7 @@ const AiArchitecture: React.FC<AiArchitectureProps> = ({
                   <input 
                     type="number"
                     className="w-full px-6 py-5 bg-slate-50 border border-slate-200 rounded-[1.75rem] outline-none font-black text-sm text-indigo-700 shadow-inner" 
-                    value={aiConfig.maxTokens}
+                    value={aiConfig.maxTokens || ''}
                     onChange={e => setAiConfigState({...aiConfig, maxTokens: Math.min(Number(e.target.value) || 0, 8192)})}
                   />
                </div>

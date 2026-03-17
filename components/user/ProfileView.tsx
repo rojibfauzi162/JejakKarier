@@ -100,7 +100,50 @@ const ProfileView: React.FC<ProfileViewProps> = ({
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
+    if (!file) return;
+
+    if (file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          
+          const MAX_WIDTH = 800;
+          const MAX_HEIGHT = 800;
+          
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0, width, height);
+          
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+          
+          if (dataUrl.length > 1024 * 1024 * 1.3) {
+             alert('Ukuran foto terlalu besar. Silakan gunakan foto dengan resolusi lebih kecil.');
+             return;
+          }
+          
+          setFormData(prev => ({ ...prev, photoUrl: dataUrl }));
+        };
+        img.src = event.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+    } else {
       const reader = new FileReader();
       reader.onloadend = () => {
         setFormData(prev => ({ ...prev, photoUrl: reader.result as string }));
@@ -207,11 +250,11 @@ const ProfileView: React.FC<ProfileViewProps> = ({
 
             <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
               <div className="md:col-span-2">
-                <InputGroup label="Nama Lengkap" value={formData.name} onChange={v => setFormData({ ...formData, name: v })} placeholder="e.g. Alex Johnson" />
+                <InputGroup label="Nama Lengkap" value={formData.name || ''} onChange={v => setFormData({ ...formData, name: v })} placeholder="e.g. Alex Johnson" />
               </div>
               
-              <InputGroup label="Tempat Lahir" value={formData.birthPlace} onChange={v => setFormData({ ...formData, birthPlace: v })} placeholder="e.g. Jakarta" />
-              <InputGroup label="Tanggal Lahir" type="date" value={formData.birthDate} onChange={v => setFormData({ ...formData, birthDate: v })} />
+              <InputGroup label="Tempat Lahir" value={formData.birthPlace || ''} onChange={v => setFormData({ ...formData, birthPlace: v })} placeholder="e.g. Jakarta" />
+              <InputGroup label="Tanggal Lahir" type="date" value={formData.birthDate || ''} onChange={v => setFormData({ ...formData, birthDate: v })} />
               
               <div className="space-y-2">
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Usia (Otomatis)</label>
@@ -219,11 +262,11 @@ const ProfileView: React.FC<ProfileViewProps> = ({
                   {calculateAge(formData.birthDate)}
                 </div>
               </div>
-              <InputGroup label="Status" value={formData.maritalStatus} onChange={v => setFormData({ ...formData, maritalStatus: v })} placeholder="e.g. Lajang / Menikah" />
+              <InputGroup label="Status" value={formData.maritalStatus || ''} onChange={v => setFormData({ ...formData, maritalStatus: v })} placeholder="e.g. Lajang / Menikah" />
               
-              <InputGroup label="Email" type="email" value={formData.email} onChange={v => setFormData({ ...formData, email: v })} placeholder="e.g. alex@mail.com" />
-              <InputGroup label="Nomor Handphone" value={formData.phone} onChange={v => setFormData({ ...formData, phone: v })} placeholder="e.g. 08123456789" />
-              <InputGroup label="Domisili" value={formData.domicile} onChange={v => setFormData({ ...formData, domicile: v })} placeholder="e.g. Jakarta Selatan" />
+              <InputGroup label="Email" type="email" value={formData.email || ''} onChange={v => setFormData({ ...formData, email: v })} placeholder="e.g. alex@mail.com" />
+              <InputGroup label="Nomor Handphone" value={formData.phone || ''} onChange={v => setFormData({ ...formData, phone: v })} placeholder="e.g. 08123456789" />
+              <InputGroup label="Domisili" value={formData.domicile || ''} onChange={v => setFormData({ ...formData, domicile: v })} placeholder="e.g. Jakarta Selatan" />
               
               <div className="space-y-2">
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Kategori Jabatan</label>
@@ -237,8 +280,8 @@ const ProfileView: React.FC<ProfileViewProps> = ({
                 </select>
               </div>
 
-              <InputGroup label="Perusahaan / Instansi Sekarang" value={formData.currentCompany} onChange={v => setFormData({ ...formData, currentCompany: v })} placeholder="e.g. Tax Solutions Global" />
-              <InputGroup label="Jabatan Sekarang" value={formData.currentPosition} onChange={v => setFormData({ ...formData, currentPosition: v })} placeholder="e.g. Tax Associate" />
+              <InputGroup label="Perusahaan / Instansi Sekarang" value={formData.currentCompany || ''} onChange={v => setFormData({ ...formData, currentCompany: v })} placeholder="e.g. Tax Solutions Global" />
+              <InputGroup label="Jabatan Sekarang" value={formData.currentPosition || ''} onChange={v => setFormData({ ...formData, currentPosition: v })} placeholder="e.g. Tax Associate" />
               
               <div className="md:col-span-2 space-y-3">
                 <div className="flex justify-between items-end px-1">
@@ -285,19 +328,19 @@ const ProfileView: React.FC<ProfileViewProps> = ({
                     <input 
                       placeholder="Posisi" 
                       className="w-full px-4 py-2 rounded-lg border border-slate-200 outline-none"
-                      value={work.position} 
+                      value={work.position || ''} 
                       onChange={e => onUpdateWork({ ...work, position: e.target.value })}
                     />
                     <input 
                       placeholder="Perusahaan" 
                       className="w-full px-4 py-2 rounded-lg border border-slate-200 outline-none"
-                      value={work.company} 
+                      value={work.company || ''} 
                       onChange={e => onUpdateWork({ ...work, company: e.target.value })}
                     />
                     <input 
                       placeholder="Durasi (e.g. 2020 - Sekarang)" 
                       className="w-full px-4 py-2 rounded-lg border border-slate-200 outline-none"
-                      value={work.duration} 
+                      value={work.duration || ''} 
                       onChange={e => onUpdateWork({ ...work, duration: e.target.value })}
                     />
                   </div>
@@ -388,13 +431,13 @@ const ProfileView: React.FC<ProfileViewProps> = ({
                     <input 
                       placeholder="Gelar / Program Studi" 
                       className="w-full px-4 py-2 rounded-lg border border-slate-200 outline-none"
-                      value={edu.degree} 
+                      value={edu.degree || ''} 
                       onChange={e => onUpdateEducation({ ...edu, degree: e.target.value })}
                     />
                     <input 
                       placeholder="Institusi" 
                       className="w-full px-4 py-2 rounded-lg border border-slate-200 outline-none"
-                      value={edu.institution} 
+                      value={edu.institution || ''} 
                       onChange={e => onUpdateEducation({ ...edu, institution: e.target.value })}
                     />
                     
@@ -470,7 +513,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({
               <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block ml-1">Target Jangka Pendek (1-2 thn)</label>
               <input 
                 className="w-full px-5 py-4 rounded-2xl border border-white/10 focus:ring-4 focus:ring-blue-500/20 outline-none bg-white/5 transition-all text-white font-medium"
-                value={formData.shortTermTarget}
+                value={formData.shortTermTarget || ''}
                 onChange={e => setFormData({ ...formData, shortTermTarget: e.target.value })}
               />
             </div>
@@ -478,7 +521,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({
               <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block ml-1">Target Jangka Panjang (5+ thn)</label>
               <input 
                 className="w-full px-5 py-4 rounded-2xl border border-white/10 focus:ring-4 focus:ring-blue-500/20 outline-none bg-white/5 transition-all text-white font-medium"
-                value={formData.longTermTarget}
+                value={formData.longTermTarget || ''}
                 onChange={e => setFormData({ ...formData, longTermTarget: e.target.value })}
               />
             </div>

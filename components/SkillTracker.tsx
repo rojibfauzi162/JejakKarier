@@ -1610,7 +1610,7 @@ const InputGroup: React.FC<{ label: string, value: string | number, onChange: (v
       type={type} 
       placeholder={placeholder}
       className="w-full px-5 py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold focus:ring-4 focus:ring-blue-500/5 transition-all text-slate-700 text-xs" 
-      value={value} 
+      value={value || ''} 
       onChange={e => onChange(e.target.value)} 
     />
   </div>
@@ -1621,7 +1621,7 @@ const SelectGroup: React.FC<{ label: string, value: any, onChange: (v: string) =
     {label && <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{label}</label>}
     <select 
       className="w-full px-5 py-4 rounded-2xl border border-slate-200 outline-none bg-white font-bold cursor-pointer hover:bg-slate-50 transition-colors text-slate-700 text-xs" 
-      value={value} 
+      value={value || ''} 
       onChange={e => onChange(e.target.value)} 
     >
       {options.map(o => <option key={o} value={o}>{o}</option>)}

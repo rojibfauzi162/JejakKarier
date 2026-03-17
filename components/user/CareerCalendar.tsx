@@ -426,31 +426,31 @@ const CareerCalendar: React.FC<CareerCalendarProps> = ({ data, onAddEvent, onDel
             <form onSubmit={handleAddEvent} className="space-y-6">
               <div className="space-y-2">
                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Judul Agenda</label>
-                 <input className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-sm focus:border-indigo-400 transition-all shadow-inner" value={form.title} onChange={e => setForm({...form, title: e.target.value})} placeholder="Misal: Interview PT ABC" required />
+                 <input className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-sm focus:border-indigo-400 transition-all shadow-inner" value={form.title || ''} onChange={e => setForm({...form, title: e.target.value})} placeholder="Misal: Interview PT ABC" required />
               </div>
               <div className="grid grid-cols-2 gap-4">
                  <div className="space-y-2">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Kategori</label>
-                    <select className="w-full px-6 py-4 rounded-2xl bg-white border border-slate-200 outline-none font-bold text-sm cursor-pointer" value={form.type} onChange={e => setForm({...form, type: e.target.value as EventType})}>{Object.values(EventType).map(t => <option key={t} value={t}>{t}</option>)}</select>
+                    <select className="w-full px-6 py-4 rounded-2xl bg-white border border-slate-200 outline-none font-bold text-sm cursor-pointer" value={form.type || ''} onChange={e => setForm({...form, type: e.target.value as EventType})}>{Object.values(EventType).map(t => <option key={t} value={t}>{t}</option>)}</select>
                  </div>
                  <div className="space-y-2">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Prioritas</label>
-                    <select className="w-full px-6 py-4 rounded-2xl bg-white border border-slate-200 outline-none font-bold text-sm cursor-pointer" value={form.importance} onChange={e => setForm({...form, importance: e.target.value as ImportanceLevel})}>{Object.values(ImportanceLevel).map(i => <option key={i} value={i}>{i}</option>)}</select>
+                    <select className="w-full px-6 py-4 rounded-2xl bg-white border border-slate-200 outline-none font-bold text-sm cursor-pointer" value={form.importance || ''} onChange={e => setForm({...form, importance: e.target.value as ImportanceLevel})}>{Object.values(ImportanceLevel).map(i => <option key={i} value={i}>{i}</option>)}</select>
                  </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                  <div className="space-y-2">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Waktu</label>
-                    <input type="time" className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-sm" value={form.time} onChange={e => setForm({...form, time: e.target.value})} />
+                    <input type="time" className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-sm" value={form.time || ''} onChange={e => setForm({...form, time: e.target.value})} />
                  </div>
                  <div className="space-y-2">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Lokasi (Opsional)</label>
-                    <input className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-sm" value={form.location} onChange={e => setForm({...form, location: e.target.value})} placeholder="Online / Kantor" />
+                    <input className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-sm" value={form.location || ''} onChange={e => setForm({...form, location: e.target.value})} placeholder="Online / Kantor" />
                  </div>
               </div>
               <div className="space-y-2">
                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Catatan</label>
-                 <textarea rows={3} className="w-full px-6 py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold resize-none shadow-inner" value={form.notes} onChange={e => setForm({...form, notes: e.target.value})} placeholder="Detail agenda..." />
+                 <textarea rows={3} className="w-full px-6 py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold resize-none shadow-inner" value={form.notes || ''} onChange={e => setForm({...form, notes: e.target.value})} placeholder="Detail agenda..." />
               </div>
               <div className="flex gap-4 pt-4">
                 <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-5 bg-slate-100 text-slate-400 font-black rounded-3xl uppercase text-[11px] tracking-widest">Batal</button>

@@ -54,7 +54,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ users, searchQuery, set
             type="text" 
             placeholder="Cari user (nama/email)..." 
             className="w-full px-6 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-bold text-xs"
-            value={searchQuery}
+            value={searchQuery || ''}
             onChange={e => setSearchQuery(e.target.value)}
           />
        </div>

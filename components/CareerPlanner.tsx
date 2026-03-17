@@ -380,18 +380,18 @@ const CareerForm: React.FC<{ initialData: CareerPath | null, onSubmit: (data: Pa
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="md:col-span-2">
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block ml-1">Target Jabatan</label>
-          <input className="w-full px-5 py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold" value={formData.targetPosition} onChange={e => setFormData({ ...formData, targetPosition: e.target.value })} />
+          <input className="w-full px-5 py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold" value={formData.targetPosition || ''} onChange={e => setFormData({ ...formData, targetPosition: e.target.value })} />
         </div>
         <div>
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block ml-1">Jenis Karir</label>
-          <select className="w-full px-5 py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold" value={formData.type} onChange={e => setFormData({ ...formData, type: e.target.value as CareerType })}>
+          <select className="w-full px-5 py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold" value={formData.type || ''} onChange={e => setFormData({ ...formData, type: e.target.value as CareerType })}>
             <option value={CareerType.UTAMA}>Utama</option>
             <option value={CareerType.SAMPINGAN}>Sampingan</option>
           </select>
         </div>
         <div>
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block ml-1">Status Progress</label>
-          <select className="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-white font-bold text-sm cursor-pointer" value={formData.status} onChange={e => setFormData({ ...formData, status: e.target.value as CareerStatus })}>
+          <select className="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-white font-bold text-sm cursor-pointer" value={formData.status || ''} onChange={e => setFormData({ ...formData, status: e.target.value as CareerStatus })}>
             <option value={CareerStatus.NOT_STARTED}>Belum Mulai</option>
             <option value={CareerStatus.ON_PROGRESS}>On Progress</option>
             <option value={CareerStatus.ACHIEVED}>Tercapai</option>
@@ -399,21 +399,21 @@ const CareerForm: React.FC<{ initialData: CareerPath | null, onSubmit: (data: Pa
         </div>
         <div className="md:col-span-2">
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block ml-1">Required Skills (Comma separated)</label>
-          <input className="w-full px-5 py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold" value={skillsText} onChange={e => handleSkillsChange(e.target.value)} />
+          <input className="w-full px-5 py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold" value={skillsText || ''} onChange={e => handleSkillsChange(e.target.value)} />
         </div>
         <div>
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block ml-1">Target Tahun</label>
-          <input type="number" className="w-full px-5 py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold" value={formData.targetYear} onChange={e => setFormData({ ...formData, targetYear: parseInt(e.target.value) || 2025 })} />
+          <input type="number" className="w-full px-5 py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold" value={formData.targetYear || ''} onChange={e => setFormData({ ...formData, targetYear: parseInt(e.target.value) || 2025 })} />
         </div>
         <div>
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block ml-1">Level Skill (1-5)</label>
-          <input type="number" min="1" max="5" className="w-full px-5 py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold" value={formData.skillLevel} onChange={e => setFormData({ ...formData, skillLevel: parseInt(e.target.value) || 1 })} />
+          <input type="number" min="1" max="5" className="w-full px-5 py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold" value={formData.skillLevel || ''} onChange={e => setFormData({ ...formData, skillLevel: parseInt(e.target.value) || 1 })} />
         </div>
         <div className="md:col-span-2">
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block ml-1">Deadline Aksi (MMM YYYY)</label>
           <div className="grid grid-cols-2 gap-4">
              <input type="month" className="px-5 py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold" value={formData.actionDeadline || ''} onChange={e => setFormData({ ...formData, actionDeadline: e.target.value })} />
-             <textarea rows={1} placeholder="Langkah concreto..." className="px-5 py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold resize-none" value={formData.developmentPlan} onChange={e => setFormData({ ...formData, developmentPlan: e.target.value })} />
+             <textarea rows={1} placeholder="Langkah concreto..." className="px-5 py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold resize-none" value={formData.developmentPlan || ''} onChange={e => setFormData({ ...formData, developmentPlan: e.target.value })} />
           </div>
         </div>
       </div>

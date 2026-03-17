@@ -3,6 +3,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { SubscriptionProduct, LandingPageConfig, MayarConfig } from '../types';
 import { getLandingPageConfig, getMayarConfig } from '../services/firebase';
 import { trackingService } from '../services/trackingService';
+import SalesNotificationPopup from './common/SalesNotificationPopup';
 
 interface LandingPageProps {
   onStart: () => void;
@@ -35,7 +36,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
   const paidProducts = useMemo(() => {
     const list = products || [];
     return list
-      .filter(p => p.isActive !== false && p.showOnLanding === true) 
+      .filter(p => p.isActive !== false && p.showOnLanding !== false) 
       .sort((a, b) => a.price - b.price);
   }, [products]);
 
@@ -368,7 +369,11 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
           {paidProducts.length > 0 ? (
             paidProducts.map((p) => {
               const monthlyPrice = p.durationDays >= 30 ? Math.round(p.price / (p.durationDays / 30)) : null;
-              let badgeLabel = p.isHighlighted ? "Paling Hemat" : undefined;
+              
+              // Highlight logic: Only highlight the yearly package (duration >= 365)
+              const isYearly = p.durationDays >= 365;
+              const highlight = isYearly;
+              let badgeLabel = highlight ? "Paling Hemat" : undefined;
               
               return (
                 <PricingCard 
@@ -385,7 +390,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
                   features={p.allowedModules.map(m => m.replace('_', ' ').toUpperCase())}
                   cta="Daftar & Checkout"
                   onPay={() => handlePay(p)}
-                  highlight={p.isHighlighted} 
+                  highlight={highlight} 
                 />
               );
             })
@@ -515,6 +520,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
            </div>
         </div>
       )}
+      <SalesNotificationPopup />
     </div>
   );
 };

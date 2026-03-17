@@ -20,9 +20,10 @@ import FollowUpManager from './FollowUpManager';
 import TrackingSettings from './TrackingSettings';
 
 import EmailMarketing from './EmailMarketing';
+import SalesNotificationManager from './SalesNotificationManager';
 
 interface AdminPanelProps {
-  initialMode?: 'dashboard' | 'users' | 'products' | 'health' | 'ai' | 'admin_transactions' | 'admin_admins' | 'settings' | 'integrations' | 'duitku' | 'followup' | 'tracking' | 'email_marketing';
+  initialMode?: 'dashboard' | 'users' | 'products' | 'health' | 'ai' | 'admin_transactions' | 'admin_admins' | 'settings' | 'integrations' | 'duitku' | 'followup' | 'tracking' | 'email_marketing' | 'sales_popup';
   userRole?: UserRole;
 }
 
@@ -255,6 +256,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard', user
         />
       )}
       {initialMode === 'admin_admins' && <AdminManagement users={users} onUpdateMetadata={async (uid, fields) => { await updateAdminMetadata(uid, fields); fetchUsersAndConfig(true); }} />}
+      {initialMode === 'sales_popup' && <SalesNotificationManager />}
 
       {/* USER MANAGEMENT MODAL */}
       {isUserModalOpen && editingUser && (
@@ -273,13 +275,13 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard', user
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <label className="text-[9px] font-black uppercase text-slate-400 ml-1">Status Akun</label>
-                    <select className="w-full px-4 py-2.5 rounded-xl border text-xs font-bold" value={editingUser.status} onChange={e => setEditingUser({ ...editingUser, status: e.target.value as AccountStatus })}>
+                    <select className="w-full px-4 py-2.5 rounded-xl border text-xs font-bold" value={editingUser.status || ''} onChange={e => setEditingUser({ ...editingUser, status: e.target.value as AccountStatus })}>
                       {Object.values(AccountStatus).map(s => <option key={s} value={s}>{s}</option>)}
                     </select>
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-[9px] font-black uppercase text-slate-400 ml-1">Paket</label>
-                    <select className="w-full px-4 py-2.5 rounded-xl border text-xs font-bold" value={editingUser.plan} onChange={e => setEditingUser({ ...editingUser, plan: e.target.value as SubscriptionPlan })}>
+                    <select className="w-full px-4 py-2.5 rounded-xl border text-xs font-bold" value={editingUser.plan || ''} onChange={e => setEditingUser({ ...editingUser, plan: e.target.value as SubscriptionPlan })}>
                       {Object.values(SubscriptionPlan).map(p => <option key={p} value={p}>{p}</option>)}
                     </select>
                   </div>

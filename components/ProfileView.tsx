@@ -344,19 +344,19 @@ const ProfileView: React.FC<ProfileViewProps> = ({
                     <input 
                       placeholder="Posisi" 
                       className="w-full px-4 py-2 rounded-lg border border-slate-200 outline-none"
-                      value={work.position} 
+                      value={work.position || ''} 
                       onChange={e => onUpdateWork({ ...work, position: e.target.value })}
                     />
                     <input 
                       placeholder="Perusahaan" 
                       className="w-full px-4 py-2 rounded-lg border border-slate-200 outline-none"
-                      value={work.company} 
+                      value={work.company || ''} 
                       onChange={e => onUpdateWork({ ...work, company: e.target.value })}
                     />
                     <input 
                       placeholder="Durasi (e.g. 2020 - Sekarang)" 
                       className="w-full px-4 py-2 rounded-lg border border-slate-200 outline-none"
-                      value={work.duration} 
+                      value={work.duration || ''} 
                       onChange={e => onUpdateWork({ ...work, duration: e.target.value })}
                     />
                   </div>
@@ -379,7 +379,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({
                            <div className="w-1.5 h-1.5 rounded-full bg-indigo-200 mt-4 shrink-0"></div>
                            <input 
                             className="flex-1 bg-white border border-slate-100 rounded-xl px-4 py-2.5 text-sm font-medium outline-none focus:border-indigo-400"
-                            value={item}
+                            value={item || ''}
                             onChange={(e) => handleUpdateWorkDescItem(work, idx, e.target.value)}
                            />
                            <button 
@@ -456,13 +456,13 @@ const ProfileView: React.FC<ProfileViewProps> = ({
                     <input 
                       placeholder="Gelar / Program Studi" 
                       className="w-full px-4 py-2 rounded-lg border border-slate-200 outline-none"
-                      value={edu.degree} 
+                      value={edu.degree || ''} 
                       onChange={e => onUpdateEducation({ ...edu, degree: e.target.value })}
                     />
                     <input 
                       placeholder="Institusi" 
                       className="w-full px-4 py-2 rounded-lg border border-slate-200 outline-none"
-                      value={edu.institution} 
+                      value={edu.institution || ''} 
                       onChange={e => onUpdateEducation({ ...edu, institution: e.target.value })}
                     />
                     
@@ -478,14 +478,14 @@ const ProfileView: React.FC<ProfileViewProps> = ({
                         <input 
                           placeholder="Tahun Mulai/Lulus" 
                           className="w-full px-4 py-2 rounded-lg border border-slate-200 outline-none"
-                          value={startYearEdu} 
+                          value={startYearEdu || ''} 
                           onChange={e => handleEduYearChange(edu, e.target.value, endYearEdu, isRangeEdu)}
                         />
                         {isRangeEdu && (
                           <input 
                             placeholder="Tahun Berakhir" 
                             className="w-full px-4 py-2 rounded-lg border border-slate-200 outline-none animate-in slide-in-from-left-2"
-                            value={endYearEdu} 
+                            value={endYearEdu || ''} 
                             onChange={e => handleEduYearChange(edu, startYearEdu, e.target.value, true)}
                           />
                         )}
@@ -495,7 +495,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({
                   <textarea 
                     placeholder="Detail singkat (IPK, Fokus Studi, dll.)" 
                     className="w-full px-4 py-2 rounded-lg border border-slate-200 outline-none min-h-[80px]"
-                    value={edu.description} 
+                    value={edu.description || ''} 
                     onChange={e => onUpdateEducation({ ...edu, description: e.target.value })}
                   />
                   <div className="flex justify-end">
@@ -543,7 +543,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({
               <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block ml-1">Target Jangka Pendek (1-2 thn)</label>
               <input 
                 className="w-full px-5 py-4 rounded-2xl border border-white/10 focus:ring-4 focus:ring-blue-500/20 outline-none bg-white/5 transition-all text-white font-medium"
-                value={formData.shortTermTarget}
+                value={formData.shortTermTarget || ''}
                 onChange={e => setFormData({ ...formData, shortTermTarget: e.target.value })}
               />
             </div>
@@ -551,7 +551,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({
               <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block ml-1">Target Jangka Panjang (5+ thn)</label>
               <input 
                 className="w-full px-5 py-4 rounded-2xl border border-white/10 focus:ring-4 focus:ring-blue-500/20 outline-none bg-white/5 transition-all text-white font-medium"
-                value={formData.longTermTarget}
+                value={formData.longTermTarget || ''}
                 onChange={e => setFormData({ ...formData, longTermTarget: e.target.value })}
               />
             </div>

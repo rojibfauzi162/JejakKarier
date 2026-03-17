@@ -307,18 +307,18 @@ const AchievementTracker: React.FC<AchievementTrackerProps> = ({ achievements, p
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-1.5">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Judul Pencapaian</label>
-                <input className="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-slate-50 font-bold text-xs outline-none focus:border-indigo-400 transition-all" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} placeholder="Contoh: Optimasi Pelaporan Pajak Bulanan" required />
+                <input className="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-slate-50 font-bold text-xs outline-none focus:border-indigo-400 transition-all" value={formData.title || ''} onChange={e => setFormData({...formData, title: e.target.value})} placeholder="Contoh: Optimasi Pelaporan Pajak Bulanan" required />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Kategori</label>
-                  <select className="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-white font-bold text-xs outline-none cursor-pointer" value={formData.category} onChange={e => setFormData({...formData, category: e.target.value as AchievementCategory})}>
+                  <select className="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-white font-bold text-xs outline-none cursor-pointer" value={formData.category || ''} onChange={e => setFormData({...formData, category: e.target.value as AchievementCategory})}>
                     {Object.values(AchievementCategory).map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Lingkup</label>
-                  <select className="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-white font-bold text-xs outline-none cursor-pointer" value={formData.scope} onChange={e => setFormData({...formData, scope: e.target.value as any})}>
+                  <select className="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-white font-bold text-xs outline-none cursor-pointer" value={formData.scope || ''} onChange={e => setFormData({...formData, scope: e.target.value as any})}>
                     <option value="Perusahaan">Perusahaan</option>
                     <option value="Personal">Personal</option>
                   </select>
@@ -327,7 +327,7 @@ const AchievementTracker: React.FC<AchievementTrackerProps> = ({ achievements, p
               {formData.scope === 'Perusahaan' && (
                 <div className="space-y-1.5 animate-in slide-in-from-top-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Instansi / Perusahaan Terkait</label>
-                  <select className="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-white font-bold text-xs outline-none cursor-pointer" value={formData.companyName} onChange={e => setFormData({...formData, companyName: e.target.value})}>
+                  <select className="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-white font-bold text-xs outline-none cursor-pointer" value={formData.companyName || ''} onChange={e => setFormData({...formData, companyName: e.target.value})}>
                     {availableCompanies.length > 0 ? (
                       availableCompanies.map(c => <option key={c} value={c}>{c}</option>)
                     ) : (
@@ -345,15 +345,15 @@ const AchievementTracker: React.FC<AchievementTrackerProps> = ({ achievements, p
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <input type="month" className="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-white font-bold text-xs" value={startMonth} onChange={e => setStartMonth(e.target.value)} required />
+                  <input type="month" className="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-white font-bold text-xs" value={startMonth || ''} onChange={e => setStartMonth(e.target.value)} required />
                   {isRange && (
-                    <input type="month" className="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-white font-bold text-xs" value={endMonth} onChange={e => setEndMonth(e.target.value)} required={isRange} />
+                    <input type="month" className="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-white font-bold text-xs" value={endMonth || ''} onChange={e => setEndMonth(e.target.value)} required={isRange} />
                   )}
                 </div>
               </div>
               <div className="space-y-1.5">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Dampak Nyata (Impact)</label>
-                <textarea rows={3} className="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-slate-50 font-bold text-xs resize-none outline-none focus:border-indigo-400 transition-all" value={formData.impact} onChange={e => setFormData({...formData, impact: e.target.value})} placeholder="Jelaskan kontribusi nyata Anda, misal: 'Mengurangi waktu proses sebesar 30%...'" required />
+                <textarea rows={3} className="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-slate-50 font-bold text-xs resize-none outline-none focus:border-indigo-400 transition-all" value={formData.impact || ''} onChange={e => setFormData({...formData, impact: e.target.value})} placeholder="Jelaskan kontribusi nyata Anda, misal: 'Mengurangi waktu proses sebesar 30%...'" required />
               </div>
               <div className="flex gap-4 pt-4">
                 <button type="button" onClick={() => setIsFormOpen(false)} className="flex-1 py-4 bg-slate-50 text-slate-400 font-black rounded-2xl uppercase text-[10px] tracking-widest">Batal</button>

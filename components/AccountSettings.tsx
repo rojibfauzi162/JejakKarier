@@ -126,7 +126,7 @@ const AccountSettings: React.FC<AccountSettingsProps> = ({ role, reminderConfig,
             </div>
             <div className="space-y-1.5">
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nama Tampilan</label>
-              <input className="w-full px-5 py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold focus:ring-4 focus:ring-blue-500/5 transition-all text-xs" value={name} onChange={e => setName(e.target.value)} placeholder="Nama Lengkap..." />
+              <input className="w-full px-5 py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold focus:ring-4 focus:ring-blue-500/5 transition-all text-xs" value={name || ''} onChange={e => setName(e.target.value)} placeholder="Nama Lengkap..." />
             </div>
             <button disabled={loading} className="w-full py-5 bg-slate-900 text-white font-black uppercase tracking-widest rounded-2xl text-[10px] shadow-xl hover:bg-black transition-all disabled:opacity-50">Simpan Profil</button>
           </form>
@@ -192,7 +192,7 @@ const AccountSettings: React.FC<AccountSettingsProps> = ({ role, reminderConfig,
                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Privacy Policy</label>
                    <textarea 
                     className="w-full px-6 py-4 rounded-[2rem] border border-slate-200 outline-none bg-slate-50 font-medium text-xs leading-relaxed min-h-[300px] resize-none focus:border-indigo-400 transition-all"
-                    value={legalConfig.privacyPolicy}
+                    value={legalConfig.privacyPolicy || ''}
                     onChange={e => setLegalConfig({...legalConfig, privacyPolicy: e.target.value})}
                     placeholder="Masukkan konten kebijakan privasi..."
                    />
@@ -201,7 +201,7 @@ const AccountSettings: React.FC<AccountSettingsProps> = ({ role, reminderConfig,
                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Terms of Service</label>
                    <textarea 
                     className="w-full px-6 py-4 rounded-[2rem] border border-slate-200 outline-none bg-slate-50 font-medium text-xs leading-relaxed min-h-[300px] resize-none focus:border-indigo-400 transition-all"
-                    value={legalConfig.termsOfService}
+                    value={legalConfig.termsOfService || ''}
                     onChange={e => setLegalConfig({...legalConfig, termsOfService: e.target.value})}
                     placeholder="Masukkan konten syarat layanan..."
                    />
@@ -231,11 +231,11 @@ const AccountSettings: React.FC<AccountSettingsProps> = ({ role, reminderConfig,
           <form onSubmit={handleUpdatePassword} className="space-y-5">
             <div className="space-y-1.5">
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Password Baru</label>
-              <input type="password" className="w-full px-5 py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold focus:ring-4 focus:ring-blue-500/5 transition-all text-xs" value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="••••••••" />
+              <input type="password" className="w-full px-5 py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold focus:ring-4 focus:ring-blue-500/5 transition-all text-xs" value={newPassword || ''} onChange={e => setNewPassword(e.target.value)} placeholder="••••••••" />
             </div>
             <div className="space-y-1.5">
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Konfirmasi Password</label>
-              <input type="password" className="w-full px-5 py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold focus:ring-4 focus:ring-blue-500/5 transition-all text-xs" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} placeholder="••••••••" />
+              <input type="password" className="w-full px-5 py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold focus:ring-4 focus:ring-blue-500/5 transition-all text-xs" value={confirmPassword || ''} onChange={e => setConfirmPassword(e.target.value)} placeholder="••••••••" />
             </div>
             <button disabled={loading} className="w-full py-5 bg-rose-600 text-white font-black uppercase tracking-widest rounded-2xl text-[10px] shadow-xl shadow-rose-100 hover:bg-rose-700 transition-all disabled:opacity-50">Update Password</button>
           </form>
@@ -316,7 +316,7 @@ const TimezoneSelector = ({ value, onChange }: { value: string, onChange: (val: 
        </div>
        <div className="ml-4 shrink-0">
           <select 
-            value={value} 
+            value={value || ''} 
             onChange={e => onChange(e.target.value)}
             className="px-4 py-2 bg-white rounded-xl border border-slate-200 text-xs font-black text-indigo-600 shadow-sm focus:ring-4 focus:ring-indigo-500/5 outline-none cursor-pointer"
           >
@@ -336,7 +336,7 @@ const ReminderTimeSelector = ({ label, sub, timeValue, onTimeChange }: any) => (
      <div className="ml-4 shrink-0">
         <input 
           type="time" 
-          value={timeValue} 
+          value={timeValue || ''} 
           onChange={e => onTimeChange(e.target.value)}
           className="px-4 py-2 bg-white rounded-xl border border-slate-200 text-xs font-black text-indigo-600 shadow-sm focus:ring-4 focus:ring-indigo-500/5 outline-none cursor-pointer"
         />

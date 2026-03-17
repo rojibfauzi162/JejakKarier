@@ -145,7 +145,7 @@ const PerformanceReports: React.FC<PerformanceReportsProps> = ({ data }) => {
               <input 
                 type="date" 
                 className="w-full px-5 py-3 rounded-2xl border border-slate-200 bg-slate-50 text-xs font-bold outline-none focus:ring-4 focus:ring-blue-500/5 transition-all"
-                value={dateStart}
+                value={dateStart || ''}
                 onChange={e => setDateStart(e.target.value)}
               />
            </div>
@@ -154,7 +154,7 @@ const PerformanceReports: React.FC<PerformanceReportsProps> = ({ data }) => {
               <input 
                 type="date" 
                 className="w-full px-5 py-3 rounded-2xl border border-slate-200 bg-slate-50 text-xs font-bold outline-none focus:ring-4 focus:ring-blue-500/5 transition-all"
-                value={dateEnd}
+                value={dateEnd || ''}
                 onChange={e => setDateEnd(e.target.value)}
               />
            </div>

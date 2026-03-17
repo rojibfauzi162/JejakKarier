@@ -1,6 +1,7 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Certification, Skill, TrainingStatus, CareerEvent, EventType, ImportanceLevel } from '../../../types';
+import PdfViewer from '../../common/PdfViewer';
 
 interface CertificationProps {
   certs: Certification[];
@@ -16,6 +17,44 @@ const CertificationModule: React.FC<CertificationProps> = ({ certs, skills, onAd
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Certification | null>(null);
   
+  // Certificate Modal State
+  const [certModalOpen, setCertModalOpen] = useState(false);
+  const [selectedCert, setSelectedCert] = useState<{link: string, name: string} | null>(null);
+  const [pdfBlobUrl, setPdfBlobUrl] = useState<string | null>(null);
+
+  const openCertModal = (link: string, name: string) => {
+    setSelectedCert({ link, name });
+    
+    // Create Blob URL for PDF to bypass Chrome's data URI restrictions
+    if (link.startsWith('data:application/pdf')) {
+      try {
+        const byteString = atob(link.split(',')[1]);
+        const ab = new ArrayBuffer(byteString.length);
+        const ia = new Uint8Array(ab);
+        for (let i = 0; i < byteString.length; i++) {
+          ia[i] = byteString.charCodeAt(i);
+        }
+        const blob = new Blob([ab], { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+        setPdfBlobUrl(url);
+      } catch (e) {
+        console.error('Error creating PDF blob:', e);
+      }
+    } else {
+      setPdfBlobUrl(null);
+    }
+    
+    setCertModalOpen(true);
+  };
+
+  const closeCertModal = () => {
+    setCertModalOpen(false);
+    if (pdfBlobUrl) {
+      URL.revokeObjectURL(pdfBlobUrl);
+      setPdfBlobUrl(null);
+    }
+  };
+
   // Scheduling Modal State
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [schedulingItem, setSchedulingItem] = useState<Certification | null>(null);
@@ -126,6 +165,15 @@ const CertificationModule: React.FC<CertificationProps> = ({ certs, skills, onAd
                     </td>
                     <td className="px-8 py-6 text-right">
                       <div className="flex justify-end gap-2 items-center">
+                        {c.fileLink && (
+                          <button 
+                            onClick={() => openCertModal(c.fileLink!, c.name)}
+                            className="p-2.5 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-600 hover:text-white transition-all shadow-sm border border-blue-100"
+                            title="Lihat Sertifikat"
+                          >
+                            <i className="bi bi-eye-fill"></i>
+                          </button>
+                        )}
                         {isSchedulable && (
                           <button 
                             onClick={() => openScheduleModal(c)}
@@ -164,6 +212,11 @@ const CertificationModule: React.FC<CertificationProps> = ({ certs, skills, onAd
                         <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest mt-1">{c.relatedSkill}</p>
                      </div>
                      <div className="flex gap-2">
+                        {c.fileLink && (
+                          <button onClick={() => openCertModal(c.fileLink!, c.name)} className="w-8 h-8 flex items-center justify-center bg-white rounded-lg text-blue-600 shadow-sm border border-blue-50">
+                             <i className="bi bi-eye-fill"></i>
+                          </button>
+                        )}
                         {isSchedulable && (
                           <button onClick={() => openScheduleModal(c)} className="w-8 h-8 flex items-center justify-center bg-white rounded-lg text-indigo-600 shadow-sm border border-indigo-50">
                              <i className="bi bi-calendar-plus"></i>
@@ -205,6 +258,58 @@ const CertificationModule: React.FC<CertificationProps> = ({ certs, skills, onAd
         </div>
       </div>
 
+      {/* CERTIFICATE MODAL */}
+      {certModalOpen && selectedCert && (
+        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md flex items-center justify-center z-[3000] p-4">
+           <div className="bg-white w-full max-w-3xl rounded-[3rem] shadow-2xl p-8 animate-in zoom-in duration-300 flex flex-col max-h-[90vh]">
+              <div className="flex justify-between items-center mb-6">
+                 <div>
+                    <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">Pratinjau Sertifikat</h3>
+                    <p className="text-slate-500 text-xs font-bold mt-1">{selectedCert.name}</p>
+                 </div>
+                 <button onClick={closeCertModal} className="w-10 h-10 flex items-center justify-center bg-slate-100 text-slate-500 rounded-full hover:bg-slate-200 transition-all">
+                    <i className="bi bi-x-lg"></i>
+                 </button>
+              </div>
+
+              <div className="flex-1 overflow-auto bg-slate-50 rounded-2xl border border-slate-100 p-4 flex items-center justify-center min-h-[300px]">
+                 {selectedCert.link.startsWith('data:image/') ? (
+                   <img src={selectedCert.link} alt="Certificate" className="max-w-full max-h-[60vh] object-contain rounded-xl shadow-sm" />
+                 ) : selectedCert.link.startsWith('data:application/pdf') || selectedCert.link.endsWith('.pdf') ? (
+                   <div className="w-full h-full flex flex-col">
+                     <PdfViewer url={pdfBlobUrl || selectedCert.link} className="w-full h-full" />
+                   </div>
+                 ) : (
+                   <div className="text-center space-y-4">
+                      <div className="w-20 h-20 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto text-4xl">
+                         <i className="bi bi-link-45deg"></i>
+                      </div>
+                      <p className="text-sm font-bold text-slate-600">Sertifikat tersedia melalui link eksternal</p>
+                      <a href={selectedCert.link} target="_blank" rel="noreferrer" className="inline-block px-6 py-3 bg-blue-600 text-white font-black rounded-xl text-xs uppercase tracking-widest hover:bg-blue-700 transition-all shadow-md">
+                         Buka Link Sertifikat
+                      </a>
+                   </div>
+                 )}
+              </div>
+
+              <div className="mt-6 flex justify-end gap-4">
+                 <button onClick={closeCertModal} className="px-6 py-3 bg-slate-100 text-slate-500 font-black rounded-xl uppercase text-[10px] tracking-widest hover:bg-slate-200 transition-all">
+                    Tutup
+                 </button>
+                 {selectedCert.link.startsWith('data:') && (
+                   <a 
+                     href={selectedCert.link} 
+                     download={`sertifikat-${selectedCert.name.toLowerCase().replace(/\s+/g, '-')}.pdf`}
+                     className="px-6 py-3 bg-slate-900 text-white font-black rounded-xl uppercase text-[10px] tracking-widest hover:bg-black transition-all shadow-lg"
+                   >
+                     Download
+                   </a>
+                 )}
+              </div>
+           </div>
+        </div>
+      )}
+
       {/* SCHEDULE CONFIRMATION MODAL */}
       {isScheduleModalOpen && schedulingItem && (
         <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md flex items-center justify-center z-[2000] p-4">
@@ -222,11 +327,11 @@ const CertificationModule: React.FC<CertificationProps> = ({ certs, skills, onAd
                  <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Pilih Tanggal</label>
-                       <input type="date" className="w-full px-5 py-3 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs" value={scheduleDate} onChange={e => setScheduleDate(e.target.value)} />
+                       <input type="date" className="w-full px-5 py-3 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs" value={scheduleDate || ''} onChange={e => setScheduleDate(e.target.value)} />
                     </div>
                     <div className="space-y-1.5">
                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Pilih Jam</label>
-                       <input type="time" className="w-full px-5 py-3 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs" value={scheduleTime} onChange={e => setScheduleTime(e.target.value)} />
+                       <input type="time" className="w-full px-5 py-3 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs" value={scheduleTime || ''} onChange={e => setScheduleTime(e.target.value)} />
                     </div>
                  </div>
 
@@ -262,10 +367,81 @@ const CertificationModule: React.FC<CertificationProps> = ({ certs, skills, onAd
 
 const CertForm = ({ initialData, onSubmit, onCancel }: any) => {
   const [form, setForm] = useState(initialData || { name: '', issuer: '', date: new Date().toISOString().split('T')[0], status: TrainingStatus.COMPLETED, deadline: '', cost: 0, progress: 100, relatedSkill: '', certNumber: '', category: '', fileLink: '' });
+  const [pdfBlobUrl, setPdfBlobUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (form.fileLink?.startsWith('data:application/pdf')) {
+      try {
+        const byteString = atob(form.fileLink.split(',')[1]);
+        const ab = new ArrayBuffer(byteString.length);
+        const ia = new Uint8Array(ab);
+        for (let i = 0; i < byteString.length; i++) {
+          ia[i] = byteString.charCodeAt(i);
+        }
+        const blob = new Blob([ab], { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+        setPdfBlobUrl(url);
+        return () => URL.revokeObjectURL(url);
+      } catch (e) {
+        console.error('Error creating PDF blob:', e);
+      }
+    } else {
+      setPdfBlobUrl(null);
+    }
+  }, [form.fileLink]);
   
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
+    if (!file) return;
+
+    // Limit PDF size to 1MB to prevent Firebase payload errors
+    if (file.type === 'application/pdf' && file.size > 1024 * 1024) {
+      alert('Ukuran file PDF maksimal 1MB. Silakan kompres file Anda terlebih dahulu.');
+      return;
+    }
+
+    if (file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          
+          const MAX_WIDTH = 1200;
+          const MAX_HEIGHT = 1200;
+          
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0, width, height);
+          
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+          
+          if (dataUrl.length > 1024 * 1024 * 1.3) {
+             alert('Ukuran gambar terlalu besar. Silakan gunakan gambar dengan resolusi lebih kecil.');
+             return;
+          }
+          
+          setForm({...form, fileLink: dataUrl});
+        };
+        img.src = event.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+    } else {
       const reader = new FileReader();
       reader.onloadend = () => setForm({...form, fileLink: reader.result as string});
       reader.readAsDataURL(file);
@@ -276,53 +452,73 @@ const CertForm = ({ initialData, onSubmit, onCancel }: any) => {
     <div className="space-y-6">
       <div className="space-y-1.5">
         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nama Sertifikasi</label>
-        <input className="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-slate-50 font-bold text-xs" value={form.name} onChange={e => setForm({...form, name: e.target.value})} required />
+        <input className="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-slate-50 font-bold text-xs" value={form.name || ''} onChange={e => setForm({...form, name: e.target.value})} required />
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-1.5">
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Penerbit (Issuer)</label>
-          <input className="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-slate-50 font-bold text-xs" value={form.issuer} onChange={e => setForm({...form, issuer: e.target.value})} required />
+          <input className="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-slate-50 font-bold text-xs" value={form.issuer || ''} onChange={e => setForm({...form, issuer: e.target.value})} required />
         </div>
         <div className="space-y-1.5">
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nomor Sertifikat</label>
-          <input className="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-slate-50 font-bold text-xs" value={form.certNumber} onChange={e => setForm({...form, certNumber: e.target.value})} />
+          <input className="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-slate-50 font-bold text-xs" value={form.certNumber || ''} onChange={e => setForm({...form, certNumber: e.target.value})} />
         </div>
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-1.5">
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tanggal Terbit</label>
-          <input type="date" className="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-white font-bold text-xs" value={form.date} onChange={e => setForm({...form, date: e.target.value})} />
+          <input type="date" className="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-white font-bold text-xs" value={form.date || ''} onChange={e => setForm({...form, date: e.target.value})} />
         </div>
         <div className="space-y-1.5">
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Target Selesai (Deadline)</label>
-          <input type="date" className="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-white font-bold text-xs" value={form.deadline} onChange={e => setForm({...form, deadline: e.target.value})} />
+          <input type="date" className="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-white font-bold text-xs" value={form.deadline || ''} onChange={e => setForm({...form, deadline: e.target.value})} />
         </div>
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-1.5">
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Status</label>
-          <select className="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-white font-bold text-xs" value={form.status} onChange={e => setForm({...form, status: e.target.value})}>
+          <select className="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-white font-bold text-xs" value={form.status || ''} onChange={e => setForm({...form, status: e.target.value})}>
             {Object.values(TrainingStatus).map(s => <option key={s} value={s}>{s}</option>)}
           </select>
         </div>
         <div className="space-y-1.5">
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Biaya Ujian (IDR)</label>
-          <input type="number" className="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-slate-50 font-bold text-xs" value={form.cost} onChange={e => setForm({...form, cost: parseInt(e.target.value) || 0})} />
+          <input type="number" className="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-slate-50 font-bold text-xs" value={form.cost || ''} onChange={e => setForm({...form, cost: parseInt(e.target.value) || 0})} />
         </div>
       </div>
       <div className="space-y-1.5">
         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Keahlian Terkait</label>
-        <input className="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-slate-50 font-bold text-xs" value={form.relatedSkill} onChange={e => setForm({...form, relatedSkill: e.target.value})} placeholder="Misal: Akuntansi, Tax Planning, dsb" />
+        <input className="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-slate-50 font-bold text-xs" value={form.relatedSkill || ''} onChange={e => setForm({...form, relatedSkill: e.target.value})} placeholder="Misal: Akuntansi, Tax Planning, dsb" />
       </div>
       <div className="space-y-1.5">
         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Bukti Fisik (Link / Gambar)</label>
         <div className="flex gap-4">
-           <input className="flex-1 px-5 py-4 rounded-2xl border border-slate-200 bg-slate-50 font-bold text-xs" value={form.fileLink} onChange={e => setForm({...form, fileLink: e.target.value})} placeholder="https://..." />
-           <label className="px-6 py-4 bg-slate-900 text-white font-black rounded-2xl text-[10px] uppercase cursor-pointer hover:bg-black transition-all">
+           <input className="flex-1 px-5 py-4 rounded-2xl border border-slate-200 bg-slate-50 font-bold text-xs" value={form.fileLink?.startsWith('data:') ? 'File Uploaded' : (form.fileLink || '')} onChange={e => setForm({...form, fileLink: e.target.value})} placeholder="https://..." readOnly={form.fileLink?.startsWith('data:')} />
+           {form.fileLink?.startsWith('data:') && (
+             <button type="button" onClick={() => setForm({...form, fileLink: ''})} className="px-4 py-4 bg-rose-50 text-rose-600 font-black rounded-2xl text-[10px] uppercase hover:bg-rose-100 transition-all">
+               Hapus
+             </button>
+           )}
+           <label className="px-6 py-4 bg-slate-900 text-white font-black rounded-2xl text-[10px] uppercase cursor-pointer hover:bg-black transition-all flex items-center justify-center">
              Upload
              <input type="file" className="hidden" accept="image/*,.pdf" onChange={handleFileUpload} />
            </label>
         </div>
+        {form.fileLink && (
+           <div className="mt-3 p-4 border border-slate-100 rounded-2xl bg-slate-50/50">
+             {form.fileLink.startsWith('data:image/') ? (
+               <img src={form.fileLink} alt="Certificate Preview" className="max-h-40 rounded-xl border border-slate-200 mx-auto" />
+             ) : form.fileLink.startsWith('data:application/pdf') ? (
+               <div className="w-full h-60 flex flex-col">
+                 <PdfViewer url={pdfBlobUrl || form.fileLink} className="w-full h-full" />
+               </div>
+             ) : (
+               <a href={form.fileLink} target="_blank" rel="noreferrer" className="text-xs font-bold text-blue-600 hover:underline flex items-center gap-2">
+                 <i className="bi bi-box-arrow-up-right"></i> Lihat Sertifikat
+               </a>
+             )}
+           </div>
+        )}
       </div>
       <div className="flex gap-4 pt-4">
         <button type="button" onClick={onCancel} className="flex-1 py-4 bg-slate-100 text-slate-400 font-black rounded-2xl uppercase text-[10px]">Batal</button>

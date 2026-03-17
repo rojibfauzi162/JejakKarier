@@ -287,7 +287,7 @@ const AdminSettings: React.FC = () => {
             <div className="rounded-[2rem] overflow-hidden border border-slate-200 bg-slate-50 p-6">
               <textarea
                 className="w-full min-h-[300px] bg-transparent outline-none font-medium text-sm text-slate-700 leading-relaxed resize-y focus:ring-4 focus:ring-indigo-500/5 transition-all"
-                value={config.privacyPolicy}
+                value={config.privacyPolicy || ''}
                 onChange={(e) => setConfig({ ...config, privacyPolicy: e.target.value })}
                 placeholder="Tuliskan kebijakan privasi di sini..."
               />
@@ -299,7 +299,7 @@ const AdminSettings: React.FC = () => {
             <div className="rounded-[2rem] overflow-hidden border border-slate-200 bg-slate-50 p-6">
               <textarea
                 className="w-full min-h-[300px] bg-transparent outline-none font-medium text-sm text-slate-700 leading-relaxed resize-y focus:ring-4 focus:ring-indigo-500/5 transition-all"
-                value={config.termsOfService}
+                value={config.termsOfService || ''}
                 onChange={(e) => setConfig({ ...config, termsOfService: e.target.value })}
                 placeholder="Tuliskan syarat layanan di sini..."
               />

@@ -76,7 +76,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ stats, users }) => {
             <span className="text-[10px] font-black uppercase text-slate-400">Filter:</span>
             <select 
               className="bg-slate-50 border border-slate-100 rounded-xl px-4 py-2 text-[10px] font-black outline-none"
-              value={dateFilter}
+              value={dateFilter || ''}
               onChange={e => setDateFilter(e.target.value)}
             >
                <option value="all">Semua Waktu</option>
@@ -84,7 +84,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ stats, users }) => {
             </select>
             <select 
               className="bg-slate-50 border border-slate-100 rounded-xl px-4 py-2 text-[10px] font-black outline-none"
-              value={planFilter}
+              value={planFilter || ''}
               onChange={e => setPlanFilter(e.target.value)}
             >
                <option value="all">Semua Paket</option>

@@ -153,7 +153,7 @@ const AdminManagement: React.FC<AdminManagementProps> = ({ users, onUpdateMetada
             type="text"
             placeholder="Masukkan email user..."
             className="w-full pl-6 pr-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none font-bold text-sm"
-            value={searchEmail}
+            value={searchEmail || ''}
             onChange={e => setSearchEmail(e.target.value)}
           />
           {candidate && (

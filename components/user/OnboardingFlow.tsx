@@ -30,7 +30,20 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ data, onComplete }) => 
   const [aiInsight, setAiInsight] = useState<AiStrategy | null>(null);
 
   // Step 1: Profile & Career
-  const [profile, setProfile] = useState(formData.profile);
+  const [profile, setProfile] = useState({
+    ...formData.profile,
+    name: formData.profile?.name || '',
+    phone: formData.profile?.phone || '',
+    birthPlace: formData.profile?.birthPlace || '',
+    birthDate: formData.profile?.birthDate || '',
+    maritalStatus: formData.profile?.maritalStatus || '',
+    domicile: formData.profile?.domicile || '',
+    jobCategory: formData.profile?.jobCategory || '',
+    currentCompany: formData.profile?.currentCompany || '',
+    currentPosition: formData.profile?.currentPosition || '',
+    shortTermTarget: formData.profile?.shortTermTarget || '',
+    longTermTarget: formData.profile?.longTermTarget || ''
+  });
   const [workExp, setWorkExp] = useState<WorkExperience[]>(formData.workExperiences || []);
   const [edu, setEdu] = useState<Education[]>(formData.educations || []);
 
@@ -49,6 +62,35 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ data, onComplete }) => 
     reflection: '',
     isPlan: true
   });
+
+  useEffect(() => {
+    setFormData(data);
+    if (data.profile) {
+      setProfile({
+        ...data.profile,
+        name: data.profile.name || '',
+        phone: data.profile.phone || '',
+        birthPlace: data.profile.birthPlace || '',
+        birthDate: data.profile.birthDate || '',
+        maritalStatus: data.profile.maritalStatus || '',
+        domicile: data.profile.domicile || '',
+        jobCategory: data.profile.jobCategory || '',
+        currentCompany: data.profile.currentCompany || '',
+        currentPosition: data.profile.currentPosition || '',
+        shortTermTarget: data.profile.shortTermTarget || '',
+        longTermTarget: data.profile.longTermTarget || ''
+      });
+    }
+    if (data.workExperiences) {
+      setWorkExp(data.workExperiences);
+    }
+    if (data.educations) {
+      setEdu(data.educations);
+    }
+    if (data.skills) {
+      setSkills(data.skills);
+    }
+  }, [data]);
 
   const nextStep = () => setStep(s => s + 1);
   const prevStep = () => setStep(s => s - 1);
@@ -152,23 +194,18 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ data, onComplete }) => 
     setSkills([...skills, newSkill]);
   };
 
-  const handleSkip = async () => {
-    if (window.confirm('Apakah Anda yakin ingin melewati proses onboarding? Anda bisa melengkapi profil nanti.')) {
-      setLoading(true);
-      const finalData: AppData = {
-        ...formData,
-        onboardingCompleted: true
-      };
-      try {
-        if (finalData.uid) {
-          await saveUserData(finalData.uid, finalData);
-        }
-        onComplete(finalData);
-      } catch (error) {
-        console.error("Skip Error:", error);
-      } finally {
-        setLoading(false);
-      }
+  const handleSkip = () => {
+    const finalData: AppData = {
+      ...data,
+      onboardingCompleted: true
+    };
+    
+    // Call onComplete immediately to close the UI
+    onComplete(finalData);
+    
+    // Save to database in background
+    if (finalData.uid) {
+      saveUserData(finalData.uid, finalData);
     }
   };
 
@@ -191,8 +228,20 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ data, onComplete }) => 
 
   return (
     <div className="fixed inset-0 z-[1000] bg-slate-50 flex items-center justify-center p-4 overflow-y-auto">
-      <div className="max-w-4xl w-full bg-white rounded-[3rem] shadow-2xl border border-slate-100 overflow-hidden flex flex-col min-h-[80vh]">
+      <div className="max-w-4xl w-full bg-white rounded-[3rem] shadow-2xl border border-slate-100 overflow-hidden flex flex-col min-h-[80vh] relative">
         
+        {/* Close Button to Skip All */}
+        <button 
+          onClick={(e) => {
+            e.stopPropagation();
+            handleSkip();
+          }}
+          className="absolute top-6 right-6 w-12 h-12 bg-white border-2 border-slate-100 text-slate-400 rounded-full flex items-center justify-center hover:bg-slate-50 hover:text-slate-600 transition-all z-[1100] shadow-sm"
+          title="Lewati Onboarding"
+        >
+          <i className="bi bi-x-lg text-xl"></i>
+        </button>
+
         {/* Progress Bar */}
         <div className="h-2 bg-slate-100 flex relative">
           {[1, 2, 3, 4, 5, 6, 7].map(i => (
@@ -237,7 +286,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ data, onComplete }) => 
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Nama Lengkap</label>
                     <input 
                       type="text" 
-                      value={profile.name} 
+                      value={profile.name || ''} 
                       onChange={e => setProfile({...profile, name: e.target.value})}
                       className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-600 font-bold text-slate-900"
                       placeholder="Contoh: Budi Santoso"
@@ -247,7 +296,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ data, onComplete }) => 
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Nomor Handphone</label>
                     <input 
                       type="text" 
-                      value={profile.phone} 
+                      value={profile.phone || ''} 
                       onChange={e => setProfile({...profile, phone: e.target.value})}
                       className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-600 font-bold text-slate-900"
                       placeholder="Contoh: 08123456789"
@@ -257,7 +306,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ data, onComplete }) => 
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Tempat Lahir</label>
                     <input 
                       type="text" 
-                      value={profile.birthPlace} 
+                      value={profile.birthPlace || ''} 
                       onChange={e => setProfile({...profile, birthPlace: e.target.value})}
                       className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-600 font-bold text-slate-900"
                       placeholder="Contoh: Jakarta"
@@ -267,7 +316,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ data, onComplete }) => 
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Tanggal Lahir</label>
                     <input 
                       type="date" 
-                      value={profile.birthDate} 
+                      value={profile.birthDate || ''} 
                       onChange={e => setProfile({...profile, birthDate: e.target.value})}
                       className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-600 font-bold text-slate-900"
                     />
@@ -276,7 +325,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ data, onComplete }) => 
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Status Pernikahan</label>
                     <input 
                       type="text" 
-                      value={profile.maritalStatus} 
+                      value={profile.maritalStatus || ''} 
                       onChange={e => setProfile({...profile, maritalStatus: e.target.value})}
                       className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-600 font-bold text-slate-900"
                       placeholder="Contoh: Lajang / Menikah"
@@ -286,7 +335,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ data, onComplete }) => 
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Domisili</label>
                     <input 
                       type="text" 
-                      value={profile.domicile} 
+                      value={profile.domicile || ''} 
                       onChange={e => setProfile({...profile, domicile: e.target.value})}
                       className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-600 font-bold text-slate-900"
                       placeholder="Contoh: Jakarta Selatan"
@@ -295,7 +344,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ data, onComplete }) => 
                   <div className="space-y-2 md:col-span-2">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Kategori Pekerjaan</label>
                     <select 
-                      value={profile.jobCategory} 
+                      value={profile.jobCategory || ''} 
                       onChange={e => setProfile({...profile, jobCategory: e.target.value})}
                       className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-600 font-bold text-slate-900"
                     >
@@ -313,10 +362,10 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ data, onComplete }) => 
                     Lanjutkan
                   </button>
                   <button 
-                    onClick={handleSkipStep}
+                    onClick={handleSkip}
                     className="w-full text-center text-slate-400 font-bold text-[10px] uppercase tracking-widest hover:text-slate-600 transition-all"
                   >
-                    Lewati Step ini
+                    Lewati Onboarding
                   </button>
                 </div>
               </motion.div>
@@ -343,7 +392,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ data, onComplete }) => 
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Perusahaan Saat Ini</label>
                     <input 
                       type="text" 
-                      value={profile.currentCompany} 
+                      value={profile.currentCompany || ''} 
                       onChange={e => setProfile({...profile, currentCompany: e.target.value})}
                       className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-600 font-bold text-slate-900"
                       placeholder="Contoh: PT Teknologi Maju"
@@ -353,7 +402,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ data, onComplete }) => 
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Posisi Saat Ini</label>
                     <input 
                       type="text" 
-                      value={profile.currentPosition} 
+                      value={profile.currentPosition || ''} 
                       onChange={e => setProfile({...profile, currentPosition: e.target.value})}
                       className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-600 font-bold text-slate-900"
                       placeholder="Contoh: Junior Developer"
@@ -363,7 +412,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ data, onComplete }) => 
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Target Jangka Pendek (1-2 Tahun)</label>
                     <input 
                       type="text" 
-                      value={profile.shortTermTarget} 
+                      value={profile.shortTermTarget || ''} 
                       onChange={e => setProfile({...profile, shortTermTarget: e.target.value})}
                       className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-600 font-bold text-slate-900"
                       placeholder="Contoh: Senior Product Manager"
@@ -373,7 +422,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ data, onComplete }) => 
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Target Jangka Panjang (3-5 Tahun)</label>
                     <input 
                       type="text" 
-                      value={profile.longTermTarget} 
+                      value={profile.longTermTarget || ''} 
                       onChange={e => setProfile({...profile, longTermTarget: e.target.value})}
                       className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-600 font-bold text-slate-900"
                       placeholder="Contoh: Chief Product Officer"
@@ -433,7 +482,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ data, onComplete }) => 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <input 
                             placeholder="Posisi" 
-                            value={w.position} 
+                            value={w.position || ''} 
                             onChange={e => {
                               const newW = [...workExp];
                               newW[i].position = e.target.value;
@@ -443,7 +492,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ data, onComplete }) => 
                           />
                           <input 
                             placeholder="Perusahaan" 
-                            value={w.company} 
+                            value={w.company || ''} 
                             onChange={e => {
                               const newW = [...workExp];
                               newW[i].company = e.target.value;
@@ -509,7 +558,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ data, onComplete }) => 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <input 
                             placeholder="Gelar / Bidang" 
-                            value={e.degree} 
+                            value={e.degree || ''} 
                             onChange={val => {
                               const newE = [...edu];
                               newE[i].degree = val.target.value;
@@ -519,7 +568,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ data, onComplete }) => 
                           />
                           <input 
                             placeholder="Institusi" 
-                            value={e.institution} 
+                            value={e.institution || ''} 
                             onChange={val => {
                               const newE = [...edu];
                               newE[i].institution = val.target.value;
@@ -584,7 +633,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ data, onComplete }) => 
                       <div key={s.id} className="p-6 bg-slate-50 rounded-3xl flex gap-4 items-center">
                         <input 
                           placeholder="Nama Skill (Contoh: React.js)" 
-                          value={s.name} 
+                          value={s.name || ''} 
                           onChange={e => {
                             const newS = [...skills];
                             newS[i].name = e.target.value;
@@ -593,7 +642,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ data, onComplete }) => 
                           className="flex-1 bg-white px-4 py-3 rounded-xl border-none font-bold text-sm"
                         />
                         <select 
-                          value={s.currentLevel}
+                          value={s.currentLevel || 1}
                           onChange={e => {
                             const newS = [...skills];
                             newS[i].currentLevel = parseInt(e.target.value);
@@ -726,7 +775,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ data, onComplete }) => 
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Apa aktivitas utama hari ini?</label>
                     <input 
                       type="text" 
-                      value={dailyPlan.activity} 
+                      value={dailyPlan.activity || ''} 
                       onChange={e => setDailyPlan({...dailyPlan, activity: e.target.value})}
                       className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-600 font-bold text-slate-900"
                       placeholder="Contoh: Belajar React.js Dasar"
@@ -735,7 +784,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ data, onComplete }) => 
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Detail / Output yang Diharapkan</label>
                     <textarea 
-                      value={dailyPlan.output} 
+                      value={dailyPlan.output || ''} 
                       onChange={e => setDailyPlan({...dailyPlan, output: e.target.value})}
                       className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-600 font-bold text-slate-900 min-h-[100px]"
                       placeholder="Contoh: Menyelesaikan modul 1 dan membuat project kecil"
@@ -743,13 +792,19 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ data, onComplete }) => 
                   </div>
                 </div>
 
-                <div className="pt-8">
+                <div className="pt-8 space-y-4">
                   <button 
                     onClick={handleFinalize}
-                    disabled={loading || !dailyPlan.activity}
+                    disabled={loading}
                     className="w-full py-5 bg-indigo-600 text-white font-black rounded-[2rem] uppercase tracking-widest shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95 disabled:opacity-50"
                   >
                     {loading ? 'Menyimpan...' : 'Selesaikan Onboarding'}
+                  </button>
+                  <button 
+                    onClick={handleSkip}
+                    className="w-full text-center text-slate-400 font-bold text-[10px] uppercase tracking-widest hover:text-slate-600 transition-all"
+                  >
+                    Lewati & Selesaikan
                   </button>
                 </div>
               </motion.div>

@@ -16,7 +16,7 @@ export const INITIAL_DATA: AppData = Object.freeze({
     totalTokens: 0
   },
   profile: {
-    name: "User",
+    name: "",
     birthPlace: "",
     birthDate: "",
     maritalStatus: "",

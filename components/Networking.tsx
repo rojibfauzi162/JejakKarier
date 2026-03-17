@@ -243,32 +243,32 @@ const ContactForm: React.FC<{ initialData: Contact | null; onSubmit: (data: Part
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
         <div className="md:col-span-2">
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block ml-1">Nama Kontak</label>
-          <input className="w-full px-5 py-3 lg:py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold text-xs" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} placeholder="Alex Johnson" required />
+          <input className="w-full px-5 py-3 lg:py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold text-xs" value={formData.name || ''} onChange={e => setFormData({ ...formData, name: e.target.value })} placeholder="Alex Johnson" required />
         </div>
         
         <div>
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block ml-1">No HP</label>
-          <input className="w-full px-5 py-3 lg:py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold text-xs" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} placeholder="0812xxxx" />
+          <input className="w-full px-5 py-3 lg:py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold text-xs" value={formData.phone || ''} onChange={e => setFormData({ ...formData, phone: e.target.value })} placeholder="0812xxxx" />
         </div>
 
         <div>
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block ml-1">Email</label>
-          <input type="email" className="w-full px-5 py-3 lg:py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold text-xs" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} placeholder="alex@company.com" />
+          <input type="email" className="w-full px-5 py-3 lg:py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold text-xs" value={formData.email || ''} onChange={e => setFormData({ ...formData, email: e.target.value })} placeholder="alex@company.com" />
         </div>
 
         <div>
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block ml-1">Jabatan</label>
-          <input className="w-full px-5 py-3 lg:py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold text-xs" value={formData.position} onChange={e => setFormData({ ...formData, position: e.target.value })} placeholder="Role" required />
+          <input className="w-full px-5 py-3 lg:py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold text-xs" value={formData.position || ''} onChange={e => setFormData({ ...formData, position: e.target.value })} placeholder="Role" required />
         </div>
 
         <div>
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block ml-1">Perusahaan</label>
-          <input className="w-full px-5 py-3 lg:py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold text-xs" value={formData.company} onChange={e => setFormData({ ...formData, company: e.target.value })} placeholder="Company" required />
+          <input className="w-full px-5 py-3 lg:py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold text-xs" value={formData.company || ''} onChange={e => setFormData({ ...formData, company: e.target.value })} placeholder="Company" required />
         </div>
 
         <div>
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block ml-1">Hubungan</label>
-          <select className="w-full px-5 py-3 lg:py-4 rounded-2xl border border-slate-200 outline-none bg-white font-bold text-xs cursor-pointer" value={formData.relation} onChange={e => setFormData({ ...formData, relation: e.target.value as any })}>
+          <select className="w-full px-5 py-3 lg:py-4 rounded-2xl border border-slate-200 outline-none bg-white font-bold text-xs cursor-pointer" value={formData.relation || ''} onChange={e => setFormData({ ...formData, relation: e.target.value as any })}>
             <option value="peer">Rekan (Peer)</option>
             <option value="mentor">Mentor</option>
             <option value="superior">Atasan (Superior)</option>
@@ -279,17 +279,17 @@ const ContactForm: React.FC<{ initialData: Contact | null; onSubmit: (data: Part
 
         <div>
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block ml-1">Tgl Interaksi</label>
-          <input type="date" className="w-full px-5 py-3 lg:py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold text-xs" value={formData.lastInteractionDate} onChange={e => setFormData({ ...formData, lastInteractionDate: e.target.value })} />
+          <input type="date" className="w-full px-5 py-3 lg:py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold text-xs" value={formData.lastInteractionDate || ''} onChange={e => setFormData({ ...formData, lastInteractionDate: e.target.value })} />
         </div>
 
         <div className="md:col-span-2">
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block ml-1">Catatan Interaksi</label>
-          <textarea rows={2} className="w-full px-5 py-3 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold resize-none text-xs" value={formData.lastInteractionNote} onChange={e => setFormData({ ...formData, lastInteractionNote: e.target.value })} placeholder="Bahas soal apa?" />
+          <textarea rows={2} className="w-full px-5 py-3 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold resize-none text-xs" value={formData.lastInteractionNote || ''} onChange={e => setFormData({ ...formData, lastInteractionNote: e.target.value })} placeholder="Bahas soal apa?" />
         </div>
 
         <div className="md:col-span-2">
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block ml-1">Rencana Follow Up</label>
-          <textarea rows={2} className="w-full px-5 py-3 rounded-2xl border border-emerald-100 outline-none bg-emerald-50/30 font-bold resize-none text-emerald-700 text-xs" value={formData.followUpPlan} onChange={e => setFormData({ ...formData, followUpPlan: e.target.value })} placeholder="Langkah selanjutnya?" />
+          <textarea rows={2} className="w-full px-5 py-3 rounded-2xl border border-emerald-100 outline-none bg-emerald-50/30 font-bold resize-none text-emerald-700 text-xs" value={formData.followUpPlan || ''} onChange={e => setFormData({ ...formData, followUpPlan: e.target.value })} placeholder="Langkah selanjutnya?" />
         </div>
       </div>
       <div className="flex gap-4 pt-4 lg:pt-6">

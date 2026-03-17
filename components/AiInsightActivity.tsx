@@ -330,16 +330,16 @@ const AiInsightActivity: React.FC<AiInsightActivityProps> = ({ data, onUpdateIns
            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-1">
                 <label className="text-[8px] font-black text-slate-400 uppercase ml-1">Tahun</label>
-                <select value={selectedYear} onChange={e => setSelectedYear(e.target.value)} className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-100 font-bold text-xs outline-none">{availableYears.map(y => <option key={y} value={y}>{y}</option>)}</select>
+                <select value={selectedYear || ''} onChange={e => setSelectedYear(e.target.value)} className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-100 font-bold text-xs outline-none">{availableYears.map(y => <option key={y} value={y}>{y}</option>)}</select>
               </div>
               <div className="space-y-1">
                 <label className="text-[8px] font-black text-slate-400 uppercase ml-1">Bulan</label>
-                <select value={selectedMonth} onChange={e => setSelectedMonth(e.target.value)} className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-100 font-bold text-xs outline-none">{availableMonths.map(m => <option key={m} value={m}>{monthsList.find(ml => ml.v === m)?.l}</option>)}</select>
+                <select value={selectedMonth || ''} onChange={e => setSelectedMonth(e.target.value)} className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-100 font-bold text-xs outline-none">{availableMonths.map(m => <option key={m} value={m}>{monthsList.find(ml => ml.v === m)?.l}</option>)}</select>
               </div>
               {period === 'weekly' && (
                 <div className="space-y-1 animate-in slide-in-from-left-2">
                   <label className="text-[8px] font-black text-slate-400 uppercase ml-1">Minggu</label>
-                  <select value={selectedWeek} onChange={e => setSelectedWeek(e.target.value)} className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-100 font-bold text-xs outline-none">{availableWeeks.map(w => <option key={w} value={w}>Minggu {w}</option>)}</select>
+                  <select value={selectedWeek || ''} onChange={e => setSelectedWeek(e.target.value)} className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-100 font-bold text-xs outline-none">{availableWeeks.map(w => <option key={w} value={w}>Minggu {w}</option>)}</select>
                 </div>
               )}
            </div>

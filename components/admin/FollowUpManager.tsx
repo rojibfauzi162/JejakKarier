@@ -36,7 +36,7 @@ const FollowUpManager: React.FC<FollowUpManagerProps> = ({ initialConfig, onSave
                 </div>
                 <textarea 
                   className="w-full px-6 py-5 bg-slate-50 border border-slate-200 rounded-[1.75rem] outline-none font-bold text-xs focus:border-rose-400 transition-all min-h-[120px] resize-none" 
-                  value={form.pendingPaymentScript}
+                  value={form.pendingPaymentScript || ''}
                   onChange={e => setForm({...form, pendingPaymentScript: e.target.value})}
                   placeholder="Ketik template pesan di sini..."
                   required
@@ -50,7 +50,7 @@ const FollowUpManager: React.FC<FollowUpManagerProps> = ({ initialConfig, onSave
                 </div>
                 <textarea 
                   className="w-full px-6 py-5 bg-slate-50 border border-slate-200 rounded-[1.75rem] outline-none font-bold text-xs focus:border-rose-400 transition-all min-h-[120px] resize-none" 
-                  value={form.expiryReminderScript}
+                  value={form.expiryReminderScript || ''}
                   onChange={e => setForm({...form, expiryReminderScript: e.target.value})}
                   placeholder="Ketik template pesan di sini..."
                   required
@@ -64,7 +64,7 @@ const FollowUpManager: React.FC<FollowUpManagerProps> = ({ initialConfig, onSave
                 </div>
                 <textarea 
                   className="w-full px-6 py-5 bg-slate-50 border border-slate-200 rounded-[1.75rem] outline-none font-bold text-xs focus:border-rose-400 transition-all min-h-[120px] resize-none" 
-                  value={form.justExpiredScript}
+                  value={form.justExpiredScript || ''}
                   onChange={e => setForm({...form, justExpiredScript: e.target.value})}
                   placeholder="Ketik template pesan di sini..."
                   required

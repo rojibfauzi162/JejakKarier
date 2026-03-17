@@ -441,7 +441,7 @@ const InterviewIntelligenceScript: React.FC<InterviewIntelligenceScriptProps> = 
                    <div className="space-y-2">
                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Judul Script</label>
                       <input 
-                        value={scriptTitle}
+                        value={scriptTitle || ''}
                         onChange={e => updateDynamicField('title', e.target.value)}
                         placeholder="Contoh: Script Interview Gojek"
                         className="w-full px-4 py-3 bg-slate-50 rounded-xl border-none font-bold text-sm focus:ring-2 focus:ring-indigo-500 transition-all"
@@ -452,7 +452,7 @@ const InterviewIntelligenceScript: React.FC<InterviewIntelligenceScriptProps> = 
                       <div className="space-y-2">
                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Target Role / Posisi</label>
                          <input 
-                            value={dynamicRole}
+                            value={dynamicRole || ''}
                             onChange={e => updateDynamicField('dynamicRole', e.target.value)}
                             placeholder="Contoh: Product Manager"
                             className="w-full px-4 py-3 bg-slate-50 rounded-xl border-none font-bold text-sm focus:ring-2 focus:ring-indigo-500 transition-all"
@@ -461,7 +461,7 @@ const InterviewIntelligenceScript: React.FC<InterviewIntelligenceScriptProps> = 
                       <div className="space-y-2">
                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Target Industri</label>
                          <input 
-                            value={dynamicIndustry}
+                            value={dynamicIndustry || ''}
                             onChange={e => updateDynamicField('dynamicIndustry', e.target.value)}
                             placeholder="Contoh: Fintech"
                             className="w-full px-4 py-3 bg-slate-50 rounded-xl border-none font-bold text-sm focus:ring-2 focus:ring-indigo-500 transition-all"
@@ -470,7 +470,7 @@ const InterviewIntelligenceScript: React.FC<InterviewIntelligenceScriptProps> = 
                       <div className="space-y-2">
                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nama Perusahaan</label>
                          <input 
-                            value={dynamicCompany}
+                            value={dynamicCompany || ''}
                             onChange={e => updateDynamicField('dynamicCompany', e.target.value)}
                             placeholder="Contoh: Gojek / Tokopedia"
                             className="w-full px-4 py-3 bg-slate-50 rounded-xl border-none font-bold text-sm focus:ring-2 focus:ring-indigo-500 transition-all"
@@ -480,13 +480,13 @@ const InterviewIntelligenceScript: React.FC<InterviewIntelligenceScriptProps> = 
                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Range Gaji (Min - Max)</label>
                          <div className="flex gap-2">
                             <input 
-                              value={dynamicSalaryMin}
+                              value={dynamicSalaryMin || ''}
                               onChange={e => updateDynamicField('dynamicSalaryMin', formatNumber(e.target.value))}
                               placeholder="Min (Rp)"
                               className="w-full px-4 py-3 bg-slate-50 rounded-xl border-none font-bold text-sm focus:ring-2 focus:ring-indigo-500 transition-all"
                             />
                             <input 
-                              value={dynamicSalaryMax}
+                              value={dynamicSalaryMax || ''}
                               onChange={e => updateDynamicField('dynamicSalaryMax', formatNumber(e.target.value))}
                               placeholder="Max (Rp)"
                               className="w-full px-4 py-3 bg-slate-50 rounded-xl border-none font-bold text-sm focus:ring-2 focus:ring-indigo-500 transition-all"
@@ -548,7 +548,7 @@ const InterviewIntelligenceScript: React.FC<InterviewIntelligenceScriptProps> = 
                       <Quote className="absolute top-4 right-4 w-8 h-8 text-slate-200" />
                       {isEditing ? (
                         <textarea
-                          value={replacePlaceholders(activeScript.elevatorPitch)}
+                          value={replacePlaceholders(activeScript.elevatorPitch) || ''}
                           onChange={(e) => updateScriptField('elevatorPitch', e.target.value)}
                           className="w-full min-h-[150px] bg-transparent border-none focus:ring-0 text-slate-700 font-medium leading-relaxed whitespace-pre-wrap italic resize-y"
                           placeholder="Edit your elevator pitch here..."
@@ -582,7 +582,7 @@ const InterviewIntelligenceScript: React.FC<InterviewIntelligenceScriptProps> = 
                             <div className="rounded-2xl p-5 border bg-slate-50 border-slate-100">
                               {isEditing ? (
                                 <textarea
-                                  value={replacePlaceholders(q.answer)}
+                                  value={replacePlaceholders(q.answer) || ''}
                                   onChange={(e) => {
                                     const newQuestions = [...activeScript.commonQuestions];
                                     newQuestions[i] = { ...newQuestions[i], answer: e.target.value };
@@ -628,7 +628,7 @@ const InterviewIntelligenceScript: React.FC<InterviewIntelligenceScriptProps> = 
                                 <span className="text-[9px] font-black uppercase tracking-widest opacity-70">{starPart}</span>
                                 {isEditing ? (
                                   <textarea
-                                    value={replacePlaceholders((q.starAnswer as any)[starPart])}
+                                    value={replacePlaceholders((q.starAnswer as any)[starPart]) || ''}
                                     onChange={(e) => {
                                       const newQuestions = [...activeScript.behavioralQuestions];
                                       newQuestions[i] = { 
@@ -662,7 +662,7 @@ const InterviewIntelligenceScript: React.FC<InterviewIntelligenceScriptProps> = 
                         <span className="text-[10px] font-black text-rose-400 uppercase tracking-widest">Kelemahan Realistis</span>
                         {isEditing ? (
                           <textarea
-                            value={replacePlaceholders(activeScript.weaknessFraming.weakness)}
+                            value={replacePlaceholders(activeScript.weaknessFraming.weakness) || ''}
                             onChange={(e) => updateScriptField('weaknessFraming', { ...activeScript.weaknessFraming, weakness: e.target.value })}
                             className="w-full bg-transparent border-none focus:ring-0 text-slate-900 font-bold resize-y"
                           />
@@ -674,7 +674,7 @@ const InterviewIntelligenceScript: React.FC<InterviewIntelligenceScriptProps> = 
                         <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Framing Positif</span>
                         {isEditing ? (
                           <textarea
-                            value={replacePlaceholders(activeScript.weaknessFraming.framing)}
+                            value={replacePlaceholders(activeScript.weaknessFraming.framing) || ''}
                             onChange={(e) => updateScriptField('weaknessFraming', { ...activeScript.weaknessFraming, framing: e.target.value })}
                             className="w-full bg-transparent border-none focus:ring-0 text-slate-700 font-medium leading-relaxed resize-y"
                           />
@@ -686,7 +686,7 @@ const InterviewIntelligenceScript: React.FC<InterviewIntelligenceScriptProps> = 
                         <span className="text-[10px] font-black text-indigo-500 uppercase tracking-widest">Rencana Perbaikan</span>
                         {isEditing ? (
                           <textarea
-                            value={replacePlaceholders(activeScript.weaknessFraming.improvementPlan)}
+                            value={replacePlaceholders(activeScript.weaknessFraming.improvementPlan) || ''}
                             onChange={(e) => updateScriptField('weaknessFraming', { ...activeScript.weaknessFraming, improvementPlan: e.target.value })}
                             className="w-full bg-transparent border-none focus:ring-0 text-slate-700 font-medium leading-relaxed resize-y"
                           />
@@ -710,7 +710,7 @@ const InterviewIntelligenceScript: React.FC<InterviewIntelligenceScriptProps> = 
                           <CheckCircle2 className="w-5 h-5 text-indigo-600 shrink-0 mt-0.5" />
                           {isEditing ? (
                             <textarea
-                              value={replacePlaceholders(q)}
+                              value={replacePlaceholders(q) || ''}
                               onChange={(e) => {
                                 const newQuestions = [...activeScript.questionsForInterviewer];
                                 newQuestions[i] = e.target.value;

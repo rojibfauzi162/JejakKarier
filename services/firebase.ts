@@ -3,7 +3,7 @@ import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, signInWithPopup, setPersistence, browserLocalPersistence } from 'firebase/auth';
 import { getFirestore, doc, setDoc, getDoc, collection, getDocs, updateDoc, increment, query, where, limit, deleteDoc } from "firebase/firestore";
 import { getStorage, ref, uploadBytes, getDownloadURL, uploadBytesResumable } from "firebase/storage";
-import { AppData, AiConfig, SubscriptionProduct, AccountStatus, LegalConfig, UserRole, LandingPageConfig, MayarConfig, DuitkuConfig, FollowUpConfig, TrackingConfig, EmailSettings, EmailCampaign, EmailLog, SystemTraining } from "../types";
+import { AppData, AiConfig, SubscriptionProduct, AccountStatus, LegalConfig, UserRole, LandingPageConfig, MayarConfig, DuitkuConfig, FollowUpConfig, TrackingConfig, EmailSettings, EmailCampaign, EmailLog, SystemTraining, SalesNotification, SalesPopupConfig } from "../types";
 
 // KONFIGURASI FIREBASE
 const firebaseConfig = {
@@ -563,5 +563,124 @@ export const deleteSystemTraining = async (id: string) => {
   } catch (error) {
     console.error("Error deleting training:", error);
     throw error;
+  }
+};
+
+export const getSalesNotifications = async (): Promise<SalesNotification[]> => {
+  try {
+    const docRef = doc(db, "system_metadata", "sales_notifications_list");
+    const snap = await getDoc(docRef);
+    if (snap.exists()) return snap.data().list || [];
+    return [];
+  } catch (error) {
+    console.error("Error getting sales notifications:", error);
+    return [];
+  }
+};
+
+export const saveSalesNotification = async (notification: SalesNotification) => {
+  try {
+    const docRef = doc(db, "system_metadata", "sales_notifications_list");
+    const snap = await getDoc(docRef);
+    let list: SalesNotification[] = [];
+    if (snap.exists()) {
+      list = snap.data().list || [];
+    }
+    
+    const id = notification.id;
+    if (!id) {
+      // If no ID, it's definitely a new one
+      list.push({
+        ...notification,
+        id: `notif_${Date.now()}`,
+        createdAt: notification.createdAt || new Date().toISOString()
+      });
+    } else {
+      const index = list.findIndex((n: SalesNotification) => n.id === id);
+      if (index >= 0) {
+        list[index] = notification;
+      } else {
+        list.push(notification);
+      }
+    }
+    
+    await setDoc(docRef, { list: sanitizeData(list), updatedAt: new Date().toISOString() });
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const deleteSalesNotification = async (id: string) => {
+  try {
+    const docRef = doc(db, "system_metadata", "sales_notifications_list");
+    const snap = await getDoc(docRef);
+    if (snap.exists()) {
+      let list: SalesNotification[] = snap.data().list || [];
+      list = list.filter(n => n.id !== id);
+      await setDoc(docRef, { list: sanitizeData(list), updatedAt: new Date().toISOString() });
+    }
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getSalesPopupConfig = async (): Promise<SalesPopupConfig | null> => {
+  try {
+    const docRef = doc(db, "system_metadata", "sales_popup_configuration");
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) return docSnap.data() as SalesPopupConfig;
+  } catch (error: any) {
+    console.warn("[FIREBASE] Config Sales Popup error:", error.message);
+  }
+  return {
+    mode: 'manual',
+    intervalMin: 8,
+    intervalMax: 15,
+    displayDuration: 5,
+    isEnabled: true,
+    maskName: true,
+    manualRatio: 60,
+    updatedAt: new Date().toISOString()
+  };
+};
+
+export const saveSalesPopupConfig = async (config: SalesPopupConfig) => {
+  try {
+    const docRef = doc(db, "system_metadata", "sales_popup_configuration");
+    const dataToSave = sanitizeData({
+      ...config,
+      updatedAt: new Date().toISOString()
+    });
+    await setDoc(docRef, dataToSave, { merge: true });
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getRealSalesData = async (): Promise<any[]> => {
+  try {
+    const users = await getAllUsers();
+    const realSales: any[] = [];
+    
+    users.forEach(user => {
+      if (user.manualTransactions && user.manualTransactions.length > 0) {
+        user.manualTransactions.forEach(tx => {
+          if (tx.status === 'Paid') {
+            realSales.push({
+              id: tx.id,
+              nama: user.profile.name,
+              aksi: 'baru saja membeli',
+              paket: tx.planTier,
+              createdAt: tx.date
+            });
+          }
+        });
+      }
+    });
+    
+    return realSales.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  } catch (error) {
+    console.error("Error getting real sales data:", error);
+    return [];
   }
 };

@@ -228,7 +228,7 @@ const EmailMarketing: React.FC<EmailMarketingProps> = ({ data, onUpdateData }) =
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Sender Name</label>
                         <input 
                             className="w-full px-5 py-3 rounded-xl border border-slate-200 font-bold text-sm outline-none focus:border-indigo-500"
-                            value={settings.senderName}
+                            value={settings.senderName || ''}
                             onChange={e => setSettings({...settings, senderName: e.target.value})}
                         />
                     </div>
@@ -236,7 +236,7 @@ const EmailMarketing: React.FC<EmailMarketingProps> = ({ data, onUpdateData }) =
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Sender Email</label>
                         <input 
                             className="w-full px-5 py-3 rounded-xl border border-slate-200 font-bold text-sm outline-none focus:border-indigo-500"
-                            value={settings.senderEmail}
+                            value={settings.senderEmail || ''}
                             onChange={e => setSettings({...settings, senderEmail: e.target.value})}
                         />
                     </div>
@@ -259,7 +259,7 @@ const EmailMarketing: React.FC<EmailMarketingProps> = ({ data, onUpdateData }) =
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">SMTP Host</label>
                         <input 
                             className="w-full px-5 py-3 rounded-xl border border-slate-200 font-bold text-sm outline-none focus:border-indigo-500"
-                            value={settings.smtpHost}
+                            value={settings.smtpHost || ''}
                             onChange={e => setSettings({...settings, smtpHost: e.target.value})}
                         />
                     </div>
@@ -268,7 +268,7 @@ const EmailMarketing: React.FC<EmailMarketingProps> = ({ data, onUpdateData }) =
                         <input 
                             type="number"
                             className="w-full px-5 py-3 rounded-xl border border-slate-200 font-bold text-sm outline-none focus:border-indigo-500"
-                            value={settings.smtpPort}
+                            value={settings.smtpPort || ''}
                             onChange={e => setSettings({...settings, smtpPort: parseInt(e.target.value)})}
                         />
                     </div>
@@ -289,7 +289,7 @@ const EmailMarketing: React.FC<EmailMarketingProps> = ({ data, onUpdateData }) =
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Judul Campaign (Internal)</label>
                         <input 
                             className="w-full px-5 py-3 rounded-xl border border-slate-200 font-bold text-sm outline-none focus:border-indigo-500"
-                            value={campaignForm.title}
+                            value={campaignForm.title || ''}
                             onChange={e => setCampaignForm({...campaignForm, title: e.target.value})}
                             placeholder="Contoh: Promo Webinar Data Science"
                         />
@@ -298,7 +298,7 @@ const EmailMarketing: React.FC<EmailMarketingProps> = ({ data, onUpdateData }) =
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Subject Email</label>
                         <input 
                             className="w-full px-5 py-3 rounded-xl border border-slate-200 font-bold text-sm outline-none focus:border-indigo-500"
-                            value={campaignForm.subject}
+                            value={campaignForm.subject || ''}
                             onChange={e => setCampaignForm({...campaignForm, subject: e.target.value})}
                             placeholder="Contoh: Jangan lewatkan kesempatan ini!"
                         />
@@ -336,7 +336,7 @@ const EmailMarketing: React.FC<EmailMarketingProps> = ({ data, onUpdateData }) =
                         )}
                         <textarea 
                             className="w-full px-5 py-3 rounded-xl border border-slate-200 font-medium text-sm outline-none focus:border-indigo-500 min-h-[300px] font-mono"
-                            value={campaignForm.content}
+                            value={campaignForm.content || ''}
                             onChange={e => setCampaignForm({...campaignForm, content: e.target.value})}
                             placeholder="<h1>Halo {name},</h1><p>Isi email Anda di sini...</p>"
                         />

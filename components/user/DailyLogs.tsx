@@ -475,7 +475,7 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
                         type="text" 
                         placeholder="Apa yang Anda cari hari ini?" 
                         className="w-full pl-14 pr-6 py-4 rounded-[1.5rem] border border-slate-200 bg-slate-50/50 text-sm font-bold outline-none focus:ring-4 focus:ring-blue-500/5 transition-all"
-                        value={searchQuery}
+                        value={searchQuery || ''}
                         onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
                     />
                 </div>
@@ -484,7 +484,7 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Kategori</label>
                 <select 
                     className="w-full px-6 py-4 rounded-[1.5rem] border border-slate-200 bg-slate-50/50 text-sm font-bold outline-none cursor-pointer"
-                    value={filterCat}
+                    value={filterCat || ''}
                     onChange={(e) => { setFilterCat(e.target.value); setCurrentPage(1); }}
                 >
                     <option value="all">Semua Bidang</option>
@@ -495,7 +495,7 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Navigasi Waktu</label>
                 <select 
                     className="w-full px-6 py-4 rounded-[1.5rem] border border-slate-200 bg-slate-50/50 text-sm font-bold outline-none cursor-pointer"
-                    value={filterTime}
+                    value={filterTime || ''}
                     onChange={(e) => handleSetTimeFilter(e.target.value as TimeFilter)}
                 >
                     <option value="all">Kapanpun</option>
@@ -621,11 +621,11 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8 bg-slate-50/50 p-8 rounded-[3rem] border border-slate-100 shadow-inner">
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tanggal</label>
-                  <input type="date" className="w-full px-6 py-4 rounded-2xl border border-slate-200 bg-white font-black text-sm text-blue-600 focus:ring-4 focus:ring-blue-500/5 transition-all shadow-sm" value={headerData.date} onChange={e => setHeaderData({ ...headerData, date: e.target.value })} />
+                  <input type="date" className="w-full px-6 py-4 rounded-2xl border border-slate-200 bg-white font-black text-sm text-blue-600 focus:ring-4 focus:ring-blue-500/5 transition-all shadow-sm" value={headerData.date || ''} onChange={e => setHeaderData({ ...headerData, date: e.target.value })} />
                 </div>
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Konteks Pekerjaan</label>
-                  <select className="w-full px-6 py-4 rounded-2xl border border-slate-200 bg-white font-black text-sm cursor-pointer shadow-sm" value={headerData.context} onChange={e => setHeaderData({ ...headerData, context: e.target.value as any })}>
+                  <select className="w-full px-6 py-4 rounded-2xl border border-slate-200 bg-white font-black text-sm cursor-pointer shadow-sm" value={headerData.context || ''} onChange={e => setHeaderData({ ...headerData, context: e.target.value as any })}>
                     <option value="Perusahaan">Kantor (Perusahaan)</option>
                     <option value="Personal">Personal Proyek</option>
                     <option value="Sampingan">Freelance / Sampingan</option>
@@ -633,7 +633,7 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
                 </div>
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Identitas Instansi</label>
-                  <input placeholder="Nama Perusahaan" className="w-full px-6 py-4 rounded-2xl border border-slate-200 bg-white font-black text-sm shadow-sm" value={headerData.companyName} onChange={e => setHeaderData({ ...headerData, companyName: e.target.value })} />
+                  <input placeholder="Nama Perusahaan" className="w-full px-6 py-4 rounded-2xl border border-slate-200 bg-white font-black text-sm shadow-sm" value={headerData.companyName || ''} onChange={e => setHeaderData({ ...headerData, companyName: e.target.value })} />
                 </div>
               </div>
 
@@ -658,14 +658,14 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
                           <div className="space-y-2">
                              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Aktivitas Utama</label>
                              <div className="relative">
-                               <input placeholder="Ketik apa yang Anda kerjakan..." className="w-full px-6 py-4 rounded-2xl border border-slate-200 bg-white font-black text-sm focus:ring-4 focus:ring-blue-500/5 transition-all shadow-sm pr-24" value={line.activity} onChange={e => updateLine(line.tempId, { activity: e.target.value })} />
+                               <input placeholder="Ketik apa yang Anda kerjakan..." className="w-full px-6 py-4 rounded-2xl border border-slate-200 bg-white font-black text-sm focus:ring-4 focus:ring-blue-500/5 transition-all shadow-sm pr-24" value={line.activity || ''} onChange={e => updateLine(line.tempId, { activity: e.target.value })} />
                                <button type="button" onClick={() => setShowHistoryFor(showHistoryFor === line.tempId ? null : line.tempId)} className="absolute right-3 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-indigo-50 border border-indigo-100 rounded-xl text-[9px] font-black text-indigo-600 hover:bg-indigo-600 hover:text-white transition-all shadow-sm">🕒 RIWAYAT</button>
 
                                {showHistoryFor === line.tempId && (
                                  <div className="absolute top-[calc(100%+8px)] left-0 right-0 bg-white border border-slate-200 rounded-[1.5rem] shadow-2xl z-[100] p-4 max-h-[350px] overflow-hidden animate-in slide-in-from-top-2 flex flex-col">
                                     <div className="flex justify-between items-center mb-4">
                                        <p className="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em]">Pilih dari Riwayat (Seminggu Terakhir)</p>
-                                       <input placeholder="Cari..." className="px-3 py-1 rounded-lg border text-[10px] outline-none w-32" value={historySearch} onChange={e => {setHistorySearch(e.target.value); setHistoryPage(1);}} onClick={e => e.stopPropagation()} />
+                                       <input placeholder="Cari..." className="px-3 py-1 rounded-lg border text-[10px] outline-none w-32" value={historySearch || ''} onChange={e => {setHistorySearch(e.target.value); setHistoryPage(1);}} onClick={e => e.stopPropagation()} />
                                     </div>
                                     <div className="space-y-2 flex-1 overflow-y-auto no-scrollbar">
                                       {paginatedHistory.length > 0 ? (
@@ -705,7 +705,7 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
                         <div className="md:col-span-4 space-y-6">
                           <div className="space-y-2">
                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Kategori</label>
-                            <select className="w-full px-6 py-4 rounded-2xl border border-slate-200 bg-white font-black text-sm outline-none shadow-sm cursor-pointer" value={line.category} onChange={e => updateLine(line.tempId, { category: e.target.value })}>
+                            <select className="w-full px-6 py-4 rounded-2xl border border-slate-200 bg-white font-black text-sm outline-none shadow-sm cursor-pointer" value={line.category || ''} onChange={e => updateLine(line.tempId, { category: e.target.value })}>
                               {categories.map(c => <option key={c} value={c}>{c}</option>)}
                             </select>
                           </div>

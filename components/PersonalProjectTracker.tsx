@@ -255,7 +255,7 @@ const ProjectForm: React.FC<{ initialData: PersonalProject | null; onSubmit: (da
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
         <div className="md:col-span-2">
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block ml-1">Nama Proyek</label>
-          <input className="w-full px-5 py-3 lg:py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold text-xs" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} placeholder="Portfolio..." required />
+          <input className="w-full px-5 py-3 lg:py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold text-xs" value={formData.name || ''} onChange={e => setFormData({ ...formData, name: e.target.value })} placeholder="Portfolio..." required />
         </div>
 
         <div className="md:col-span-2 space-y-4">
@@ -268,16 +268,16 @@ const ProjectForm: React.FC<{ initialData: PersonalProject | null; onSubmit: (da
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <input type="date" className="w-full px-5 py-3 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold text-xs" value={startDate} onChange={e => setStartDate(e.target.value)} required />
+            <input type="date" className="w-full px-5 py-3 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold text-xs" value={startDate || ''} onChange={e => setStartDate(e.target.value)} required />
             {isRange && (
-              <input type="date" className="w-full px-5 py-3 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold text-xs" value={endDate} onChange={e => setEndDate(e.target.value)} required={isRange} />
+              <input type="date" className="w-full px-5 py-3 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold text-xs" value={endDate || ''} onChange={e => setEndDate(e.target.value)} required={isRange} />
             )}
           </div>
         </div>
 
         <div>
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block ml-1">Status</label>
-          <select className="w-full px-5 py-3 lg:py-4 rounded-2xl border border-slate-200 outline-none bg-white font-bold text-xs" value={formData.status} onChange={e => setFormData({ ...formData, status: e.target.value as ProjectStatus })}>
+          <select className="w-full px-5 py-3 lg:py-4 rounded-2xl border border-slate-200 outline-none bg-white font-bold text-xs" value={formData.status || ''} onChange={e => setFormData({ ...formData, status: e.target.value as ProjectStatus })}>
             <option value={ProjectStatus.PROSES}>Dalam Proses</option>
             <option value={ProjectStatus.SELESAI}>Selesai</option>
           </select>
@@ -285,15 +285,15 @@ const ProjectForm: React.FC<{ initialData: PersonalProject | null; onSubmit: (da
         
         <div className="md:col-span-2">
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block ml-1">Skill (Pisahkan dengan koma)</label>
-          <input className="w-full px-5 py-3 lg:py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold text-xs" value={skillsText} onChange={e => handleSkillsChange(e.target.value)} placeholder="React, Tailwind..." />
+          <input className="w-full px-5 py-3 lg:py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold text-xs" value={skillsText || ''} onChange={e => handleSkillsChange(e.target.value)} placeholder="React, Tailwind..." />
         </div>
         <div className="md:col-span-2">
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block ml-1">Link</label>
-          <input className="w-full px-5 py-3 lg:py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold text-xs" value={formData.link} onChange={e => setFormData({ ...formData, link: e.target.value })} placeholder="https://..." />
+          <input className="w-full px-5 py-3 lg:py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold text-xs" value={formData.link || ''} onChange={e => setFormData({ ...formData, link: e.target.value })} placeholder="https://..." />
         </div>
         <div className="md:col-span-2">
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block ml-1">Deskripsi</label>
-          <textarea rows={3} className="w-full px-5 py-3 lg:py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold resize-none text-xs" value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} placeholder="Detail..." />
+          <textarea rows={3} className="w-full px-5 py-3 lg:py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold resize-none text-xs" value={formData.description || ''} onChange={e => setFormData({ ...formData, description: e.target.value })} placeholder="Detail..." />
         </div>
       </div>
       <div className="flex gap-4 pt-4 lg:pt-6">

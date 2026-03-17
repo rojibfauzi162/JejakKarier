@@ -314,7 +314,7 @@ const SkillForm = ({ initialData, trainings = [], certifications = [], onSubmit,
     <div className="space-y-6">
       <div className="space-y-1.5">
         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nama Skill</label>
-        <input className="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-slate-50 font-bold text-xs" value={form.name} onChange={e => setForm({...form, name: e.target.value})} required />
+        <input className="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-slate-50 font-bold text-xs" value={form.name || ''} onChange={e => setForm({...form, name: e.target.value})} required />
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -349,7 +349,7 @@ const SkillForm = ({ initialData, trainings = [], certifications = [], onSubmit,
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-1.5">
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Kategori</label>
-          <select className="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-white font-bold text-xs" value={form.category} onChange={e => setForm({...form, category: e.target.value})}>
+          <select className="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-white font-bold text-xs" value={form.category || ''} onChange={e => setForm({...form, category: e.target.value})}>
             {Object.values(SkillCategory).map(c => <option key={c} value={c}>{c}</option>)}
           </select>
         </div>
@@ -364,11 +364,11 @@ const SkillForm = ({ initialData, trainings = [], certifications = [], onSubmit,
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-1.5">
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tingkat Keahlian (1-5)</label>
-          <input type="number" min="1" max="5" className="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-slate-50 font-bold text-xs" value={form.currentLevel} onChange={e => setForm({...form, currentLevel: parseInt(e.target.value)})} />
+          <input type="number" min="1" max="5" className="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-slate-50 font-bold text-xs" value={form.currentLevel || ''} onChange={e => setForm({...form, currentLevel: parseInt(e.target.value)})} />
         </div>
         <div className="space-y-1.5">
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Status</label>
-          <select className="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-white font-bold text-xs" value={form.status} onChange={e => setForm({...form, status: e.target.value})}>
+          <select className="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-white font-bold text-xs" value={form.status || ''} onChange={e => setForm({...form, status: e.target.value})}>
             <option value={SkillStatus.GAP}>Ingin Dipelajari</option>
             <option value={SkillStatus.ON_PROGRESS}>Sedang Diasah</option>
             <option value={SkillStatus.ACHIEVED}>Sudah Dikuasai</option>

@@ -62,7 +62,7 @@ const TrackingSettings: React.FC<TrackingSettingsProps> = ({ onToast }) => {
                    <input 
                     className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none font-bold text-xs focus:border-indigo-400 transition-all"
                     placeholder="1234567890..."
-                    value={config.metaPixelId}
+                    value={config.metaPixelId || ''}
                     onChange={e => setConfig({...config, metaPixelId: e.target.value.trim()})}
                    />
                    <p className="text-[8px] text-slate-400 font-medium px-1 uppercase">Event: PageView, InitiateCheckout, Purchase</p>
@@ -77,7 +77,7 @@ const TrackingSettings: React.FC<TrackingSettingsProps> = ({ onToast }) => {
                    <input 
                     className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none font-bold text-xs focus:border-indigo-400 transition-all"
                     placeholder="G-XXXXXXX"
-                    value={config.googleAnalyticsId}
+                    value={config.googleAnalyticsId || ''}
                     onChange={e => setConfig({...config, googleAnalyticsId: e.target.value.trim()})}
                    />
                    <p className="text-[8px] text-slate-400 font-medium px-1 uppercase">Event: page_view, begin_checkout, purchase</p>
@@ -92,7 +92,7 @@ const TrackingSettings: React.FC<TrackingSettingsProps> = ({ onToast }) => {
                    <input 
                     className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none font-bold text-xs focus:border-indigo-400 transition-all"
                     placeholder="CXXXXXXXXXXXX"
-                    value={config.tiktokPixelId}
+                    value={config.tiktokPixelId || ''}
                     onChange={e => setConfig({...config, tiktokPixelId: e.target.value.trim()})}
                    />
                    <p className="text-[8px] text-slate-400 font-medium px-1 uppercase">Event: PageView, InitiateCheckout, CompletePayment</p>

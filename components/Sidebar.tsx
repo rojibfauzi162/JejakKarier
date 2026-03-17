@@ -19,8 +19,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout, is
   const [groupsOpen, setGroupsOpen] = useState<Record<string, boolean>>({
     aktivitas: true,
     pengembangan: true,
-    karir: false,
-    proyek: false
+    karir: false
   });
 
   const toggleGroup = (key: string) => {
@@ -42,6 +41,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout, is
       label: 'Pengembangan Diri',
       items: [
         { id: 'skills', label: 'Skills & Learning', icon: <i className="bi bi-mortarboard"></i> },
+        { id: 'projects', label: 'Personal Project', icon: <i className="bi bi-tools"></i> },
         { id: 'career', label: 'Career Path', icon: <i className="bi bi-rocket-takeoff"></i> },
         { id: 'achievements', label: 'Achievements', icon: <i className="bi bi-trophy"></i> },
       ]
@@ -54,14 +54,6 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout, is
         { id: 'cv_root', label: 'CV Generator', icon: <i className="bi bi-file-earmark-pdf"></i>, hasSub: true, type: 'cv' },
         { id: 'interview_script', label: 'Interview Script', icon: <i className="bi bi-mic"></i> },
         { id: 'networking', label: 'Networking', icon: <i className="bi bi-people"></i> },
-      ]
-    },
-    {
-      id: 'proyek',
-      label: 'Proyek & Review',
-      items: [
-        { id: 'projects', label: 'Personal Project', icon: <i className="bi bi-tools"></i> },
-        { id: 'reviews', label: 'Monthly Review', icon: <i className="bi bi-calendar-check"></i> },
       ]
     }
   ];
@@ -109,6 +101,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout, is
               <SidebarItem id="admin_followup" active={activeTab === 'admin_followup'} onClick={() => setActiveTab('admin_followup')} icon={<i className="bi bi-chat-left-dots"></i>} label="Follow Up Script" color="rose" />
               <SidebarItem id="admin_ai" active={activeTab === 'admin_ai'} onClick={() => setActiveTab('admin_ai')} icon={<i className="bi bi-cpu"></i>} label="AI Architecture" color="blue" />
               <SidebarItem id="admin_products" active={activeTab === 'admin_products'} onClick={() => setActiveTab('admin_products')} icon={<i className="bi bi-box-seam"></i>} label="Product Matrix" color="blue" />
+              <SidebarItem id="admin_sales_popup" active={activeTab === 'admin_sales_popup'} onClick={() => setActiveTab('admin_sales_popup')} icon={<i className="bi bi-megaphone"></i>} label="Sales Popup" color="rose" />
               <SidebarItem id="admin_settings" active={activeTab === 'admin_settings'} onClick={() => setActiveTab('admin_settings')} icon={<i className="bi bi-gear-fill"></i>} label="Pengaturan Admin" color="blue" />
               <SidebarItem id="admin_health" active={activeTab === 'admin_health'} onClick={() => setActiveTab('admin_health')} icon={<i className="bi bi-activity"></i>} label="System Health" color="rose" />
             </div>

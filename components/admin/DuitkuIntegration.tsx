@@ -70,7 +70,7 @@ const DuitkuIntegration: React.FC<DuitkuIntegrationProps> = ({ initialConfig, on
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Merchant Code</label>
                 <input 
                   className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none font-bold text-sm focus:border-indigo-400 transition-all" 
-                  value={form.merchantCode}
+                  value={form.merchantCode || ''}
                   onChange={e => setForm({...form, merchantCode: e.target.value})}
                   placeholder="DXXXXX"
                   required
@@ -81,7 +81,7 @@ const DuitkuIntegration: React.FC<DuitkuIntegrationProps> = ({ initialConfig, on
                 <input 
                   type="password"
                   className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none font-bold text-sm focus:border-indigo-400 transition-all" 
-                  value={form.apiKey}
+                  value={form.apiKey || ''}
                   onChange={e => setForm({...form, apiKey: e.target.value})}
                   placeholder="Karakter API Key Anda..."
                   required

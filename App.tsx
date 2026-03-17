@@ -12,7 +12,6 @@ import Networking from './components/Networking';
 import AchievementTracker from './components/AchievementTracker';
 import JobTracker from './components/JobTracker';
 import PersonalProjectTracker from './components/PersonalProjectTracker';
-import Reviews from './components/Reviews';
 import CVGenerator from './components/CVGenerator';
 import OnlineCVBuilder from './components/OnlineCVBuilder';
 import AccountSettings from './components/AccountSettings';
@@ -460,6 +459,7 @@ const App: React.FC = () => {
       case 'admin_followup': return <AdminPanel initialMode="followup" userRole={data.role} />;
       case 'admin_ai': return <AdminPanel initialMode="ai" userRole={data.role} />;
       case 'admin_products': return <AdminPanel initialMode="products" userRole={data.role} />;
+      case 'admin_sales_popup': return <AdminPanel initialMode="sales_popup" userRole={data.role} />;
       case 'admin_integrations': return <AdminPanel initialMode="integrations" userRole={data.role} />;
       case 'admin_settings': return <AdminPanel initialMode="settings" userRole={data.role} />;
       case 'admin_health': return <AdminPanel initialMode="health" userRole={data.role} />;
@@ -481,7 +481,6 @@ const App: React.FC = () => {
       case 'achievements': return withPermission('achievements', <AchievementTracker achievements={data.achievements} profile={data.profile} workExperiences={data.workExperiences} onAdd={(a) => setData(prev => ({...prev, achievements: [...prev.achievements, a]}))} onUpdate={(a) => setData(prev => ({...prev, achievements: prev.achievements.map(i => i.id === a.id ? a : i)}))} onDelete={(id) => setData(prev => ({...prev, achievements: prev.achievements.filter(i => i.id !== id)}))} appData={data} onUpgrade={commonProps.onUpgrade} />);
       case 'loker': return withPermission('loker', <JobTracker applications={data.jobApplications} careerEvents={data.careerEvents || []} onAdd={(j) => setData(prev => ({...prev, jobApplications: [...prev.jobApplications, j]}))} onUpdate={(j) => setData(prev => ({...prev, jobApplications: prev.jobApplications.map(i => i.id === j.id ? j : i)}))} onDelete={(id) => setData(prev => ({...prev, jobApplications: prev.jobApplications.filter(i => i.id !== id)}))} onAddCalendarEvent={commonProps.onAddCalendarEvent} appData={data} onUpgrade={commonProps.onUpgrade} />);
       case 'projects': return withPermission('projects', <PersonalProjectTracker projects={data.personalProjects} onAdd={(p) => setData(prev => ({...prev, personalProjects: [...prev.personalProjects, p]}))} onUpdate={(p) => setData(prev => ({...prev, personalProjects: prev.personalProjects.map(i => i.id === p.id ? p : i)}))} onDelete={(id) => setData(prev => ({...prev, personalProjects: prev.personalProjects.filter(i => i.id !== id)}))} appData={data} onUpgrade={commonProps.onUpgrade} />);
-      case 'reviews': return withPermission('reviews', <Reviews reviews={data.monthlyReviews} onAdd={(r) => setData(prev => ({...prev, monthlyReviews: [...prev.monthlyReviews, r]}))} onDelete={(id) => setData(prev => ({...prev, monthlyReviews: prev.monthlyReviews.filter(i => i.id !== id)}))} />);
       case 'cv_generator': return withPermission('cv_generator', <CVGenerator data={data} />);
       case 'online_cv': return withPermission('online_cv', <OnlineCVBuilder data={data} onUpdateConfig={(c) => setData(prev => ({...prev, onlineCV: c}))} />);
       case 'interview_script': return withPermission('interview_script', <InterviewIntelligenceScript data={data} onUpdateScripts={(s) => setData(prev => ({...prev, interviewScripts: s}))} onUpgrade={commonProps.onUpgrade} />);
@@ -524,6 +523,7 @@ const App: React.FC = () => {
       'admin_followup': 'Follow Up Manager',
       'admin_ai': 'AI Architecture',
       'admin_products': 'Product Matrix',
+      'admin_sales_popup': 'Sales Popup Manager',
       'admin_settings': 'Pengaturan Admin',
       'admin_health': 'System Health',
       'email_marketing': 'Email Marketing',
@@ -577,6 +577,7 @@ const App: React.FC = () => {
             )}
             {user && user.emailVerified && !isAdmin && (!data.onboardingCompleted || showOnboarding) && (
               <OnboardingFlow 
+                key={data.uid || 'onboarding'}
                 data={data} 
                 onComplete={(updatedData) => {
                   setData(updatedData);
@@ -585,14 +586,18 @@ const App: React.FC = () => {
               />
             )}
             <div className={`hidden lg:flex items-center justify-between ${!isAdmin ? 'mb-8' : 'mb-8'}`}>
-               <div className="animate-in slide-in-from-left duration-500">
-                 <h2 className="text-xl lg:text-3xl font-black text-slate-900 tracking-tight uppercase">
-                    {isAdmin ? getAdminTitle() : activeTab.replace('_', ' ')}
-                 </h2>
-                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                   {isAdmin ? 'Sistem Administrasi FokusKarir.' : 'FokusKarir Control Center'}
-                 </p>
-               </div>
+               {isAdmin ? (
+                 <div className="animate-in slide-in-from-left duration-500">
+                   <h2 className="text-xl lg:text-3xl font-black text-slate-900 tracking-tight uppercase">
+                      {getAdminTitle()}
+                   </h2>
+                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                     Sistem Administrasi FokusKarir.
+                   </p>
+                 </div>
+               ) : (
+                 <div></div>
+               )}
                {user && (
                  <div className="flex items-center gap-6 ml-auto">
                     <div className="relative" ref={desktopNotifRef}>

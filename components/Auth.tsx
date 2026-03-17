@@ -216,7 +216,7 @@ const Auth: React.FC<AuthProps> = ({ onBack }) => {
           <form onSubmit={handleForgotPassword} className="space-y-6">
             <div className="space-y-1.5">
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Email Address</label>
-              <input type="email" required className="w-full px-5 py-4 rounded-2xl bg-white/5 border border-white/10 text-white outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-bold placeholder:text-slate-600" placeholder="alex@fokuskarir.com" value={email} onChange={(e) => setEmail(e.target.value)} />
+              <input type="email" required className="w-full px-5 py-4 rounded-2xl bg-white/5 border border-white/10 text-white outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-bold placeholder:text-slate-600" placeholder="alex@fokuskarir.com" value={email || ''} onChange={(e) => setEmail(e.target.value)} />
             </div>
             <button disabled={loading} className="w-full py-5 bg-blue-600 hover:bg-blue-700 text-white font-black uppercase tracking-widest rounded-2xl shadow-xl shadow-blue-500/20 transition-all active:scale-[0.98] disabled:opacity-50 mt-4">
               {loading ? 'Sending...' : 'Kirim Link Pemulihan'}
@@ -227,20 +227,20 @@ const Auth: React.FC<AuthProps> = ({ onBack }) => {
             {!isLogin && (
               <div className="space-y-1.5">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Full Name</label>
-                <input type="text" required className="w-full px-5 py-4 rounded-2xl bg-white/5 border border-white/10 text-white outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-bold placeholder:text-slate-600" placeholder="Alex Johnson" value={name} onChange={(e) => setName(e.target.value)} />
+                <input type="text" required className="w-full px-5 py-4 rounded-2xl bg-white/5 border border-white/10 text-white outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-bold placeholder:text-slate-600" placeholder="Alex Johnson" value={name || ''} onChange={(e) => setName(e.target.value)} />
               </div>
             )}
 
             {!isLogin && (
               <div className="space-y-1.5">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">WhatsApp Number</label>
-                <input type="tel" required className="w-full px-5 py-4 rounded-2xl bg-white/5 border border-white/10 text-white outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-bold placeholder:text-slate-600" placeholder="08123456789" value={phone} onChange={(e) => setPhone(e.target.value)} />
+                <input type="tel" required className="w-full px-5 py-4 rounded-2xl bg-white/5 border border-white/10 text-white outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-bold placeholder:text-slate-600" placeholder="08123456789" value={phone || ''} onChange={(e) => setPhone(e.target.value)} />
               </div>
             )}
 
             <div className="space-y-1.5">
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Email Address</label>
-              <input type="email" required className="w-full px-5 py-4 rounded-2xl bg-white/5 border border-white/10 text-white outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-bold placeholder:text-slate-600" placeholder="alex@fokuskarir.com" value={email} onChange={(e) => setEmail(e.target.value)} />
+              <input type="email" required className="w-full px-5 py-4 rounded-2xl bg-white/5 border border-white/10 text-white outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-bold placeholder:text-slate-600" placeholder="alex@fokuskarir.com" value={email || ''} onChange={(e) => setEmail(e.target.value)} />
             </div>
 
             <div className="space-y-1.5">
@@ -251,7 +251,7 @@ const Auth: React.FC<AuthProps> = ({ onBack }) => {
                 )}
               </div>
               <div className="relative">
-                <input type={showPassword ? 'text' : 'password'} required className="w-full px-5 py-4 rounded-2xl bg-white/5 border border-white/10 text-white outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-bold placeholder:text-slate-600 pr-12" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} />
+                <input type={showPassword ? 'text' : 'password'} required className="w-full px-5 py-4 rounded-2xl bg-white/5 border border-white/10 text-white outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-bold placeholder:text-slate-600 pr-12" placeholder="••••••••" value={password || ''} onChange={(e) => setPassword(e.target.value)} />
                 <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors">
                   <i className={`bi ${showPassword ? 'bi-eye-slash' : 'bi-eye'} text-lg`}></i>
                 </button>

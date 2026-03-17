@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { AppData, SkillStatus, SubscriptionPlan } from '../types';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Legend } from 'recharts';
 
 interface DashboardProps {
   data: AppData;
@@ -15,12 +15,19 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenOnboardin
   const [isMenuExpanded, setIsMenuExpanded] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   
+  // FILTER STATE
+  const [dashboardFilter, setDashboardFilter] = useState<'all' | 'today' | '7days' | '1month' | '3months' | '1year' | 'range'>('all');
+  const [filterStartDate, setFilterStartDate] = useState('');
+  const [filterEndDate, setFilterEndDate] = useState('');
+
   // Trial Journey Logic
   const daysSinceJoined = useMemo(() => {
     const joined = new Date(data.joinedAt);
     const now = new Date();
-    return Math.floor((now.getTime() - joined.getTime()) / (1000 * 3600 * 24)) + 1;
+    return Math.floor((now.getTime() - joined.getTime()) / (1000 * 3600 * 24));
   }, [data.joinedAt]);
+
+  const activeDurationDays = daysSinceJoined + 1; // Masa aktif akun (hari ke-X)
 
   const isTrialUser = data.plan === SubscriptionPlan.FREE;
   const logCount = data.dailyReports.length;
@@ -181,6 +188,105 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenOnboardin
     { id: 'settings', label: 'Pengaturan', icon: 'bi-gear' },
     { id: 'calendar', label: 'Career Calendar', icon: 'bi-calendar3' },
   ];
+
+  // --- DESKTOP DASHBOARD LOGIC ---
+  
+  // Helper: Filter Date
+  const isDateInFilter = (dateStr: string) => {
+    if (!dateStr) return false;
+    const date = new Date(dateStr);
+    const now = new Date();
+    now.setHours(23, 59, 59, 999);
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+
+    if (dashboardFilter === 'all') return true;
+    if (dashboardFilter === 'today') {
+        return date >= todayStart && date <= now;
+    }
+    if (dashboardFilter === 'range') {
+        if (!filterStartDate || !filterEndDate) return true;
+        const start = new Date(filterStartDate);
+        const end = new Date(filterEndDate);
+        end.setHours(23, 59, 59, 999);
+        return date >= start && date <= end;
+    }
+
+    let daysToSubtract = 0;
+    if (dashboardFilter === '7days') daysToSubtract = 7;
+    if (dashboardFilter === '1month') daysToSubtract = 30;
+    if (dashboardFilter === '3months') daysToSubtract = 90;
+    if (dashboardFilter === '1year') daysToSubtract = 365;
+
+    const pastDate = new Date(now);
+    pastDate.setDate(pastDate.getDate() - daysToSubtract);
+    return date >= pastDate;
+  };
+
+  // Filtered Data
+  const filteredReports = useMemo(() => data.dailyReports.filter(r => isDateInFilter(r.date)), [data.dailyReports, dashboardFilter, filterStartDate, filterEndDate]);
+  const filteredReflections = useMemo(() => data.dailyReflections.filter(r => isDateInFilter(r.date)), [data.dailyReflections, dashboardFilter, filterStartDate, filterEndDate]);
+  const filteredAchievements = useMemo(() => data.achievements.filter(a => isDateInFilter(a.date)), [data.achievements, dashboardFilter, filterStartDate, filterEndDate]);
+
+  // 1. Top Skill Logic (Filtered)
+  const topSkill = useMemo(() => {
+    const skillCounts: Record<string, number> = {};
+    filteredReflections.forEach(r => {
+      r.skillsUsed.forEach(s => {
+        skillCounts[s] = (skillCounts[s] || 0) + 1;
+      });
+    });
+    const sorted = Object.entries(skillCounts).sort((a, b) => b[1] - a[1]);
+    return sorted.length > 0 ? { name: sorted[0][0], count: sorted[0][1] } : null;
+  }, [filteredReflections]);
+
+  // 4. Summary Logic (Filtered)
+  const summaryStats = useMemo(() => {
+    return { logs: filteredReports.length, reflections: filteredReflections.length };
+  }, [filteredReports, filteredReflections]);
+
+  // 5. Skill Gap Radar Data (Current Only + Percentage)
+  const radarData = useMemo(() => {
+    return data.skills.slice(0, 5).map(s => ({
+      subject: s.name,
+      A: s.currentLevel,
+      fullMark: 5,
+      percentage: Math.round((s.currentLevel / 5) * 100) // Assuming max level is 5
+    }));
+  }, [data.skills]);
+
+  // 7. Nearest Event (Unfiltered - always show upcoming)
+  const nearestEvent = useMemo(() => {
+    const upcoming = (data.careerEvents || []).filter(e => {
+        const eDate = new Date(e.date);
+        const today = new Date();
+        today.setHours(0,0,0,0);
+        return eDate >= today;
+    }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    return upcoming.length > 0 ? upcoming[0] : null;
+  }, [data.careerEvents]);
+
+  // 9. Pending Todos (Unfiltered - always show pending)
+  const pendingTodos = useMemo(() => {
+    return data.todoList.filter(t => t.status === 'Pending').slice(0, 3);
+  }, [data.todoList]);
+
+  // 8. Recent Activities (Filtered)
+  const recentActivities = useMemo(() => {
+    return filteredReports.slice(-3).reverse();
+  }, [filteredReports]);
+
+  // Chart Data (Filtered)
+  const filteredChartData = useMemo(() => {
+      // If filtered reports are empty or few, maybe show empty state or just the points
+      // Group by date to ensure line chart continuity if needed, or just map reports
+      // For simplicity, mapping reports directly as before, but filtered.
+      // If 'all' or long range, maybe aggregate? Keeping it simple for now.
+      return filteredReports.map(report => ({
+        name: report.date ? new Date(report.date).toLocaleDateString('en-US', { weekday: 'short' }) : '?',
+        value: report.metricValue
+      }));
+  }, [filteredReports]);
 
   const togglePin = (id: string) => {
     setPinnedMenuIds(prev => {
@@ -345,95 +451,190 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenOnboardin
       </div>
 
       {/* DESKTOP ANALYTICAL DASHBOARD */}
-      <div className="hidden lg:block space-y-10 animate-in fade-in duration-700 pb-20">
-        <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
-          <div className="space-y-2">
-            <h2 className="text-3xl font-black text-slate-900 tracking-tight">Selamat Datang, {data.profile.name}!</h2>
-            <div className="flex items-center gap-4">
-               <p className="text-slate-400 font-bold text-sm uppercase tracking-widest flex items-center gap-2">Target Utama: <span className="text-indigo-600 border-b-2 border-indigo-600/30">{data.profile.mainCareer}</span></p>
+      <div className="hidden lg:block space-y-8 animate-in fade-in duration-700 pb-20">
+        <header className="flex items-center justify-between">
+          <div>
+            <h2 className="text-3xl font-black text-slate-900 tracking-tight">Dashboard Overview</h2>
+            <div className="flex items-center gap-3 mt-1">
+                <p className="text-slate-500 font-medium">Pantau progres karir dan pengembangan diri Anda.</p>
+                <div className="h-4 w-[1px] bg-slate-300"></div>
+                <p className="text-indigo-600 font-bold text-sm bg-indigo-50 px-3 py-1 rounded-full">
+                  Sisa Masa Aktif: {daysRemaining === Infinity ? 'Selamanya' : daysRemaining < 0 ? 'Habis' : `${daysRemaining} Hari`}
+                </p>
             </div>
           </div>
-          <div className="bg-indigo-600 p-8 rounded-[2.5rem] shadow-[0_20px_40px_rgba(79,70,229,0.15)] text-white flex items-center gap-6 max-w-lg group hover:-translate-y-1 transition-all duration-500 cursor-default">
-            <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"></path><path d="M5 3v4"></path><path d="M19 17v4"></path><path d="M3 5h4"></path><path d="M17 19h4"></path></svg></div>
-            <div><p className="text-[10px] text-white/50 uppercase font-black tracking-[0.2em] mb-1">Inspirasi Hari Ini</p><p className="text-base italic font-semibold leading-tight">"{currentAffirmation}"</p></div>
+          <div className="flex items-center gap-3">
+             <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-xl p-1 shadow-sm">
+                <select 
+                    value={dashboardFilter} 
+                    onChange={(e) => setDashboardFilter(e.target.value as any)}
+                    className="bg-transparent text-xs font-bold text-slate-700 outline-none px-3 py-2 cursor-pointer"
+                >
+                    <option value="all">Semua Waktu</option>
+                    <option value="today">Hari Ini</option>
+                    <option value="7days">7 Hari Terakhir</option>
+                    <option value="1month">1 Bulan Terakhir</option>
+                    <option value="3months">3 Bulan Terakhir</option>
+                    <option value="1year">1 Tahun Terakhir</option>
+                    <option value="range">Pilih Tanggal</option>
+                </select>
+                {dashboardFilter === 'range' && (
+                    <div className="flex items-center gap-2 px-2 border-l border-slate-100">
+                        <input type="date" value={filterStartDate} onChange={(e) => setFilterStartDate(e.target.value)} className="text-[10px] font-bold text-slate-600 outline-none bg-transparent" />
+                        <span className="text-slate-300">-</span>
+                        <input type="date" value={filterEndDate} onChange={(e) => setFilterEndDate(e.target.value)} className="text-[10px] font-bold text-slate-600 outline-none bg-transparent" />
+                    </div>
+                )}
+             </div>
+             <p className="text-sm font-bold text-slate-500 hidden xl:block">{new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</p>
           </div>
         </header>
 
-        {/* TRIAL JOURNEY DESKTOP (NEW) */}
-        {trialMessage && (
-          <div className={`p-8 lg:px-12 rounded-[3.5rem] border-2 shadow-2xl animate-in slide-in-from-top-4 duration-700 flex items-center justify-between gap-10 ${
-            trialMessage.type === 'urgent' ? 'bg-rose-600 text-white border-rose-500' : 
-            trialMessage.type === 'warning' ? 'bg-amber-500 text-white border-amber-400' : 'bg-slate-900 text-white border-slate-800'
-          }`}>
-             <div className="flex items-center gap-8">
-                <div className="w-20 h-20 bg-white/10 rounded-[2rem] flex items-center justify-center text-4xl shadow-inner italic">!</div>
-                <div>
-                   <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-60 mb-2">{trialMessage.title}</p>
-                   <p className="text-xl font-bold tracking-tight">{trialMessage.desc}</p>
-                </div>
-             </div>
-             <button 
-                onClick={() => onNavigate?.(trialMessage.target || 'billing')}
-                className="px-10 py-5 bg-white text-slate-900 rounded-[1.75rem] font-black uppercase tracking-widest shadow-2xl hover:scale-105 active:scale-95 transition-all"
-             >
-                {trialMessage.cta}
-             </button>
-          </div>
-        )}
+        {/* ROW 1: METRICS */}
+        <div className="grid grid-cols-4 gap-6">
+           {/* 1. Total Daily Work */}
+           <MetricCard 
+             title="Total Aktivitas" 
+             value={filteredReports.length} 
+             subtitle={dashboardFilter === 'all' ? "Total Work Logs" : "Filtered Logs"} 
+             icon={<i className="bi bi-journal-text"></i>} 
+             color="indigo" 
+           />
+           
+           {/* 2. Top Skill */}
+           <MetricCard 
+             title="Top Skill" 
+             value={topSkill ? topSkill.name : '-'} 
+             subtitle={topSkill ? `${topSkill.count}x digunakan` : 'Belum ada data'} 
+             icon={<i className="bi bi-star-fill"></i>} 
+             color="amber" 
+           />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
-          <MetricCard title="Produktivitas" value={data.dailyReports.length > 0 ? data.dailyReports[data.dailyReports.length - 1].metricValue : 0} subtitle={`${data.dailyReports.length > 0 ? data.dailyReports[data.dailyReports.length - 1].metricLabel : 'Belum ada data'}`} icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>} color="indigo" />
-          <MetricCard title="Progress Skill" value={`${progressPercent}%`} subtitle={`${achievedSkills} / ${skillCount} Skill tercapai`} icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>} color="emerald" />
-          
-          {/* UPDATED: MASA AKTIF CARD FOR PRO USERS */}
-          {data.plan !== SubscriptionPlan.FREE ? (
-            <MetricCard 
-              title="Masa Aktif" 
-              value={daysRemaining === Infinity ? "Unlimited" : `${daysRemaining} Hari`} 
-              subtitle={data.expiryDate ? `Hingga ${new Date(data.expiryDate).toLocaleDateString('id-ID', {day: '2-digit', month: 'short', year: 'numeric'})}` : "Aktif Selamanya"} 
-              icon={<i className="bi bi-calendar-check-fill"></i>} 
-              color="blue" 
-            />
-          ) : (
-            <div onClick={() => onOpenOnboarding ? onOpenOnboarding() : onNavigate?.('profile')} className="cursor-pointer">
-              <MetricCard 
-                title="Kesiapan Akun" 
-                value={`${accountReadiness}%`} 
-                subtitle="Lengkapi profil Anda" 
-                icon={<i className="bi bi-person-check-fill"></i>} 
-                color="slate" 
-              />
-            </div>
-          )}
+           {/* 4. Weekly Summary (Now Filtered Summary) */}
+           <div className="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col justify-center">
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Ringkasan Periode</p>
+              <div className="flex items-center justify-between mb-2">
+                 <span className="text-sm font-bold text-slate-600">Logs</span>
+                 <span className="text-xl font-black text-slate-900">{summaryStats.logs}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                 <span className="text-sm font-bold text-slate-600">Refleksi</span>
+                 <span className="text-xl font-black text-slate-900">{summaryStats.reflections}</span>
+              </div>
+           </div>
 
-          <MetricCard title="Pencapaian" value={data.achievements.length} subtitle="Milestone tervalidasi" icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"></path></svg>} color="amber" />
+           {/* 7. Nearest Event */}
+           <div className="bg-slate-900 p-6 rounded-[2.5rem] text-white shadow-lg flex flex-col justify-center relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-4 opacity-10 text-5xl"><i className="bi bi-calendar-event"></i></div>
+              <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-2">Agenda Terdekat</p>
+              {nearestEvent ? (
+                <>
+                  <p className="text-lg font-black leading-tight truncate">{nearestEvent.title}</p>
+                  <p className="text-xs font-bold mt-1 opacity-80">{new Date(nearestEvent.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })} • {nearestEvent.time}</p>
+                </>
+              ) : (
+                <p className="text-sm font-bold opacity-80">Tidak ada agenda mendatang</p>
+              )}
+           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-          <div className="lg:col-span-2 space-y-10">
-            <div className="bg-white p-10 rounded-[3rem] shadow-[0_2px_40px_rgba(0,0,0,0.02)] border border-slate-100">
-              <div className="flex items-center justify-between mb-10">
-                <div><h3 className="text-2xl font-black text-slate-800 tracking-tight">Analisis Performa</h3><p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.3em] mt-1">7 Hari Terakhir</p></div>
-                <div className="flex gap-2"><div className="w-3 h-3 rounded-full bg-indigo-500"></div><span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Poin Metrik</span></div>
+        {/* ROW 2: CHARTS */}
+        <div className="grid grid-cols-3 gap-6">
+           {/* 3. Line Chart (Daily Activity) */}
+           <div className="col-span-2 bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
+              <div className="flex justify-between items-center mb-6">
+                 <h3 className="text-lg font-black text-slate-800">Aktivitas Harian</h3>
+                 <span className="text-xs font-bold text-slate-400 uppercase">{dashboardFilter === 'all' ? 'Semua Waktu' : 'Periode Terpilih'}</span>
               </div>
-              <div className="h-80"><ResponsiveContainer width="100%" height="100%"><AreaChart data={chartData}><defs><linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#6366f1" stopOpacity={0.15}/><stop offset="95%" stopColor="#6366f1" stopOpacity={0}/></linearGradient></defs><CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f8fafc" /><XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 10, fontWeight: 800}} /><YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 10, fontWeight: 800}} /><Tooltip cursor={{ stroke: '#6366f1', strokeWidth: 2 }} contentStyle={{ borderRadius: '24px', border: 'none', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.1)', padding: '16px', backgroundColor: '#ffffff' }} itemStyle={{ fontWeight: '900', color: '#1e293b' }} /><Area type="monotone" dataKey="value" stroke="#6366f1" strokeWidth={5} fillOpacity={1} fill="url(#colorValue)" /></AreaChart></ResponsiveContainer></div>
-            </div>
-          </div>
+              <div className="h-64">
+                 <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={filteredChartData}>
+                       <defs>
+                          <linearGradient id="colorActivity" x1="0" y1="0" x2="0" y2="1">
+                             <stop offset="5%" stopColor="#6366f1" stopOpacity={0.2}/>
+                             <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
+                          </linearGradient>
+                       </defs>
+                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                       <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 10, fill: '#94a3b8'}} />
+                       <YAxis axisLine={false} tickLine={false} tick={{fontSize: 10, fill: '#94a3b8'}} />
+                       <Tooltip contentStyle={{borderRadius: '16px', border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.1)'}} />
+                       <Area type="monotone" dataKey="value" stroke="#6366f1" strokeWidth={3} fill="url(#colorActivity)" />
+                    </AreaChart>
+                 </ResponsiveContainer>
+              </div>
+           </div>
 
-          <div className="space-y-10">
-            <div className="bg-slate-900 p-10 rounded-[3rem] shadow-2xl text-white relative overflow-hidden group">
-              <h3 className="text-xl font-black tracking-tight mb-10 flex items-center justify-between">Target Selanjutnya<span className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg></span></h3>
-              <div className="space-y-10">
-                {data.careerPaths.filter(p => p.status !== 'tercapai').length > 0 ? (
-                  (() => {
-                    const nextGoal = data.careerPaths.filter(p => p.status !== 'tercapai')[0];
-                    return (<div className="space-y-10"><div className="space-y-2"><p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30 mb-2">Jabatan Target</p><p className="text-2xl font-black tracking-tight leading-none">{nextGoal.targetPosition}</p></div><div className="grid grid-cols-2 gap-4"><div className="bg-white/5 p-4 rounded-2xl border border-white/5"><p className="text-[9px] font-black uppercase tracking-widest text-indigo-400 mb-1">Status</p><p className="text-xs font-black uppercase">{nextGoal.status}</p></div><div className="bg-white/5 p-4 rounded-2xl border border-white/10"><p className="text-[9px] font-black uppercase tracking-widest text-indigo-400 mb-1">Target Tahun</p><p className="text-xs font-black uppercase">{nextGoal.targetYear}</p></div></div><div className="space-y-3"><div className="flex justify-between items-center"><p className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em]">Indeks Kesiapan</p><p className="text-xs font-black text-indigo-400">{(nextGoal.skillLevel / 5 * 100).toFixed(0)}%</p></div><div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden"><div className="h-full bg-indigo-500 shadow-[0_0_15px_rgba(99,102,241,0.5)] transition-all duration-1000" style={{ width: `${nextGoal.skillLevel / 5 * 100}%` }}></div></div></div></div>);
-                  })()
-                ) : (<div className="text-center py-10"><p className="text-indigo-400 font-black uppercase tracking-[0.2em]">Target Tercapai! 🚀</p><p className="text-[10px] text-white/30 mt-3 font-bold uppercase tracking-widest leading-relaxed">Waktunya menentukan langkah hebat berikutnya.</p></div>)}
+           {/* 5. Skill Gap Radar */}
+           <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
+              <h3 className="text-lg font-black text-slate-800 mb-6">Skill Radar (Current)</h3>
+              <div className="h-64">
+                 <ResponsiveContainer width="100%" height="100%">
+                    <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarData}>
+                       <PolarGrid stroke="#e2e8f0" />
+                       <PolarAngleAxis dataKey="subject" tick={{fontSize: 9, fill: '#64748b', fontWeight: 'bold'}} />
+                       <PolarRadiusAxis angle={30} domain={[0, 5]} tick={false} axisLine={false} />
+                       <Radar name="Current Level" dataKey="A" stroke="#6366f1" fill="#6366f1" fillOpacity={0.4} />
+                       <Tooltip formatter={(value: any, name: any, props: any) => [`${value}/5 (${props.payload.percentage}%)`, name]} contentStyle={{borderRadius: '12px', fontSize: '12px'}} />
+                       <Legend iconType="circle" wrapperStyle={{fontSize: '10px', paddingTop: '10px'}} />
+                    </RadarChart>
+                 </ResponsiveContainer>
               </div>
-            </div>
-            <div className="bg-white p-10 rounded-[3rem] shadow-[0_2px_40px_rgba(0,0,0,0.02)] border border-slate-100 flex flex-col items-center text-center group"><div className="w-24 h-24 bg-slate-50 rounded-3xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-500 shadow-inner text-4xl text-amber-500"><i className="bi bi-trophy"></i></div><h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400 mb-2">Total Pencapaian</h3><p className="text-4xl font-black text-slate-900 tracking-tight">{data.achievements.length}</p><p className="text-[11px] font-bold text-slate-500 mt-4 uppercase tracking-widest">Milestone Tervalidasi</p></div>
-          </div>
+           </div>
+        </div>
+
+        {/* ROW 3: LISTS */}
+        <div className="grid grid-cols-3 gap-6">
+           {/* 8. Latest Activities */}
+           <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
+              <h3 className="text-lg font-black text-slate-800 mb-6">Aktivitas Terakhir</h3>
+              <div className="space-y-4">
+                 {recentActivities.map((log, i) => (
+                    <div key={i} className="flex items-center gap-3 pb-3 border-b border-slate-50 last:border-0 last:pb-0">
+                       <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-xs"><i className="bi bi-pencil"></i></div>
+                       <div className="flex-1 overflow-hidden">
+                          <p className="text-xs font-bold text-slate-800 truncate">{log.activity}</p>
+                          <p className="text-[10px] text-slate-400">{new Date(log.date).toLocaleDateString('id-ID', {day: 'numeric', month: 'short'})}</p>
+                       </div>
+                    </div>
+                 ))}
+                 {recentActivities.length === 0 && <p className="text-xs text-slate-400 italic">Belum ada aktivitas.</p>}
+              </div>
+           </div>
+
+           {/* 9. Pending Todos */}
+           <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
+              <h3 className="text-lg font-black text-slate-800 mb-6">To-Do Pending</h3>
+              <div className="space-y-4">
+                 {pendingTodos.map((todo, i) => (
+                    <div key={i} className="flex items-center gap-3 pb-3 border-b border-slate-50 last:border-0 last:pb-0">
+                       <div className="w-4 h-4 rounded border-2 border-slate-300"></div>
+                       <div className="flex-1 overflow-hidden">
+                          <p className="text-xs font-bold text-slate-800 truncate">{todo.task}</p>
+                          <p className="text-[10px] text-slate-400">{todo.category}</p>
+                       </div>
+                    </div>
+                 ))}
+                 {pendingTodos.length === 0 && <p className="text-xs text-slate-400 italic">Semua tugas selesai!</p>}
+              </div>
+           </div>
+
+           {/* 6. Achievements */}
+           <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
+              <h3 className="text-lg font-black text-slate-800 mb-6">Pencapaian</h3>
+              <div className="space-y-4">
+                 {filteredAchievements.slice(0, 3).map((ach, i) => (
+                    <div key={i} className="flex items-center gap-3 pb-3 border-b border-slate-50 last:border-0 last:pb-0">
+                       <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-500 flex items-center justify-center text-xs"><i className="bi bi-trophy-fill"></i></div>
+                       <div className="flex-1 overflow-hidden">
+                          <p className="text-xs font-bold text-slate-800 truncate">{ach.title}</p>
+                          <p className="text-[10px] text-slate-400">{ach.category}</p>
+                       </div>
+                    </div>
+                 ))}
+                 {filteredAchievements.length === 0 && <p className="text-xs text-slate-400 italic">Belum ada pencapaian.</p>}
+              </div>
+           </div>
         </div>
       </div>
     </div>

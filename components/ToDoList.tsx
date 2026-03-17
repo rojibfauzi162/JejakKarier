@@ -364,7 +364,7 @@ const ToDoList: React.FC<ToDoListProps> = ({
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Pilih Bidang Pengembangan</label>
                     <select 
                       className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-sm focus:ring-4 focus:ring-blue-500/5 transition-all cursor-pointer"
-                      value={selectedCategory}
+                      value={selectedCategory || ''}
                       onChange={(e) => setSelectedCategory(e.target.value)}
                     >
                       {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
@@ -376,7 +376,7 @@ const ToDoList: React.FC<ToDoListProps> = ({
                       type="text"
                       placeholder="Ketik langkah baru untuk hari ini..."
                       className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-sm focus:ring-4 focus:ring-blue-500/5 transition-all"
-                      value={newTaskText}
+                      value={newTaskText || ''}
                       onChange={(e) => setNewTaskText(e.target.value)}
                     />
                  </div>
@@ -388,7 +388,7 @@ const ToDoList: React.FC<ToDoListProps> = ({
                       type="text"
                       placeholder="Berikan deskripsi atau catatan tambahan..."
                       className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-sm focus:ring-4 focus:ring-blue-500/5 transition-all"
-                      value={newTaskDesc}
+                      value={newTaskDesc || ''}
                       onChange={(e) => setNewTaskDesc(e.target.value)}
                     />
                  </div>
@@ -397,7 +397,7 @@ const ToDoList: React.FC<ToDoListProps> = ({
                     <input 
                       type="date"
                       className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-sm focus:ring-4 focus:ring-blue-500/5 transition-all"
-                      value={newTaskDate}
+                      value={newTaskDate || ''}
                       onChange={(e) => setNewTaskDate(e.target.value)}
                     />
                  </div>
@@ -426,7 +426,7 @@ const ToDoList: React.FC<ToDoListProps> = ({
                            type="text" 
                            placeholder="Cari..." 
                            className="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs focus:ring-2 focus:ring-indigo-500/10"
-                           value={searchQuery}
+                           value={searchQuery || ''}
                            onChange={(e) => setSearchQuery(e.target.value)}
                          />
                       </div>
@@ -435,7 +435,7 @@ const ToDoList: React.FC<ToDoListProps> = ({
                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Filter Kategori</label>
                       <select 
                         className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs focus:ring-2 focus:ring-indigo-500/10"
-                        value={filterCat}
+                        value={filterCat || ''}
                         onChange={(e) => setFilterCat(e.target.value)}
                       >
                         <option value="all">Semua Kategori</option>
@@ -446,7 +446,7 @@ const ToDoList: React.FC<ToDoListProps> = ({
                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Status</label>
                       <select 
                         className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs focus:ring-2 focus:ring-indigo-500/10"
-                        value={filterStatus}
+                        value={filterStatus || ''}
                         onChange={(e) => setFilterStatus(e.target.value)}
                       >
                         <option value="all">Semua Status</option>
@@ -458,7 +458,7 @@ const ToDoList: React.FC<ToDoListProps> = ({
                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Waktu</label>
                       <select 
                         className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs focus:ring-2 focus:ring-indigo-500/10"
-                        value={filterTime}
+                        value={filterTime || ''}
                         onChange={(e) => setFilterTime(e.target.value as TimeFilter)}
                       >
                         <option value="all">Semua Waktu</option>
@@ -473,7 +473,7 @@ const ToDoList: React.FC<ToDoListProps> = ({
                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Bulan</label>
                       <select 
                         className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs focus:ring-2 focus:ring-indigo-500/10"
-                        value={searchMonth}
+                        value={searchMonth || ''}
                         onChange={(e) => setSearchMonth(e.target.value)}
                       >
                         {monthsList.map(m => <option key={m.v} value={m.v}>{m.l}</option>)}
@@ -483,7 +483,7 @@ const ToDoList: React.FC<ToDoListProps> = ({
                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tahun</label>
                       <select 
                         className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs focus:ring-2 focus:ring-indigo-500/10"
-                        value={searchYear}
+                        value={searchYear || ''}
                         onChange={(e) => setSearchYear(e.target.value)}
                       >
                         <option value="all">Semua Tahun</option>
@@ -569,7 +569,7 @@ const ToDoList: React.FC<ToDoListProps> = ({
                   type="text"
                   placeholder="Nama kategori..."
                   className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-sm focus:ring-4 focus:ring-blue-500/5 transition-all"
-                  value={newCatName}
+                  value={newCatName || ''}
                   onChange={(e) => setNewCatName(e.target.value)}
                 />
               </div>
@@ -591,7 +591,7 @@ const ToDoList: React.FC<ToDoListProps> = ({
                     <input 
                       autoFocus
                       className="flex-1 bg-slate-50 px-3 py-2 rounded-xl text-sm font-bold outline-none border border-indigo-200"
-                      value={editingCat.next}
+                      value={editingCat.next || ''}
                       onChange={(e) => setEditingCat({...editingCat, next: e.target.value})}
                     />
                     <button onClick={handleUpdateCategory} className="p-2 bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-100"><i className="bi bi-check-lg"></i></button>

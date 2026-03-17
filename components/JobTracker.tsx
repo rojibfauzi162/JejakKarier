@@ -454,14 +454,14 @@ const JobForm: React.FC<{ initialData: JobApplication | null; onSubmit: (data: P
 const InputGroup: React.FC<{ label: string, value: string | number, onChange: (v: string) => void, type?: string, placeholder?: string }> = ({ label, value, onChange, type = "text", placeholder }) => (
   <div className="space-y-1.5">
     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{label}</label>
-    <input type={type} placeholder={placeholder} className="w-full px-5 py-3 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold text-slate-700 text-xs" value={value} onChange={e => onChange(e.target.value)} />
+    <input type={type} placeholder={placeholder} className="w-full px-5 py-3 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold text-slate-700 text-xs" value={value || ''} onChange={e => onChange(e.target.value)} />
   </div>
 );
 
 const SelectGroup: React.FC<{ label: string, value: any, onChange: (v: string) => void, options: string[] }> = ({ label, value, onChange, options }) => (
   <div className="space-y-1.5">
     {label && <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{label}</label>}
-    <select className="w-full px-5 py-3 rounded-2xl border border-slate-200 outline-none bg-white font-bold text-slate-700 text-xs" value={value} onChange={e => onChange(e.target.value)}>
+    <select className="w-full px-5 py-3 rounded-2xl border border-slate-200 outline-none bg-white font-bold text-slate-700 text-xs" value={value || ''} onChange={e => onChange(e.target.value)}>
       {options.map(o => <option key={o} value={o}>{o}</option>)}
     </select>
   </div>

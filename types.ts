@@ -608,6 +608,26 @@ export interface SystemTraining {
   updatedAt: string;
 }
 
+export interface SalesNotification {
+  id: string;
+  nama: string;
+  aksi: string;
+  paket?: string;
+  label?: string;
+  createdAt: string;
+}
+
+export interface SalesPopupConfig {
+  mode: 'real' | 'manual' | 'mix';
+  intervalMin: number;
+  intervalMax: number;
+  displayDuration: number;
+  isEnabled: boolean;
+  maskName: boolean;
+  manualRatio: number; // 0-100, used in mix mode
+  updatedAt: string;
+}
+
 export interface AppData {
   uid?: string;
   role: UserRole;

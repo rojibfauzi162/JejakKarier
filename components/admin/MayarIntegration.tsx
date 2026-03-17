@@ -124,7 +124,7 @@ const MayarIntegration: React.FC = () => {
                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Environment</label>
                  <select 
                   className="w-full px-6 py-4 rounded-2xl bg-white border border-slate-200 outline-none font-bold text-xs"
-                  value={config.environment}
+                  value={config.environment || ''}
                   onChange={e => setConfig({...config, environment: e.target.value as any})}
                  >
                     <option value="sandbox">Sandbox (Testing)</option>
@@ -138,7 +138,7 @@ const MayarIntegration: React.FC = () => {
                   type="password" 
                   className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs focus:border-blue-400 transition-all" 
                   placeholder="Bearer Key..."
-                  value={config.apiKey}
+                  value={config.apiKey || ''}
                   onChange={e => setConfig({...config, apiKey: e.target.value})}
                   required
                  />

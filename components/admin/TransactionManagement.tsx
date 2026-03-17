@@ -163,7 +163,7 @@ const TransactionManagement: React.FC<TransactionManagementProps> = ({ users, pr
             <input 
               placeholder="Cari Order ID, Nama, atau Ref Duitku..." 
               className="w-full px-5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none focus:border-indigo-400"
-              value={searchQuery}
+              value={searchQuery || ''}
               onChange={e => { setSearchQuery(e.target.value); setCurrentPage(1); }}
             />
           </div>
@@ -171,7 +171,7 @@ const TransactionManagement: React.FC<TransactionManagementProps> = ({ users, pr
             <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Paket</label>
             <select 
               className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold"
-              value={planFilter}
+              value={planFilter || ''}
               onChange={e => { setPlanFilter(e.target.value); setCurrentPage(1); }}
             >
               <option value="all">Semua Paket</option>
@@ -184,7 +184,7 @@ const TransactionManagement: React.FC<TransactionManagementProps> = ({ users, pr
             <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Status</label>
             <select 
               className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold"
-              value={statusFilter}
+              value={statusFilter || ''}
               onChange={e => { setStatusFilter(e.target.value); setCurrentPage(1); }}
             >
               <option value="all">Semua Status</option>
@@ -197,7 +197,7 @@ const TransactionManagement: React.FC<TransactionManagementProps> = ({ users, pr
             <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Waktu</label>
             <select 
               className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold"
-              value={timeFilter}
+              value={timeFilter || ''}
               onChange={e => { setTimeFilter(e.target.value as TimeFilter); setCurrentPage(1); }}
             >
               <option value="all">Semua Waktu</option>
@@ -215,12 +215,12 @@ const TransactionManagement: React.FC<TransactionManagementProps> = ({ users, pr
           <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl animate-in slide-in-from-top-2 duration-300">
             <div className="flex-1 space-y-1">
               <label className="text-[8px] font-black text-slate-400 uppercase">Mulai</label>
-              <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="w-full bg-white border rounded-lg px-3 py-1.5 text-xs font-bold" />
+              <input type="date" value={startDate || ''} onChange={e => setStartDate(e.target.value)} className="w-full bg-white border rounded-lg px-3 py-1.5 text-xs font-bold" />
             </div>
             <div className="text-slate-300 mt-4">sampai</div>
             <div className="flex-1 space-y-1">
               <label className="text-[8px] font-black text-slate-400 uppercase">Selesai</label>
-              <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="w-full bg-white border rounded-lg px-3 py-1.5 text-xs font-bold" />
+              <input type="date" value={endDate || ''} onChange={e => setEndDate(e.target.value)} className="w-full bg-white border rounded-lg px-3 py-1.5 text-xs font-bold" />
             </div>
           </div>
         )}

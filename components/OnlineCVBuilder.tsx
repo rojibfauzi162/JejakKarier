@@ -103,7 +103,7 @@ const OnlineCVBuilder: React.FC<OnlineCVBuilderProps> = ({ data, onUpdateConfig 
                   <input 
                     disabled={isUsernameLocked}
                     className={`w-full px-5 py-4 rounded-2xl border outline-none font-black text-sm transition-all ${isUsernameLocked ? 'bg-slate-100 border-slate-100 text-slate-400 cursor-not-allowed' : 'bg-slate-50 border-slate-200 text-blue-600'}`} 
-                    value={config.username} 
+                    value={config.username || ''} 
                     onChange={e => setConfig({...config, username: e.target.value.toLowerCase().replace(/[^a-z0-9]/g, '-')})} 
                     placeholder="nama-kamu" 
                   />
