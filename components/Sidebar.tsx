@@ -14,6 +14,13 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout, isAdmin, isOpen, onClose, isBypassMode }) => {
   const [dailyDropdownOpen, setDailyDropdownOpen] = useState(activeTab === 'daily' || activeTab === 'reports' || activeTab === 'ai_insights' || activeTab === 'work_reflection');
   const [cvDropdownOpen, setCvDropdownOpen] = useState(activeTab === 'cv_generator' || activeTab === 'online_cv');
+  
+  // Admin Dropdowns
+  const [adminUserDropdownOpen, setAdminUserDropdownOpen] = useState(activeTab === 'admin_users' || activeTab === 'admin_admins');
+  const [adminProductDropdownOpen, setAdminProductDropdownOpen] = useState(activeTab === 'admin_products' || activeTab === 'admin_trainings');
+  const [adminFinanceDropdownOpen, setAdminFinanceDropdownOpen] = useState(activeTab === 'admin_transactions' || activeTab === 'duitku');
+  const [adminMarketingDropdownOpen, setAdminMarketingDropdownOpen] = useState(activeTab === 'email_marketing' || activeTab === 'admin_sales_popup' || activeTab === 'admin_followup' || activeTab === 'admin_tracking');
+  const [adminSystemDropdownOpen, setAdminSystemDropdownOpen] = useState(activeTab === 'admin_ai' || activeTab === 'admin_health' || activeTab === 'admin_settings');
   const [showLogoutModal, setShowLogoutModal] = useState(false); 
   
   const [groupsOpen, setGroupsOpen] = useState<Record<string, boolean>>({
@@ -90,20 +97,71 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout, is
           {isAdmin && (
             <div className="space-y-1.5 animate-in slide-in-from-left duration-500">
               <p className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.25em] mb-4 ml-3 opacity-80">Admin Hub</p>
+              
               <SidebarItem id="admin_dashboard" active={activeTab === 'admin_dashboard'} onClick={() => setActiveTab('admin_dashboard')} icon={<i className="bi bi-speedometer2"></i>} label="Dashboard Admin" color="blue" />
-              <SidebarItem id="admin_users" active={activeTab === 'admin_users'} onClick={() => setActiveTab('admin_users')} icon={<i className="bi bi-people"></i>} label="Kelola User" color="rose" />
-              <SidebarItem id="admin_admins" active={activeTab === 'admin_admins'} onClick={() => setActiveTab('admin_admins')} icon={<i className="bi bi-shield-lock"></i>} label="Kelola Admin" color="rose" />
-              <SidebarItem id="admin_transactions" active={activeTab === 'admin_transactions'} onClick={() => setActiveTab('admin_transactions')} icon={<i className="bi bi-currency-dollar"></i>} label="Kelola Transaksi" color="blue" />
-              <SidebarItem id="email_marketing" active={activeTab === 'email_marketing'} onClick={() => setActiveTab('email_marketing')} icon={<i className="bi bi-envelope-paper"></i>} label="Email Marketing" color="blue" />
-              <SidebarItem id="admin_trainings" active={activeTab === 'admin_trainings'} onClick={() => setActiveTab('admin_trainings')} icon={<i className="bi bi-mortarboard"></i>} label="Training Management" color="blue" />
-              <SidebarItem id="duitku" active={activeTab === 'duitku'} onClick={() => setActiveTab('duitku')} icon={<i className="bi bi-credit-card"></i>} label="Integrasi Duitku" color="blue" />
-              <SidebarItem id="admin_tracking" active={activeTab === 'admin_tracking'} onClick={() => setActiveTab('admin_tracking')} icon={<i className="bi bi-bar-chart-steps"></i>} label="Tracking Ads" color="blue" />
-              <SidebarItem id="admin_followup" active={activeTab === 'admin_followup'} onClick={() => setActiveTab('admin_followup')} icon={<i className="bi bi-chat-left-dots"></i>} label="Follow Up Script" color="rose" />
-              <SidebarItem id="admin_ai" active={activeTab === 'admin_ai'} onClick={() => setActiveTab('admin_ai')} icon={<i className="bi bi-cpu"></i>} label="AI Architecture" color="blue" />
-              <SidebarItem id="admin_products" active={activeTab === 'admin_products'} onClick={() => setActiveTab('admin_products')} icon={<i className="bi bi-box-seam"></i>} label="Product Matrix" color="blue" />
-              <SidebarItem id="admin_sales_popup" active={activeTab === 'admin_sales_popup'} onClick={() => setActiveTab('admin_sales_popup')} icon={<i className="bi bi-megaphone"></i>} label="Sales Popup" color="rose" />
-              <SidebarItem id="admin_settings" active={activeTab === 'admin_settings'} onClick={() => setActiveTab('admin_settings')} icon={<i className="bi bi-gear-fill"></i>} label="Pengaturan Admin" color="blue" />
-              <SidebarItem id="admin_health" active={activeTab === 'admin_health'} onClick={() => setActiveTab('admin_health')} icon={<i className="bi bi-activity"></i>} label="System Health" color="rose" />
+
+              {/* User Management */}
+              <AdminGroup 
+                label="Manajemen User" 
+                icon={<i className="bi bi-people"></i>} 
+                isOpen={adminUserDropdownOpen} 
+                toggle={() => setAdminUserDropdownOpen(!adminUserDropdownOpen)}
+                active={activeTab === 'admin_users' || activeTab === 'admin_admins'}
+              >
+                <SubMenuButton active={activeTab === 'admin_users'} onClick={() => setActiveTab('admin_users')} label="Kelola User" icon="bi bi-person-gear" />
+                <SubMenuButton active={activeTab === 'admin_admins'} onClick={() => setActiveTab('admin_admins')} label="Kelola Admin" icon="bi bi-shield-lock" />
+              </AdminGroup>
+
+              {/* Product & Content */}
+              <AdminGroup 
+                label="Produk & Konten" 
+                icon={<i className="bi bi-box-seam"></i>} 
+                isOpen={adminProductDropdownOpen} 
+                toggle={() => setAdminProductDropdownOpen(!adminProductDropdownOpen)}
+                active={activeTab === 'admin_products' || activeTab === 'admin_trainings'}
+              >
+                <SubMenuButton active={activeTab === 'admin_products'} onClick={() => setActiveTab('admin_products')} label="Product Matrix" icon="bi bi-grid-3x3-gap" />
+                <SubMenuButton active={activeTab === 'admin_trainings'} onClick={() => setActiveTab('admin_trainings')} label="Training Management" icon="bi bi-mortarboard" />
+              </AdminGroup>
+
+              {/* Finance */}
+              <AdminGroup 
+                label="Keuangan" 
+                icon={<i className="bi bi-currency-dollar"></i>} 
+                isOpen={adminFinanceDropdownOpen} 
+                toggle={() => setAdminFinanceDropdownOpen(!adminFinanceDropdownOpen)}
+                active={activeTab === 'admin_transactions' || activeTab === 'duitku'}
+              >
+                <SubMenuButton active={activeTab === 'admin_transactions'} onClick={() => setActiveTab('admin_transactions')} label="Kelola Transaksi" icon="bi bi-cash-stack" />
+                <SubMenuButton active={activeTab === 'duitku'} onClick={() => setActiveTab('duitku')} label="Integrasi Duitku" icon="bi bi-credit-card" />
+              </AdminGroup>
+
+              {/* Marketing */}
+              <AdminGroup 
+                label="Marketing Tools" 
+                icon={<i className="bi bi-megaphone"></i>} 
+                isOpen={adminMarketingDropdownOpen} 
+                toggle={() => setAdminMarketingDropdownOpen(!adminMarketingDropdownOpen)}
+                active={activeTab === 'email_marketing' || activeTab === 'admin_sales_popup' || activeTab === 'admin_followup' || activeTab === 'admin_tracking'}
+              >
+                <SubMenuButton active={activeTab === 'email_marketing'} onClick={() => setActiveTab('email_marketing')} label="Email Marketing" icon="bi bi-envelope-paper" />
+                <SubMenuButton active={activeTab === 'admin_sales_popup'} onClick={() => setActiveTab('admin_sales_popup')} label="Sales Popup" icon="bi bi-chat-square-dots" />
+                <SubMenuButton active={activeTab === 'admin_followup'} onClick={() => setActiveTab('admin_followup')} label="Follow Up Script" icon="bi bi-chat-left-dots" />
+                <SubMenuButton active={activeTab === 'admin_tracking'} onClick={() => setActiveTab('admin_tracking')} label="Tracking Ads" icon="bi bi-bar-chart-steps" />
+              </AdminGroup>
+
+              {/* System */}
+              <AdminGroup 
+                label="Sistem & AI" 
+                icon={<i className="bi bi-gear"></i>} 
+                isOpen={adminSystemDropdownOpen} 
+                toggle={() => setAdminSystemDropdownOpen(!adminSystemDropdownOpen)}
+                active={activeTab === 'admin_ai' || activeTab === 'admin_health' || activeTab === 'admin_settings'}
+              >
+                <SubMenuButton active={activeTab === 'admin_ai'} onClick={() => setActiveTab('admin_ai')} label="AI Architecture" icon="bi bi-cpu" />
+                <SubMenuButton active={activeTab === 'admin_health'} onClick={() => setActiveTab('admin_health')} label="System Health" icon="bi bi-activity" />
+                <SubMenuButton active={activeTab === 'admin_settings'} onClick={() => setActiveTab('admin_settings')} label="Pengaturan Admin" icon="bi bi-sliders" />
+              </AdminGroup>
             </div>
           )}
 
@@ -308,6 +366,30 @@ const SubMenuButton = ({ id, active, onClick, label, icon }: any) => (
     <span className="text-[10px] opacity-60"><i className={icon}></i></span>
     <span>{label}</span>
   </button>
+);
+
+const AdminGroup = ({ label, icon, isOpen, toggle, active, children }: any) => (
+  <div className="space-y-1">
+    <button
+      onClick={toggle}
+      className={`w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl transition-all duration-300 border group ${
+        active 
+          ? 'bg-white/5 border-white/10 text-white' 
+          : 'text-slate-500 hover:bg-white/5 hover:text-white border-transparent'
+      }`}
+    >
+      <div className="flex items-center gap-3">
+        <span className={`transition-colors text-sm ${active ? 'text-indigo-400' : 'text-slate-500 group-hover:text-slate-300'}`}>{icon}</span>
+        <span className="font-bold text-sm tracking-tight">{label}</span>
+      </div>
+      <span className={`text-[10px] transition-transform duration-300 opacity-40 ${isOpen ? 'rotate-180' : ''}`}>▼</span>
+    </button>
+    {isOpen && (
+      <div className="pl-6 space-y-1 mt-1 animate-in slide-in-from-top-1 duration-300 border-l border-white/5 ml-4">
+        {children}
+      </div>
+    )}
+  </div>
 );
 
 export default Sidebar;
