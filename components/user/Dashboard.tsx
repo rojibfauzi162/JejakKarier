@@ -10,7 +10,8 @@ interface DashboardProps {
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenNotif }) => {
-  const currentAffirmation = data.affirmations[Math.floor(Math.random() * data.affirmations.length)];
+  const affirmations = data.affirmations && data.affirmations.length > 0 ? data.affirmations : ["Terus belajar dan berkembang setiap hari."];
+  const currentAffirmation = affirmations[Math.floor(Math.random() * affirmations.length)];
   const [isMenuExpanded, setIsMenuExpanded] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   
@@ -34,14 +35,14 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenNotif }) 
     const alerts = [];
     
     // 1. Check Daily Work (Hanya Hari Ini)
-    const hasWorkLogs = data.dailyReports.some(l => l.date === today);
-    if (!hasWorkLogs && currentTime >= data.reminderConfig.dailyLogReminderTime) {
+    const hasWorkLogs = (data.dailyReports || []).some(l => l.date === today);
+    if (!hasWorkLogs && currentTime >= (data.reminderConfig?.dailyLogReminderTime || "17:00")) {
       alerts.push({ id: 'log', text: "Kamu belum mengisi Aktivitas Kerja hari ini!", target: 'daily', date: today, icon: '📝', color: 'indigo' });
     }
 
     // 2. Check Reflection (Hanya Hari Ini)
-    const hasReflection = data.dailyReflections.some(r => r.date === today);
-    if (!hasReflection && currentTime >= data.reminderConfig.reflectionReminderTime) {
+    const hasReflection = (data.dailyReflections || []).some(r => r.date === today);
+    if (!hasReflection && currentTime >= (data.reminderConfig?.reflectionReminderTime || "20:00")) {
       alerts.push({ id: 'ref', text: "Jangan lupa isi Refleksi Kerja hari ini!", target: 'work_reflection', date: today, icon: '🧘', color: 'rose' });
     }
 
@@ -57,12 +58,14 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenNotif }) 
     return saved ? JSON.parse(saved) : ['daily', 'work_reflection', 'todo_list', 'mobile_stats', 'skills', 'career', 'cv_generator', 'calendar'];
   });
 
-  const skillCount = data.skills.length;
-  const achievedSkills = data.skills.filter(s => s.status === SkillStatus.ACHIEVED).length;
+  const skills = data.skills || [];
+  const skillCount = skills.length;
+  const achievedSkills = skills.filter(s => s.status === SkillStatus.ACHIEVED).length;
   const progressPercent = skillCount > 0 ? Math.round((achievedSkills / skillCount) * 100) : 0;
   
   // Simple chart data from daily reports
-  const chartData = data.dailyReports.slice(-7).map(report => ({
+  const dailyReports = data.dailyReports || [];
+  const chartData = dailyReports.slice(-7).map(report => ({
     name: report.date ? new Date(report.date).toLocaleDateString('en-US', { weekday: 'short' }) : '?',
     value: report.metricValue
   }));
@@ -136,11 +139,11 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenNotif }) 
         <header className="px-6 pt-0 flex items-center justify-between">
            <div className="flex items-center gap-4">
               <div className="w-14 h-14 rounded-full border-4 border-slate-50 overflow-hidden shadow-md">
-                 {data.profile.photoUrl ? <img src={data.profile.photoUrl} alt="User" className="w-full h-full object-cover" /> : <div className="w-full h-full bg-slate-100 flex items-center justify-center text-xl"><i className="bi bi-person"></i></div>}
+                 {data.profile?.photoUrl ? <img src={data.profile.photoUrl} alt="User" className="w-full h-full object-cover" /> : <div className="w-full h-full bg-slate-100 flex items-center justify-center text-xl"><i className="bi bi-person"></i></div>}
               </div>
               <div>
                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1.5">Good Morning 👋</p>
-                 <h2 className="text-xl font-black text-slate-900 tracking-tight">{data.profile.name}</h2>
+                 <h2 className="text-xl font-black text-slate-900 tracking-tight">{data.profile?.name || 'User'}</h2>
               </div>
            </div>
            <div className="flex gap-4">
@@ -237,7 +240,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenNotif }) 
               <button className="text-[10px] font-black text-indigo-600 uppercase tracking-widest" onClick={() => onNavigate?.('daily')}>View All Logs</button>
            </div>
            <div className="space-y-3">
-              {data.dailyReports.slice(-3).reverse().map((log, i) => (
+              {dailyReports.slice(-3).reverse().map((log, i) => (
                 <div key={i} className="flex items-center gap-4 p-4 bg-slate-50/50 rounded-[2rem] border border-slate-100 animate-in slide-in-from-right duration-500" style={{ animationDelay: `${i * 100}ms` }}>
                    <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-xl shadow-sm border border-slate-100 text-indigo-600"><i className="bi bi-file-earmark-text"></i></div>
                    <div className="flex-1 overflow-hidden">
@@ -249,7 +252,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenNotif }) 
                    </div>
                 </div>
               ))}
-              {data.dailyReports.length === 0 && (
+              {dailyReports.length === 0 && (
                 <div className="py-10 text-center bg-slate-50 rounded-[2rem] border-2 border-dashed border-slate-200">
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Belum ada aktivitas hari ini</p>
                 </div>
@@ -262,9 +265,9 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenNotif }) 
       <div className="hidden lg:block space-y-10 animate-in fade-in duration-700 pb-20">
         <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
           <div className="space-y-2">
-            <h2 className="text-3xl font-black text-slate-900 tracking-tight">Selamat Datang, {data.profile.name}!</h2>
+            <h2 className="text-3xl font-black text-slate-900 tracking-tight">Selamat Datang, {data.profile?.name || 'User'}!</h2>
             <div className="flex items-center gap-4">
-               <p className="text-slate-400 font-bold text-sm uppercase tracking-widest flex items-center gap-2">Target Utama: <span className="text-indigo-600 border-b-2 border-indigo-600/30">{data.profile.mainCareer}</span></p>
+               <p className="text-slate-400 font-bold text-sm uppercase tracking-widest flex items-center gap-2">Target Utama: <span className="text-indigo-600 border-b-2 border-indigo-600/30">{data.profile?.mainCareer || 'Belum diatur'}</span></p>
             </div>
           </div>
           <div className="bg-indigo-600 p-8 rounded-[2.5rem] shadow-[0_20px_40px_rgba(79,70,229,0.15)] text-white flex items-center gap-6 max-w-lg group hover:-translate-y-1 transition-all duration-500 cursor-default">
@@ -274,10 +277,10 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenNotif }) 
         </header>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
-          <MetricCard title="Produktivitas" value={data.dailyReports.length > 0 ? data.dailyReports[data.dailyReports.length - 1].metricValue : 0} subtitle={`${data.dailyReports.length > 0 ? data.dailyReports[data.dailyReports.length - 1].metricLabel : 'Belum ada data'}`} icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>} color="indigo" />
+          <MetricCard title="Produktivitas" value={dailyReports.length > 0 ? dailyReports[dailyReports.length - 1].metricValue : 0} subtitle={`${dailyReports.length > 0 ? dailyReports[dailyReports.length - 1].metricLabel : 'Belum ada data'}`} icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>} color="indigo" />
           <MetricCard title="Progress Skill" value={`${progressPercent}%`} subtitle={`${achievedSkills} / ${skillCount} Skill tercapai`} icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>} color="emerald" />
           <MetricCard title="Status Akun" value={data.plan} subtitle={data.expiryDate ? `Sisa ${Math.ceil((new Date(data.expiryDate).getTime() - new Date().getTime()) / (1000 * 3600 * 24))} Hari` : 'Aktif Selamanya'} icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>} color="slate" />
-          <MetricCard title="Pencapaian" value={data.achievements.length} subtitle="Milestone tervalidasi" icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"></path></svg>} color="amber" />
+          <MetricCard title="Pencapaian" value={(data.achievements || []).length} subtitle="Milestone tervalidasi" icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"></path></svg>} color="amber" />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">

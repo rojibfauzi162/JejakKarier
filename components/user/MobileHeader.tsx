@@ -14,7 +14,7 @@ interface MobileHeaderProps {
   logoDarkUrl?: string;
 }
 
-const MobileHeader: React.FC<MobileHeaderProps> = ({ profile, notificationCount, onNavigate, activeTab, alerts = [], logoDarkUrl }) => {
+const MobileHeader: React.FC<MobileHeaderProps> = ({ profile = {} as any, notificationCount, onNavigate, activeTab, alerts = [], logoDarkUrl }) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false); // State baru untuk modal logout

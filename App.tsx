@@ -103,6 +103,7 @@ const App: React.FC = () => {
   });
 
   const checkProfileCompletion = (profile: any) => {
+    if (!profile) return false;
     const fields = [
       'name', 'birthPlace', 'birthDate', 'maritalStatus', 'email', 
       'phone', 'domicile', 'currentCompany', 'currentPosition', 
@@ -237,6 +238,23 @@ const App: React.FC = () => {
       }
       link.href = manifestURL;
 
+      // Update favicon
+      let iconLink = document.querySelector('link[rel="icon"]') as HTMLLinkElement;
+      if (!iconLink) {
+        iconLink = document.createElement('link');
+        iconLink.rel = 'icon';
+        document.getElementsByTagName('head')[0].appendChild(iconLink);
+      }
+      iconLink.href = landingConfig.pwaIconUrl || landingConfig.logoUrl || "/logo.png";
+      
+      let appleIconLink = document.querySelector('link[rel="apple-touch-icon"]') as HTMLLinkElement;
+      if (!appleIconLink) {
+        appleIconLink = document.createElement('link');
+        appleIconLink.rel = 'apple-touch-icon';
+        document.getElementsByTagName('head')[0].appendChild(appleIconLink);
+      }
+      appleIconLink.href = landingConfig.pwaIconUrl || landingConfig.logoUrl || "/logo.png";
+
       // Update theme color meta tag
       let themeColorMeta = document.querySelector('meta[name="theme-color"]') as HTMLMetaElement;
       if (!themeColorMeta) {
@@ -299,7 +317,30 @@ const App: React.FC = () => {
           try {
             const existingData = await findUserByEmail(localSessionEmail);
             if (existingData) {
-              setData(existingData);
+              setData({
+                ...getCleanInitialData(),
+                ...existingData,
+                profile: {
+                  ...getCleanInitialData().profile,
+                  ...(existingData.profile || {})
+                },
+                reminderConfig: {
+                  ...getCleanInitialData().reminderConfig,
+                  ...(existingData.reminderConfig || {})
+                },
+                dailyReports: existingData.dailyReports || [],
+                dailyReflections: existingData.dailyReflections || [],
+                todoList: existingData.todoList || [],
+                skills: existingData.skills || [],
+                achievements: existingData.achievements || [],
+                affirmations: existingData.affirmations || getCleanInitialData().affirmations,
+                planPermissions: existingData.planPermissions || [],
+                jobApplications: existingData.jobApplications || [],
+                careerEvents: existingData.careerEvents || [],
+                personalProjects: existingData.personalProjects || [],
+                interviewScripts: existingData.interviewScripts || [],
+                onlineCV: existingData.onlineCV || getCleanInitialData().onlineCV
+              });
               setLoading(false);
               return;
             }
@@ -360,7 +401,30 @@ const App: React.FC = () => {
              if (userData.planPermissions.includes('online_cv') && !userData.planPermissions.includes('cv')) userData.planPermissions.push('cv');
           }
           
-          setData(userData);
+          setData({
+            ...getCleanInitialData(),
+            ...userData,
+            profile: {
+              ...getCleanInitialData().profile,
+              ...(userData.profile || {})
+            },
+            reminderConfig: {
+              ...getCleanInitialData().reminderConfig,
+              ...(userData.reminderConfig || {})
+            },
+            dailyReports: userData.dailyReports || [],
+            dailyReflections: userData.dailyReflections || [],
+            todoList: userData.todoList || [],
+            skills: userData.skills || [],
+            achievements: userData.achievements || [],
+            affirmations: userData.affirmations || getCleanInitialData().affirmations,
+            planPermissions: userData.planPermissions || [],
+            jobApplications: userData.jobApplications || [],
+            careerEvents: userData.careerEvents || [],
+            personalProjects: userData.personalProjects || [],
+            interviewScripts: userData.interviewScripts || [],
+            onlineCV: userData.onlineCV || getCleanInitialData().onlineCV
+          });
           if (userData.role === UserRole.SUPERADMIN && activeTab === 'dashboard') {
               setActiveTab('admin_dashboard');
           }
@@ -461,8 +525,8 @@ const App: React.FC = () => {
   const activeAlerts = isAdmin ? [] : (() => {
     const todayStr = new Date().toISOString().split('T')[0];
     const alerts = [];
-    if (!data.dailyReports.some(l => l.date === todayStr)) alerts.push({ id: 'log', text: "Lupa isi Aktivitas Kerja?", target: 'daily', icon: 'bi-pencil-square', color: 'indigo' });
-    const pendingTodos = data.todoList.filter(t => t.status === 'Pending');
+    if (!(data.dailyReports || []).some(l => l.date === todayStr)) alerts.push({ id: 'log', text: "Lupa isi Aktivitas Kerja?", target: 'daily', icon: 'bi-pencil-square', color: 'indigo' });
+    const pendingTodos = (data.todoList || []).filter(t => t.status === 'Pending');
     if (pendingTodos.length > 0) alerts.push({ id: 'todo_p', text: `${pendingTodos.length} Langkah Tertunda`, target: 'todo_list', icon: 'bi-list-check', color: 'blue' });
     return alerts;
   })();
