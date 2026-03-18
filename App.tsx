@@ -147,6 +147,9 @@ const App: React.FC = () => {
       if (path === '/trainings') setPublicTrainingPage({ type: 'list' });
       else if (path.startsWith('/trainings/')) setPublicTrainingPage({ type: 'detail', id: path.split('/')[2] });
       else setPublicTrainingPage(null);
+
+      if (path === '/login') setShowAuth(true);
+      else if (path === '/') setShowAuth(false);
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
@@ -162,7 +165,23 @@ const App: React.FC = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const [showAuth, setShowAuth] = useState(false);
+  const [showAuth, setShowAuth] = useState(() => {
+    return window.location.pathname === '/login';
+  });
+
+  const navigateToAuth = (show: boolean) => {
+    if (show) window.history.pushState({}, '', '/login');
+    else window.history.pushState({}, '', '/');
+    setShowAuth(show);
+  };
+
+  useEffect(() => {
+    if (user && window.location.pathname === '/login') {
+      window.history.replaceState({}, '', '/');
+      setShowAuth(false);
+    }
+  }, [user]);
+
   const [publicProducts, setPublicProducts] = useState<SubscriptionProduct[]>(DEFAULT_PRODUCTS);
 
   useEffect(() => {
@@ -179,6 +198,59 @@ const App: React.FC = () => {
     });
     return () => unsubscribeLanding();
   }, []);
+
+  useEffect(() => {
+    if (landingConfig) {
+      const manifest = {
+        name: "FokusKarir - Jejak Karir Digital",
+        short_name: landingConfig.pwaShortName || "FokusKarir",
+        description: "Platform All-in-One untuk Manajemen Karir, Portofolio, dan Pertumbuhan Profesional.",
+        start_url: "/login",
+        display: "standalone",
+        background_color: "#ffffff",
+        theme_color: landingConfig.pwaThemeColor || "#4f46e5",
+        icons: [
+          {
+            src: landingConfig.pwaIconUrl || landingConfig.logoUrl || "/logo.png",
+            sizes: "192x192",
+            type: "image/png",
+            purpose: "any maskable"
+          },
+          {
+            src: landingConfig.pwaIconUrl || landingConfig.logoUrl || "/logo.png",
+            sizes: "512x512",
+            type: "image/png",
+            purpose: "any maskable"
+          }
+        ]
+      };
+
+      const stringManifest = JSON.stringify(manifest);
+      const blob = new Blob([stringManifest], {type: 'application/json'});
+      const manifestURL = URL.createObjectURL(blob);
+      
+      let link = document.querySelector('link[rel="manifest"]') as HTMLLinkElement;
+      if (!link) {
+        link = document.createElement('link');
+        link.rel = 'manifest';
+        document.getElementsByTagName('head')[0].appendChild(link);
+      }
+      link.href = manifestURL;
+
+      // Update theme color meta tag
+      let themeColorMeta = document.querySelector('meta[name="theme-color"]') as HTMLMetaElement;
+      if (!themeColorMeta) {
+        themeColorMeta = document.createElement('meta');
+        themeColorMeta.name = 'theme-color';
+        document.getElementsByTagName('head')[0].appendChild(themeColorMeta);
+      }
+      themeColorMeta.content = landingConfig.pwaThemeColor || "#4f46e5";
+
+      return () => {
+        URL.revokeObjectURL(manifestURL);
+      };
+    }
+  }, [landingConfig]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (authUser) => {
@@ -381,8 +453,8 @@ const App: React.FC = () => {
 
   if (checkoutPlan) return <Checkout plan={checkoutPlan} user={user} onBack={() => setCheckoutPlan(null)} />;
   if (!user) {
-    if (showAuth) return <Auth onBack={() => setShowAuth(false)} logoUrl={landingConfig?.logoUrl} logoDarkUrl={landingConfig?.logoDarkUrl} />;
-    return <LandingPage onStart={() => setShowAuth(true)} onLogin={() => setShowAuth(true)} onShowLegal={(type) => navigateToLegal(type)} onBuyPlan={(plan) => setCheckoutPlan(plan)} products={publicProducts} initialConfig={landingConfig} />;
+    if (showAuth) return <Auth onBack={() => navigateToAuth(false)} logoUrl={landingConfig?.logoUrl} logoDarkUrl={landingConfig?.logoDarkUrl} />;
+    return <LandingPage onStart={() => navigateToAuth(true)} onLogin={() => navigateToAuth(true)} onShowLegal={(type) => navigateToLegal(type)} onBuyPlan={(plan) => setCheckoutPlan(plan)} products={publicProducts} initialConfig={landingConfig} />;
   }
 
   const isAdmin = data.role === UserRole.SUPERADMIN;

@@ -391,6 +391,9 @@ export interface LandingPageConfig {
   businessAddress?: string;
   logoUrl?: string;
   logoDarkUrl?: string;
+  pwaIconUrl?: string;
+  pwaShortName?: string;
+  pwaThemeColor?: string;
   updatedAt?: string;
 }
 

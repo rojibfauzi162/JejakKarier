@@ -17,7 +17,10 @@ const AdminSettings: React.FC = () => {
     businessPhone: '',
     businessAddress: '',
     logoUrl: '',
-    logoDarkUrl: ''
+    logoDarkUrl: '',
+    pwaIconUrl: '',
+    pwaShortName: 'FokusKarir',
+    pwaThemeColor: '#4f46e5'
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -27,6 +30,7 @@ const AdminSettings: React.FC = () => {
   const mobileFileRef = useRef<HTMLInputElement>(null);
   const logoFileRef = useRef<HTMLInputElement>(null);
   const logoDarkFileRef = useRef<HTMLInputElement>(null);
+  const pwaIconFileRef = useRef<HTMLInputElement>(null);
 
   const ALL_FEATURES = [
     { id: 'daily-growth', label: 'Daily Growth Registry' },
@@ -57,7 +61,10 @@ const AdminSettings: React.FC = () => {
             adminWhatsApp: resLanding.adminWhatsApp || '628123456789',
             businessEmail: resLanding.businessEmail || '',
             businessPhone: resLanding.businessPhone || '',
-            businessAddress: resLanding.businessAddress || ''
+            businessAddress: resLanding.businessAddress || '',
+            pwaIconUrl: resLanding.pwaIconUrl || '',
+            pwaShortName: resLanding.pwaShortName || 'FokusKarir',
+            pwaThemeColor: resLanding.pwaThemeColor || '#4f46e5'
           });
         }
       } catch (e) {
@@ -96,22 +103,47 @@ const AdminSettings: React.FC = () => {
     }));
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: 'desktopDashboardImg' | 'mobileDashboardImg' | 'logoUrl' | 'logoDarkUrl') => {
-    const file = e.target.files?.[0];
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: keyof LandingPageConfig) => {
+    const target = e.target;
+    const file = target.files?.[0];
     if (file) {
+      // Validasi ukuran file (maksimal 2MB) untuk mencegah error Firestore jika menggunakan fallback base64
+      if (file.size > 2 * 1024 * 1024) {
+        setMessage({ text: 'Ukuran file terlalu besar. Maksimal 2MB.', type: 'error' });
+        setTimeout(() => setMessage(null), 5000);
+        if (target) target.value = '';
+        return;
+      }
+
+      // 1. Tampilkan preview lokal langsung menggunakan FileReader (sebagai fallback jika upload gagal)
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          setLandingConfig(prev => ({ ...prev, [field]: event.target!.result as string }));
+        }
+      };
+      reader.readAsDataURL(file);
+
       setSaving(true);
-      setMessage({ text: 'Sedang mengupload gambar...', type: 'success' });
+      setMessage({ text: 'Sedang mengupload gambar ke server...', type: 'success' });
       try {
+        // 2. Coba upload ke Firebase Storage
         const path = `landing_page/${field}_${Date.now()}`;
         const downloadUrl = await uploadImage(file, path);
+        // Jika sukses, timpa base64 dengan URL asli dari Storage
         setLandingConfig(prev => ({ ...prev, [field]: downloadUrl }));
         setMessage({ text: 'Gambar berhasil diupload! ✅', type: 'success' });
       } catch (error: any) {
-        console.error("Gagal upload gambar:", error);
-        setMessage({ text: `Gagal upload: ${error.message}`, type: 'error' });
+        console.error("Gagal upload gambar ke Storage, menggunakan versi lokal (base64):", error);
+        // Jika gagal, biarkan versi base64 tetap ada di state, dan beri tahu user
+        setMessage({ text: `Penyimpanan awan gagal, menggunakan gambar lokal. Jangan lupa klik Update!`, type: 'success' });
       } finally {
         setSaving(false);
-        setTimeout(() => setMessage(null), 3000);
+        setTimeout(() => setMessage(null), 5000);
+        // Reset input value to allow re-uploading the same file if needed
+        if (target) {
+          target.value = '';
+        }
       }
     }
   };
@@ -175,6 +207,7 @@ const AdminSettings: React.FC = () => {
               
               <div className="flex items-center gap-4">
                 <button 
+                  type="button"
                   onClick={() => logoFileRef.current?.click()}
                   className="flex-1 px-8 py-5 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-black transition-all shadow-xl shadow-slate-200"
                 >
@@ -182,6 +215,7 @@ const AdminSettings: React.FC = () => {
                 </button>
                 {landingConfig.logoUrl && (
                   <button 
+                    type="button"
                     onClick={() => setLandingConfig({...landingConfig, logoUrl: ''})}
                     className="px-8 py-5 bg-rose-50 text-rose-600 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-rose-100 transition-all"
                   >
@@ -223,6 +257,7 @@ const AdminSettings: React.FC = () => {
               
               <div className="flex items-center gap-4">
                 <button 
+                  type="button"
                   onClick={() => logoDarkFileRef.current?.click()}
                   className="flex-1 px-8 py-5 bg-indigo-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-100"
                 >
@@ -230,6 +265,7 @@ const AdminSettings: React.FC = () => {
                 </button>
                 {landingConfig.logoDarkUrl && (
                   <button 
+                    type="button"
                     onClick={() => setLandingConfig({...landingConfig, logoDarkUrl: ''})}
                     className="px-8 py-5 bg-rose-50 text-rose-600 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-rose-100 transition-all"
                   >
@@ -239,6 +275,95 @@ const AdminSettings: React.FC = () => {
               </div>
               <input type="file" ref={logoDarkFileRef} className="hidden" accept="image/*" onChange={e => handleImageUpload(e, 'logoDarkUrl')} />
               <p className="text-[9px] text-slate-400 font-medium leading-relaxed italic px-2">Gunakan logo dengan warna gelap agar terlihat jelas di background putih (seperti di Landing Page Navbar).</p>
+           </div>
+        </div>
+      </div>
+
+      {/* SECTION: PWA SETTINGS */}
+      <div className="bg-white p-8 lg:p-12 rounded-[3.5rem] shadow-sm border-2 border-indigo-50 space-y-12">
+        <div className="flex items-center gap-6 pb-8 border-b border-slate-50">
+          <div className="w-16 h-16 bg-indigo-600 text-white rounded-[1.75rem] flex items-center justify-center text-3xl shadow-xl">
+            <i className="bi bi-phone-fill"></i>
+          </div>
+          <div>
+            <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Pengaturan PWA</h3>
+            <p className="text-slate-400 font-medium text-sm">Konfigurasi tampilan saat aplikasi diinstal di HP atau Desktop.</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+           <div className="space-y-6">
+              <div className="p-8 bg-slate-50 rounded-[2.5rem] border-2 border-dashed border-slate-200 flex items-center justify-center min-h-[200px]">
+                {landingConfig.pwaIconUrl ? (
+                  <img src={landingConfig.pwaIconUrl} alt="PWA Icon Preview" className="w-32 h-32 object-cover rounded-3xl shadow-md" />
+                ) : (
+                  <div className="text-center space-y-2 text-slate-400">
+                    <i className="bi bi-app-indicator text-4xl"></i>
+                    <p className="text-[10px] font-black uppercase tracking-widest">Belum ada icon PWA</p>
+                  </div>
+                )}
+              </div>
+           </div>
+
+           <div className="space-y-6">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nama Pendek PWA (Short Name)</label>
+                <input 
+                  className="w-full px-6 py-5 bg-slate-50 border border-slate-200 rounded-[1.75rem] outline-none font-black text-indigo-600 focus:border-indigo-400 transition-all text-sm"
+                  placeholder="FokusKarir"
+                  value={landingConfig.pwaShortName || ''}
+                  onChange={e => setLandingConfig({...landingConfig, pwaShortName: e.target.value})}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Warna Tema (Theme Color)</label>
+                <div className="flex gap-4">
+                  <input 
+                    type="color"
+                    className="w-16 h-16 rounded-2xl border-none cursor-pointer"
+                    value={landingConfig.pwaThemeColor || '#4f46e5'}
+                    onChange={e => setLandingConfig({...landingConfig, pwaThemeColor: e.target.value})}
+                  />
+                  <input 
+                    className="flex-1 px-6 py-5 bg-slate-50 border border-slate-200 rounded-[1.75rem] outline-none font-black text-indigo-600 focus:border-indigo-400 transition-all text-sm"
+                    placeholder="#4f46e5"
+                    value={landingConfig.pwaThemeColor || ''}
+                    onChange={e => setLandingConfig({...landingConfig, pwaThemeColor: e.target.value})}
+                  />
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">URL Icon PWA (Opsional)</label>
+                <input 
+                  className="w-full px-6 py-5 bg-slate-50 border border-slate-200 rounded-[1.75rem] outline-none font-black text-indigo-600 focus:border-indigo-400 transition-all text-sm"
+                  placeholder="https://..."
+                  value={landingConfig.pwaIconUrl || ''}
+                  onChange={e => setLandingConfig({...landingConfig, pwaIconUrl: e.target.value})}
+                />
+              </div>
+              
+              <div className="flex items-center gap-4">
+                <button 
+                  type="button"
+                  onClick={() => pwaIconFileRef.current?.click()}
+                  className="flex-1 px-8 py-5 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-black transition-all shadow-xl shadow-slate-200"
+                >
+                  Upload Icon PWA (512x512)
+                </button>
+                {landingConfig.pwaIconUrl && (
+                  <button 
+                    type="button"
+                    onClick={() => setLandingConfig({...landingConfig, pwaIconUrl: ''})}
+                    className="px-8 py-5 bg-rose-50 text-rose-600 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-rose-100 transition-all"
+                  >
+                    Hapus
+                  </button>
+                )}
+              </div>
+              <input type="file" ref={pwaIconFileRef} className="hidden" accept="image/*" onChange={e => handleImageUpload(e, 'pwaIconUrl')} />
+              <p className="text-[9px] text-slate-400 font-medium leading-relaxed italic px-2">Icon ini akan muncul di Home Screen HP setelah aplikasi diinstal. Gunakan gambar persegi (1:1) minimal 512x512 pixel.</p>
            </div>
         </div>
       </div>
@@ -273,6 +398,7 @@ const AdminSettings: React.FC = () => {
                   onChange={e => setLandingConfig({...landingConfig, desktopDashboardImg: e.target.value})}
                 />
                 <button 
+                  type="button"
                   onClick={() => desktopFileRef.current?.click()}
                   className="px-6 py-4 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-black transition-all"
                 >
@@ -299,6 +425,7 @@ const AdminSettings: React.FC = () => {
                   onChange={e => setLandingConfig({...landingConfig, mobileDashboardImg: e.target.value})}
                 />
                 <button 
+                  type="button"
                   onClick={() => mobileFileRef.current?.click()}
                   className="px-6 py-4 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-black transition-all"
                 >
@@ -429,6 +556,7 @@ const AdminSettings: React.FC = () => {
 
         <div className="flex justify-end pt-6">
           <button
+            type="button"
             onClick={handleSave}
             disabled={saving}
             className="px-12 py-5 bg-indigo-600 text-white font-black rounded-2xl uppercase tracking-widest text-[10px] shadow-xl shadow-indigo-100 hover:bg-indigo-700 active:scale-95 transition-all disabled:opacity-50 flex items-center gap-3"
