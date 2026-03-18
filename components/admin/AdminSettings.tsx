@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { LegalConfig, LandingPageConfig } from '../../types';
-import { getLegalConfig, saveLegalConfig, getLandingPageConfig, saveLandingPageConfig } from '../../services/firebase';
+import { getLegalConfig, saveLegalConfig, getLandingPageConfig, saveLandingPageConfig, uploadImage } from '../../services/firebase';
 
 const AdminSettings: React.FC = () => {
   const [config, setConfig] = useState<LegalConfig>({
@@ -15,7 +15,9 @@ const AdminSettings: React.FC = () => {
     adminWhatsApp: '628123456789',
     businessEmail: '',
     businessPhone: '',
-    businessAddress: ''
+    businessAddress: '',
+    logoUrl: '',
+    logoDarkUrl: ''
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -23,6 +25,8 @@ const AdminSettings: React.FC = () => {
 
   const desktopFileRef = useRef<HTMLInputElement>(null);
   const mobileFileRef = useRef<HTMLInputElement>(null);
+  const logoFileRef = useRef<HTMLInputElement>(null);
+  const logoDarkFileRef = useRef<HTMLInputElement>(null);
 
   const ALL_FEATURES = [
     { id: 'daily-growth', label: 'Daily Growth Registry' },
@@ -92,14 +96,23 @@ const AdminSettings: React.FC = () => {
     }));
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, field: 'desktopDashboardImg' | 'mobileDashboardImg') => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: 'desktopDashboardImg' | 'mobileDashboardImg' | 'logoUrl' | 'logoDarkUrl') => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setLandingConfig(prev => ({ ...prev, [field]: reader.result as string }));
-      };
-      reader.readAsDataURL(file);
+      setSaving(true);
+      setMessage({ text: 'Sedang mengupload gambar...', type: 'success' });
+      try {
+        const path = `landing_page/${field}_${Date.now()}`;
+        const downloadUrl = await uploadImage(file, path);
+        setLandingConfig(prev => ({ ...prev, [field]: downloadUrl }));
+        setMessage({ text: 'Gambar berhasil diupload! ✅', type: 'success' });
+      } catch (error: any) {
+        console.error("Gagal upload gambar:", error);
+        setMessage({ text: `Gagal upload: ${error.message}`, type: 'error' });
+      } finally {
+        setSaving(false);
+        setTimeout(() => setMessage(null), 3000);
+      }
     }
   };
 
@@ -122,6 +135,113 @@ const AdminSettings: React.FC = () => {
           {message.text}
         </div>
       )}
+
+      {/* SECTION: LOGO APLIKASI */}
+      <div className="bg-white p-8 lg:p-12 rounded-[3.5rem] shadow-sm border-2 border-indigo-50 space-y-12">
+        <div className="flex items-center gap-6 pb-8 border-b border-slate-50">
+          <div className="w-16 h-16 bg-slate-900 text-white rounded-[1.75rem] flex items-center justify-center text-3xl shadow-xl">
+            <i className="bi bi-star-fill"></i>
+          </div>
+          <div>
+            <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Logo Aplikasi</h3>
+            <p className="text-slate-400 font-medium text-sm">Update logo utama yang muncul di Sidebar dan Landing Page.</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+           <div className="space-y-6">
+              <div className="p-8 bg-slate-50 rounded-[2.5rem] border-2 border-dashed border-slate-200 flex items-center justify-center min-h-[200px]">
+                {landingConfig.logoUrl ? (
+                  <img src={landingConfig.logoUrl} alt="Logo Preview" className="max-h-32 object-contain drop-shadow-md" />
+                ) : (
+                  <div className="text-center space-y-2 text-slate-400">
+                    <i className="bi bi-image text-4xl"></i>
+                    <p className="text-[10px] font-black uppercase tracking-widest">Belum ada logo</p>
+                  </div>
+                )}
+              </div>
+           </div>
+
+           <div className="space-y-6">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">URL Logo Utama (Untuk Background Gelap)</label>
+                <input 
+                  className="w-full px-6 py-5 bg-slate-50 border border-slate-200 rounded-[1.75rem] outline-none font-black text-indigo-600 focus:border-indigo-400 transition-all text-sm"
+                  placeholder="https://..."
+                  value={landingConfig.logoUrl || ''}
+                  onChange={e => setLandingConfig({...landingConfig, logoUrl: e.target.value})}
+                />
+              </div>
+              
+              <div className="flex items-center gap-4">
+                <button 
+                  onClick={() => logoFileRef.current?.click()}
+                  className="flex-1 px-8 py-5 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-black transition-all shadow-xl shadow-slate-200"
+                >
+                  Upload Logo Utama
+                </button>
+                {landingConfig.logoUrl && (
+                  <button 
+                    onClick={() => setLandingConfig({...landingConfig, logoUrl: ''})}
+                    className="px-8 py-5 bg-rose-50 text-rose-600 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-rose-100 transition-all"
+                  >
+                    Hapus
+                  </button>
+                )}
+              </div>
+              <input type="file" ref={logoFileRef} className="hidden" accept="image/*" onChange={e => handleImageUpload(e, 'logoUrl')} />
+              <p className="text-[9px] text-slate-400 font-medium leading-relaxed italic px-2">Gunakan logo dengan warna terang/putih agar terlihat jelas di background gelap (seperti di Sidebar & Login Page).</p>
+           </div>
+        </div>
+
+        {/* Logo Dark (Untuk Background Putih) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center pt-12 border-t border-slate-50">
+           <div className="space-y-6">
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Logo Dark (Untuk Background Putih)</p>
+              <div className="p-8 bg-white rounded-[2.5rem] border-2 border-dashed border-slate-200 flex items-center justify-center min-h-[200px]">
+                {landingConfig.logoDarkUrl ? (
+                  <img src={landingConfig.logoDarkUrl} alt="Logo Dark Preview" className="max-h-32 object-contain drop-shadow-md" />
+                ) : (
+                  <div className="text-center space-y-2 text-slate-400">
+                    <i className="bi bi-image text-4xl"></i>
+                    <p className="text-[10px] font-black uppercase tracking-widest">Belum ada logo dark</p>
+                  </div>
+                )}
+              </div>
+           </div>
+
+           <div className="space-y-6">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">URL Logo Dark (Opsional)</label>
+                <input 
+                  className="w-full px-6 py-5 bg-slate-50 border border-slate-200 rounded-[1.75rem] outline-none font-black text-indigo-600 focus:border-indigo-400 transition-all text-sm"
+                  placeholder="https://..."
+                  value={landingConfig.logoDarkUrl || ''}
+                  onChange={e => setLandingConfig({...landingConfig, logoDarkUrl: e.target.value})}
+                />
+              </div>
+              
+              <div className="flex items-center gap-4">
+                <button 
+                  onClick={() => logoDarkFileRef.current?.click()}
+                  className="flex-1 px-8 py-5 bg-indigo-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-100"
+                >
+                  Upload Logo Dark
+                </button>
+                {landingConfig.logoDarkUrl && (
+                  <button 
+                    onClick={() => setLandingConfig({...landingConfig, logoDarkUrl: ''})}
+                    className="px-8 py-5 bg-rose-50 text-rose-600 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-rose-100 transition-all"
+                  >
+                    Hapus
+                  </button>
+                )}
+              </div>
+              <input type="file" ref={logoDarkFileRef} className="hidden" accept="image/*" onChange={e => handleImageUpload(e, 'logoDarkUrl')} />
+              <p className="text-[9px] text-slate-400 font-medium leading-relaxed italic px-2">Gunakan logo dengan warna gelap agar terlihat jelas di background putih (seperti di Landing Page Navbar).</p>
+           </div>
+        </div>
+      </div>
 
       {/* SECTION: ASSET VISUAL LANDING PAGE */}
       <div className="bg-white p-8 lg:p-12 rounded-[3.5rem] shadow-sm border-2 border-indigo-50 space-y-12">

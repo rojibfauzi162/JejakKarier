@@ -1,0 +1,59 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile and career data",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "role": { "type": "string", "enum": ["superadmin", "client"] },
+        "status": { "type": "string", "enum": ["Active", "Suspended", "Pending"] },
+        "plan": { "type": "string", "enum": ["Free", "Pro", "Enterprise"] },
+        "expiryDate": { "type": "string", "format": "date-time" },
+        "profile": { "type": "object" },
+        "dailyReports": { "type": "array" },
+        "todoList": { "type": "array" },
+        "onboardingCompleted": { "type": "boolean" }
+      },
+      "required": ["uid", "role"]
+    },
+    "Training": {
+      "title": "Training",
+      "description": "Training programs and courses",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "price": { "type": "number" },
+        "category": { "type": "string" },
+        "thumbnail": { "type": "string" },
+        "isPublic": { "type": "boolean" }
+      },
+      "required": ["id", "title"]
+    },
+    "SystemMetadata": {
+      "title": "System Metadata",
+      "description": "Global system configurations",
+      "type": "object",
+      "properties": {
+        "list": { "type": "array" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      }
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User documents"
+    },
+    "/trainings/{trainingId}": {
+      "schema": "Training",
+      "description": "Training documents"
+    },
+    "/system_metadata/{configId}": {
+      "schema": "SystemMetadata",
+      "description": "System configuration documents"
+    }
+  }
+}

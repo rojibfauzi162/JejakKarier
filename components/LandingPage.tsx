@@ -11,19 +11,29 @@ interface LandingPageProps {
   onShowLegal?: (type: 'privacy' | 'terms') => void;
   onBuyPlan?: (plan: SubscriptionProduct) => void;
   products?: SubscriptionProduct[];
+  initialConfig?: LandingPageConfig | null;
 }
 
-const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal, onBuyPlan, products }) => {
-  const [landingConfig, setLandingConfig] = useState<LandingPageConfig | null>(null);
+const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal, onBuyPlan, products, initialConfig }) => {
+  const [landingConfig, setLandingConfig] = useState<LandingPageConfig | null>(initialConfig || null);
   const [mayarConfig, setMayarConfig] = useState<MayarConfig | null>(null);
   const [activeVideo, setActiveVideo] = useState<string | null>(null);
+
+  // Sync with initialConfig from parent (real-time updates)
+  useEffect(() => {
+    if (initialConfig) {
+      setLandingConfig(initialConfig);
+    }
+  }, [initialConfig]);
 
   // LOGIC: Ambil konfigurasi landing page dari database Firestore
   useEffect(() => {
     // Memastikan pengambilan data segar dari Firestore saat landing page dimuat
     const loadConfig = async () => {
-      const res = await getLandingPageConfig();
-      if (res) setLandingConfig(res);
+      if (!initialConfig) {
+        const res = await getLandingPageConfig();
+        if (res) setLandingConfig(res);
+      }
       
       const mRes = await getMayarConfig();
       if (mRes) setMayarConfig(mRes);
@@ -31,7 +41,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
     
     loadConfig();
     trackingService.trackEvent('PageView');
-  }, []);
+  }, [initialConfig]);
 
   const paidProducts = useMemo(() => {
     const list = products || [];
@@ -128,8 +138,14 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
       <nav className="fixed top-0 left-0 right-0 z-[100] bg-white/80 backdrop-blur-xl border-b border-slate-100">
         <div className="max-w-7xl mx-auto px-6 lg:px-12 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-black shadow-lg shadow-indigo-200">F</div>
-            <span className="text-xl font-black tracking-tighter">FokusKarir</span>
+            {landingConfig?.logoDarkUrl ? (
+              <img src={landingConfig.logoDarkUrl} alt="Logo" className="max-h-10 w-auto object-contain" />
+            ) : (
+              <>
+                <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-black shadow-lg shadow-indigo-200">F</div>
+                <span className="text-xl font-black tracking-tighter">FokusKarir</span>
+              </>
+            )}
           </div>
           <div className="flex items-center gap-8">
             <button onClick={onLogin} className="hidden md:block text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-indigo-600 transition-colors">Masuk</button>
@@ -433,35 +449,41 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-12 lg:gap-20">
           <div className="md:col-span-4 space-y-6">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-black shadow-lg">F</div>
-              <span className="text-xl font-black tracking-tighter text-slate-900">FokusKarir</span>
+              {landingConfig?.logoDarkUrl ? (
+                <img src={landingConfig.logoDarkUrl} alt="Logo" className="max-h-10 w-auto object-contain" />
+              ) : (
+                <>
+                  <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-black shadow-lg">F</div>
+                  <span className="text-xl font-black tracking-tighter text-slate-900">FokusKarir</span>
+                </>
+              )}
             </div>
             <div className="space-y-4">
               <div className="flex gap-3">
                  <i className="bi bi-geo-alt-fill text-indigo-600 mt-1 shrink-0"></i>
                  <p className="text-sm font-medium text-slate-500 leading-relaxed">
-                   Mutihan, RT.02, Wirokerten, Banguntapan Bantul
+                   {landingConfig?.businessAddress || 'Mutihan, RT.02, Wirokerten, Banguntapan Bantul'}
                  </p>
               </div>
               
               <div className="flex gap-3 items-center">
                  <i className="bi bi-whatsapp text-emerald-500 shrink-0"></i>
                  <p className="text-sm font-bold text-slate-600">
-                    <a href="https://wa.me/62895321367374" target="_blank" rel="noreferrer" className="hover:text-indigo-600 transition-colors">+62 895-3213-67374 (WhatsApp Support)</a>
+                    <a href={`https://wa.me/${landingConfig?.adminWhatsApp || '62895321367374'}`} target="_blank" rel="noreferrer" className="hover:text-indigo-600 transition-colors">+{landingConfig?.adminWhatsApp || '62895-3213-67374'} (WhatsApp Support)</a>
                  </p>
               </div>
 
               <div className="flex gap-3 items-center">
                  <i className="bi bi-telephone-fill text-indigo-600 shrink-0"></i>
                  <p className="text-sm font-bold text-slate-600">
-                    <a href="tel:+62895321367374" className="hover:text-indigo-600 transition-colors">+62 895-3213-67374</a>
+                    <a href={`tel:${landingConfig?.businessPhone || '62895321367374'}`} className="hover:text-indigo-600 transition-colors">+{landingConfig?.businessPhone || '62895-3213-67374'}</a>
                  </p>
               </div>
 
               <div className="flex gap-3 items-center">
                  <i className="bi bi-envelope-at-fill text-indigo-600 shrink-0"></i>
                  <p className="text-sm font-bold text-slate-600">
-                    <a href="mailto:support@fokuskarir.web.id" className="hover:text-indigo-600 transition-colors">support@fokuskarir.web.id</a>
+                    <a href={`mailto:${landingConfig?.businessEmail || 'support@fokuskarir.web.id'}`} className="hover:text-indigo-600 transition-colors">{landingConfig?.businessEmail || 'support@fokuskarir.web.id'}</a>
                  </p>
               </div>
             </div>
@@ -502,7 +524,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
           <div className="md:col-span-4 space-y-6">
              <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Connect With Us</h4>
              <div className="flex gap-4">
-                <a href="https://wa.me/62895321367374" target="_blank" rel="noreferrer" className="w-12 h-12 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-xl text-emerald-600 shadow-sm hover:shadow-lg transition-all"><i className="bi bi-whatsapp"></i></a>
+                <a href={`https://wa.me/${landingConfig?.adminWhatsApp || '62895321367374'}`} target="_blank" rel="noreferrer" className="w-12 h-12 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-xl text-emerald-600 shadow-sm hover:shadow-lg transition-all"><i className="bi bi-whatsapp"></i></a>
                 <a href="#" className="w-12 h-12 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-xl text-indigo-600 shadow-sm hover:shadow-lg transition-all"><i className="bi bi-instagram"></i></a>
                 <a href="#" className="w-12 h-12 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-xl text-blue-600 shadow-sm hover:shadow-lg transition-all"><i className="bi bi-linkedin"></i></a>
              </div>

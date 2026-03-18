@@ -11,9 +11,10 @@ interface MobileHeaderProps {
   onNavigate: (tab: string) => void;
   activeTab: string;
   alerts?: any[];
+  logoDarkUrl?: string;
 }
 
-const MobileHeader: React.FC<MobileHeaderProps> = ({ profile, notificationCount, onNavigate, activeTab, alerts = [] }) => {
+const MobileHeader: React.FC<MobileHeaderProps> = ({ profile, notificationCount, onNavigate, activeTab, alerts = [], logoDarkUrl }) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false); // State baru untuk modal logout
@@ -47,13 +48,19 @@ const MobileHeader: React.FC<MobileHeaderProps> = ({ profile, notificationCount,
       <header className="lg:hidden sticky top-0 z-[110] bg-white/80 backdrop-blur-xl border-b border-slate-100 px-6 py-4 flex items-center justify-between shadow-sm">
         {/* Brand & Logo */}
         <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => onNavigate('dashboard')}>
-          <div className="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-black shadow-lg shadow-indigo-200">
-            F
-          </div>
-          <div>
-            <h1 className="text-sm font-black tracking-tighter text-slate-900 leading-none">FokusKarir</h1>
-            <span className="text-[8px] font-bold text-indigo-500 uppercase tracking-widest">{activeTab.replace('_', ' ')}</span>
-          </div>
+          {logoDarkUrl ? (
+            <img src={logoDarkUrl} alt="Logo" className="h-9 object-contain" />
+          ) : (
+            <>
+              <div className="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-black shadow-lg shadow-indigo-200">
+                F
+              </div>
+              <div>
+                <h1 className="text-sm font-black tracking-tighter text-slate-900 leading-none">FokusKarir</h1>
+                <span className="text-[8px] font-bold text-indigo-500 uppercase tracking-widest">{activeTab.replace('_', ' ')}</span>
+              </div>
+            </>
+          )}
         </div>
 
         {/* Right Actions: Notifications & Profile */}

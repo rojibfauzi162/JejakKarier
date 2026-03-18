@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { AppData, UserRole, SubscriptionProduct, SubscriptionPlan, AccountStatus, ToDoTask, AiStrategy, Training, Certification, Skill, CareerEvent, JobStatus, EventType, ImportanceLevel, WorkExperience, Education } from './types';
+import { AppData, UserRole, SubscriptionProduct, SubscriptionPlan, AccountStatus, ToDoTask, AiStrategy, Training, Certification, Skill, CareerEvent, JobStatus, EventType, ImportanceLevel, WorkExperience, Education, LandingPageConfig } from './types';
 import { INITIAL_DATA, DEFAULT_PRODUCTS } from './constants';
 import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
@@ -36,7 +36,7 @@ import TrainingManagement from './components/admin/TrainingManagement';
 import TrainingList from './components/public/TrainingList';
 import TrainingDetail from './components/public/TrainingDetail';
 import OnboardingFlow from './components/user/OnboardingFlow';
-import { auth, getUserData, saveUserData, getProductsCatalog, findUserByEmail, deleteUserDoc, getTrackingConfig } from './services/firebase';
+import { auth, getUserData, saveUserData, getProductsCatalog, findUserByEmail, deleteUserDoc, getTrackingConfig, subscribeLandingPageConfig } from './services/firebase';
 import { onAuthStateChanged, sendEmailVerification } from 'firebase/auth';
 import { trackingService } from './services/trackingService';
 
@@ -56,6 +56,7 @@ const App: React.FC = () => {
   const [hideVerificationReminder, setHideVerificationReminder] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); // NEW: State for mobile sidebar
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [landingConfig, setLandingConfig] = useState<LandingPageConfig | null>(null);
 
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
     setToast({ message, type });
@@ -172,6 +173,11 @@ const App: React.FC = () => {
     getTrackingConfig().then(cfg => {
       if (cfg) trackingService.init(cfg);
     });
+    // Subscribe to Landing Page Config (Real-time Logo & Contact)
+    const unsubscribeLanding = subscribeLandingPageConfig((config) => {
+      setLandingConfig(config);
+    });
+    return () => unsubscribeLanding();
   }, []);
 
   useEffect(() => {
@@ -375,8 +381,8 @@ const App: React.FC = () => {
 
   if (checkoutPlan) return <Checkout plan={checkoutPlan} user={user} onBack={() => setCheckoutPlan(null)} />;
   if (!user) {
-    if (showAuth) return <Auth onBack={() => setShowAuth(false)} />;
-    return <LandingPage onStart={() => setShowAuth(true)} onLogin={() => setShowAuth(true)} onShowLegal={(type) => navigateToLegal(type)} onBuyPlan={(plan) => setCheckoutPlan(plan)} products={publicProducts} />;
+    if (showAuth) return <Auth onBack={() => setShowAuth(false)} logoUrl={landingConfig?.logoUrl} logoDarkUrl={landingConfig?.logoDarkUrl} />;
+    return <LandingPage onStart={() => setShowAuth(true)} onLogin={() => setShowAuth(true)} onShowLegal={(type) => navigateToLegal(type)} onBuyPlan={(plan) => setCheckoutPlan(plan)} products={publicProducts} initialConfig={landingConfig} />;
   }
 
   const isAdmin = data.role === UserRole.SUPERADMIN;
@@ -542,6 +548,7 @@ const App: React.FC = () => {
         isOpen={isSidebarOpen} 
         onClose={() => setIsSidebarOpen(false)} 
         isBypassMode={!!localStorage.getItem('local_session_user') || !!localStorage.getItem('admin_demo_mode')}
+        logoUrl={landingConfig?.logoUrl}
       />
       <main className="flex-1 lg:ml-64">
         {!user?.emailVerified && !isAdmin && !hideVerificationReminder && user && (
@@ -563,7 +570,7 @@ const App: React.FC = () => {
         )}
 
         <div className={`${!isAdmin ? 'pt-0' : 'p-4 lg:p-8 pt-2'}`}>
-          {!isAdmin && user && <MobileHeader profile={data.profile} notificationCount={activeAlerts.length} onNavigate={handleNavigate} activeTab={activeTab} alerts={activeAlerts} />}
+          {!isAdmin && user && <MobileHeader profile={data.profile} notificationCount={activeAlerts.length} onNavigate={handleNavigate} activeTab={activeTab} alerts={activeAlerts} logoDarkUrl={landingConfig?.logoDarkUrl} />}
           <div className={`${!isAdmin ? 'p-4 lg:p-8 pt-6' : 'pt-0'}`}>
             {isUpgradeModalOpen && (
               <UpgradeModal 

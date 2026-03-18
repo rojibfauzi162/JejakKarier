@@ -5,9 +5,11 @@ import { auth, signInWithGoogle } from '../services/firebase';
 
 interface AuthProps {
   onBack?: () => void;
+  logoUrl?: string;
+  logoDarkUrl?: string;
 }
 
-const Auth: React.FC<AuthProps> = ({ onBack }) => {
+const Auth: React.FC<AuthProps> = ({ onBack, logoUrl, logoDarkUrl }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [isForgotPassword, setIsForgotPassword] = useState(false); // State baru untuk reset password
   const [email, setEmail] = useState('');
@@ -153,9 +155,15 @@ const Auth: React.FC<AuthProps> = ({ onBack }) => {
         )}
 
         <div className="text-center mb-10 mt-6">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 text-white text-2xl font-black rounded-2xl shadow-xl shadow-blue-500/20 mb-6">F</div>
-          <h1 className="text-3xl font-black text-white tracking-tight">FokusKarir</h1>
-          <p className="text-slate-400 text-sm mt-2 font-medium">Your Intelligence Career Partner</p>
+          {logoUrl ? (
+            <img src={logoUrl} alt="Logo" className="h-16 mx-auto mb-6 object-contain drop-shadow-xl" />
+          ) : (
+            <>
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 text-white text-2xl font-black rounded-2xl shadow-xl shadow-blue-500/20 mb-6">F</div>
+              <h1 className="text-3xl font-black text-white tracking-tight">FokusKarir</h1>
+              <p className="text-slate-400 text-sm mt-2 font-medium">Your Intelligence Career Partner</p>
+            </>
+          )}
         </div>
 
         {!isForgotPassword && (

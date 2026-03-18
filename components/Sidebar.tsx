@@ -1,5 +1,6 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { LandingPageConfig } from '../types';
 
 interface SidebarProps {
   activeTab: string;
@@ -9,9 +10,10 @@ interface SidebarProps {
   isOpen?: boolean; // NEW: Controls mobile visibility
   onClose?: () => void; // NEW: Close handler
   isBypassMode?: boolean; // NEW: Check if in bypass mode
+  logoUrl?: string; // NEW: Logo from parent
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout, isAdmin, isOpen, onClose, isBypassMode }) => {
+const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout, isAdmin, isOpen, onClose, isBypassMode, logoUrl }) => {
   const [dailyDropdownOpen, setDailyDropdownOpen] = useState(activeTab === 'daily' || activeTab === 'reports' || activeTab === 'ai_insights' || activeTab === 'work_reflection');
   const [cvDropdownOpen, setCvDropdownOpen] = useState(activeTab === 'cv_generator' || activeTab === 'online_cv');
   
@@ -84,11 +86,17 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout, is
         {/* Header Branding */}
         <div className="p-8 pt-10">
           <div className="flex items-center gap-3 mb-10 group cursor-pointer" onClick={() => { setActiveTab('dashboard'); onClose?.(); }}>
-            <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center font-black shadow-[0_0_20px_rgba(79,70,229,0.4)] group-hover:scale-105 transition-transform duration-300">F</div>
-            <div>
-              <h1 className="text-xl font-black tracking-tighter leading-none">FokusKarir</h1>
-              <span className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.3em]">Pro Tracker</span>
-            </div>
+            {logoUrl ? (
+              <img src={logoUrl} alt="Logo" className="max-h-12 w-auto object-contain group-hover:scale-105 transition-transform duration-300" />
+            ) : (
+              <>
+                <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center font-black shadow-[0_0_20px_rgba(79,70,229,0.4)] group-hover:scale-105 transition-transform duration-300">F</div>
+                <div>
+                  <h1 className="text-xl font-black tracking-tighter leading-none">FokusKarir</h1>
+                  <span className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.3em]">Pro Tracker</span>
+                </div>
+              </>
+            )}
           </div>
         </div>
         

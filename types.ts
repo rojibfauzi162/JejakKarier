@@ -389,6 +389,8 @@ export interface LandingPageConfig {
   businessEmail?: string;
   businessPhone?: string;
   businessAddress?: string;
+  logoUrl?: string;
+  logoDarkUrl?: string;
   updatedAt?: string;
 }
 
