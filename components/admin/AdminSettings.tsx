@@ -24,6 +24,7 @@ const AdminSettings: React.FC = () => {
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [message, setMessage] = useState<{ text: string, type: 'success' | 'error' } | null>(null);
 
   const desktopFileRef = useRef<HTMLInputElement>(null);
@@ -124,7 +125,7 @@ const AdminSettings: React.FC = () => {
       };
       reader.readAsDataURL(file);
 
-      setSaving(true);
+      setUploadingImage(true);
       setMessage({ text: 'Sedang mengupload gambar ke server...', type: 'success' });
       try {
         // 2. Coba upload ke Firebase Storage
@@ -138,7 +139,7 @@ const AdminSettings: React.FC = () => {
         // Jika gagal, biarkan versi base64 tetap ada di state, dan beri tahu user
         setMessage({ text: `Penyimpanan awan gagal, menggunakan gambar lokal. Jangan lupa klik Update!`, type: 'success' });
       } finally {
-        setSaving(false);
+        setUploadingImage(false);
         setTimeout(() => setMessage(null), 5000);
         // Reset input value to allow re-uploading the same file if needed
         if (target) {
@@ -209,9 +210,10 @@ const AdminSettings: React.FC = () => {
                 <button 
                   type="button"
                   onClick={() => logoFileRef.current?.click()}
-                  className="flex-1 px-8 py-5 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-black transition-all shadow-xl shadow-slate-200"
+                  disabled={uploadingImage}
+                  className="flex-1 px-8 py-5 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-black transition-all shadow-xl shadow-slate-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Upload Logo Utama
+                  {uploadingImage ? 'MENGUPLOAD...' : 'Upload Logo Utama'}
                 </button>
                 {landingConfig.logoUrl && (
                   <button 
@@ -259,9 +261,10 @@ const AdminSettings: React.FC = () => {
                 <button 
                   type="button"
                   onClick={() => logoDarkFileRef.current?.click()}
-                  className="flex-1 px-8 py-5 bg-indigo-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-100"
+                  disabled={uploadingImage}
+                  className="flex-1 px-8 py-5 bg-indigo-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-100 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Upload Logo Dark
+                  {uploadingImage ? 'MENGUPLOAD...' : 'Upload Logo Dark'}
                 </button>
                 {landingConfig.logoDarkUrl && (
                   <button 
@@ -348,9 +351,10 @@ const AdminSettings: React.FC = () => {
                 <button 
                   type="button"
                   onClick={() => pwaIconFileRef.current?.click()}
-                  className="flex-1 px-8 py-5 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-black transition-all shadow-xl shadow-slate-200"
+                  disabled={uploadingImage}
+                  className="flex-1 px-8 py-5 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-black transition-all shadow-xl shadow-slate-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Upload Icon PWA (512x512)
+                  {uploadingImage ? 'MENGUPLOAD...' : 'Upload Icon PWA (512x512)'}
                 </button>
                 {landingConfig.pwaIconUrl && (
                   <button 
@@ -400,9 +404,10 @@ const AdminSettings: React.FC = () => {
                 <button 
                   type="button"
                   onClick={() => desktopFileRef.current?.click()}
-                  className="px-6 py-4 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-black transition-all"
+                  disabled={uploadingImage}
+                  className="px-6 py-4 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-black transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Upload
+                  {uploadingImage ? 'MENGUPLOAD...' : 'Upload'}
                 </button>
               </div>
               <input type="file" ref={desktopFileRef} className="hidden" accept="image/*" onChange={e => handleImageUpload(e, 'desktopDashboardImg')} />
@@ -427,9 +432,10 @@ const AdminSettings: React.FC = () => {
                 <button 
                   type="button"
                   onClick={() => mobileFileRef.current?.click()}
-                  className="px-6 py-4 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-black transition-all"
+                  disabled={uploadingImage}
+                  className="px-6 py-4 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-black transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Upload
+                  {uploadingImage ? 'MENGUPLOAD...' : 'Upload'}
                 </button>
               </div>
               <input type="file" ref={mobileFileRef} className="hidden" accept="image/*" onChange={e => handleImageUpload(e, 'mobileDashboardImg')} />
