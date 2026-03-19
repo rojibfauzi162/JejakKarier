@@ -186,9 +186,6 @@ app.post("/createInquiry", async (req, res) => {
   }
 });
 
-// Export Express App
-exports.api = functions.https.onRequest(app);
-
 app.post("/sendNotification", async (req, res) => {
   try {
     const { userId, title, body } = req.body;
@@ -215,6 +212,9 @@ app.post("/sendNotification", async (req, res) => {
     return res.status(500).json({ message: "Error sending notification" });
   }
 });
+
+// Export Express App
+exports.api = functions.https.onRequest(app);
 
 /**
  * ENDPOINT 3: Callback Handler
