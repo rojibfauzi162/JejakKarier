@@ -12,6 +12,12 @@ const app = express();
 app.use(cors({origin: true}));
 app.use(express.json());
 
+// Tambahkan middleware debug ini untuk melihat path yang diterima
+app.use((req, res, next) => {
+  console.log(`[DEBUG] Request Path: ${req.path}, Original URL: ${req.originalUrl}`);
+  next();
+});
+
 // Helper MD5 Hashing
 const md5 = (str) => crypto.createHash("md5").update(str).digest("hex");
 
@@ -186,7 +192,7 @@ app.post("/createInquiry", async (req, res) => {
   }
 });
 
-app.post("/sendNotification", async (req, res) => {
+app.post(["/sendNotification", "/api/sendNotification"], async (req, res) => {
   try {
     const { userId, title, body } = req.body;
     const userDoc = await db.collection("users").doc(userId).get();
@@ -213,8 +219,21 @@ app.post("/sendNotification", async (req, res) => {
   }
 });
 
+// Catch-all route untuk debugging
+app.all("*", (req, res) => {
+  console.log(`[CATCH-ALL] Path: ${req.path}, Method: ${req.method}`);
+  res.status(404).json({ 
+    message: "Route not found", 
+    receivedPath: req.path,
+    originalUrl: req.originalUrl 
+  });
+});
+
 // Export Express App
-exports.api = functions.https.onRequest(app);
+exports.app = functions.https.onRequest((req, res) => {
+  console.log("[FUNCTION TRIGGERED] Request diterima oleh Firebase Functions");
+  return app(req, res);
+});
 
 /**
  * ENDPOINT 3: Callback Handler

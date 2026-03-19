@@ -29,8 +29,14 @@ service cloud.firestore {
     }
 
     // System configurations
-    match /system_metadata/{configId} {
-      allow read: if true; // Publicly readable for landing page
+    match /system_metadata/sales_notifications_list {
+      allow read: if true;
+      match /{document=**} {
+        allow read: if true;
+      }
+    }
+    match /system_metadata/{allPaths=**} {
+      allow read: if isAuthenticated(); // Restrict to authenticated users
       allow write: if isAdmin();
     }
 
