@@ -220,7 +220,7 @@ app.post(["/sendNotification", "/api/sendNotification"], async (req, res) => {
 });
 
 // Endpoint untuk menyimpan subscription PWA
-app.post("/api/subscribe", async (req, res) => {
+app.post("/subscribe", async (req, res) => {
   const { userId, subscription } = req.body;
   try {
     await db.collection("users").doc(userId).update({
@@ -233,7 +233,7 @@ app.post("/api/subscribe", async (req, res) => {
 });
 
 // Endpoint untuk mengirim push notification ke user tertentu
-app.post("/api/send-push", async (req, res) => {
+app.post("/send-push", async (req, res) => {
   const { userId, title, body } = req.body;
   try {
     const userDoc = await db.collection("users").doc(userId).get();
