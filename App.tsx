@@ -47,6 +47,35 @@ const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [skillsSubTab, setSkillsSubTab] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState(true);
+  const [loadingStuck, setLoadingStuck] = useState(false);
+
+  useEffect(() => {
+    let timer: any;
+    if (loading) {
+      timer = setTimeout(() => {
+        setLoadingStuck(true);
+      }, 10000);
+    } else {
+      setLoadingStuck(false);
+    }
+    return () => clearTimeout(timer);
+  }, [loading]);
+
+  const handleResetApp = () => {
+    localStorage.clear();
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(registrations => {
+        for (const registration of registrations) {
+          registration.unregister();
+        }
+      });
+    }
+    caches.keys().then(names => {
+      for (const name of names) caches.delete(name);
+    });
+    window.location.reload();
+  };
+
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const [checkoutPlan, setCheckoutPlan] = useState<SubscriptionProduct | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
@@ -469,7 +498,13 @@ const App: React.FC = () => {
           trialExpiry.setDate(joinedAt.getDate() + 7);
 
           const pendingRegRaw = localStorage.getItem('pending_registration');
-          const pendingReg = pendingRegRaw ? JSON.parse(pendingRegRaw) : {};
+          let pendingReg: any = {};
+          try {
+            pendingReg = pendingRegRaw ? JSON.parse(pendingRegRaw) : {};
+          } catch (e) {
+            console.error("Error parsing pending_registration:", e);
+            localStorage.removeItem('pending_registration');
+          }
 
           // Kunci perizinan default yang harus dibuka (Sesuai Catalog)
           const defaultPermissions = freePlan?.allowedModules || ['dashboard', 'profile', 'daily', 'skills', 'todo_list', 'calendar', 'work_reflection', 'loker', 'cv_generator', 'online_cv', 'networking', 'projects', 'career', 'reports', 'achievements', 'ai_insights', 'reviews'];
@@ -501,8 +536,7 @@ const App: React.FC = () => {
           localStorage.removeItem('pending_registration');
         }
       } catch (err) {
-        console.error("Auth Sinkronisasi Error:", err);
-        showToast("Sinkronisasi tertunda, tetap masuk ke sistem.", "info");
+        console.error("Fatal error in onAuthStateChanged:", err);
       } finally {
         setLoading(false);
       }
@@ -532,6 +566,17 @@ const App: React.FC = () => {
           <div className="w-64 h-1.5 bg-slate-100 rounded-full overflow-hidden border border-white">
              <div className="h-full bg-indigo-600 rounded-full w-full animate-loading-bar origin-left"></div>
           </div>
+          {loadingStuck && (
+            <div className="pt-8 animate-in slide-in-from-bottom-4 duration-700">
+              <p className="text-slate-400 text-xs font-medium mb-4">Terlalu lama memuat? Coba reset aplikasi.</p>
+              <button 
+                onClick={handleResetApp}
+                className="px-6 py-3 bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-800 transition-all active:scale-95 shadow-lg shadow-slate-200"
+              >
+                Reset & Bersihkan Cache
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

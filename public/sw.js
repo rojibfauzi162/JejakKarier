@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fokuskarir-v1';
+const CACHE_NAME = 'fokuskarir-v2';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -6,26 +6,13 @@ const urlsToCache = [
 ];
 
 self.addEventListener('install', event => {
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
         console.log('Opened cache');
         return cache.addAll(urlsToCache);
       })
-  );
-});
-
-self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        // Cache hit - return response
-        if (response) {
-          return response;
-        }
-        return fetch(event.request);
-      }
-    )
   );
 });
 
@@ -36,10 +23,53 @@ self.addEventListener('activate', event => {
       return Promise.all(
         cacheNames.map(cacheName => {
           if (cacheWhitelist.indexOf(cacheName) === -1) {
+            console.log('Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
         })
       );
-    })
+    }).then(() => self.clients.claim())
+  );
+});
+
+self.addEventListener('fetch', event => {
+  // Network First strategy for HTML and root requests
+  if (event.request.mode === 'navigate' || 
+      event.request.url.endsWith('/') || 
+      event.request.url.endsWith('index.html')) {
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          // Update cache with the new response
+          const responseClone = response.clone();
+          caches.open(CACHE_NAME).then(cache => {
+            cache.put(event.request, responseClone);
+          });
+          return response;
+        })
+        .catch(() => {
+          // Fallback to cache if network fails
+          return caches.match(event.request);
+        })
+    );
+    return;
+  }
+
+  // Stale-While-Revalidate for other assets
+  event.respondWith(
+    caches.match(event.request)
+      .then(response => {
+        const fetchPromise = fetch(event.request).then(networkResponse => {
+          if (networkResponse && networkResponse.status === 200) {
+            const responseClone = networkResponse.clone();
+            caches.open(CACHE_NAME).then(cache => {
+              cache.put(event.request, responseClone);
+            });
+          }
+          return networkResponse;
+        }).catch(() => null);
+
+        return response || fetchPromise;
+      })
   );
 });
