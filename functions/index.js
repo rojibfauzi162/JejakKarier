@@ -251,6 +251,9 @@ app.post("/subscribe", async (req, res) => {
   }
 });
 
+// Export Express App
+exports.api = functions.https.onRequest(app);
+
 // Endpoint untuk mengirim push notification ke user tertentu
 app.post("/send-push", async (req, res) => {
   const { userId, title, body } = req.body;
@@ -274,8 +277,6 @@ app.post("/send-push", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-
-exports.api = functions.https.onRequest(app);
 
 // Test Function to isolate the issue
 exports.testFunction = functions.https.onRequest((req, res) => {
