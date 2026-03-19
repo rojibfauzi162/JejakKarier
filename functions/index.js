@@ -277,7 +277,10 @@ webpush.setVapidDetails(
 );
 
 // Export Express App
-exports.api = functions.https.onRequest(app);
+exports.api = functions.https.onRequest((req, res) => {
+  console.log("[DEBUG] Request Path:", req.path);
+  return app(req, res);
+});
 
 // Test Function to isolate the issue
 exports.testFunction = functions.https.onRequest((req, res) => {
