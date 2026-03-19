@@ -229,13 +229,53 @@ app.all("*", (req, res) => {
   });
 });
 
-// Export Express App
-exports.apiV2 = functions.https.onRequest((req, res) => {
-  console.log("[FUNCTION TRIGGERED] Request diterima oleh Firebase Functions");
-  console.log("[DEBUG] Request Path:", req.path);
-  console.log("[DEBUG] Request Method:", req.method);
-  return app(req, res);
+const webpush = require("web-push");
+
+// Konfigurasi web-push (Gunakan VAPID keys hasil generate)
+webpush.setVapidDetails(
+  "mailto:drevenlight@gmail.com",
+  "BNY_PpYnXVZTzAoRGc_TKiqIomFpVjqrPZuODi4k3jkOWfVr0gOtK8shzUmi5ttrCq63eBXQMWSioF_mpTHCZjU",
+  "KFCHuUnUgX-3uOJt8MTImWmLDAICftrFZaKBU-4NELI"
+);
+
+// Endpoint untuk menyimpan subscription PWA
+app.post("/subscribe", async (req, res) => {
+  const { userId, subscription } = req.body;
+  try {
+    await db.collection("users").doc(userId).update({
+      pushSubscription: subscription
+    });
+    res.status(200).json({ message: "Subscription saved" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
+
+// Endpoint untuk mengirim push notification ke user tertentu
+app.post("/send-push", async (req, res) => {
+  const { userId, title, body } = req.body;
+  try {
+    const userDoc = await db.collection("users").doc(userId).get();
+    if (!userDoc.exists) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    const userData = userDoc.data();
+    const subscription = userData.pushSubscription;
+    if (!subscription) {
+      return res.status(404).json({ message: "Subscription not found" });
+    }
+    
+    const payload = JSON.stringify({ title, body });
+    
+    await webpush.sendNotification(subscription, payload);
+    res.status(200).json({ message: "Notification sent" });
+  } catch (error) {
+    console.error("Error sending push notification:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+exports.api = functions.https.onRequest(app);
 
 // Test Function to isolate the issue
 exports.testFunction = functions.https.onRequest((req, res) => {

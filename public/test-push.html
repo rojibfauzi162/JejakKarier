@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<body>
+  <h1>Test Push Notification</h1>
+  <button id="btn">Subscribe ke Push</button>
+  <script>
+    const PUBLIC_KEY = 'BNY_PpYnXVZTzAoRGc_TKiqIomFpVjqrPZuODi4k3jkOWfVr0gOtK8shzUmi5ttrCq63eBXQMWSioF_mpTHCZjU';
+    
+    document.getElementById('btn').onclick = async () => {
+      const permission = await Notification.requestPermission();
+      if (permission !== 'granted') return alert('Izin ditolak');
+
+      // Pastikan Service Worker terdaftar (menggunakan sw.js yang sudah ada)
+      const reg = await navigator.serviceWorker.register('/sw.js');
+      await navigator.serviceWorker.ready;
+      
+      const sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: PUBLIC_KEY
+      });
+
+      console.log("COPY DATA INI KE POSTMAN:", JSON.stringify(sub));
+      alert("Subscription berhasil! Cek console (F12) untuk copy datanya.");
+    };
+  </script>
+</body>
+</html>
