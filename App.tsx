@@ -196,7 +196,8 @@ const App: React.FC = () => {
   }, []);
 
   const [showAuth, setShowAuth] = useState(() => {
-    return window.location.pathname === '/login';
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone;
+    return window.location.pathname === '/login' || isStandalone;
   });
 
   const navigateToAuth = (show: boolean) => {
@@ -206,9 +207,11 @@ const App: React.FC = () => {
   };
 
   useEffect(() => {
-    if (user && window.location.pathname === '/login') {
-      window.history.replaceState({}, '', '/');
+    if (user) {
       setShowAuth(false);
+      if (window.location.pathname === '/login') {
+        window.history.replaceState({}, '', '/');
+      }
     }
   }, [user]);
 
@@ -235,7 +238,7 @@ const App: React.FC = () => {
         name: "FokusKarir - Jejak Karir Digital",
         short_name: landingConfig.pwaShortName || "FokusKarir",
         description: "Platform All-in-One untuk Manajemen Karir, Portofolio, dan Pertumbuhan Profesional.",
-        start_url: "/login",
+        start_url: "/",
         display: "standalone",
         background_color: "#ffffff",
         theme_color: landingConfig.pwaThemeColor || "#4f46e5",
@@ -718,7 +721,9 @@ const App: React.FC = () => {
     } catch (error) {
       console.error("Logout error:", error);
     }
-    window.location.href = "/"; 
+    
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone;
+    window.location.href = isStandalone ? "/login" : "/"; 
   };
 
   const getAdminTitle = () => {

@@ -125,6 +125,8 @@ const Auth: React.FC<AuthProps> = ({ onBack, logoUrl, logoDarkUrl }) => {
     }
   };
 
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone;
+
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-slate-900 p-4 relative overflow-hidden">
       <div className="absolute top-0 left-0 w-full h-full">
@@ -134,7 +136,7 @@ const Auth: React.FC<AuthProps> = ({ onBack, logoUrl, logoDarkUrl }) => {
 
       <div className="w-full max-w-md bg-white/10 backdrop-blur-xl border border-white/10 p-8 lg:p-12 rounded-[3rem] shadow-2xl relative z-10 animate-in zoom-in duration-500">
         
-        {onBack && !isForgotPassword && (
+        {onBack && !isForgotPassword && !isStandalone && (
           <button 
             onClick={onBack}
             className="absolute top-8 left-8 flex items-center gap-2 text-slate-400 hover:text-indigo-400 transition-colors text-[10px] font-black uppercase tracking-widest group"

@@ -40,6 +40,11 @@ self.addEventListener('fetch', event => {
     event.respondWith(
       fetch(event.request)
         .then(response => {
+          // If the response is a 404 (not found), it might be an SPA route
+          // Serve /index.html from cache instead
+          if (response.status === 404) {
+            return caches.match('/') || caches.match('/index.html') || response;
+          }
           // Update cache with the new response
           const responseClone = response.clone();
           caches.open(CACHE_NAME).then(cache => {
@@ -48,8 +53,8 @@ self.addEventListener('fetch', event => {
           return response;
         })
         .catch(() => {
-          // Fallback to cache if network fails
-          return caches.match(event.request);
+          // Fallback to /index.html from cache if network fails
+          return caches.match('/') || caches.match('/index.html');
         })
     );
     return;
