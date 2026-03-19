@@ -3,6 +3,7 @@ import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, signInWithPopup, setPersistence, browserLocalPersistence } from 'firebase/auth';
 import { getFirestore, doc, setDoc, getDoc, collection, getDocs, updateDoc, increment, query, where, limit, deleteDoc, onSnapshot } from "firebase/firestore";
 import { getStorage, ref, uploadBytes, getDownloadURL, uploadBytesResumable } from "firebase/storage";
+import { getMessaging, getToken } from "firebase/messaging";
 import { AppData, AiConfig, SubscriptionProduct, AccountStatus, LegalConfig, UserRole, LandingPageConfig, MayarConfig, DuitkuConfig, FollowUpConfig, TrackingConfig, EmailSettings, EmailCampaign, EmailLog, SystemTraining, SalesNotification, SalesPopupConfig } from "../types";
 
 // KONFIGURASI FIREBASE
@@ -23,6 +24,23 @@ setPersistence(auth, browserLocalPersistence).catch((error) => {
 });
 export const db = getFirestore(app);
 export const storage = getStorage(app);
+export const messaging = getMessaging(app);
+
+export const requestNotificationPermission = async (uid: string) => {
+  try {
+    const permission = await Notification.requestPermission();
+    if (permission === 'granted') {
+      const token = await getToken(messaging, { vapidKey: 'BK-GXid6LhwxK6G0WAL9tSkYqQygf5XumWf_8CUHvZKNHivQ5_Nz-xUIaQ7t7xQD5OYM18W2_p0f8Axt2zf8_Zk' }); // You need to generate this key in Firebase Console
+      if (token) {
+        await updateDoc(doc(db, "users", uid), { fcmToken: token });
+        return token;
+      }
+    }
+  } catch (error) {
+    console.error("Error requesting notification permission:", error);
+  }
+  return null;
+};
 
 export const uploadImage = async (file: File | Blob, path: string, onProgress?: (progress: number) => void): Promise<string> => {
   const storageRef = ref(storage, path);

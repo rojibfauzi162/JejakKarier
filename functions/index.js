@@ -189,6 +189,33 @@ app.post("/createInquiry", async (req, res) => {
 // Export Express App
 exports.api = functions.https.onRequest(app);
 
+app.post("/sendNotification", async (req, res) => {
+  try {
+    const { userId, title, body } = req.body;
+    const userDoc = await db.collection("users").doc(userId).get();
+    if (!userDoc.exists) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    const userData = userDoc.data();
+    const fcmToken = userData.fcmToken;
+    if (!fcmToken) {
+      return res.status(404).json({ message: "FCM token not found" });
+    }
+    const message = {
+      notification: {
+        title: title,
+        body: body,
+      },
+      token: fcmToken,
+    };
+    await admin.messaging().send(message);
+    return res.json({ message: "Notification sent" });
+  } catch (error) {
+    console.error("Error sending notification:", error);
+    return res.status(500).json({ message: "Error sending notification" });
+  }
+});
+
 /**
  * ENDPOINT 3: Callback Handler
  */

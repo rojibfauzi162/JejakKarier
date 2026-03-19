@@ -36,7 +36,7 @@ import TrainingManagement from './components/admin/TrainingManagement';
 import TrainingList from './components/public/TrainingList';
 import TrainingDetail from './components/public/TrainingDetail';
 import OnboardingFlow from './components/user/OnboardingFlow';
-import { auth, getUserData, saveUserData, getProductsCatalog, findUserByEmail, deleteUserDoc, getTrackingConfig, subscribeLandingPageConfig, sanitizeData } from './services/firebase';
+import { auth, getUserData, saveUserData, getProductsCatalog, findUserByEmail, deleteUserDoc, getTrackingConfig, subscribeLandingPageConfig, sanitizeData, requestNotificationPermission } from './services/firebase';
 import { onAuthStateChanged, sendEmailVerification } from 'firebase/auth';
 import { trackingService } from './services/trackingService';
 
@@ -555,6 +555,12 @@ const App: React.FC = () => {
     };
     persist();
   }, [data, user, loading]);
+
+  useEffect(() => {
+    if (user && user.uid) {
+      requestNotificationPermission(user.uid);
+    }
+  }, [user]);
 
   if (publicLegalPage) return <PublicLegalView type={publicLegalPage} onBack={() => navigateToLegal(null)} />;
   if (publicTrainingPage?.type === 'list') return <TrainingList />;
