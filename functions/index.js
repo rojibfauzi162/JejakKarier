@@ -257,13 +257,18 @@ app.post("/send-push", async (req, res) => {
 });
 
 
-// Catch-all route untuk debugging
+// Tambahkan ini di bagian paling atas rute Anda
+app.use((req, res, next) => {
+  console.log(`[DEBUG] Path yang diterima Express: ${req.path}`);
+  next();
+});
+
+// Rute ini akan menangkap APAPUN yang masuk
 app.all("*", (req, res) => {
-  console.log(`[CATCH-ALL] Path: ${req.path}, Method: ${req.method}`);
-  res.status(404).json({ 
-    message: "Route not found", 
-    receivedPath: req.path,
-    originalUrl: req.originalUrl 
+  res.status(200).json({ 
+    message: "Express menerima request!",
+    path: req.path,
+    method: req.method
   });
 });
 
