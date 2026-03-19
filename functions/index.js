@@ -232,6 +232,8 @@ app.all("*", (req, res) => {
 // Export Express App
 exports.api = functions.https.onRequest((req, res) => {
   console.log("[FUNCTION TRIGGERED] Request diterima oleh Firebase Functions");
+  console.log("[DEBUG] Request Path:", req.path);
+  console.log("[DEBUG] Request Method:", req.method);
   return app(req, res);
 });
 
