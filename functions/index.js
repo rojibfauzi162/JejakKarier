@@ -230,7 +230,7 @@ app.all("*", (req, res) => {
 });
 
 // Export Express App
-exports.app = functions.https.onRequest((req, res) => {
+exports.api = functions.https.onRequest((req, res) => {
   console.log("[FUNCTION TRIGGERED] Request diterima oleh Firebase Functions");
   return app(req, res);
 });
