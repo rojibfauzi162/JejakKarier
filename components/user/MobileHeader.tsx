@@ -57,7 +57,7 @@ const MobileHeader: React.FC<MobileHeaderProps> = ({ profile = {} as any, notifi
               </div>
               <div>
                 <h1 className="text-sm font-black tracking-tighter text-slate-900 leading-none">FokusKarir</h1>
-                <span className="text-[8px] font-bold text-indigo-500 uppercase tracking-widest">{activeTab.replace('_', ' ')}</span>
+                <span className="text-[8px] font-bold text-indigo-500 uppercase tracking-widest">{activeTab?.replace('_', ' ') || ''}</span>
               </div>
             </>
           )}
@@ -117,7 +117,7 @@ const MobileHeader: React.FC<MobileHeaderProps> = ({ profile = {} as any, notifi
               onClick={(e) => { e.stopPropagation(); setIsProfileOpen(!isProfileOpen); setIsNotifOpen(false); }}
               className={`w-10 h-10 rounded-full border-2 overflow-hidden transition-all shadow-sm ${isProfileOpen ? 'border-indigo-500 scale-110 shadow-indigo-100' : (activeTab === 'profile' ? 'border-indigo-500 scale-110' : 'border-white bg-slate-100')}`}
             >
-              {profile.photoUrl ? (
+              {profile?.photoUrl ? (
                 <img src={profile.photoUrl} alt="Avatar" className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-slate-400">
@@ -132,7 +132,7 @@ const MobileHeader: React.FC<MobileHeaderProps> = ({ profile = {} as any, notifi
                 className="absolute right-0 mt-3 w-48 bg-white/95 backdrop-blur-xl border border-slate-100 rounded-[2rem] shadow-2xl p-2 animate-in slide-in-from-top-2 duration-300 z-[120]"
               >
                  <div className="p-4 border-b border-slate-50 mb-1">
-                    <p className="text-[10px] font-black text-slate-900 leading-none truncate">{profile.name}</p>
+                    <p className="text-[10px] font-black text-slate-900 leading-none truncate">{profile?.name || 'User'}</p>
                     <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-1">User Account</p>
                  </div>
                  <button 

@@ -95,7 +95,58 @@ export const uploadImageSimple = async (file: File | Blob, path: string): Promis
 const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: 'select_account' });
 
-const sanitizeData = (obj: any, visited = new WeakSet()): any => {
+export enum OperationType {
+  CREATE = 'create',
+  UPDATE = 'update',
+  DELETE = 'delete',
+  LIST = 'list',
+  GET = 'get',
+  WRITE = 'write',
+}
+
+interface FirestoreErrorInfo {
+  error: string;
+  operationType: OperationType;
+  path: string | null;
+  authInfo: {
+    userId: string | undefined;
+    email: string | null | undefined;
+    emailVerified: boolean | undefined;
+    isAnonymous: boolean | undefined;
+    tenantId: string | null | undefined;
+    providerInfo: {
+      providerId: string;
+      displayName: string | null;
+      email: string | null;
+      photoUrl: string | null;
+    }[];
+  }
+}
+
+export function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
+  const errInfo: FirestoreErrorInfo = {
+    error: error instanceof Error ? error.message : String(error),
+    authInfo: {
+      userId: auth.currentUser?.uid,
+      email: auth.currentUser?.email,
+      emailVerified: auth.currentUser?.emailVerified,
+      isAnonymous: auth.currentUser?.isAnonymous,
+      tenantId: auth.currentUser?.tenantId,
+      providerInfo: auth.currentUser?.providerData.map(provider => ({
+        providerId: provider.providerId,
+        displayName: provider.displayName,
+        email: provider.email,
+        photoUrl: provider.photoURL
+      })) || []
+    },
+    operationType,
+    path
+  }
+  console.error('Firestore Error: ', JSON.stringify(errInfo));
+  throw new Error(JSON.stringify(errInfo));
+}
+
+export const sanitizeData = (obj: any, visited = new WeakSet()): any => {
   if (obj === null || typeof obj !== 'object') {
     return obj;
   }
@@ -189,6 +240,7 @@ export const getUserData = async (uid: string): Promise<AppData | null> => {
 
 export const getAllUsers = async (): Promise<AppData[]> => {
   try {
+    if (!auth.currentUser) return []; // Return empty if not authenticated (e.g. demo mode)
     const querySnapshot = await getDocs(collection(db, "users"));
     return querySnapshot.docs
       .map(doc => ({
@@ -198,7 +250,8 @@ export const getAllUsers = async (): Promise<AppData[]> => {
       .filter(u => u.profile); // Ensure profile exists
   } catch (error: any) {
     if (error.code === 'permission-denied') return [];
-    throw error;
+    handleFirestoreError(error, OperationType.GET, "users");
+    return [];
   }
 };
 
@@ -392,6 +445,9 @@ export const subscribeLandingPageConfig = (callback: (config: LandingPageConfig)
     if (snapshot.exists()) {
       callback(snapshot.data() as LandingPageConfig);
     }
+  }, (error) => {
+    console.warn("[FIREBASE] subscribeLandingPageConfig error:", error.message);
+    // Don't throw here to avoid crashing the app, just log it
   });
 };
 
@@ -576,13 +632,14 @@ export const deleteSystemTraining = async (id: string) => {
 };
 
 export const getSalesNotifications = async (): Promise<SalesNotification[]> => {
+  const path = "system_metadata/sales_notifications_list";
   try {
     const docRef = doc(db, "system_metadata", "sales_notifications_list");
     const snap = await getDoc(docRef);
     if (snap.exists()) return snap.data().list || [];
     return [];
   } catch (error) {
-    console.error("Error getting sales notifications:", error);
+    handleFirestoreError(error, OperationType.GET, path);
     return [];
   }
 };
@@ -677,7 +734,7 @@ export const getRealSalesData = async (): Promise<any[]> => {
           if (tx.status === 'Paid') {
             realSales.push({
               id: tx.id,
-              nama: user.profile.name,
+              nama: user.profile?.name || "User",
               aksi: 'baru saja membeli',
               paket: tx.planTier,
               createdAt: tx.date
@@ -689,7 +746,7 @@ export const getRealSalesData = async (): Promise<any[]> => {
     
     return realSales.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   } catch (error) {
-    console.error("Error getting real sales data:", error);
+    handleFirestoreError(error, OperationType.GET, "users_aggregation");
     return [];
   }
 };

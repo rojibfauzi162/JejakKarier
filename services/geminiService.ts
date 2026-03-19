@@ -1,6 +1,6 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { AppData, AiConfig, WorkReflection, CareerSwitchAnalysis, CareerMoveDiagnosis } from "../types";
-import { getAiConfig, auth, recordAiTokens } from "./firebase";
+import { getAiConfig, auth, recordAiTokens, sanitizeData } from "./firebase";
 
 let cachedAiConfig: AiConfig | null = null;
 let lastConfigFetch = 0;
@@ -31,7 +31,7 @@ async function callAI(prompt: string, schema?: any) {
     const safeMaxTokens = Math.min(Number(config.maxTokens) || 4096, 8192);
 
     const enrichedPrompt = schema 
-      ? `${prompt}\n\nSTRICT REQUIREMENT: Respond ONLY with a valid JSON object. DO NOT include any conversational text before or after the JSON. Use exactly these keys: ${Object.keys(schema.properties || {}).join(", ")}. Structure reference: ${JSON.stringify(schema)}.`
+      ? `${prompt}\n\nSTRICT REQUIREMENT: Respond ONLY with a valid JSON object. DO NOT include any conversational text before or after the JSON. Use exactly these keys: ${Object.keys(schema.properties || {}).join(", ")}. Structure reference: ${JSON.stringify(sanitizeData(schema))}.`
       : prompt;
 
     const systemMessage = schema
@@ -47,7 +47,7 @@ async function callAI(prompt: string, schema?: any) {
           "X-Title": "FokusKarir",
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({
+        body: JSON.stringify(sanitizeData({
           model: targetModel,
           messages: [
             { role: "system", content: systemMessage },
@@ -55,7 +55,7 @@ async function callAI(prompt: string, schema?: any) {
           ],
           max_tokens: safeMaxTokens,
           response_format: schema ? { type: "json_object" } : undefined
-        }),
+        })),
         signal: controller.signal
       });
 
@@ -140,8 +140,8 @@ export async function getCareerSwitchRecommendations(userData: any, stats: any) 
   
   CURRENT DATA:
   - User Current Position: ${currentPos}
-  - Top Skills: ${JSON.stringify(stats.dominantSkills)}
-  - Activity Mix (90 Days): ${JSON.stringify(stats.mix)}
+  - Top Skills: ${JSON.stringify(sanitizeData(stats.dominantSkills))}
+  - Activity Mix (90 Days): ${JSON.stringify(sanitizeData(stats.mix))}
   
   TASK: Generate exactly 5 realistic and DISTINCT career options for a pivot.
   
@@ -220,7 +220,7 @@ export async function analyzeSkillGap(data: AppData, lang: 'id' | 'en' = 'id') {
 
   const languageName = lang === 'id' ? 'BAHASA INDONESIA' : 'ENGLISH';
 
-  const prompt = `ANALYZE CAREER QUALIFICATION FOR ${data.profile.name}. TARGET POSITION: ${data.profile.shortTermTarget || data.profile.currentPosition}. USER DATA: ${JSON.stringify(slimData)}. REQUIRED OUTPUT LANGUAGE: ${languageName}.`;
+  const prompt = `ANALYZE CAREER QUALIFICATION FOR ${data.profile.name}. TARGET POSITION: ${data.profile.shortTermTarget || data.profile.currentPosition}. USER DATA: ${JSON.stringify(sanitizeData(slimData))}. REQUIRED OUTPUT LANGUAGE: ${languageName}.`;
   
   const schema = {
     type: Type.OBJECT,
@@ -248,9 +248,9 @@ export async function analyzeCareerSwitch(userData: any, switchInputs: any): Pro
   const prompt = `ANALISIS STRATEGIS PINDAH KARIR (CAREER SWITCH).
   
   DATA PENGGUNA SAAT INI:
-  - Profil: ${JSON.stringify(userData.profile)}
-  - Skill Dominan: ${JSON.stringify(switchInputs.dominantSkills)}
-  - Mix Aktivitas (90 Hari): ${JSON.stringify(switchInputs.activityMix)}
+  - Profil: ${JSON.stringify(sanitizeData(userData.profile))}
+  - Skill Dominan: ${JSON.stringify(sanitizeData(switchInputs.dominantSkills))}
+  - Mix Aktivitas (90 Hari): ${JSON.stringify(sanitizeData(switchInputs.activityMix))}
   
   TARGET KARIR BARU:
   - Posisi: ${switchInputs.targetPosition}
@@ -309,8 +309,8 @@ export async function analyzeJobMove(userData: any, moveInputs: any) {
   const prompt = `ANALISIS STRATEGIS PINDAH KERJA (JOB MOVE - ROLE SAMA).
   
   DATA PENGGUNA SAAT INI:
-  - Profil & Skill: ${JSON.stringify(userData.profile)}
-  - Skill Dominan: ${JSON.stringify(moveInputs.dominantSkills)}
+  - Profil & Skill: ${JSON.stringify(sanitizeData(userData.profile))}
+  - Skill Dominan: ${JSON.stringify(sanitizeData(moveInputs.dominantSkills))}
   - Mood & Load (Historis): ${moveInputs.avgMood}/5
   
   TARGET PINDAH:
@@ -356,7 +356,7 @@ export async function analyzeJobMove(userData: any, moveInputs: any) {
 export async function generateMoveNarrative(stats: any): Promise<string> {
   const prompt = `SISTEM ANALISIS KARIR STRATEGIS.
   Rangkai data statistik berikut menjadi narasi ringkas (maksimal 3 paragraf) dalam Bahasa Indonesia.
-  DATA INPUT: ${JSON.stringify(stats)}
+  DATA INPUT: ${JSON.stringify(sanitizeData(stats))}
   
   INSTRUKSI KHUSUS:
   - Jangan mengembalikan format JSON. 
@@ -371,7 +371,7 @@ export async function summarizeMonthlyReview(reviewText: string) {
 }
 
 export async function generateCareerInsight(data: AppData, audience: 'self' | 'supervisor', period: 'weekly' | 'monthly', contexts: string[]) {
-  const prompt = `GENERATE A COMPREHENSIVE PERFORMANCE INSIGHT REPORT for user: ${data.profile.name}. ACTIVITY LOG DATA: ${JSON.stringify(data.dailyReports)}. LANGUAGE: BAHASA INDONESIA.`;
+  const prompt = `GENERATE A COMPREHENSIVE PERFORMANCE INSIGHT REPORT for user: ${data.profile.name}. ACTIVITY LOG DATA: ${JSON.stringify(sanitizeData(data.dailyReports))}. LANGUAGE: BAHASA INDONESIA.`;
   
   const schema = {
     type: Type.OBJECT,
@@ -404,7 +404,7 @@ export async function generateInterviewScript(data: AppData, language: 'ID' | 'E
   const prompt = `GENERATE MASTER INTERVIEW SCRIPT.
   
   CONTEXT:
-  - User: ${JSON.stringify(slimData)}
+  - User: ${JSON.stringify(sanitizeData(slimData))}
   - Lang: ${language === 'ID' ? 'ID' : 'EN'}
   
   INSTRUCTIONS:
@@ -494,7 +494,7 @@ export async function generateInterviewScript(data: AppData, language: 'ID' | 'E
 }
 
 export async function analyzeReflections(data: AppData, reflections: WorkReflection[], filterRange: string) {
-  const prompt = `ANALYZE WORK REFLECTIONS: ${JSON.stringify(reflections.map(r => r.mainContribution))}`;
+  const prompt = `ANALYZE WORK REFLECTIONS: ${JSON.stringify(sanitizeData(reflections.map(r => r.mainContribution)))}`;
   const schema = {
     type: Type.OBJECT,
     properties: {

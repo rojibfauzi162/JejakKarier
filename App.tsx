@@ -36,7 +36,7 @@ import TrainingManagement from './components/admin/TrainingManagement';
 import TrainingList from './components/public/TrainingList';
 import TrainingDetail from './components/public/TrainingDetail';
 import OnboardingFlow from './components/user/OnboardingFlow';
-import { auth, getUserData, saveUserData, getProductsCatalog, findUserByEmail, deleteUserDoc, getTrackingConfig, subscribeLandingPageConfig } from './services/firebase';
+import { auth, getUserData, saveUserData, getProductsCatalog, findUserByEmail, deleteUserDoc, getTrackingConfig, subscribeLandingPageConfig, sanitizeData } from './services/firebase';
 import { onAuthStateChanged, sendEmailVerification } from 'firebase/auth';
 import { trackingService } from './services/trackingService';
 
@@ -226,7 +226,7 @@ const App: React.FC = () => {
         ]
       };
 
-      const stringManifest = JSON.stringify(manifest);
+      const stringManifest = JSON.stringify(sanitizeData(manifest));
       const blob = new Blob([stringManifest], {type: 'application/json'});
       const manifestURL = URL.createObjectURL(blob);
       
