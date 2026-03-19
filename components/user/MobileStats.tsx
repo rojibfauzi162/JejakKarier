@@ -6,11 +6,15 @@ interface MobileStatsProps {
 }
 
 const MobileStats: React.FC<MobileStatsProps> = ({ data }) => {
-  const skillCount = data.skills.length;
-  const achievedSkills = data.skills.filter(s => s.status === SkillStatus.ACHIEVED).length;
+  const skills = data.skills || [];
+  const dailyReports = data.dailyReports || [];
+  const achievements = data.achievements || [];
+
+  const skillCount = skills.length;
+  const achievedSkills = skills.filter(s => s.status === SkillStatus.ACHIEVED).length;
   const progressPercent = skillCount > 0 ? Math.round((achievedSkills / skillCount) * 100) : 0;
   
-  const lastReport = data.dailyReports.length > 0 ? data.dailyReports[data.dailyReports.length - 1] : null;
+  const lastReport = dailyReports.length > 0 ? dailyReports[dailyReports.length - 1] : null;
 
   const stats = [
     {
@@ -36,7 +40,7 @@ const MobileStats: React.FC<MobileStatsProps> = ({ data }) => {
     },
     {
       title: "Pencapaian",
-      value: data.achievements.length,
+      value: achievements.length,
       subtitle: "Milestone Tervalidasi",
       icon: "bi-trophy",
       color: "bg-amber-50 text-amber-600"

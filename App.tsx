@@ -339,7 +339,18 @@ const App: React.FC = () => {
                 careerEvents: existingData.careerEvents || [],
                 personalProjects: existingData.personalProjects || [],
                 interviewScripts: existingData.interviewScripts || [],
-                onlineCV: existingData.onlineCV || getCleanInitialData().onlineCV
+                onlineCV: existingData.onlineCV || getCleanInitialData().onlineCV,
+                careerPaths: existingData.careerPaths || [],
+                workExperiences: existingData.workExperiences || [],
+                educations: existingData.educations || [],
+                trainings: existingData.trainings || [],
+                certifications: existingData.certifications || [],
+                contacts: existingData.contacts || [],
+                monthlyReviews: existingData.monthlyReviews || [],
+                todoCategories: existingData.todoCategories || getCleanInitialData().todoCategories,
+                workCategories: existingData.workCategories || getCleanInitialData().workCategories,
+                completedAiMilestones: existingData.completedAiMilestones || [],
+                manualTransactions: existingData.manualTransactions || []
               });
               setLoading(false);
               return;
@@ -423,7 +434,18 @@ const App: React.FC = () => {
             careerEvents: userData.careerEvents || [],
             personalProjects: userData.personalProjects || [],
             interviewScripts: userData.interviewScripts || [],
-            onlineCV: userData.onlineCV || getCleanInitialData().onlineCV
+            onlineCV: userData.onlineCV || getCleanInitialData().onlineCV,
+            careerPaths: userData.careerPaths || [],
+            workExperiences: userData.workExperiences || [],
+            educations: userData.educations || [],
+            trainings: userData.trainings || [],
+            certifications: userData.certifications || [],
+            contacts: userData.contacts || [],
+            monthlyReviews: userData.monthlyReviews || [],
+            todoCategories: userData.todoCategories || getCleanInitialData().todoCategories,
+            workCategories: userData.workCategories || getCleanInitialData().workCategories,
+            completedAiMilestones: userData.completedAiMilestones || [],
+            manualTransactions: userData.manualTransactions || []
           });
           if (userData.role === UserRole.SUPERADMIN && activeTab === 'dashboard') {
               setActiveTab('admin_dashboard');
