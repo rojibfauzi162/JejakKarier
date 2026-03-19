@@ -219,25 +219,6 @@ app.post(["/sendNotification", "/api/sendNotification"], async (req, res) => {
   }
 });
 
-// Catch-all route untuk debugging
-app.all("*", (req, res) => {
-  console.log(`[CATCH-ALL] Path: ${req.path}, Method: ${req.method}`);
-  res.status(404).json({ 
-    message: "Route not found", 
-    receivedPath: req.path,
-    originalUrl: req.originalUrl 
-  });
-});
-
-const webpush = require("web-push");
-
-// Konfigurasi web-push (Gunakan VAPID keys hasil generate)
-webpush.setVapidDetails(
-  "mailto:drevenlight@gmail.com",
-  "BNY_PpYnXVZTzAoRGc_TKiqIomFpVjqrPZuODi4k3jkOWfVr0gOtK8shzUmi5ttrCq63eBXQMWSioF_mpTHCZjU",
-  "KFCHuUnUgX-3uOJt8MTImWmLDAICftrFZaKBU-4NELI"
-);
-
 // Endpoint untuk menyimpan subscription PWA
 app.post("/subscribe", async (req, res) => {
   const { userId, subscription } = req.body;
@@ -250,9 +231,6 @@ app.post("/subscribe", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-
-// Export Express App
-exports.api = functions.https.onRequest(app);
 
 // Endpoint untuk mengirim push notification ke user tertentu
 app.post("/send-push", async (req, res) => {
@@ -277,6 +255,29 @@ app.post("/send-push", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+
+// Catch-all route untuk debugging
+app.all("*", (req, res) => {
+  console.log(`[CATCH-ALL] Path: ${req.path}, Method: ${req.method}`);
+  res.status(404).json({ 
+    message: "Route not found", 
+    receivedPath: req.path,
+    originalUrl: req.originalUrl 
+  });
+});
+
+const webpush = require("web-push");
+
+// Konfigurasi web-push (Gunakan VAPID keys hasil generate)
+webpush.setVapidDetails(
+  "mailto:drevenlight@gmail.com",
+  "BNY_PpYnXVZTzAoRGc_TKiqIomFpVjqrPZuODi4k3jkOWfVr0gOtK8shzUmi5ttrCq63eBXQMWSioF_mpTHCZjU",
+  "KFCHuUnUgX-3uOJt8MTImWmLDAICftrFZaKBU-4NELI"
+);
+
+// Export Express App
+exports.api = functions.https.onRequest(app);
 
 // Test Function to isolate the issue
 exports.testFunction = functions.https.onRequest((req, res) => {
