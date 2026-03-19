@@ -238,7 +238,7 @@ const App: React.FC = () => {
         name: "FokusKarir - Jejak Karir Digital",
         short_name: landingConfig.pwaShortName || "FokusKarir",
         description: "Platform All-in-One untuk Manajemen Karir, Portofolio, dan Pertumbuhan Profesional.",
-        start_url: "/",
+        start_url: "/login",
         display: "standalone",
         background_color: "#ffffff",
         theme_color: landingConfig.pwaThemeColor || "#4f46e5",
