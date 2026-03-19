@@ -595,6 +595,27 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
                 </tbody>
                 </table>
             </div>
+
+            {/* Mobile List View */}
+            <div className="lg:hidden p-4 space-y-4">
+                {currentDayGroup[1].map((log, index) => (
+                    <div key={log.id} className="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-2">
+                        <div className="flex justify-between items-start">
+                            <div className="font-black text-slate-800 text-sm">{log.activity}</div>
+                            <div className="flex gap-2">
+                                <button onClick={() => handleOpenModal(log)} className="p-2 bg-white border border-slate-200 text-slate-400 rounded-lg shadow-sm">✎</button>
+                                <button onClick={() => onDelete(log.id)} className="p-2 bg-white border border-slate-200 text-slate-400 rounded-lg shadow-sm">✕</button>
+                            </div>
+                        </div>
+                        <div className="flex gap-2 text-[10px]">
+                            <span className={`px-2 py-1 rounded-md font-black uppercase ${log.context === 'Perusahaan' ? 'bg-indigo-100 text-indigo-700' : 'bg-amber-100 text-amber-700'}`}>{log.context}</span>
+                            <span className="px-2 py-1 rounded-md font-black uppercase bg-blue-100 text-blue-700">{log.category}</span>
+                        </div>
+                        <div className="text-xs text-slate-600">{log.isPlan ? <span className="text-slate-400 italic">Menunggu Hasil</span> : (log.output || log.activity)}</div>
+                        <div className="text-[10px] font-black text-indigo-600 bg-indigo-50 px-2 py-1 rounded-md inline-block">{log.metricValue} {log.metricLabel}</div>
+                    </div>
+                ))}
+            </div>
           </div>
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center py-32 space-y-6">

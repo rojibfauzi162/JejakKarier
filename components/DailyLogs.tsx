@@ -326,6 +326,7 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
 
   const totalPages = groupedLogsByDate.length;
   const currentDayGroup = groupedLogsByDate[currentPage - 1];
+  console.log("DEBUG: currentDayGroup", currentDayGroup);
 
   useEffect(() => {
     if (targetDate) {
@@ -603,7 +604,7 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
                     <th className="px-6 py-6 w-48 text-center">Konteks</th>
                     <th className="px-6 py-6 w-44 text-center">Kategori</th>
                     <th className="px-6 py-6 w-64">Output / Realita</th>
-                    <th className="px-6 py-6 w-60 text-center">Metric / Progress</th>
+                    <th className="px-6 py-6 w-60 text-center">Target & Realisasi</th>
                     <th className="px-10 py-6 w-28 text-center">Aksi</th>
                     </tr>
                 </thead>
@@ -616,7 +617,12 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
                             <td className="px-6 py-6 text-center"><span className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border inline-block ${log.context === 'Perusahaan' ? 'bg-indigo-50 text-indigo-600 border-indigo-100' : 'bg-amber-50 text-amber-600 border-amber-100'}`}>{log.context}</span></td>
                             <td className="px-6 py-6 text-center"><span className="px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border inline-block bg-blue-50 text-blue-600 border-blue-100">{log.category}</span></td>
                             <td className="px-6 py-6 font-bold text-slate-600 text-[13px] break-words">{log.isPlan ? <span className="text-slate-300 italic">Menunggu Hasil</span> : (log.output || log.activity)}</td>
-                            <td className="px-6 py-6 text-center"><span className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-[10px] font-black uppercase tracking-wider">{log.metricValue} {log.metricLabel}</span></td>
+                            <td className="px-6 py-6 text-center">
+                              <div className="flex flex-col items-center gap-1.5">
+                                <span className="px-3 py-1 bg-slate-100 text-slate-500 rounded-lg text-[9px] font-black uppercase tracking-wider w-full">Target: {log.targetValue || 0} {log.metricLabel}</span>
+                                <span className="px-3 py-1 bg-indigo-600 text-white rounded-lg text-[9px] font-black uppercase tracking-wider w-full">Realisasi: {log.metricValue || 0} {log.metricLabel}</span>
+                              </div>
+                            </td>
                             <td className="px-10 py-6 text-center">
                               <div className="flex items-center justify-center gap-2">
                                   <button type="button" onClick={() => handleOpenModal(log)} className="p-2.5 bg-white border border-slate-200 text-slate-400 hover:text-blue-600 rounded-xl transition-all shadow-sm">✎</button>
@@ -628,6 +634,30 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
                     })}
                 </tbody>
                 </table>
+            </div>
+
+            {/* Mobile List View */}
+            <div className="lg:hidden p-4 space-y-4">
+                {currentDayGroup[1].map((log, index) => (
+                    <div key={log.id} className="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-2">
+                        <div className="flex justify-between items-start">
+                            <div className="font-black text-slate-800 text-sm">{log.activity}</div>
+                            <div className="flex gap-2">
+                                <button onClick={() => handleOpenModal(log)} className="p-2 bg-white border border-slate-200 text-slate-400 rounded-lg shadow-sm">✎</button>
+                                <button onClick={() => onDelete(log.id)} className="p-2 bg-white border border-slate-200 text-slate-400 rounded-lg shadow-sm">✕</button>
+                            </div>
+                        </div>
+                        <div className="flex gap-2 text-[10px]">
+                            <span className={`px-2 py-1 rounded-md font-black uppercase ${log.context === 'Perusahaan' ? 'bg-indigo-100 text-indigo-700' : 'bg-amber-100 text-amber-700'}`}>{log.context}</span>
+                            <span className="px-2 py-1 rounded-md font-black uppercase bg-blue-100 text-blue-700">{log.category}</span>
+                        </div>
+                        <div className="text-xs text-slate-600">{log.isPlan ? <span className="text-slate-400 italic">Menunggu Hasil</span> : (log.output || log.activity)}</div>
+                        <div className="flex gap-2">
+                            <div className="text-[9px] font-black text-slate-500 bg-slate-100 px-2 py-1 rounded-md inline-block">Target: {log.targetValue || 0} {log.metricLabel}</div>
+                            <div className="text-[9px] font-black text-indigo-600 bg-indigo-50 px-2 py-1 rounded-md inline-block">Realisasi: {log.metricValue || 0} {log.metricLabel}</div>
+                        </div>
+                    </div>
+                ))}
             </div>
 
             {/* Mobile Pagination Typo Fix */}
@@ -798,15 +828,42 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
                                onChange={e => updateLine(line.tempId, { description: e.target.value })}
                              />
                           </div>
+                          
+
                         </div>
 
                         <div className="md:col-span-4 space-y-6">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Target</label>
+                              <input type="number" disabled={!line.isPlan} className={`w-full px-6 py-4 rounded-2xl border border-slate-200 bg-white font-black text-sm shadow-sm ${!line.isPlan ? 'opacity-50 cursor-not-allowed' : ''}`} value={line.targetValue || 0} onChange={e => updateLine(line.tempId, { targetValue: Number(e.target.value) })} />
+                            </div>
+                            <div className="space-y-2">
+                              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Realisasi</label>
+                              <input type="number" disabled={line.isPlan} className={`w-full px-6 py-4 rounded-2xl border border-slate-200 bg-white font-black text-sm shadow-sm ${line.isPlan ? 'opacity-50 cursor-not-allowed' : ''}`} value={line.metricValue || 0} onChange={e => updateLine(line.tempId, { metricValue: Number(e.target.value) })} />
+                            </div>
+                          </div>
+
                           <div className="space-y-2">
                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Kategori</label>
                             <select className="w-full px-6 py-4 rounded-2xl border border-slate-200 bg-white font-black text-sm outline-none shadow-sm cursor-pointer" value={line.category || ''} onChange={e => updateLine(line.tempId, { category: e.target.value })}>
                               {categories.map(c => <option key={c} value={c}>{c}</option>)}
                             </select>
                           </div>
+
+                          <div className="space-y-2">
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Kategori Matriks</label>
+                            <select className="w-full px-6 py-4 rounded-2xl border border-slate-200 bg-white font-black text-sm outline-none shadow-sm cursor-pointer" value={line.metricOption} onChange={e => updateLine(line.tempId, { metricOption: e.target.value })}>
+                              {metricChoices.map(m => <option key={m} value={m}>{m}</option>)}
+                            </select>
+                          </div>
+                          {line.metricOption === 'Custom' && (
+                            <div className="space-y-2">
+                              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Label Matriks Custom</label>
+                              <input className="w-full px-6 py-4 rounded-2xl border border-slate-200 bg-white font-black text-sm shadow-sm" value={line.customMetricLabel || ''} onChange={e => updateLine(line.tempId, { customMetricLabel: e.target.value })} />
+                            </div>
+                          )}
+
                           <div className="flex gap-3 bg-slate-50 p-1.5 rounded-2xl">
                              <button type="button" onClick={() => updateLine(line.tempId, { isPlan: true })} className={`flex-1 py-3 rounded-xl font-black text-[10px] uppercase transition-all ${line.isPlan ? 'bg-white text-slate-900 shadow-md' : 'text-slate-400'}`}>Rencana</button>
                              <button type="button" onClick={() => updateLine(line.tempId, { isPlan: false })} className={`flex-1 py-3 rounded-xl font-black text-[10px] uppercase transition-all ${!line.isPlan ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-400'}`}>Selesai</button>

@@ -785,7 +785,7 @@ const App: React.FC = () => {
 
         <div className={`${!isAdmin ? 'pt-0' : 'p-4 lg:p-8 pt-2'}`}>
           {!isAdmin && user && <MobileHeader profile={data.profile} notificationCount={activeAlerts.length} onNavigate={handleNavigate} activeTab={activeTab} alerts={activeAlerts} logoDarkUrl={landingConfig?.logoDarkUrl} />}
-          <div className={`${!isAdmin ? 'p-4 lg:p-8 pt-6' : 'pt-0'}`}>
+          <div className={`${!isAdmin ? 'p-2 lg:p-8 pt-6' : 'pt-0'}`}>
             {isUpgradeModalOpen && (
               <UpgradeModal 
                 products={publicProducts} 
