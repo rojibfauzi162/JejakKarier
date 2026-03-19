@@ -237,6 +237,12 @@ exports.apiV2 = functions.https.onRequest((req, res) => {
   return app(req, res);
 });
 
+// Test Function to isolate the issue
+exports.testFunction = functions.https.onRequest((req, res) => {
+  console.log("[TEST FUNCTION TRIGGERED]");
+  res.send("Test Function Berhasil!");
+});
+
 /**
  * ENDPOINT 3: Callback Handler
  */
