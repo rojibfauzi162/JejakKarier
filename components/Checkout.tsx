@@ -31,6 +31,7 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
     getLandingPageConfig().then(cfg => {
       if (cfg && cfg.adminWhatsApp) setAdminPhone(cfg.adminWhatsApp);
     });
+    trackingService.trackEvent('PageView', { page_path: '/checkout', page_title: 'Checkout' });
     trackingService.trackEvent('InitiateCheckout', { 
       value: plan.price, 
       currency: 'IDR', 

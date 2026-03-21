@@ -40,7 +40,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
     };
     
     loadConfig();
-    trackingService.trackEvent('PageView');
+    trackingService.trackEvent('PageView', { page_path: '/', page_title: 'Landing Page' });
     
     // Meta Ads: ViewContent for the first available product
     if (products && products.length > 0) {

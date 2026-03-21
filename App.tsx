@@ -77,7 +77,6 @@ const App: React.FC = () => {
   };
 
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
-  const [checkoutPlan, setCheckoutPlan] = useState<SubscriptionProduct | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const desktopNotifRef = useRef<HTMLDivElement>(null);
@@ -86,6 +85,18 @@ const App: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); // NEW: State for mobile sidebar
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [landingConfig, setLandingConfig] = useState<LandingPageConfig | null>(null);
+
+  const [publicProducts, setPublicProducts] = useState<SubscriptionProduct[]>(DEFAULT_PRODUCTS);
+  const [checkoutPlan, setCheckoutPlan] = useState<SubscriptionProduct | null>(null);
+
+  const navigateToCheckout = (plan: SubscriptionProduct | null) => {
+    if (plan) {
+      window.history.pushState({ planId: plan.id }, '', `/checkout?plan=${plan.id}`);
+    } else {
+      window.history.pushState({}, '', '/');
+    }
+    setCheckoutPlan(plan);
+  };
 
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
     setToast({ message, type });
@@ -176,6 +187,9 @@ const App: React.FC = () => {
   useEffect(() => {
     const handlePopState = () => {
       const path = window.location.pathname;
+      const params = new URLSearchParams(window.location.search);
+      const planId = params.get('plan');
+
       if (path === '/privacy') setPublicLegalPage('privacy');
       else if (path === '/terms') setPublicLegalPage('terms');
       else setPublicLegalPage(null);
@@ -186,10 +200,28 @@ const App: React.FC = () => {
 
       if (path === '/login') setShowAuth(true);
       else if (path === '/') setShowAuth(false);
+
+      if (path === '/checkout' && planId) {
+        const plan = publicProducts.find(p => p.id === planId || p.tier === planId);
+        if (plan) setCheckoutPlan(plan);
+      } else if (path !== '/checkout') {
+        setCheckoutPlan(null);
+      }
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
-  }, []);
+  }, [publicProducts]);
+
+  useEffect(() => {
+    const path = window.location.pathname;
+    const params = new URLSearchParams(window.location.search);
+    const planId = params.get('plan');
+    
+    if (path === '/checkout' && planId && publicProducts.length > 0) {
+      const plan = publicProducts.find(p => p.id === planId || p.tier === planId);
+      if (plan) setCheckoutPlan(plan);
+    }
+  }, [publicProducts]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -220,8 +252,6 @@ const App: React.FC = () => {
       }
     }
   }, [user]);
-
-  const [publicProducts, setPublicProducts] = useState<SubscriptionProduct[]>(DEFAULT_PRODUCTS);
 
   useEffect(() => {
     getProductsCatalog().then(p => {
@@ -613,10 +643,10 @@ const App: React.FC = () => {
     </div>
   );
 
-  if (checkoutPlan) return <Checkout plan={checkoutPlan} user={user} onBack={() => setCheckoutPlan(null)} />;
+  if (checkoutPlan) return <Checkout plan={checkoutPlan} user={user} onBack={() => navigateToCheckout(null)} />;
   if (!user) {
     if (showAuth) return <Auth onBack={() => navigateToAuth(false)} logoUrl={landingConfig?.logoUrl} logoDarkUrl={landingConfig?.logoDarkUrl} />;
-    return <LandingPage onStart={() => navigateToAuth(true)} onLogin={() => navigateToAuth(true)} onShowLegal={(type) => navigateToLegal(type)} onBuyPlan={(plan) => setCheckoutPlan(plan)} products={publicProducts} initialConfig={landingConfig} />;
+    return <LandingPage onStart={() => navigateToAuth(true)} onLogin={() => navigateToAuth(true)} onShowLegal={(type) => navigateToLegal(type)} onBuyPlan={(plan) => navigateToCheckout(plan)} products={publicProducts} initialConfig={landingConfig} />;
   }
 
   const isAdmin = data.role === UserRole.SUPERADMIN;

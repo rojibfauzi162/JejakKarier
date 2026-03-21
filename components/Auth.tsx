@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, sendEmailVerification, sendPasswordResetEmail } from 'firebase/auth';
 import { auth, signInWithGoogle } from '../services/firebase';
 
@@ -23,6 +23,10 @@ const Auth: React.FC<AuthProps> = ({ onBack, logoUrl, logoDarkUrl }) => {
   const [errorCode, setErrorCode] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    trackingService.trackEvent('PageView', { page_path: '/login', page_title: 'Login' });
+  }, []);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
