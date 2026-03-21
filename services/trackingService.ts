@@ -124,6 +124,14 @@ class TrackingService {
       return;
     }
 
+    // Jika config ada tapi fbq belum siap (mungkin script masih loading), antrikan juga sementara
+    if (this.config.metaPixelId && !(window as any).fbq) {
+      this.eventQueue.push({ eventName, data });
+      // Coba proses queue lagi setelah 500ms
+      setTimeout(() => this.processQueue(), 500);
+      return;
+    }
+
     // Meta Pixel Event Mapping
     if ((window as any).fbq) {
       const eventId = data?.event_id || `evt_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
