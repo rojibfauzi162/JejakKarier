@@ -9,7 +9,7 @@ import { auth } from "./firebase";
 class TrackingService {
   private config: TrackingConfig | null = null;
   private injectedPlatforms: Set<string> = new Set();
-  private eventQueue: { eventName: any; data?: any }[] = [];
+  private eventQueue: { eventName: any; data?: any; context?: any }[] = [];
 
   public init(config: TrackingConfig) {
     console.log("[TRACKING] init() called. metaPixelId:", config.metaPixelId || 'MISSING');
@@ -22,7 +22,7 @@ class TrackingService {
   private processQueue() {
     if (this.eventQueue.length > 0) {
       this.eventQueue.forEach(item => {
-        this.trackEvent(item.eventName, item.data);
+        this.trackEvent(item.eventName, item.data, item.context);
       });
       this.eventQueue = [];
     }
@@ -113,23 +113,37 @@ class TrackingService {
    * @param data Data tambahan (value, currency, dll)
    */
   public async trackEvent(
-    eventName: 'PageView' | 'ViewContent' | 'AddToCart' | 'CompleteRegistration' | 'Lead' | 'InitiateCheckout' | 'AddPaymentInfo' | 'Purchase', 
-    data?: any
+    eventName: 'PageView' | 'ViewContent' | 'AddToCart' | 'CompleteRegistration' | 'Lead' | 'InitiateCheckout' | 'AddPaymentInfo' | 'Purchase' | string, 
+    data?: any,
+    context?: 'landingPageLoad' | 'selectPlanClick' | 'checkoutLoad' | 'registrationSuccess'
   ) {
     if (typeof window === "undefined") return;
 
     // Jika belum di-init atau config belum ada, masukkan ke antrian
     if (!this.config) {
-      this.eventQueue.push({ eventName, data });
+      this.eventQueue.push({ eventName, data, context });
       return;
     }
 
     // Jika config ada tapi fbq belum siap (mungkin script masih loading), antrikan juga sementara
     if (this.config.metaPixelId && !(window as any).fbq) {
-      this.eventQueue.push({ eventName, data });
+      this.eventQueue.push({ eventName, data, context });
       // Coba proses queue lagi setelah 500ms
       setTimeout(() => this.processQueue(), 500);
       return;
+    }
+
+    let finalEventName = eventName;
+    if (this.config.eventMapping && context) {
+      if (context === 'landingPageLoad' && this.config.eventMapping.landingPageLoad) {
+        finalEventName = this.config.eventMapping.landingPageLoad;
+      } else if (context === 'selectPlanClick' && this.config.eventMapping.selectPlanClick) {
+        finalEventName = this.config.eventMapping.selectPlanClick;
+      } else if (context === 'checkoutLoad' && this.config.eventMapping.checkoutLoad) {
+        finalEventName = this.config.eventMapping.checkoutLoad;
+      } else if (context === 'registrationSuccess' && this.config.eventMapping.registrationSuccess) {
+        finalEventName = this.config.eventMapping.registrationSuccess;
+      }
     }
 
     // Meta Pixel Event Mapping
@@ -142,11 +156,11 @@ class TrackingService {
         trackingData.test_event_code = this.config.metaTestCode;
       }
 
-      console.log(`[TRACKING] Sending Meta Pixel event: ${eventName}`, trackingData, { eventID: eventId });
+      console.log(`[TRACKING] Sending Meta Pixel event: ${finalEventName}`, trackingData, { eventID: eventId });
       
       try {
         // Standard Meta Pixel track call with eventID for deduplication with CAPI
-        (window as any).fbq('track', eventName, trackingData, { eventID: eventId });
+        (window as any).fbq('track', finalEventName, trackingData, { eventID: eventId });
         
         // Pass the same eventId to CAPI if applicable
         if (data) data.event_id = eventId;

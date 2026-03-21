@@ -368,6 +368,12 @@ export interface TrackingConfig {
   googleAnalyticsId: string;
   tiktokPixelId: string;
   updatedAt?: string;
+  eventMapping?: {
+    landingPageLoad?: string;
+    selectPlanClick?: string;
+    checkoutLoad?: string;
+    registrationSuccess?: string;
+  };
 }
 
 export interface FollowUpConfig {

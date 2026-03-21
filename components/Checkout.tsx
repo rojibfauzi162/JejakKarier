@@ -48,7 +48,7 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
       content_name: plan.name,
       content_ids: [plan.id],
       content_type: 'product'
-    });
+    }, 'checkoutLoad');
   }, [plan]);
 
   const handleAuth = async (e: React.FormEvent) => {
@@ -67,7 +67,7 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
         trackingService.trackEvent('CompleteRegistration', {
           content_name: 'User Registration',
           status: 'success'
-        });
+        }, 'registrationSuccess');
         trackingService.trackEvent('Lead', {
           content_category: 'Registration',
           content_name: name,

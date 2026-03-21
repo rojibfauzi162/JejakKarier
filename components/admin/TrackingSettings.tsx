@@ -177,6 +177,63 @@ const TrackingSettings: React.FC<TrackingSettingsProps> = ({ onToast }) => {
                 </div>
              </div>
 
+             {/* Event Mapping (Manual Setting) */}
+             <div className="p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100 mt-8">
+                <h4 className="text-[11px] font-black text-slate-900 uppercase tracking-widest mb-6 flex items-center gap-2">
+                   <i className="bi bi-sliders"></i> Pengaturan Event Manual (Meta Pixel)
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                   <div className="space-y-2">
+                      <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Event: Kunjungan Landing Page</label>
+                      <select 
+                        className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl outline-none font-bold text-[10px] uppercase focus:border-indigo-400"
+                        value={config.eventMapping?.landingPageLoad || 'ViewContent'}
+                        onChange={e => setConfig({...config, eventMapping: {...(config.eventMapping || {}), landingPageLoad: e.target.value}})}
+                      >
+                         <option value="ViewContent">ViewContent (Default)</option>
+                         <option value="PageView">PageView</option>
+                         <option value="AddToCart">AddToCart</option>
+                      </select>
+                   </div>
+                   <div className="space-y-2">
+                      <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Event: Klik Pilih Paket (Landing Page)</label>
+                      <select 
+                        className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl outline-none font-bold text-[10px] uppercase focus:border-indigo-400"
+                        value={config.eventMapping?.selectPlanClick || 'AddToCart'}
+                        onChange={e => setConfig({...config, eventMapping: {...(config.eventMapping || {}), selectPlanClick: e.target.value}})}
+                      >
+                         <option value="AddToCart">AddToCart (Default)</option>
+                         <option value="InitiateCheckout">InitiateCheckout</option>
+                         <option value="ViewContent">ViewContent</option>
+                      </select>
+                   </div>
+                   <div className="space-y-2">
+                      <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Event: Halaman Checkout Dibuka</label>
+                      <select 
+                        className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl outline-none font-bold text-[10px] uppercase focus:border-indigo-400"
+                        value={config.eventMapping?.checkoutLoad || 'InitiateCheckout'}
+                        onChange={e => setConfig({...config, eventMapping: {...(config.eventMapping || {}), checkoutLoad: e.target.value}})}
+                      >
+                         <option value="InitiateCheckout">InitiateCheckout (Default)</option>
+                         <option value="AddToCart">AddToCart</option>
+                         <option value="AddPaymentInfo">AddPaymentInfo</option>
+                      </select>
+                   </div>
+                   <div className="space-y-2">
+                      <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Event: Registrasi Berhasil</label>
+                      <select 
+                        className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl outline-none font-bold text-[10px] uppercase focus:border-indigo-400"
+                        value={config.eventMapping?.registrationSuccess || 'CompleteRegistration'}
+                        onChange={e => setConfig({...config, eventMapping: {...(config.eventMapping || {}), registrationSuccess: e.target.value}})}
+                      >
+                         <option value="CompleteRegistration">CompleteRegistration (Default)</option>
+                         <option value="Lead">Lead</option>
+                         <option value="SubmitApplication">SubmitApplication</option>
+                      </select>
+                   </div>
+                </div>
+             </div>
+
              <div className="p-8 bg-blue-50/50 rounded-[2.5rem] border border-blue-100">
                 <h4 className="text-[11px] font-black text-blue-900 uppercase tracking-widest mb-4 flex items-center gap-2">
                    <i className="bi bi-info-circle-fill"></i> Panduan Integrasi

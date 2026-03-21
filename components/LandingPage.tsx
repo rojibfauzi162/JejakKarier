@@ -51,12 +51,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
         content_type: 'product',
         value: firstProduct.price,
         currency: 'IDR'
-      });
+      }, 'landingPageLoad');
     } else {
       trackingService.trackEvent('ViewContent', { 
         content_name: 'Landing Page Plans',
         content_category: 'Subscription'
-      });
+      }, 'landingPageLoad');
     }
   }, [initialConfig, products]);
 
@@ -81,6 +81,15 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
     }
 
     if (onBuyPlan) {
+      // Track plan selection before navigating to checkout
+      trackingService.trackEvent('AddToCart', {
+        content_ids: [plan.id],
+        content_name: plan.name,
+        content_type: 'product',
+        value: plan.price,
+        currency: 'IDR'
+      }, 'selectPlanClick');
+      
       onBuyPlan(plan);
     } else {
       // Meta Ads: AddToCart (only if redirecting externally, otherwise handled by Checkout)
@@ -90,7 +99,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
         content_type: 'product',
         value: plan.price,
         currency: 'IDR'
-      });
+      }, 'selectPlanClick');
 
       let finalUrl = plan.mayarProductId || plan.id;
       if (!finalUrl.startsWith('http')) {

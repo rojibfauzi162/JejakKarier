@@ -49,7 +49,7 @@ const Auth: React.FC<AuthProps> = ({ onBack, logoUrl, logoDarkUrl }) => {
         await updateProfile(userCredential.user, { displayName: name });
         
         // Meta Ads: CompleteRegistration & Lead
-        trackingService.trackEvent('CompleteRegistration', { content_name: 'Email Registration' });
+        trackingService.trackEvent('CompleteRegistration', { content_name: 'Email Registration' }, 'registrationSuccess');
         trackingService.trackEvent('Lead', { content_name: 'New User Registration', status: 'Registered' });
 
         try {
@@ -127,7 +127,7 @@ const Auth: React.FC<AuthProps> = ({ onBack, logoUrl, logoDarkUrl }) => {
       // Meta Ads: CompleteRegistration & Lead (jika user baru)
       const isNewUser = (result as any)._tokenResponse?.isNewUser;
       if (isNewUser) {
-        trackingService.trackEvent('CompleteRegistration', { content_name: 'Google Registration' });
+        trackingService.trackEvent('CompleteRegistration', { content_name: 'Google Registration' }, 'registrationSuccess');
         trackingService.trackEvent('Lead', { content_name: 'New User Registration', status: 'Registered' });
       }
     } catch (err: any) {
