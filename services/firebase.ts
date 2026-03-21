@@ -375,7 +375,7 @@ export const getTrackingConfig = async (): Promise<TrackingConfig | null> => {
   } catch (error: any) {
     console.warn("[FIREBASE] Config Tracking error:", error.message);
   }
-  return { metaPixelId: '', googleAnalyticsId: '', tiktokPixelId: '' };
+  return { metaPixelId: '', metaConversionAccessToken: '', metaTestCode: '', googleAnalyticsId: '', tiktokPixelId: '' };
 };
 
 export const saveTrackingConfig = async (config: TrackingConfig) => {

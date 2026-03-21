@@ -829,6 +829,31 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
                              />
                           </div>
                           
+                          <div className="space-y-2">
+                             <div className="flex items-center justify-between">
+                               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Output / Realita</label>
+                               <div className="flex items-center gap-2">
+                                 <input 
+                                   type="checkbox" 
+                                   id={`custom-output-${line.tempId}`}
+                                   checked={line.useCustomOutput} 
+                                   onChange={e => updateLine(line.tempId, { useCustomOutput: e.target.checked })}
+                                   className="w-3 h-3 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                                 />
+                                 <label htmlFor={`custom-output-${line.tempId}`} className="text-[9px] font-black text-slate-400 uppercase cursor-pointer tracking-tighter">Gunakan Output Kustom</label>
+                               </div>
+                             </div>
+                             <input 
+                               placeholder={line.useCustomOutput ? "Masukkan hasil kustom..." : "Otomatis menggunakan nama aktivitas"} 
+                               className={`w-full px-6 py-4 rounded-2xl border border-slate-200 bg-white font-black text-sm focus:ring-4 focus:ring-blue-500/5 transition-all shadow-sm ${!line.useCustomOutput ? 'bg-slate-50 text-slate-400' : 'text-indigo-600'}`}
+                               value={line.useCustomOutput ? line.output : (line.isPlan ? '' : line.activity)}
+                               disabled={!line.useCustomOutput}
+                               onChange={e => updateLine(line.tempId, { output: e.target.value })}
+                             />
+                             {!line.useCustomOutput && !line.isPlan && (
+                               <p className="text-[9px] font-bold text-slate-400 italic ml-1">* Output akan disamakan dengan nama aktivitas jika tidak dikustomisasi.</p>
+                             )}
+                          </div>
 
                         </div>
 

@@ -363,6 +363,8 @@ export interface DuitkuConfig {
 
 export interface TrackingConfig {
   metaPixelId: string;
+  metaConversionAccessToken?: string;
+  metaTestCode?: string;
   googleAnalyticsId: string;
   tiktokPixelId: string;
   updatedAt?: string;

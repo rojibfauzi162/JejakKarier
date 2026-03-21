@@ -6,10 +6,14 @@ interface PerformanceReportsProps {
   data: AppData;
 }
 
+type TimeFilter = 'today' | '7days' | '1month' | '3months' | '6months' | '1year' | 'range' | 'all';
+
 const PerformanceReports: React.FC<PerformanceReportsProps> = ({ data }) => {
-  const [reportType, setReportType] = useState<'daily' | 'weekly' | 'monthly' | 'charts'>('daily');
+  const [viewMode, setViewMode] = useState<'list' | 'charts'>('list');
+  const [timeFilter, setTimeFilter] = useState<TimeFilter>('all');
   const [selectedContext, setSelectedContext] = useState<'all' | 'Perusahaan' | 'Personal' | 'Sampingan'>('all');
   const [showShareModal, setShowShareModal] = useState(false);
+  const [selectedPeriodLogs, setSelectedPeriodLogs] = useState<{ title: string, logs: DailyReport[] } | null>(null);
   const [isExporting, setIsExporting] = useState(false);
 
   // New Date Filter States
@@ -18,54 +22,83 @@ const PerformanceReports: React.FC<PerformanceReportsProps> = ({ data }) => {
 
   // Filtered data based on selected context and custom date range
   const filteredReports = useMemo(() => {
-    let reports = data.dailyReports;
+    let reports = [...data.dailyReports].sort((a, b) => a.date.localeCompare(b.date));
     
     if (selectedContext !== 'all') {
       reports = reports.filter(log => log.context === selectedContext);
     }
 
-    if (dateStart) {
-      reports = reports.filter(log => log.date >= dateStart);
+    let start = dateStart;
+    let end = dateEnd;
+
+    if (timeFilter !== 'range' && timeFilter !== 'all') {
+      const now = new Date();
+      const d = new Date();
+      d.setHours(0, 0, 0, 0);
+      
+      if (timeFilter === 'today') {
+        // Start is today 00:00
+      } else if (timeFilter === '7days') {
+        d.setDate(d.getDate() - 7);
+      } else if (timeFilter === '1month') {
+        d.setMonth(d.getMonth() - 1);
+      } else if (timeFilter === '3months') {
+        d.setMonth(d.getMonth() - 3);
+      } else if (timeFilter === '6months') {
+        d.setMonth(d.getMonth() - 6);
+      } else if (timeFilter === '1year') {
+        d.setFullYear(d.getFullYear() - 1);
+      }
+      
+      start = d.toISOString().split('T')[0];
+      end = now.toISOString().split('T')[0];
     }
 
-    if (dateEnd) {
-      reports = reports.filter(log => log.date <= dateEnd);
+    if (timeFilter !== 'all') {
+      if (start) reports = reports.filter(log => log.date >= start);
+      if (end) reports = reports.filter(log => log.date <= end);
     }
 
     return reports;
-  }, [data.dailyReports, selectedContext, dateStart, dateEnd]);
+  }, [data.dailyReports, selectedContext, timeFilter, dateStart, dateEnd]);
 
-  // Logic: Grouping for Weekly
-  const weeklyStats = useMemo(() => {
-    const stats: Record<string, { week: string, total: number, count: number }> = {};
-    filteredReports.forEach(log => {
-      const d = new Date(log.date);
-      const year = d.getFullYear();
-      const firstDay = new Date(year, 0, 1);
-      const days = Math.floor((d.getTime() - firstDay.getTime()) / (24 * 60 * 60 * 1000));
-      const weekNum = Math.ceil((days + firstDay.getDay() + 1) / 7);
-      const key = `${year}-W${weekNum}`;
-      
-      if (!stats[key]) stats[key] = { week: key, total: 0, count: 0 };
-      stats[key].total += log.metricValue;
-      stats[key].count += 1;
-    });
-    return Object.values(stats).reverse();
+  // Summary Stats for the selected period
+  const summaryStats = useMemo(() => {
+    const totalMetrik = filteredReports.reduce((sum, log) => sum + log.metricValue, 0);
+    const avgMetrik = filteredReports.length > 0 ? totalMetrik / filteredReports.length : 0;
+    const uniqueDays = new Set(filteredReports.map(log => log.date)).size;
+    const productivityScore = uniqueDays > 0 ? (filteredReports.length / uniqueDays) * 10 : 0;
+
+    return {
+      total: totalMetrik,
+      avg: avgMetrik.toFixed(1),
+      days: uniqueDays,
+      score: productivityScore.toFixed(1)
+    };
   }, [filteredReports]);
 
-  // Logic: Grouping for Monthly
-  const monthlyStats = useMemo(() => {
-    const stats: Record<string, { month: string, total: number, count: number }> = {};
-    filteredReports.forEach(log => {
-      const d = new Date(log.date);
-      const key = d.toLocaleString('default', { month: 'short', year: 'numeric' });
-      
-      if (!stats[key]) stats[key] = { month: key, total: 0, count: 0 };
-      stats[key].total += log.metricValue;
-      stats[key].count += 1;
-    });
-    return Object.values(stats).reverse();
-  }, [filteredReports]);
+  // Logic: Grouping for Charts (Adaptive)
+  const chartData = useMemo(() => {
+    if (timeFilter === 'today' || timeFilter === '7days') {
+      // Group by day
+      const stats: Record<string, { label: string, value: number }> = {};
+      filteredReports.forEach(log => {
+        if (!stats[log.date]) stats[log.date] = { label: log.date, value: 0 };
+        stats[log.date].value += log.metricValue;
+      });
+      return Object.values(stats);
+    } else {
+      // Group by month for longer periods
+      const stats: Record<string, { label: string, value: number }> = {};
+      filteredReports.forEach(log => {
+        const d = new Date(log.date);
+        const key = d.toLocaleString('default', { month: 'short', year: 'numeric' });
+        if (!stats[key]) stats[key] = { label: key, value: 0 };
+        stats[key].value += log.metricValue;
+      });
+      return Object.values(stats);
+    }
+  }, [filteredReports, timeFilter]);
 
   const handleExport = (format: string) => {
     setIsExporting(true);
@@ -97,7 +130,10 @@ const PerformanceReports: React.FC<PerformanceReportsProps> = ({ data }) => {
     <div className="space-y-8 animate-in fade-in duration-700 pb-20">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="px-1">
-          <h2 className="text-3xl font-black text-slate-900 tracking-tight uppercase">Performance Reports</h2>
+          <div className="flex items-center gap-4">
+            <h2 className="text-3xl font-black text-slate-900 tracking-tight uppercase">Performance Reports</h2>
+            <span className="bg-blue-600 text-white text-[10px] font-black px-3 py-1 rounded-full shadow-lg animate-pulse">VERSI 2.0</span>
+          </div>
           <p className="text-slate-500 font-medium">Analisis produktivitas dan pencapaian metrik kerja.</p>
         </div>
         <div className="flex flex-wrap gap-3 px-1">
@@ -127,50 +163,78 @@ const PerformanceReports: React.FC<PerformanceReportsProps> = ({ data }) => {
         </div>
       </header>
 
+      {/* Summary Stat Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 px-1">
+        <StatCard label="Total Capaian" value={summaryStats.total} subValue="Unit Metrik" icon="🎯" color="indigo" />
+        <StatCard label="Rata-rata Harian" value={summaryStats.avg} subValue="Per Aktivitas" icon="📈" color="emerald" />
+        <StatCard label="Hari Aktif" value={summaryStats.days} subValue="Hari Kerja" icon="📅" color="blue" />
+        <StatCard label="Skor Produktivitas" value={summaryStats.score} subValue="Skala 1-10" icon="⚡" color="amber" />
+      </div>
+
       {/* FILTER CONTROLS - Context & Date Range */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-end bg-white p-6 lg:p-10 rounded-[3rem] shadow-sm border border-slate-100 mx-1">
-        <div className="lg:col-span-6 space-y-3">
-          <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Pilih Konteks Laporan</label>
-          <div className="flex flex-col sm:flex-row gap-2 flex-wrap">
-            <ContextTab active={selectedContext === 'all'} onClick={() => setSelectedContext('all')} label="Semua Data" color="slate" />
-            <ContextTab active={selectedContext === 'Perusahaan'} onClick={() => setSelectedContext('Perusahaan')} label="Kantor" color="indigo" />
-            <ContextTab active={selectedContext === 'Personal'} onClick={() => setSelectedContext('Personal')} label="Personal" color="emerald" />
-            <ContextTab active={selectedContext === 'Sampingan'} onClick={() => setSelectedContext('Sampingan')} label="Freelance" color="amber" />
+      <div className="bg-white p-6 lg:p-10 rounded-[3rem] shadow-sm border border-slate-100 mx-1 space-y-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-end">
+          <div className="lg:col-span-6 space-y-3">
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Pilih Konteks Laporan</label>
+            <div className="flex flex-col sm:flex-row gap-2 flex-wrap">
+              <ContextTab active={selectedContext === 'all'} onClick={() => setSelectedContext('all')} label="Semua Data" color="slate" />
+              <ContextTab active={selectedContext === 'Perusahaan'} onClick={() => setSelectedContext('Perusahaan')} label="Kantor" color="indigo" />
+              <ContextTab active={selectedContext === 'Personal'} onClick={() => setSelectedContext('Personal')} label="Personal" color="emerald" />
+              <ContextTab active={selectedContext === 'Sampingan'} onClick={() => setSelectedContext('Sampingan')} label="Freelance" color="amber" />
+            </div>
+          </div>
+
+          <div className="lg:col-span-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+             <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Dari Tanggal</label>
+                <input 
+                  type="date" 
+                  disabled={timeFilter !== 'range'}
+                  className={`w-full px-5 py-3 rounded-2xl border border-slate-200 bg-slate-50 text-xs font-bold outline-none focus:ring-4 focus:ring-blue-500/5 transition-all ${timeFilter !== 'range' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  value={dateStart || ''}
+                  onChange={e => setDateStart(e.target.value)}
+                />
+             </div>
+             <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Hingga Tanggal</label>
+                <input 
+                  type="date" 
+                  disabled={timeFilter !== 'range'}
+                  className={`w-full px-5 py-3 rounded-2xl border border-slate-200 bg-slate-50 text-xs font-bold outline-none focus:ring-4 focus:ring-blue-500/5 transition-all ${timeFilter !== 'range' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  value={dateEnd || ''}
+                  onChange={e => setDateEnd(e.target.value)}
+                />
+             </div>
           </div>
         </div>
 
-        <div className="lg:col-span-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-           <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Dari Tanggal</label>
-              <input 
-                type="date" 
-                className="w-full px-5 py-3 rounded-2xl border border-slate-200 bg-slate-50 text-xs font-bold outline-none focus:ring-4 focus:ring-blue-500/5 transition-all"
-                value={dateStart || ''}
-                onChange={e => setDateStart(e.target.value)}
-              />
-           </div>
-           <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Hingga Tanggal</label>
-              <input 
-                type="date" 
-                className="w-full px-5 py-3 rounded-2xl border border-slate-200 bg-slate-50 text-xs font-bold outline-none focus:ring-4 focus:ring-blue-500/5 transition-all"
-                value={dateEnd || ''}
-                onChange={e => setDateEnd(e.target.value)}
-              />
-           </div>
+        <div className="space-y-4">
+          <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Filter Waktu</label>
+          <div className="flex flex-wrap gap-2">
+            <TimeTab active={timeFilter === 'today'} onClick={() => setTimeFilter('today')} label="Hari Ini" />
+            <TimeTab active={timeFilter === '7days'} onClick={() => setTimeFilter('7days')} label="7 Hari" />
+            <TimeTab active={timeFilter === '1month'} onClick={() => setTimeFilter('1month')} label="1 Bulan" />
+            <TimeTab active={timeFilter === '3months'} onClick={() => setTimeFilter('3months')} label="3 Bulan" />
+            <TimeTab active={timeFilter === '6months'} onClick={() => setTimeFilter('6months')} label="6 Bulan" />
+            <TimeTab active={timeFilter === '1year'} onClick={() => setTimeFilter('1year')} label="1 Tahun" />
+            <TimeTab active={timeFilter === 'all'} onClick={() => setTimeFilter('all')} label="Semua" />
+            <TimeTab active={timeFilter === 'range'} onClick={() => setTimeFilter('range')} label="Range Tanggal" />
+          </div>
         </div>
       </div>
 
-      {/* Tabs Per View */}
-      <div className="flex flex-wrap bg-white p-1 rounded-2xl shadow-sm border border-slate-100 w-full mx-1">
-        <button onClick={() => setReportType('daily')} className={`flex-1 min-w-[80px] px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${reportType === 'daily' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-400 hover:text-slate-600'}`}>Harian</button>
-        <button onClick={() => setReportType('weekly')} className={`flex-1 min-w-[80px] px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${reportType === 'weekly' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-400 hover:text-slate-600'}`}>Mingguan</button>
-        <button onClick={() => setReportType('monthly')} className={`flex-1 min-w-[80px] px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${reportType === 'monthly' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-400 hover:text-slate-600'}`}>Bulanan</button>
-        <button onClick={() => setReportType('charts')} className={`flex-1 min-w-[80px] px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${reportType === 'charts' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-400 hover:text-slate-600'}`}>Grafik</button>
+      {/* View Mode Tabs */}
+      <div className="flex bg-white p-1 rounded-2xl shadow-sm border border-slate-100 w-full max-w-md mx-1">
+        <button onClick={() => setViewMode('list')} className={`flex-1 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${viewMode === 'list' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-400 hover:text-slate-600'}`}>
+          <i className="bi bi-list-ul mr-2"></i> Daftar Aktivitas
+        </button>
+        <button onClick={() => setViewMode('charts')} className={`flex-1 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${viewMode === 'charts' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-400 hover:text-slate-600'}`}>
+          <i className="bi bi-graph-up mr-2"></i> Analisis Grafik
+        </button>
       </div>
 
       <div className="px-1">
-        {reportType === 'daily' && (
+        {viewMode === 'list' && (
           <div className="space-y-6">
             {/* Desktop Table */}
             <div className="hidden lg:block bg-white rounded-[3rem] shadow-sm border border-slate-100 overflow-hidden overflow-x-auto min-h-[400px]">
@@ -241,109 +305,13 @@ const PerformanceReports: React.FC<PerformanceReportsProps> = ({ data }) => {
           </div>
         )}
 
-        {reportType === 'weekly' && (
-          <div className="space-y-6">
-            {/* Desktop Table */}
-            <div className="hidden lg:block bg-white rounded-[3rem] shadow-sm border border-slate-100 overflow-hidden min-h-[400px]">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-slate-50 border-b border-slate-100">
-                    <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-slate-400">Minggu Ke</th>
-                    <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">Total Log</th>
-                    <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">Akumulasi Metrik</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {weeklyStats.map(stat => (
-                    <tr key={stat.week} className="hover:bg-slate-50 transition-colors">
-                      <td className="px-8 py-6 text-sm font-black text-slate-800">{stat.week}</td>
-                      <td className="px-8 py-6 text-center font-bold text-slate-500 text-sm">{stat.count} Aktivitas</td>
-                      <td className="px-8 py-6 text-center font-black text-blue-600 text-sm">{stat.total} Points</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Mobile Card Mode */}
-            <div className="lg:hidden space-y-4">
-              {weeklyStats.map(stat => (
-                <div key={stat.week} className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm flex justify-between items-center">
-                   <div>
-                      <h4 className="font-black text-slate-800 text-sm">{stat.week}</h4>
-                      <p className="text-[10px] font-bold text-slate-400 mt-1">{stat.count} Aktivitas Tercatat</p>
-                   </div>
-                   <div className="text-right">
-                      <p className="text-xl font-black text-indigo-600 leading-none">{stat.total}</p>
-                      <p className="text-[8px] font-black text-indigo-400 uppercase tracking-widest mt-1">Total Points</p>
-                   </div>
-                </div>
-              ))}
-            </div>
-
-            {weeklyStats.length === 0 && (
-              <div className="bg-white rounded-[3rem] p-20 text-center text-slate-400 italic border border-slate-100 shadow-sm">
-                Belum ada statistik mingguan.
-              </div>
-            )}
-          </div>
-        )}
-
-        {reportType === 'monthly' && (
-          <div className="space-y-6">
-            {/* Desktop Table */}
-            <div className="hidden lg:block bg-white rounded-[3rem] shadow-sm border border-slate-100 overflow-hidden min-h-[400px]">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-slate-50 border-b border-slate-100">
-                    <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-slate-400">Periode Bulan</th>
-                    <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">Total Log</th>
-                    <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">Akumulasi Metrik</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {monthlyStats.map(stat => (
-                    <tr key={stat.month} className="hover:bg-slate-50 transition-colors">
-                      <td className="px-8 py-6 text-sm font-black text-slate-800">{stat.month}</td>
-                      <td className="px-8 py-6 text-center font-bold text-slate-500 text-sm">{stat.count} Aktivitas</td>
-                      <td className="px-8 py-6 text-center font-black text-emerald-600 text-sm">{stat.total} Points</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Mobile Card Mode */}
-            <div className="lg:hidden space-y-4">
-              {monthlyStats.map(stat => (
-                <div key={stat.month} className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm flex justify-between items-center">
-                   <div>
-                      <h4 className="font-black text-slate-800 text-sm">{stat.month}</h4>
-                      <p className="text-[10px] font-bold text-slate-400 mt-1">{stat.count} Aktivitas Bulan Ini</p>
-                   </div>
-                   <div className="text-right">
-                      <p className="text-xl font-black text-emerald-600 leading-none">{stat.total}</p>
-                      <p className="text-[8px] font-black text-emerald-400 uppercase tracking-widest mt-1">Month Accumulation</p>
-                   </div>
-                </div>
-              ))}
-            </div>
-
-            {monthlyStats.length === 0 && (
-              <div className="bg-white rounded-[3rem] p-20 text-center text-slate-400 italic border border-slate-100 shadow-sm">
-                Belum ada statistik bulanan.
-              </div>
-            )}
-          </div>
-        )}
-
-        {reportType === 'charts' && (
+        {viewMode === 'charts' && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-in zoom-in duration-500">
             <div className="bg-white p-10 rounded-[3rem] shadow-sm border border-slate-100">
-              <h3 className="text-xl font-black text-slate-800 tracking-tight mb-8">Trend Produktivitas</h3>
+              <h3 className="text-xl font-black text-slate-800 tracking-tight mb-8">Trend Capaian Metrik</h3>
               <div className="h-80">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={filteredReports.slice(-15)}>
+                  <AreaChart data={chartData}>
                     <defs>
                       <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.2}/>
@@ -351,24 +319,24 @@ const PerformanceReports: React.FC<PerformanceReportsProps> = ({ data }) => {
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                    <XAxis dataKey="date" hide />
+                    <XAxis dataKey="label" hide={timeFilter === 'all' || timeFilter === '1year'} />
                     <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 11, fontWeight: 700}} />
                     <Tooltip contentStyle={{ borderRadius: '20px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)' }} />
-                    <Area type="monotone" dataKey="metricValue" stroke="#3b82f6" strokeWidth={4} fillOpacity={1} fill="url(#colorValue)" />
+                    <Area type="monotone" dataKey="value" stroke="#3b82f6" strokeWidth={4} fillOpacity={1} fill="url(#colorValue)" />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
             </div>
             <div className="bg-white p-10 rounded-[3rem] shadow-sm border border-slate-100">
-              <h3 className="text-xl font-black text-slate-800 tracking-tight mb-8">Capaian Metrik Bulanan</h3>
+              <h3 className="text-xl font-black text-slate-800 tracking-tight mb-8">Distribusi Performa</h3>
               <div className="h-80">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={monthlyStats.slice().reverse()}>
+                  <BarChart data={chartData}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                    <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 11, fontWeight: 700}} />
+                    <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 11, fontWeight: 700}} />
                     <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 11, fontWeight: 700}} />
                     <Tooltip contentStyle={{ borderRadius: '20px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)' }} />
-                    <Bar dataKey="total" fill="#10b981" radius={[10, 10, 0, 0]} barSize={40} />
+                    <Bar dataKey="value" fill="#10b981" radius={[10, 10, 0, 0]} barSize={40} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -399,7 +367,92 @@ const PerformanceReports: React.FC<PerformanceReportsProps> = ({ data }) => {
           </div>
         </div>
       )}
+
+      {/* Details Modal */}
+      {selectedPeriodLogs && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[200] p-4">
+          <div className="bg-white w-full max-w-4xl max-h-[85vh] rounded-[3rem] shadow-2xl animate-in zoom-in duration-300 flex flex-col overflow-hidden">
+            <div className="p-8 lg:p-10 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
+              <div>
+                <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">{selectedPeriodLogs.title}</h3>
+                <p className="text-slate-500 font-bold text-xs mt-1 uppercase tracking-widest">{selectedPeriodLogs.logs.length} Aktivitas Ditemukan</p>
+              </div>
+              <button onClick={() => setSelectedPeriodLogs(null)} className="w-12 h-12 flex items-center justify-center bg-white rounded-2xl shadow-sm border border-slate-100 text-slate-400 hover:text-slate-900 transition-all active:scale-90">✕</button>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-6 lg:p-10">
+              <div className="space-y-4">
+                {selectedPeriodLogs.logs.map((log, idx) => (
+                  <div key={log.id} className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-all group">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                      <div className="space-y-1 flex-1">
+                        <div className="flex items-center gap-3">
+                          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{log.date}</span>
+                          <span className={`px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-widest border ${
+                            log.context === 'Perusahaan' ? 'bg-indigo-50 text-indigo-600 border-indigo-100' :
+                            log.context === 'Personal' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                            'bg-amber-50 text-amber-600 border-amber-100'
+                          }`}>
+                            {log.context}
+                          </span>
+                        </div>
+                        <h4 className="font-black text-slate-800 text-base leading-tight group-hover:text-indigo-600 transition-colors">{log.activity}</h4>
+                        {log.description && <p className="text-xs text-slate-500 font-medium line-clamp-2">{log.description}</p>}
+                        <div className="flex items-center gap-2 mt-2">
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight bg-slate-50 px-2 py-1 rounded-md">{log.companyName || 'Personal Project'}</span>
+                          <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-tight bg-indigo-50 px-2 py-1 rounded-md">{log.category}</span>
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-end gap-1 min-w-[120px]">
+                        <span className="bg-blue-50 text-blue-600 px-4 py-2 rounded-xl border border-blue-100 font-black text-sm">
+                          {log.metricValue} {log.metricLabel}
+                        </span>
+                        <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">Capaian Metrik</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            <div className="p-8 lg:p-10 border-t border-slate-50 bg-slate-50/30 flex justify-end">
+              <button onClick={() => setSelectedPeriodLogs(null)} className="px-8 py-4 bg-slate-900 text-white font-black uppercase tracking-widest text-[10px] rounded-2xl shadow-xl hover:bg-black transition-all active:scale-95">Tutup Detail</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
+  );
+};
+
+const StatCard: React.FC<{ label: string; value: string | number; subValue: string; icon: string; color: string }> = ({ label, value, subValue, icon, color }) => {
+  const colorClasses: Record<string, string> = {
+    indigo: 'text-indigo-600 bg-indigo-50 border-indigo-100',
+    emerald: 'text-emerald-600 bg-emerald-50 border-emerald-100',
+    blue: 'text-blue-600 bg-blue-50 border-blue-100',
+    amber: 'text-amber-600 bg-amber-50 border-amber-100',
+  };
+
+  return (
+    <div className="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-2">
+      <div className="flex items-center justify-between">
+        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{label}</span>
+        <span className="text-xl">{icon}</span>
+      </div>
+      <div className="flex items-baseline gap-2">
+        <h4 className="text-2xl font-black text-slate-900">{value}</h4>
+        <span className="text-[10px] font-bold text-slate-400 uppercase">{subValue}</span>
+      </div>
+      <div className={`h-1 w-12 rounded-full ${colorClasses[color].split(' ')[1]}`}></div>
+    </div>
+  );
+};
+
+const TimeTab: React.FC<{ active: boolean; onClick: () => void; label: string }> = ({ active, onClick, label }) => {
+  return (
+    <button onClick={onClick} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border ${active ? 'bg-slate-900 text-white border-slate-900 shadow-md' : 'bg-white text-slate-400 border-slate-100 hover:bg-slate-50'}`}>
+      {label}
+    </button>
   );
 };
 

@@ -16,7 +16,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenOnboardin
   const [isEditMode, setIsEditMode] = useState(false);
   
   // FILTER STATE
-  const [dashboardFilter, setDashboardFilter] = useState<'all' | 'today' | '7days' | '1month' | '3months' | '1year' | 'range'>('all');
+  const [dashboardFilter, setDashboardFilter] = useState<'all' | 'today' | '7days' | '1month' | '3months' | '6months' | '1year' | 'range'>('all');
   const [filterStartDate, setFilterStartDate] = useState('');
   const [filterEndDate, setFilterEndDate] = useState('');
 
@@ -216,6 +216,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenOnboardin
     if (dashboardFilter === '7days') daysToSubtract = 7;
     if (dashboardFilter === '1month') daysToSubtract = 30;
     if (dashboardFilter === '3months') daysToSubtract = 90;
+    if (dashboardFilter === '6months') daysToSubtract = 180;
     if (dashboardFilter === '1year') daysToSubtract = 365;
 
     const pastDate = new Date(now);
@@ -475,6 +476,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenOnboardin
                     <option value="7days">7 Hari Terakhir</option>
                     <option value="1month">1 Bulan Terakhir</option>
                     <option value="3months">3 Bulan Terakhir</option>
+                    <option value="6months">6 Bulan Terakhir</option>
                     <option value="1year">1 Tahun Terakhir</option>
                     <option value="range">Pilih Tanggal</option>
                 </select>

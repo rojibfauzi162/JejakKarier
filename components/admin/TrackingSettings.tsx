@@ -10,6 +10,8 @@ interface TrackingSettingsProps {
 const TrackingSettings: React.FC<TrackingSettingsProps> = ({ onToast }) => {
   const [config, setConfig] = useState<TrackingConfig>({
     metaPixelId: '',
+    metaConversionAccessToken: '',
+    metaTestCode: '',
     googleAnalyticsId: '',
     tiktokPixelId: ''
   });
@@ -53,7 +55,7 @@ const TrackingSettings: React.FC<TrackingSettingsProps> = ({ onToast }) => {
 
           <form onSubmit={handleSubmit} className="space-y-10">
              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {/* Meta Pixel */}
+                {/* Meta Pixel & Conversion API */}
                 <div className="space-y-4">
                    <div className="flex items-center gap-3">
                       <i className="bi bi-facebook text-blue-600 text-xl"></i>
@@ -65,6 +67,29 @@ const TrackingSettings: React.FC<TrackingSettingsProps> = ({ onToast }) => {
                     value={config.metaPixelId || ''}
                     onChange={e => setConfig({...config, metaPixelId: e.target.value.trim()})}
                    />
+                   
+                   <div className="pt-2 space-y-4">
+                      <div className="flex items-center gap-3">
+                         <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Conversion API Access Token</label>
+                      </div>
+                      <textarea 
+                       className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none font-bold text-[10px] focus:border-indigo-400 transition-all min-h-[100px]"
+                       placeholder="EAAB..."
+                       value={config.metaConversionAccessToken || ''}
+                       onChange={e => setConfig({...config, metaConversionAccessToken: e.target.value.trim()})}
+                      />
+                      
+                      <div className="flex items-center gap-3">
+                         <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Test Event Code (Optional)</label>
+                      </div>
+                      <input 
+                       className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none font-bold text-xs focus:border-indigo-400 transition-all"
+                       placeholder="TEST12345"
+                       value={config.metaTestCode || ''}
+                       onChange={e => setConfig({...config, metaTestCode: e.target.value.trim()})}
+                      />
+                   </div>
+                   
                    <p className="text-[8px] text-slate-400 font-medium px-1 uppercase">Event: PageView, InitiateCheckout, Purchase</p>
                 </div>
 

@@ -736,6 +736,54 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
                           </div>
                         </div>
                       </div>
+
+                      {/* Output & Metric Section */}
+                      <div className="grid grid-cols-1 md:grid-cols-12 gap-8 pt-6 border-t border-slate-50">
+                        {line.isPlan && (
+                          <div className="md:col-span-4 space-y-2">
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Target Output / Hasil</label>
+                            <input 
+                              placeholder="Contoh: 5 Laporan Selesai" 
+                              className="w-full px-6 py-4 rounded-2xl border border-slate-200 bg-white font-black text-sm focus:ring-4 focus:ring-blue-500/5 transition-all shadow-sm"
+                              value={line.output || ''}
+                              onChange={e => updateLine(line.tempId, { output: e.target.value })}
+                            />
+                          </div>
+                        )}
+
+                        <div className={`${line.isPlan ? 'md:col-span-4' : 'md:col-span-6'} space-y-2`}>
+                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Satuan Metrik</label>
+                          <div className="flex gap-2">
+                            <select 
+                              className="flex-1 px-6 py-4 rounded-2xl border border-slate-200 bg-white font-black text-sm outline-none shadow-sm cursor-pointer"
+                              value={line.metricOption}
+                              onChange={e => updateLine(line.tempId, { metricOption: e.target.value })}
+                            >
+                              {metricChoices.map(m => <option key={m} value={m}>{m}</option>)}
+                            </select>
+                            {line.metricOption === 'Custom' && (
+                              <input 
+                                placeholder="Satuan..." 
+                                className="w-24 px-4 py-4 rounded-2xl border border-slate-200 bg-white font-black text-sm shadow-sm"
+                                value={line.customMetricLabel}
+                                onChange={e => updateLine(line.tempId, { customMetricLabel: e.target.value })}
+                              />
+                            )}
+                          </div>
+                        </div>
+
+                        <div className={`${line.isPlan ? 'md:col-span-4' : 'md:col-span-6'} space-y-2`}>
+                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                            {line.isPlan ? 'Target Nominal' : 'Realisasi Nominal'}
+                          </label>
+                          <input 
+                            type="number"
+                            className="w-full px-6 py-4 rounded-2xl border border-slate-200 bg-white font-black text-sm focus:ring-4 focus:ring-blue-500/5 transition-all shadow-sm"
+                            value={line.isPlan ? line.targetValue : line.metricValue}
+                            onChange={e => updateLine(line.tempId, line.isPlan ? { targetValue: Number(e.target.value) } : { metricValue: Number(e.target.value) })}
+                          />
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>
