@@ -228,8 +228,13 @@ const App: React.FC = () => {
       if (p && p.length > 0) setPublicProducts(p);
     });
     // Inisialisasi Tracking Pixel (Real-time)
+    console.log("[TRACKING] Subscribing to tracking configuration...");
     const unsubscribeTracking = subscribeTrackingConfig((cfg: TrackingConfig) => {
-      if (cfg) trackingService.init(cfg);
+      console.log("[TRACKING] Received configuration update:", cfg ? "YES" : "NO");
+      if (cfg) {
+        console.log("[TRACKING] Initializing service with Pixel ID:", cfg.metaPixelId);
+        trackingService.init(cfg);
+      }
     });
     // Subscribe to Landing Page Config (Real-time Logo & Contact)
     const unsubscribeLanding = subscribeLandingPageConfig((config) => {

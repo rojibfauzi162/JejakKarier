@@ -35,6 +35,12 @@ service cloud.firestore {
         allow read: if true;
       }
     }
+    match /system_metadata/tracking_configuration {
+      allow read: if true; // Allow public read for tracking
+    }
+    match /system_metadata/landing_page_config {
+      allow read: if true; // Allow public read for landing page
+    }
     match /system_metadata/{allPaths=**} {
       allow read: if isAuthenticated(); // Restrict to authenticated users
       allow write: if isAdmin();

@@ -395,12 +395,16 @@ export const subscribeTrackingConfig = (callback: (config: TrackingConfig) => vo
   const docRef = doc(db, "system_metadata", "tracking_configuration");
   return onSnapshot(docRef, (docSnap) => {
     if (docSnap.exists()) {
+      console.log("[FIREBASE] Tracking config fetched successfully");
       callback(docSnap.data() as TrackingConfig);
     } else {
+      console.warn("[FIREBASE] Tracking config document does not exist");
       callback({ metaPixelId: '', metaConversionAccessToken: '', metaTestCode: '', googleAnalyticsId: '', tiktokPixelId: '' });
     }
   }, (error) => {
-    console.warn("[FIREBASE] Subscribe Tracking error:", error.message);
+    console.error("[FIREBASE] Subscribe Tracking error:", error.message);
+    // Fallback on error
+    callback({ metaPixelId: '', metaConversionAccessToken: '', metaTestCode: '', googleAnalyticsId: '', tiktokPixelId: '' });
   });
 };
 

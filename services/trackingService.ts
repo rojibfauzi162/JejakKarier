@@ -11,6 +11,7 @@ class TrackingService {
   private eventQueue: { eventName: any; data?: any }[] = [];
 
   public init(config: TrackingConfig) {
+    console.log("[TRACKING] init() called with config:", !!config.metaPixelId);
     this.config = config;
     if (typeof window === "undefined") return;
     this.injectScripts();
@@ -28,9 +29,11 @@ class TrackingService {
 
   private injectScripts() {
     if (!this.config) return;
+    console.log("[TRACKING] injectScripts() starting...");
 
     // 1. Google Analytics (GA4)
     if (this.config.googleAnalyticsId && !this.injectedPlatforms.has('ga4_' + this.config.googleAnalyticsId)) {
+      console.log("[TRACKING] Injecting GA4:", this.config.googleAnalyticsId);
       const gaId = this.config.googleAnalyticsId;
       const script = document.createElement('script');
       script.async = true;
@@ -48,6 +51,7 @@ class TrackingService {
 
     // 2. Meta Pixel (Facebook)
     if (this.config.metaPixelId && !this.injectedPlatforms.has('meta_' + this.config.metaPixelId)) {
+      console.log("[TRACKING] Injecting Meta Pixel:", this.config.metaPixelId);
       const pixelId = this.config.metaPixelId;
       
       if (!(window as any).fbq) {
@@ -70,6 +74,7 @@ class TrackingService {
 
     // 3. TikTok Pixel
     if (this.config.tiktokPixelId && !this.injectedPlatforms.has('tiktok_' + this.config.tiktokPixelId)) {
+      console.log("[TRACKING] Injecting TikTok Pixel:", this.config.tiktokPixelId);
       const tiktokId = this.config.tiktokPixelId;
       
       (function (w: any, d: any, t: string) {
