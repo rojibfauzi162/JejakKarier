@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { TrackingConfig } from '../../types';
 import { getTrackingConfig, saveTrackingConfig } from '../../services/firebase';
+import { trackingService } from '../../services/trackingService';
 
 interface TrackingSettingsProps {
   onToast: (m: string, t?: 'success' | 'error') => void;
@@ -30,11 +31,33 @@ const TrackingSettings: React.FC<TrackingSettingsProps> = ({ onToast }) => {
     setSaving(true);
     try {
       await saveTrackingConfig(config);
-      onToast("Pengaturan Tracking berhasil disimpan! 📊", 'success');
+      // Re-initialize tracking service immediately
+      trackingService.init(config);
+      onToast("Pengaturan Tracking berhasil disimpan & diterapkan! 📊", 'success');
     } catch (err) {
       onToast("Gagal menyimpan pengaturan tracking.", 'error');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleTestMeta = async () => {
+    if (!config.metaPixelId) {
+      onToast("Input Meta Pixel ID terlebih dahulu.", 'error');
+      return;
+    }
+    onToast("Mengirim Test Event (PageView)...", 'success');
+    try {
+      // Re-init just in case
+      trackingService.init(config);
+      // Track PageView as test
+      trackingService.trackEvent('PageView', { test_event: true });
+      
+      // If CAPI is configured, it will also try to send Purchase as a more robust test if requested, 
+      // but PageView is enough to check Pixel detection.
+      onToast("Test Event terkirim! Cek Meta Pixel Helper atau Events Manager.", 'success');
+    } catch (err) {
+      onToast("Gagal mengirim test event.", 'error');
     }
   };
 
@@ -43,14 +66,23 @@ const TrackingSettings: React.FC<TrackingSettingsProps> = ({ onToast }) => {
   return (
     <div className="max-w-4xl space-y-8 animate-in fade-in duration-500">
        <div className="bg-white p-8 lg:p-14 rounded-[3.5rem] shadow-sm border border-slate-100">
-          <div className="flex items-center gap-6 mb-10 pb-8 border-b border-slate-50">
-             <div className="w-16 h-16 bg-indigo-600 text-white rounded-[1.75rem] flex items-center justify-center text-3xl shadow-xl">
-                <i className="bi bi-bar-chart-steps"></i>
+          <div className="flex items-center justify-between mb-10 pb-8 border-b border-slate-50">
+             <div className="flex items-center gap-6">
+                <div className="w-16 h-16 bg-indigo-600 text-white rounded-[1.75rem] flex items-center justify-center text-3xl shadow-xl">
+                   <i className="bi bi-bar-chart-steps"></i>
+                </div>
+                <div>
+                   <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Ads Tracking Center</h3>
+                   <p className="text-slate-400 font-medium text-sm mt-1">Kelola Pixel & Analytics untuk optimasi kampanye iklan.</p>
+                </div>
              </div>
-             <div>
-                <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Ads Tracking Center</h3>
-                <p className="text-slate-400 font-medium text-sm mt-1">Kelola Pixel & Analytics untuk optimasi kampanye iklan.</p>
-             </div>
+             <button 
+               type="button"
+               onClick={handleTestMeta}
+               className="px-6 py-3 bg-blue-50 text-blue-600 font-black rounded-2xl uppercase text-[10px] tracking-widest hover:bg-blue-100 transition-all active:scale-95"
+             >
+                <i className="bi bi-send-fill mr-2"></i> Test Pixel
+             </button>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-10">

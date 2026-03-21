@@ -7,7 +7,7 @@ import { TrackingConfig } from "../types";
  */
 class TrackingService {
   private config: TrackingConfig | null = null;
-  private scriptsInjected = false;
+  private injectedPlatforms: Set<string> = new Set();
 
   public init(config: TrackingConfig) {
     this.config = config;
@@ -16,10 +16,10 @@ class TrackingService {
   }
 
   private injectScripts() {
-    if (this.scriptsInjected || !this.config) return;
+    if (!this.config) return;
 
     // 1. Google Analytics (GA4)
-    if (this.config.googleAnalyticsId) {
+    if (this.config.googleAnalyticsId && !this.injectedPlatforms.has('ga4_' + this.config.googleAnalyticsId)) {
       const gaScript = document.createElement("script");
       gaScript.async = true;
       gaScript.src = `https://www.googletagmanager.com/gtag/js?id=${this.config.googleAnalyticsId}`;
@@ -33,10 +33,11 @@ class TrackingService {
         gtag('config', '${this.config.googleAnalyticsId}');
       `;
       document.head.appendChild(gaInit);
+      this.injectedPlatforms.add('ga4_' + this.config.googleAnalyticsId);
     }
 
     // 2. Meta Pixel (Facebook)
-    if (this.config.metaPixelId) {
+    if (this.config.metaPixelId && !this.injectedPlatforms.has('meta_' + this.config.metaPixelId)) {
       const metaInit = document.createElement("script");
       metaInit.innerHTML = `
         !function(f,b,e,v,n,t,s)
@@ -51,10 +52,11 @@ class TrackingService {
         fbq('track', 'PageView');
       `;
       document.head.appendChild(metaInit);
+      this.injectedPlatforms.add('meta_' + this.config.metaPixelId);
     }
 
     // 3. TikTok Pixel
-    if (this.config.tiktokPixelId) {
+    if (this.config.tiktokPixelId && !this.injectedPlatforms.has('tiktok_' + this.config.tiktokPixelId)) {
       const tiktokInit = document.createElement("script");
       tiktokInit.innerHTML = `
         !function (w, d, t) {
@@ -64,9 +66,8 @@ class TrackingService {
         }(window, document, 'ttq');
       `;
       document.head.appendChild(tiktokInit);
+      this.injectedPlatforms.add('tiktok_' + this.config.tiktokPixelId);
     }
-
-    this.scriptsInjected = true;
   }
 
   /**
