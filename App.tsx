@@ -235,7 +235,9 @@ const App: React.FC = () => {
         console.log("[TRACKING] Initializing service with Pixel ID:", cfg.metaPixelId);
         trackingService.init(cfg);
       } else {
-        console.warn("[TRACKING] Received empty or invalid configuration:", cfg);
+        console.warn("[TRACKING] Received empty or invalid configuration. Pixel ID is missing.", cfg);
+        // If we have a previous config, maybe we shouldn't clear it? 
+        // But the subscription is supposed to be the source of truth.
       }
     });
     // Subscribe to Landing Page Config (Real-time Logo & Contact)

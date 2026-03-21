@@ -466,11 +466,16 @@ export const saveLegalConfig = async (config: LegalConfig) => {
 
 export const getLandingPageConfig = async (): Promise<LandingPageConfig | null> => {
   try {
+    console.log("[FIREBASE] Fetching landing page configuration...");
     const docRef = doc(db, "system_metadata", "landing_page_configuration");
     const docSnap = await getDoc(docRef);
-    if (docSnap.exists()) return docSnap.data() as LandingPageConfig;
+    if (docSnap.exists()) {
+      console.log("[FIREBASE] Landing page config fetched successfully");
+      return docSnap.data() as LandingPageConfig;
+    }
+    console.warn("[FIREBASE] Landing page config document does not exist");
   } catch (e: any) {
-    console.warn("[FIREBASE] Landing config error:", e.message);
+    console.warn("[FIREBASE] Landing config error (non-fatal):", e.message);
   }
   return { videoDemoLinks: {} };
 };
@@ -500,11 +505,16 @@ export const subscribeLandingPageConfig = (callback: (config: LandingPageConfig)
 
 export const getMayarConfig = async (): Promise<MayarConfig | null> => {
   try {
+    console.log("[FIREBASE] Fetching Mayar configuration...");
     const docRef = doc(db, "system_metadata", "mayar_configuration");
     const docSnap = await getDoc(docRef);
-    if (docSnap.exists()) return docSnap.data() as MayarConfig;
+    if (docSnap.exists()) {
+      console.log("[FIREBASE] Mayar config fetched successfully");
+      return docSnap.data() as MayarConfig;
+    }
+    console.warn("[FIREBASE] Mayar config document does not exist");
   } catch (error: any) {
-    console.warn("[FIREBASE] Config Mayar error:", error.message);
+    console.warn("[FIREBASE] Config Mayar error (non-fatal):", error.message);
   }
   return null;
 };
