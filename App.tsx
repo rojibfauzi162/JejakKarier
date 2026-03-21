@@ -51,14 +51,23 @@ const App: React.FC = () => {
 
   useEffect(() => {
     let timer: any;
+    let fallbackTimer: any;
     if (loading) {
       timer = setTimeout(() => {
         setLoadingStuck(true);
+        // Fallback: If onAuthStateChanged hasn't fired after 12 seconds, assume unauthenticated
+        fallbackTimer = setTimeout(() => {
+          console.warn("Auth state check timed out. Assuming unauthenticated.");
+          setLoading(false);
+        }, 2000);
       }, 10000);
     } else {
       setLoadingStuck(false);
     }
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      clearTimeout(fallbackTimer);
+    };
   }, [loading]);
 
   const handleResetApp = () => {
@@ -278,9 +287,14 @@ const App: React.FC = () => {
       console.error("[TRACKING] Error subscribing to tracking configuration:", err);
     }
     // Subscribe to Landing Page Config (Real-time Logo & Contact)
-    const unsubscribeLanding = subscribeLandingPageConfig((config) => {
-      setLandingConfig(config);
-    });
+    let unsubscribeLanding: (() => void) | undefined;
+    try {
+      unsubscribeLanding = subscribeLandingPageConfig((config) => {
+        setLandingConfig(config);
+      });
+    } catch (err) {
+      console.error("[FIREBASE] Error subscribing to landing page config:", err);
+    }
     return () => {
       if (unsubscribeTracking) unsubscribeTracking();
       if (unsubscribeLanding) unsubscribeLanding();
@@ -402,7 +416,16 @@ const App: React.FC = () => {
         // If it's a local session, we need to fetch the real data from Firestore
         if (localSessionEmail) {
           try {
-            const existingData = await findUserByEmail(localSessionEmail);
+            const timeoutPromise = new Promise<null>((_, reject) => 
+              setTimeout(() => reject(new Error("Firestore timeout")), 8000)
+            );
+            const existingData = await Promise.race([
+              findUserByEmail(localSessionEmail),
+              timeoutPromise
+            ]).catch(e => {
+              console.warn("findUserByEmail local session timeout or error:", e);
+              return null;
+            }) as AppData | null;
             if (existingData) {
               setData({
                 ...getCleanInitialData(),
@@ -474,72 +497,158 @@ const App: React.FC = () => {
       setUser(authUser);
 
       try {
-        let userData = await getUserData(authUser.uid);
-        const catalog = await getProductsCatalog() || DEFAULT_PRODUCTS;
-        
-        if (!userData && authUser.email) {
-          const existingByEmail = await findUserByEmail(authUser.email);
-          if (existingByEmail && existingByEmail.uid !== authUser.uid) {
-            userData = { ...existingByEmail, uid: authUser.uid };
-            await saveUserData(authUser.uid, userData);
+        const timeoutPromise = new Promise<null>((_, reject) => 
+          setTimeout(() => reject(new Error("Firestore timeout")), 8000)
+        );
+
+        let userData: AppData | null | 'TIMEOUT' = await Promise.race([
+          getUserData(authUser.uid),
+          timeoutPromise
+        ]).catch(e => {
+          console.warn("getUserData timeout or error:", e);
+          return 'TIMEOUT';
+        }) as AppData | null | 'TIMEOUT';
+
+        if (userData === 'TIMEOUT') {
+          // If Firestore is unreachable, don't overwrite data. Just use a fallback or show error.
+          showToast("Koneksi ke server lambat. Memuat data offline...", "info");
+          userData = { ...getCleanInitialData(), uid: authUser.uid, role: UserRole.USER, plan: SubscriptionPlan.FREE, profile: { ...INITIAL_DATA.profile, email: authUser.email || '', name: authUser.displayName || 'User' } };
+          // We don't save this to Firestore to avoid overwriting real data
+        } else {
+          const catalog = await Promise.race([
+            getProductsCatalog(),
+            timeoutPromise
+          ]).catch(e => {
+            console.warn("getProductsCatalog timeout or error:", e);
+            return null;
+          }) as SubscriptionProduct[] | null || DEFAULT_PRODUCTS;
+          
+          if (!userData && authUser.email) {
+            const existingByEmail = await Promise.race([
+              findUserByEmail(authUser.email),
+              timeoutPromise
+            ]).catch(e => {
+              console.warn("findUserByEmail timeout or error:", e);
+              return 'TIMEOUT';
+            }) as AppData | null | 'TIMEOUT';
+            
+            if (existingByEmail !== 'TIMEOUT' && existingByEmail && existingByEmail.uid !== authUser.uid) {
+              userData = { ...existingByEmail, uid: authUser.uid };
+              await Promise.race([
+                saveUserData(authUser.uid, userData),
+                timeoutPromise
+              ]).catch(e => console.warn("saveUserData timeout or error:", e));
+            }
+          }
+
+          if (userData) {
+            const currentPlanConfig = catalog.find(p => p.tier === (userData as AppData).plan);
+            if (currentPlanConfig) {
+               // SINKRONISASI PERIZINAN MODUL DARI KATALOG
+               const catalogModules = currentPlanConfig.allowedModules || [];
+               (userData as AppData).planPermissions = Array.from(new Set([...((userData as AppData).planPermissions || []), ...catalogModules]));
+               (userData as AppData).planLimits = currentPlanConfig.limits;
+               
+               // NORMALISASI KUNCI PERIZINAN (Legacy fix)
+               const perms = (userData as AppData).planPermissions || [];
+               if (perms.includes('todo_list') && !perms.includes('todo')) perms.push('todo');
+               if (perms.includes('cv_generator') && !perms.includes('cv')) perms.push('cv');
+               if (perms.includes('online_cv') && !perms.includes('cv')) perms.push('cv');
+               (userData as AppData).planPermissions = perms;
+            }
+          } else {
+            // PROSES DATA BARU (REGISTRASI)
+            const freePlan = catalog.find(p => p.tier === SubscriptionPlan.FREE);
+            const joinedAt = new Date();
+            const trialExpiry = new Date();
+            trialExpiry.setDate(joinedAt.getDate() + 7);
+
+            const pendingRegRaw = localStorage.getItem('pending_registration');
+            let pendingReg: any = {};
+            try {
+              pendingReg = pendingRegRaw ? JSON.parse(pendingRegRaw) : {};
+            } catch (e) {
+              console.error("Error parsing pending_registration:", e);
+              localStorage.removeItem('pending_registration');
+            }
+
+            // Kunci perizinan default yang harus dibuka (Sesuai Catalog)
+            const defaultPermissions = freePlan?.allowedModules || ['dashboard', 'profile', 'daily', 'skills', 'todo_list', 'calendar', 'work_reflection', 'loker', 'cv_generator', 'online_cv', 'networking', 'projects', 'career', 'reports', 'achievements', 'ai_insights', 'reviews'];
+            
+            // Tambahkan alias kunci untuk kompatibilitas pengecekan withPermission
+            if (defaultPermissions.includes('todo_list') && !defaultPermissions.includes('todo')) defaultPermissions.push('todo');
+            if (defaultPermissions.includes('cv_generator') && !defaultPermissions.includes('cv')) defaultPermissions.push('cv');
+
+            const newData: AppData = { 
+              ...getCleanInitialData(), 
+              uid: authUser.uid, 
+              role: UserRole.USER, 
+              plan: SubscriptionPlan.FREE, 
+              status: AccountStatus.ACTIVE,
+              joinedAt: joinedAt.toISOString(), 
+              lastLogin: joinedAt.toISOString(),
+              expiryDate: trialExpiry.toISOString(),
+              planPermissions: defaultPermissions,
+              planLimits: freePlan?.limits || { dailyLogs: 3, skills: 2, projects: 2, jobTracker: 2, careerCalendar: 2, networking: 2, todoList: 2, workExperience: 2, education: 2, trainingHistory: 2, certification: 2, careerPath: 2, cvExports: 1, achievements: 1 },
+              profile: { 
+                ...INITIAL_DATA.profile, 
+                email: authUser.email || pendingReg.email || '', 
+                name: pendingReg.name || authUser.displayName || 'User',
+                phone: pendingReg.phone || ''
+              }
+            };
+            await Promise.race([
+              saveUserData(authUser.uid, newData),
+              timeoutPromise
+            ]).catch(e => console.warn("saveUserData (new user) timeout or error:", e));
+            userData = newData;
+            localStorage.removeItem('pending_registration');
           }
         }
 
         if (userData) {
-          const currentPlanConfig = catalog.find(p => p.tier === userData!.plan);
-          if (currentPlanConfig) {
-             // SINKRONISASI PERIZINAN MODUL DARI KATALOG
-             const catalogModules = currentPlanConfig.allowedModules || [];
-             userData.planPermissions = Array.from(new Set([...(userData.planPermissions || []), ...catalogModules]));
-             userData.planLimits = currentPlanConfig.limits;
-             
-             // NORMALISASI KUNCI PERIZINAN (Legacy fix)
-             if (userData.planPermissions.includes('todo_list') && !userData.planPermissions.includes('todo')) userData.planPermissions.push('todo');
-             if (userData.planPermissions.includes('cv_generator') && !userData.planPermissions.includes('cv')) userData.planPermissions.push('cv');
-             if (userData.planPermissions.includes('online_cv') && !userData.planPermissions.includes('cv')) userData.planPermissions.push('cv');
-          }
-          
+          const uData = userData as AppData;
           setData({
             ...getCleanInitialData(),
-            ...userData,
+            ...uData,
             profile: {
               ...getCleanInitialData().profile,
-              ...(userData.profile || {})
+              ...(uData.profile || {})
             },
             reminderConfig: {
               ...getCleanInitialData().reminderConfig,
-              ...(userData.reminderConfig || {})
+              ...(uData.reminderConfig || {})
             },
-            dailyReports: userData.dailyReports || [],
-            dailyReflections: userData.dailyReflections || [],
-            todoList: userData.todoList || [],
-            skills: userData.skills || [],
-            achievements: userData.achievements || [],
-            affirmations: userData.affirmations || getCleanInitialData().affirmations,
-            planPermissions: userData.planPermissions || [],
-            jobApplications: userData.jobApplications || [],
-            careerEvents: userData.careerEvents || [],
-            personalProjects: userData.personalProjects || [],
-            interviewScripts: userData.interviewScripts || [],
-            onlineCV: userData.onlineCV || getCleanInitialData().onlineCV,
-            careerPaths: userData.careerPaths || [],
-            workExperiences: userData.workExperiences || [],
-            educations: userData.educations || [],
-            trainings: userData.trainings || [],
-            certifications: userData.certifications || [],
-            contacts: userData.contacts || [],
-            monthlyReviews: userData.monthlyReviews || [],
-            todoCategories: userData.todoCategories || getCleanInitialData().todoCategories,
-            workCategories: userData.workCategories || getCleanInitialData().workCategories,
-            completedAiMilestones: userData.completedAiMilestones || [],
-            manualTransactions: userData.manualTransactions || []
+            dailyReports: uData.dailyReports || [],
+            dailyReflections: uData.dailyReflections || [],
+            todoList: uData.todoList || [],
+            skills: uData.skills || [],
+            achievements: uData.achievements || [],
+            affirmations: uData.affirmations || getCleanInitialData().affirmations,
+            planPermissions: uData.planPermissions || [],
+            jobApplications: uData.jobApplications || [],
+            careerEvents: uData.careerEvents || [],
+            personalProjects: uData.personalProjects || [],
+            interviewScripts: uData.interviewScripts || [],
+            onlineCV: uData.onlineCV || getCleanInitialData().onlineCV,
+            careerPaths: uData.careerPaths || [],
+            workExperiences: uData.workExperiences || [],
+            educations: uData.educations || [],
+            trainings: uData.trainings || [],
+            certifications: uData.certifications || [],
+            contacts: uData.contacts || [],
+            monthlyReviews: uData.monthlyReviews || [],
+            todoCategories: uData.todoCategories || getCleanInitialData().todoCategories,
+            workCategories: uData.workCategories || getCleanInitialData().workCategories,
+            completedAiMilestones: uData.completedAiMilestones || [],
+            manualTransactions: uData.manualTransactions || []
           });
-          if (userData.role === UserRole.SUPERADMIN && activeTab === 'dashboard') {
+          if (uData.role === UserRole.SUPERADMIN && activeTab === 'dashboard') {
               setActiveTab('admin_dashboard');
           }
 
           // Tracking Logic: Jika baru saja bayar (PAID), tembak Purchase event satu kali
-          const lastTx = userData.manualTransactions?.slice().reverse()[0];
+          const lastTx = uData.manualTransactions?.slice().reverse()[0];
           if (lastTx && lastTx.status === 'Paid') {
              const firedKey = `fired_purchase_${lastTx.id}`;
              if (!localStorage.getItem(firedKey)) {
@@ -553,51 +662,6 @@ const App: React.FC = () => {
                 localStorage.setItem(firedKey, 'true');
              }
           }
-
-        } else {
-          // PROSES DATA BARU (REGISTRASI)
-          const freePlan = catalog.find(p => p.tier === SubscriptionPlan.FREE);
-          const joinedAt = new Date();
-          const trialExpiry = new Date();
-          trialExpiry.setDate(joinedAt.getDate() + 7);
-
-          const pendingRegRaw = localStorage.getItem('pending_registration');
-          let pendingReg: any = {};
-          try {
-            pendingReg = pendingRegRaw ? JSON.parse(pendingRegRaw) : {};
-          } catch (e) {
-            console.error("Error parsing pending_registration:", e);
-            localStorage.removeItem('pending_registration');
-          }
-
-          // Kunci perizinan default yang harus dibuka (Sesuai Catalog)
-          const defaultPermissions = freePlan?.allowedModules || ['dashboard', 'profile', 'daily', 'skills', 'todo_list', 'calendar', 'work_reflection', 'loker', 'cv_generator', 'online_cv', 'networking', 'projects', 'career', 'reports', 'achievements', 'ai_insights', 'reviews'];
-          
-          // Tambahkan alias kunci untuk kompatibilitas pengecekan withPermission
-          if (defaultPermissions.includes('todo_list') && !defaultPermissions.includes('todo')) defaultPermissions.push('todo');
-          if (defaultPermissions.includes('cv_generator') && !defaultPermissions.includes('cv')) defaultPermissions.push('cv');
-
-          const newData: AppData = { 
-            ...getCleanInitialData(), 
-            uid: authUser.uid, 
-            role: UserRole.USER, 
-            plan: SubscriptionPlan.FREE, 
-            status: AccountStatus.ACTIVE,
-            joinedAt: joinedAt.toISOString(), 
-            lastLogin: joinedAt.toISOString(),
-            expiryDate: trialExpiry.toISOString(),
-            planPermissions: defaultPermissions,
-            planLimits: freePlan?.limits || { dailyLogs: 3, skills: 2, projects: 2, jobTracker: 2, careerCalendar: 2, networking: 2, todoList: 2, workExperience: 2, education: 2, trainingHistory: 2, certification: 2, careerPath: 2, cvExports: 1, achievements: 1 },
-            profile: { 
-              ...INITIAL_DATA.profile, 
-              email: authUser.email || pendingReg.email || '', 
-              name: pendingReg.name || authUser.displayName || 'User',
-              phone: pendingReg.phone || ''
-            }
-          };
-          await saveUserData(authUser.uid, newData);
-          setData(newData);
-          localStorage.removeItem('pending_registration');
         }
       } catch (err) {
         console.error("Fatal error in onAuthStateChanged:", err);

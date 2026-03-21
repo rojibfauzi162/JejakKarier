@@ -3,7 +3,7 @@ import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, signInWithPopup, setPersistence, browserLocalPersistence } from 'firebase/auth';
 import { getFirestore, doc, setDoc, getDoc, collection, getDocs, updateDoc, increment, query, where, limit, deleteDoc, onSnapshot, getDocFromServer } from "firebase/firestore";
 import { getStorage, ref, uploadBytes, getDownloadURL, uploadBytesResumable } from "firebase/storage";
-import { getMessaging, getToken } from "firebase/messaging";
+import { getMessaging, getToken, isSupported } from "firebase/messaging";
 import { AppData, AiConfig, SubscriptionProduct, AccountStatus, LegalConfig, UserRole, LandingPageConfig, MayarConfig, DuitkuConfig, FollowUpConfig, TrackingConfig, EmailSettings, EmailCampaign, EmailLog, SystemTraining, SalesNotification, SalesPopupConfig } from "../types";
 
 // KONFIGURASI FIREBASE
@@ -16,7 +16,13 @@ setPersistence(auth, browserLocalPersistence).catch((error) => {
 });
 export const db = getFirestore(app, (firebaseConfig as any).firestoreDatabaseId || '(default)');
 export const storage = getStorage(app);
-export const messaging = getMessaging(app);
+
+export let messaging: any = null;
+isSupported().then((supported) => {
+  if (supported) {
+    messaging = getMessaging(app);
+  }
+}).catch(console.error);
 
 // Test Connection
 async function testConnection() {
@@ -38,6 +44,10 @@ testConnection();
 
 export const requestNotificationPermission = async (uid: string) => {
   try {
+    if (!messaging) {
+      console.warn("Messaging is not supported or not initialized.");
+      return null;
+    }
     const permission = await Notification.requestPermission();
     if (permission === 'granted') {
       const token = await getToken(messaging, { vapidKey: 'BK-GXid6LhwxK6G0WAL9tSkYqQygf5XumWf_8CUHvZKNHivQ5_Nz-xUIaQ7t7xQD5OYM18W2_p0f8Axt2zf8_Zk' }); // You need to generate this key in Firebase Console
