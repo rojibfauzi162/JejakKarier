@@ -173,9 +173,9 @@ class TrackingService {
     }
 
     // Meta Conversion API (CAPI) - Untuk event bernilai tinggi (Purchase, Lead, CompleteRegistration)
-    const capiEvents = ['Purchase', 'Lead', 'CompleteRegistration'];
-    if (capiEvents.includes(eventName) && this.config?.metaPixelId && this.config?.metaConversionAccessToken) {
-      this.trackMetaCAPI(eventName, data);
+    const capiEvents = ['Purchase', 'Lead', 'CompleteRegistration', 'AddToCart', 'InitiateCheckout', 'ViewContent'];
+    if (capiEvents.includes(finalEventName) && this.config?.metaPixelId && this.config?.metaConversionAccessToken) {
+      this.trackMetaCAPI(finalEventName, data);
     }
 
     // Google Analytics Event Mapping
