@@ -29,11 +29,12 @@ class TrackingService {
   }
 
   private injectScripts() {
-    if (!this.config) {
-      console.warn("[TRACKING] No config available for injection");
-      return;
-    }
-    console.log("[TRACKING] injectScripts() starting with config:", JSON.stringify(this.config));
+    try {
+      if (!this.config) {
+        console.warn("[TRACKING] No config available for injection");
+        return;
+      }
+      console.log("[TRACKING] injectScripts() starting with config:", JSON.stringify(this.config));
 
     // 1. Google Analytics (GA4)
     if (this.config.googleAnalyticsId && !this.injectedPlatforms.has('ga4_' + this.config.googleAnalyticsId)) {
@@ -100,6 +101,9 @@ class TrackingService {
       })(window, document, 'ttq');
       
       this.injectedPlatforms.add('tiktok_' + tiktokId);
+    }
+    } catch (err) {
+      console.error("[TRACKING] Critical error in injectScripts:", err);
     }
   }
 

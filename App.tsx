@@ -259,22 +259,31 @@ const App: React.FC = () => {
     });
     // Inisialisasi Tracking Pixel (Real-time)
     console.log("[TRACKING] Subscribing to tracking configuration...");
-    const unsubscribeTracking = subscribeTrackingConfig((cfg: TrackingConfig) => {
-      console.log("[TRACKING] Received configuration update from Firestore:", JSON.stringify(cfg));
-      if (cfg && cfg.metaPixelId) {
-        console.log("[TRACKING] Valid Meta Pixel ID found:", cfg.metaPixelId);
-        trackingService.init(cfg);
-      } else {
-        console.warn("[TRACKING] Received empty or invalid configuration. metaPixelId is missing or empty.", cfg);
-      }
-    });
+    let unsubscribeTracking: (() => void) | undefined;
+    try {
+      unsubscribeTracking = subscribeTrackingConfig((cfg: TrackingConfig) => {
+        try {
+          console.log("[TRACKING] Received configuration update from Firestore:", JSON.stringify(cfg));
+          if (cfg && cfg.metaPixelId) {
+            console.log("[TRACKING] Valid Meta Pixel ID found:", cfg.metaPixelId);
+            trackingService.init(cfg);
+          } else {
+            console.warn("[TRACKING] Received empty or invalid configuration. metaPixelId is missing or empty.", cfg);
+          }
+        } catch (innerErr) {
+          console.error("[TRACKING] Error processing tracking configuration update:", innerErr);
+        }
+      });
+    } catch (err) {
+      console.error("[TRACKING] Error subscribing to tracking configuration:", err);
+    }
     // Subscribe to Landing Page Config (Real-time Logo & Contact)
     const unsubscribeLanding = subscribeLandingPageConfig((config) => {
       setLandingConfig(config);
     });
     return () => {
-      unsubscribeTracking();
-      unsubscribeLanding();
+      if (unsubscribeTracking) unsubscribeTracking();
+      if (unsubscribeLanding) unsubscribeLanding();
     };
   }, []);
 
