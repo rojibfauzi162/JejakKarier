@@ -3,6 +3,8 @@ import React, { useState } from 'react';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, sendEmailVerification, sendPasswordResetEmail } from 'firebase/auth';
 import { auth, signInWithGoogle } from '../services/firebase';
 
+import { trackingService } from '../services/trackingService';
+
 interface AuthProps {
   onBack?: () => void;
   logoUrl?: string;
@@ -41,6 +43,11 @@ const Auth: React.FC<AuthProps> = ({ onBack, logoUrl, logoDarkUrl }) => {
         localStorage.setItem('pending_registration', JSON.stringify({ name, email, phone }));
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         await updateProfile(userCredential.user, { displayName: name });
+        
+        // Meta Ads: CompleteRegistration & Lead
+        trackingService.trackEvent('CompleteRegistration', { content_name: 'Email Registration' });
+        trackingService.trackEvent('Lead', { content_name: 'New User Registration', status: 'Registered' });
+
         try {
           await sendEmailVerification(userCredential.user);
         } catch (mailErr: any) {
@@ -111,7 +118,14 @@ const Auth: React.FC<AuthProps> = ({ onBack, logoUrl, logoDarkUrl }) => {
     setError('');
     setLoading(true);
     try {
-      await signInWithGoogle();
+      const result = await signInWithGoogle();
+      
+      // Meta Ads: CompleteRegistration & Lead (jika user baru)
+      const isNewUser = (result as any)._tokenResponse?.isNewUser;
+      if (isNewUser) {
+        trackingService.trackEvent('CompleteRegistration', { content_name: 'Google Registration' });
+        trackingService.trackEvent('Lead', { content_name: 'New User Registration', status: 'Registered' });
+      }
     } catch (err: any) {
       const code = err.code || '';
       setErrorCode(code);

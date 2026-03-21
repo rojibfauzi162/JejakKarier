@@ -41,6 +41,10 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
     
     loadConfig();
     trackingService.trackEvent('PageView');
+    trackingService.trackEvent('ViewContent', { 
+      content_name: 'Landing Page Plans',
+      content_category: 'Subscription'
+    });
   }, [initialConfig]);
 
   const paidProducts = useMemo(() => {
@@ -62,6 +66,15 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
       alert("Produk ini belum dikonfigurasi.");
       return;
     }
+
+    // Meta Ads: AddToCart
+    trackingService.trackEvent('AddToCart', {
+      content_ids: [plan.id],
+      content_name: plan.name,
+      content_type: 'product',
+      value: plan.price,
+      currency: 'IDR'
+    });
 
     if (onBuyPlan) {
       onBuyPlan(plan);

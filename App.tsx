@@ -159,6 +159,12 @@ const App: React.FC = () => {
     setActiveTab(tab);
     setSkillsSubTab(subTab || undefined);
     setIsSidebarOpen(false); // Close sidebar on navigate
+    
+    // Tracking PageView on tab change
+    trackingService.trackEvent('PageView', { 
+      page_path: `/${tab}`,
+      page_title: tab.charAt(0).toUpperCase() + tab.slice(1).replace('_', ' ')
+    });
   };
 
   const navigateToLegal = (type: 'privacy' | 'terms' | null) => {
@@ -488,7 +494,13 @@ const App: React.FC = () => {
           if (lastTx && lastTx.status === 'Paid') {
              const firedKey = `fired_purchase_${lastTx.id}`;
              if (!localStorage.getItem(firedKey)) {
-                trackingService.trackEvent('Purchase', { value: lastTx.amount, currency: 'IDR' });
+                trackingService.trackEvent('Purchase', { 
+                  value: lastTx.amount, 
+                  currency: 'IDR',
+                  content_ids: [lastTx.planTier],
+                  content_name: `Plan ${lastTx.planTier}`,
+                  content_type: 'product'
+                });
                 localStorage.setItem(firedKey, 'true');
              }
           }

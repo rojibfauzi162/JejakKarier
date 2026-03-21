@@ -31,7 +31,13 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
     getLandingPageConfig().then(cfg => {
       if (cfg && cfg.adminWhatsApp) setAdminPhone(cfg.adminWhatsApp);
     });
-    trackingService.trackEvent('InitiateCheckout', { value: plan.price, currency: 'IDR', content_name: plan.name });
+    trackingService.trackEvent('InitiateCheckout', { 
+      value: plan.price, 
+      currency: 'IDR', 
+      content_name: plan.name,
+      content_ids: [plan.id],
+      content_type: 'product'
+    });
   }, []);
 
   const handleAuth = async (e: React.FormEvent) => {
@@ -102,6 +108,14 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
       const res = await response.json();
 
       if (response.ok && res.statusCode === '00') {
+        // Meta Ads: AddPaymentInfo
+        trackingService.trackEvent('AddPaymentInfo', {
+          content_ids: [plan.id],
+          content_name: plan.name,
+          value: plan.price,
+          currency: 'IDR',
+          payment_method: methodCode
+        });
         window.location.href = res.paymentUrl;
       } else {
         setError(res.statusMessage || "Permintaan ditolak oleh server (Error 500/400). Periksa logs admin.");
@@ -131,6 +145,16 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
       };
       const currentTxs = userData?.manualTransactions || [];
       await saveUserData(user.uid, { ...userData, manualTransactions: [...currentTxs, newTx] } as AppData);
+      
+      // Meta Ads: AddPaymentInfo (Manual)
+      trackingService.trackEvent('AddPaymentInfo', {
+        content_ids: [plan.id],
+        content_name: plan.name,
+        value: plan.price,
+        currency: 'IDR',
+        payment_method: 'Manual'
+      });
+
       setShowManualSuccess(true);
       const message = encodeURIComponent(`Halo Admin FokusKarir, saya sudah checkout paket *${plan.name}* ID: *${orderId}*.\n\nEmail: *${user?.email}*`);
       setTimeout(() => { window.open(`https://wa.me/${adminPhone}?text=${message}`, '_blank'); }, 2000);

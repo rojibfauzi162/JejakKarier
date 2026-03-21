@@ -71,29 +71,119 @@ class TrackingService {
 
   /**
    * Menembak event tracking ke seluruh platform yang terkonfigurasi.
-   * @param eventName Nama event standar (PageView, InitiateCheckout, Purchase)
+   * @param eventName Nama event standar (PageView, ViewContent, AddToCart, CompleteRegistration, Lead, InitiateCheckout, AddPaymentInfo, Purchase)
    * @param data Data tambahan (value, currency, dll)
    */
-  public trackEvent(eventName: 'PageView' | 'InitiateCheckout' | 'Purchase', data?: any) {
+  public async trackEvent(
+    eventName: 'PageView' | 'ViewContent' | 'AddToCart' | 'CompleteRegistration' | 'Lead' | 'InitiateCheckout' | 'AddPaymentInfo' | 'Purchase', 
+    data?: any
+  ) {
     if (typeof window === "undefined") return;
 
-    // Meta Event Mapping
+    // Meta Pixel Event Mapping
     if ((window as any).fbq) {
       (window as any).fbq('track', eventName, data);
     }
 
+    // Meta Conversion API (CAPI) - Khusus untuk Purchase
+    if (eventName === 'Purchase' && this.config?.metaPixelId && this.config?.metaConversionAccessToken) {
+      this.trackMetaCAPI(eventName, data);
+    }
+
     // Google Analytics Event Mapping
     if ((window as any).gtag) {
-      const gaEvent = eventName === 'InitiateCheckout' ? 'begin_checkout' : 
-                     eventName === 'Purchase' ? 'purchase' : 'page_view';
+      let gaEvent: string = eventName;
+      switch (eventName) {
+        case 'InitiateCheckout': gaEvent = 'begin_checkout'; break;
+        case 'Purchase': gaEvent = 'purchase'; break;
+        case 'PageView': gaEvent = 'page_view'; break;
+        case 'ViewContent': gaEvent = 'view_item'; break;
+        case 'AddToCart': gaEvent = 'add_to_cart'; break;
+        case 'CompleteRegistration': gaEvent = 'sign_up'; break;
+        case 'Lead': gaEvent = 'generate_lead'; break;
+        case 'AddPaymentInfo': gaEvent = 'add_payment_info'; break;
+      }
       (window as any).gtag('event', gaEvent, data);
     }
 
     // TikTok Event Mapping
     if ((window as any).ttq) {
-      const ttEvent = eventName === 'Purchase' ? 'CompletePayment' : eventName;
+      let ttEvent: string = eventName;
+      switch (eventName) {
+        case 'Purchase': ttEvent = 'CompletePayment'; break;
+        case 'InitiateCheckout': ttEvent = 'InitiateCheckout'; break;
+        case 'AddToCart': ttEvent = 'AddToCart'; break;
+        case 'CompleteRegistration': ttEvent = 'CompleteRegistration'; break;
+        case 'ViewContent': ttEvent = 'ViewContent'; break;
+      }
       (window as any).ttq.track(ttEvent, data);
     }
+  }
+
+  /**
+   * Mengirim event ke Meta Conversion API (CAPI) dari client-side.
+   * Catatan: Idealnya ini dilakukan di server-side untuk keamanan Access Token.
+   */
+  private async trackMetaCAPI(eventName: string, data?: any) {
+    if (!this.config?.metaPixelId || !this.config?.metaConversionAccessToken) return;
+
+    try {
+      const pixelId = this.config.metaPixelId;
+      const accessToken = this.config.metaConversionAccessToken;
+      const testCode = this.config.metaTestCode;
+
+      // Ambil data user dari localStorage jika ada (disimpan saat registrasi/checkout)
+      const pendingReg = localStorage.getItem('pending_registration');
+      const userData = pendingReg ? JSON.parse(pendingReg) : null;
+
+      const payload: any = {
+        data: [
+          {
+            event_name: eventName,
+            event_time: Math.floor(Date.now() / 1000),
+            action_source: "website",
+            event_source_url: window.location.href,
+            user_data: {
+              client_ip_address: "", // Browser tidak bisa ambil IP publik langsung tanpa API eksternal
+              client_user_agent: navigator.userAgent,
+            },
+            custom_data: {
+              value: data?.value || 0,
+              currency: data?.currency || "IDR",
+              content_ids: data?.content_ids || (data?.content_id ? [data.content_id] : []),
+              content_name: data?.content_name || "",
+              content_type: "product",
+            }
+          }
+        ]
+      };
+
+      if (testCode) {
+        payload.test_event_code = testCode;
+      }
+
+      // Hash data sensitif jika tersedia
+      if (userData) {
+        if (userData.email) payload.data[0].user_data.em = [await this.hashData(userData.email)];
+        if (userData.phone) payload.data[0].user_data.ph = [await this.hashData(userData.phone)];
+        if (userData.name) payload.data[0].user_data.fn = [await this.hashData(userData.name)];
+      }
+
+      await fetch(`https://graph.facebook.com/v17.0/${pixelId}/events?access_token=${accessToken}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+    } catch (err) {
+      console.error("Meta CAPI Error:", err);
+    }
+  }
+
+  private async hashData(data: string): Promise<string> {
+    const msgUint8 = new TextEncoder().encode(data.trim().toLowerCase());
+    const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
   }
 }
 
