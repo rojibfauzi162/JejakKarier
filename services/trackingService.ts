@@ -1,5 +1,6 @@
 
 import { TrackingConfig } from "../types";
+import { auth } from "./firebase";
 
 /**
  * Service untuk menangani Injeksi Script Tracking & Event Pixel secara dinamis.
@@ -11,7 +12,7 @@ class TrackingService {
   private eventQueue: { eventName: any; data?: any }[] = [];
 
   public init(config: TrackingConfig) {
-    console.log("[TRACKING] init() called with config:", !!config.metaPixelId);
+    console.log("[TRACKING] init() called. metaPixelId:", config.metaPixelId || 'MISSING');
     this.config = config;
     if (typeof window === "undefined") return;
     this.injectScripts();
@@ -54,26 +55,30 @@ class TrackingService {
 
     // 2. Meta Pixel (Facebook)
     if (this.config.metaPixelId && !this.injectedPlatforms.has('meta_' + this.config.metaPixelId)) {
-      console.log("[TRACKING] Injecting Meta Pixel:", this.config.metaPixelId);
       const pixelId = this.config.metaPixelId;
+      console.log("[TRACKING] Injecting Meta Pixel ID:", pixelId);
       
       if (!(window as any).fbq) {
-        console.log("[TRACKING] Initializing fbq object...");
+        console.log("[TRACKING] window.fbq not found, initializing snippet...");
         (function(f: any, b: any, e: any, v: any, n?: any, t?: any, s?: any) {
           if (f.fbq) return; n = f.fbq = function() {
             n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments)
           };
           if (!f._fbq) f._fbq = n; n.push = n; n.loaded = !0; n.version = '2.0';
           n.queue = []; t = b.createElement(e); t.async = !0;
-          t.src = v; s = b.getElementsByTagName(e)[0];
-          if (s && s.parentNode) s.parentNode.insertBefore(t, s);
+          t.src = v;
+          b.head.appendChild(t);
         })(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
+      } else {
+        console.log("[TRACKING] window.fbq already exists, skipping snippet initialization.");
       }
       
       try {
+        console.log("[TRACKING] Calling fbq('init', ...)");
         (window as any).fbq('init', pixelId);
+        console.log("[TRACKING] Calling fbq('track', 'PageView')");
         (window as any).fbq('track', 'PageView');
-        console.log("[TRACKING] Meta Pixel initialized and PageView tracked");
+        console.log("[TRACKING] Meta Pixel initialization sequence complete.");
       } catch (e) {
         console.error("[TRACKING] Meta Pixel init error:", e);
       }
@@ -115,11 +120,15 @@ class TrackingService {
 
     // Meta Pixel Event Mapping
     if ((window as any).fbq) {
+      console.log(`[TRACKING] Sending Meta Pixel event: ${eventName}`, data);
       (window as any).fbq('track', eventName, data);
+    } else {
+      console.warn(`[TRACKING] Cannot send Meta Pixel event: ${eventName}. window.fbq is missing.`);
     }
 
-    // Meta Conversion API (CAPI) - Khusus untuk Purchase
-    if (eventName === 'Purchase' && this.config?.metaPixelId && this.config?.metaConversionAccessToken) {
+    // Meta Conversion API (CAPI) - Untuk event bernilai tinggi (Purchase, Lead, CompleteRegistration)
+    const capiEvents = ['Purchase', 'Lead', 'CompleteRegistration'];
+    if (capiEvents.includes(eventName) && this.config?.metaPixelId && this.config?.metaConversionAccessToken) {
       this.trackMetaCAPI(eventName, data);
     }
 
@@ -158,16 +167,28 @@ class TrackingService {
    * Catatan: Idealnya ini dilakukan di server-side untuk keamanan Access Token.
    */
   private async trackMetaCAPI(eventName: string, data?: any) {
-    if (!this.config?.metaPixelId || !this.config?.metaConversionAccessToken) return;
+    if (!this.config?.metaPixelId || !this.config?.metaConversionAccessToken) {
+      console.warn("[TRACKING] Meta CAPI skipped: Missing Pixel ID or Access Token");
+      return;
+    }
 
+    console.log(`[TRACKING] Sending Meta CAPI event: ${eventName}`, data);
     try {
       const pixelId = this.config.metaPixelId;
       const accessToken = this.config.metaConversionAccessToken;
       const testCode = this.config.metaTestCode;
 
-      // Ambil data user dari localStorage jika ada (disimpan saat registrasi/checkout)
+      // Ambil data user dari localStorage atau Firebase Auth
       const pendingReg = localStorage.getItem('pending_registration');
-      const userData = pendingReg ? JSON.parse(pendingReg) : null;
+      let userData = pendingReg ? JSON.parse(pendingReg) : null;
+
+      if (!userData && auth.currentUser) {
+        userData = {
+          email: auth.currentUser.email,
+          name: auth.currentUser.displayName,
+          phone: (auth.currentUser as any).phoneNumber || ""
+        };
+      }
 
       const payload: any = {
         data: [

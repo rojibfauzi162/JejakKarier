@@ -404,16 +404,17 @@ export const saveTrackingConfig = async (config: TrackingConfig) => {
 export const subscribeTrackingConfig = (callback: (config: TrackingConfig) => void) => {
   const path = "system_metadata/tracking_configuration";
   const docRef = doc(db, "system_metadata", "tracking_configuration");
+  console.log("[FIREBASE] Starting onSnapshot for:", path);
   return onSnapshot(docRef, (docSnap) => {
     if (docSnap.exists()) {
-      console.log("[FIREBASE] Tracking config fetched successfully");
+      console.log("[FIREBASE] Tracking config document found:", docSnap.id);
       callback(docSnap.data() as TrackingConfig);
     } else {
-      console.warn("[FIREBASE] Tracking config document does not exist");
+      console.warn("[FIREBASE] Tracking config document NOT FOUND in Firestore");
       callback({ metaPixelId: '', metaConversionAccessToken: '', metaTestCode: '', googleAnalyticsId: '', tiktokPixelId: '' });
     }
   }, (error) => {
-    console.warn("[FIREBASE] Subscribe Tracking error (non-fatal):", error.message);
+    console.warn("[FIREBASE] onSnapshot error for tracking_configuration:", error.message);
     // Don't throw for public config to prevent app crash
     callback({ metaPixelId: '', metaConversionAccessToken: '', metaTestCode: '', googleAnalyticsId: '', tiktokPixelId: '' });
   });

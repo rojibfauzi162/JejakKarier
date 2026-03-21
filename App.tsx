@@ -230,14 +230,12 @@ const App: React.FC = () => {
     // Inisialisasi Tracking Pixel (Real-time)
     console.log("[TRACKING] Subscribing to tracking configuration...");
     const unsubscribeTracking = subscribeTrackingConfig((cfg: TrackingConfig) => {
-      console.log("[TRACKING] Received configuration update:", JSON.stringify(cfg));
+      console.log("[TRACKING] Received configuration update from Firestore:", JSON.stringify(cfg));
       if (cfg && cfg.metaPixelId) {
-        console.log("[TRACKING] Initializing service with Pixel ID:", cfg.metaPixelId);
+        console.log("[TRACKING] Valid Meta Pixel ID found:", cfg.metaPixelId);
         trackingService.init(cfg);
       } else {
-        console.warn("[TRACKING] Received empty or invalid configuration. Pixel ID is missing.", cfg);
-        // If we have a previous config, maybe we shouldn't clear it? 
-        // But the subscription is supposed to be the source of truth.
+        console.warn("[TRACKING] Received empty or invalid configuration. metaPixelId is missing or empty.", cfg);
       }
     });
     // Subscribe to Landing Page Config (Real-time Logo & Contact)

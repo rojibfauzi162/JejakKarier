@@ -41,11 +41,24 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
     
     loadConfig();
     trackingService.trackEvent('PageView');
-    trackingService.trackEvent('ViewContent', { 
-      content_name: 'Landing Page Plans',
-      content_category: 'Subscription'
-    });
-  }, [initialConfig]);
+    
+    // Meta Ads: ViewContent for the first available product
+    if (products && products.length > 0) {
+      const firstProduct = products.find(p => p.isActive !== false && p.showOnLanding !== false) || products[0];
+      trackingService.trackEvent('ViewContent', { 
+        content_ids: [firstProduct.id],
+        content_name: firstProduct.name,
+        content_type: 'product',
+        value: firstProduct.price,
+        currency: 'IDR'
+      });
+    } else {
+      trackingService.trackEvent('ViewContent', { 
+        content_name: 'Landing Page Plans',
+        content_category: 'Subscription'
+      });
+    }
+  }, [initialConfig, products]);
 
   const paidProducts = useMemo(() => {
     const list = products || [];

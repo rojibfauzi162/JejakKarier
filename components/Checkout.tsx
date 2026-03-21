@@ -51,6 +51,19 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
         localStorage.setItem('pending_registration', JSON.stringify({ name, email, phone }));
         const cred = await createUserWithEmailAndPassword(auth, email, password);
         await updateProfile(cred.user, { displayName: name });
+        
+        // Meta Ads: CompleteRegistration & Lead
+        trackingService.trackEvent('CompleteRegistration', {
+          content_name: 'User Registration',
+          status: 'success'
+        });
+        trackingService.trackEvent('Lead', {
+          content_category: 'Registration',
+          content_name: name,
+          value: 0,
+          currency: 'IDR'
+        });
+
         try { await sendEmailVerification(cred.user); } catch (e) {}
         setSuccessMsg('Daftar Berhasil! Silakan cek email verifikasi.');
       }
