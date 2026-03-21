@@ -10,8 +10,9 @@ service cloud.firestore {
 
     function isAdmin() {
       return isAuthenticated() && 
-        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'superadmin' || 
-         request.auth.token.email == "rojibfauzi@gmail.com");
+        ((exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'superadmin') || 
+         (request.auth.token.email == "rojibfauzi@gmail.com" && request.auth.token.email_verified == true));
     }
 
     function isOwner(userId) {
@@ -22,28 +23,28 @@ service cloud.firestore {
     // Rules for Collections
     // ===============================================================
 
+    // System configurations
+    match /system_metadata/{configId} {
+      // Publicly readable configurations
+      allow read: if configId in ['tracking_configuration', 'landing_page_configuration', 'sales_notifications_list', 'products_catalog', 'legal_configuration', 'sales_popup_configuration'];
+      
+      // Other configs require authentication
+      allow read: if isAuthenticated();
+      
+      // Only admins can write to system metadata
+      allow write: if isAdmin();
+
+      // Recursive match for any sub-data
+      match /{allPaths=**} {
+        allow read: if configId in ['tracking_configuration', 'landing_page_configuration', 'sales_notifications_list', 'products_catalog', 'legal_configuration', 'sales_popup_configuration'] || isAuthenticated();
+        allow write: if isAdmin();
+      }
+    }
+
     // User profiles and data
     match /users/{userId} {
       allow read: if isAuthenticated() && (isOwner(userId) || isAdmin());
       allow write: if isAuthenticated() && (isOwner(userId) || isAdmin());
-    }
-
-    // System configurations
-    match /system_metadata/sales_notifications_list {
-      allow read: if true;
-      match /{document=**} {
-        allow read: if true;
-      }
-    }
-    match /system_metadata/tracking_configuration {
-      allow read: if true; // Allow public read for tracking
-    }
-    match /system_metadata/landing_page_config {
-      allow read: if true; // Allow public read for landing page
-    }
-    match /system_metadata/{allPaths=**} {
-      allow read: if isAuthenticated(); // Restrict to authenticated users
-      allow write: if isAdmin();
     }
 
     // Trainings
@@ -52,7 +53,7 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
     
-    // Default deny
+    // Default deny for everything else
     match /{document=**} {
       allow read, write: if isAdmin();
     }

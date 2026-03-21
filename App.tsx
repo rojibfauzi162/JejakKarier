@@ -230,10 +230,12 @@ const App: React.FC = () => {
     // Inisialisasi Tracking Pixel (Real-time)
     console.log("[TRACKING] Subscribing to tracking configuration...");
     const unsubscribeTracking = subscribeTrackingConfig((cfg: TrackingConfig) => {
-      console.log("[TRACKING] Received configuration update:", cfg ? "YES" : "NO");
-      if (cfg) {
+      console.log("[TRACKING] Received configuration update:", JSON.stringify(cfg));
+      if (cfg && cfg.metaPixelId) {
         console.log("[TRACKING] Initializing service with Pixel ID:", cfg.metaPixelId);
         trackingService.init(cfg);
+      } else {
+        console.warn("[TRACKING] Received empty or invalid configuration:", cfg);
       }
     });
     // Subscribe to Landing Page Config (Real-time Logo & Contact)

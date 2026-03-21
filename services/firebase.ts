@@ -1,30 +1,40 @@
 
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, signInWithPopup, setPersistence, browserLocalPersistence } from 'firebase/auth';
-import { getFirestore, doc, setDoc, getDoc, collection, getDocs, updateDoc, increment, query, where, limit, deleteDoc, onSnapshot } from "firebase/firestore";
+import { getFirestore, doc, setDoc, getDoc, collection, getDocs, updateDoc, increment, query, where, limit, deleteDoc, onSnapshot, getDocFromServer } from "firebase/firestore";
 import { getStorage, ref, uploadBytes, getDownloadURL, uploadBytesResumable } from "firebase/storage";
 import { getMessaging, getToken } from "firebase/messaging";
 import { AppData, AiConfig, SubscriptionProduct, AccountStatus, LegalConfig, UserRole, LandingPageConfig, MayarConfig, DuitkuConfig, FollowUpConfig, TrackingConfig, EmailSettings, EmailCampaign, EmailLog, SystemTraining, SalesNotification, SalesPopupConfig } from "../types";
 
 // KONFIGURASI FIREBASE
-const firebaseConfig = {
-  apiKey: "AIzaSyCDvX0tJX24etCFWS9D-IG9B3_BV6xFGEk",
-  authDomain: "jejakkarir-11379.firebaseapp.com", 
-  projectId: "jejakkarir-11379",
-  storageBucket: "jejakkarir-11379.firebasestorage.app",
-  messagingSenderId: "1099213790353",
-  appId: "1:1099213790353:web:b675b4d7b955f91cd0b330",
-  measurementId: "G-WKBT55412G"
-};
+import firebaseConfig from '../firebase-applet-config.json';
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 setPersistence(auth, browserLocalPersistence).catch((error) => {
   console.error("Firebase persistence error:", error);
 });
-export const db = getFirestore(app);
+export const db = getFirestore(app, (firebaseConfig as any).firestoreDatabaseId || '(default)');
 export const storage = getStorage(app);
 export const messaging = getMessaging(app);
+
+// Test Connection
+async function testConnection() {
+  try {
+    const docRef = doc(db, 'system_metadata', 'tracking_configuration');
+    await getDocFromServer(docRef);
+    console.log("[FIREBASE] Connection test successful: tracking_configuration is reachable");
+  } catch (error: any) {
+    if(error.message?.includes('the client is offline')) {
+      console.error("[FIREBASE] Connection test error: The client is offline. Please check your network and Firebase configuration.");
+    } else if (error.code === 'permission-denied') {
+      console.warn("[FIREBASE] Connection test error: Permission denied for tracking_configuration. Check firestore.rules.");
+    } else {
+      console.warn("[FIREBASE] Connection test error:", error.message || error);
+    }
+  }
+}
+testConnection();
 
 export const requestNotificationPermission = async (uid: string) => {
   try {
@@ -392,6 +402,7 @@ export const saveTrackingConfig = async (config: TrackingConfig) => {
 };
 
 export const subscribeTrackingConfig = (callback: (config: TrackingConfig) => void) => {
+  const path = "system_metadata/tracking_configuration";
   const docRef = doc(db, "system_metadata", "tracking_configuration");
   return onSnapshot(docRef, (docSnap) => {
     if (docSnap.exists()) {
@@ -402,8 +413,8 @@ export const subscribeTrackingConfig = (callback: (config: TrackingConfig) => vo
       callback({ metaPixelId: '', metaConversionAccessToken: '', metaTestCode: '', googleAnalyticsId: '', tiktokPixelId: '' });
     }
   }, (error) => {
-    console.error("[FIREBASE] Subscribe Tracking error:", error.message);
-    // Fallback on error
+    console.warn("[FIREBASE] Subscribe Tracking error (non-fatal):", error.message);
+    // Don't throw for public config to prevent app crash
     callback({ metaPixelId: '', metaConversionAccessToken: '', metaTestCode: '', googleAnalyticsId: '', tiktokPixelId: '' });
   });
 };
@@ -475,14 +486,15 @@ export const saveLandingPageConfig = async (config: LandingPageConfig) => {
 };
 
 export const subscribeLandingPageConfig = (callback: (config: LandingPageConfig) => void) => {
+  const path = "system_metadata/landing_page_configuration";
   const docRef = doc(db, "system_metadata", "landing_page_configuration");
   return onSnapshot(docRef, (snapshot) => {
     if (snapshot.exists()) {
       callback(snapshot.data() as LandingPageConfig);
     }
   }, (error) => {
-    console.warn("[FIREBASE] subscribeLandingPageConfig error:", error.message);
-    // Don't throw here to avoid crashing the app, just log it
+    console.warn("[FIREBASE] subscribeLandingPageConfig error (non-fatal):", error.message);
+    // Don't throw for public config to prevent app crash
   });
 };
 
@@ -673,8 +685,8 @@ export const getSalesNotifications = async (): Promise<SalesNotification[]> => {
     const snap = await getDoc(docRef);
     if (snap.exists()) return snap.data().list || [];
     return [];
-  } catch (error) {
-    handleFirestoreError(error, OperationType.GET, path);
+  } catch (error: any) {
+    console.warn("[FIREBASE] Sales notifications error (non-fatal):", error.message);
     return [];
   }
 };

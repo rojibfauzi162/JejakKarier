@@ -28,8 +28,11 @@ class TrackingService {
   }
 
   private injectScripts() {
-    if (!this.config) return;
-    console.log("[TRACKING] injectScripts() starting...");
+    if (!this.config) {
+      console.warn("[TRACKING] No config available for injection");
+      return;
+    }
+    console.log("[TRACKING] injectScripts() starting with config:", JSON.stringify(this.config));
 
     // 1. Google Analytics (GA4)
     if (this.config.googleAnalyticsId && !this.injectedPlatforms.has('ga4_' + this.config.googleAnalyticsId)) {
@@ -55,6 +58,7 @@ class TrackingService {
       const pixelId = this.config.metaPixelId;
       
       if (!(window as any).fbq) {
+        console.log("[TRACKING] Initializing fbq object...");
         (function(f: any, b: any, e: any, v: any, n?: any, t?: any, s?: any) {
           if (f.fbq) return; n = f.fbq = function() {
             n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments)
@@ -62,12 +66,17 @@ class TrackingService {
           if (!f._fbq) f._fbq = n; n.push = n; n.loaded = !0; n.version = '2.0';
           n.queue = []; t = b.createElement(e); t.async = !0;
           t.src = v; s = b.getElementsByTagName(e)[0];
-          s.parentNode.insertBefore(t, s)
+          if (s && s.parentNode) s.parentNode.insertBefore(t, s);
         })(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
       }
       
-      (window as any).fbq('init', pixelId);
-      (window as any).fbq('track', 'PageView');
+      try {
+        (window as any).fbq('init', pixelId);
+        (window as any).fbq('track', 'PageView');
+        console.log("[TRACKING] Meta Pixel initialized and PageView tracked");
+      } catch (e) {
+        console.error("[TRACKING] Meta Pixel init error:", e);
+      }
       
       this.injectedPlatforms.add('meta_' + pixelId);
     }
