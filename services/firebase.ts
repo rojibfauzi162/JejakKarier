@@ -391,6 +391,19 @@ export const saveTrackingConfig = async (config: TrackingConfig) => {
   }
 };
 
+export const subscribeTrackingConfig = (callback: (config: TrackingConfig) => void) => {
+  const docRef = doc(db, "system_metadata", "tracking_configuration");
+  return onSnapshot(docRef, (docSnap) => {
+    if (docSnap.exists()) {
+      callback(docSnap.data() as TrackingConfig);
+    } else {
+      callback({ metaPixelId: '', metaConversionAccessToken: '', metaTestCode: '', googleAnalyticsId: '', tiktokPixelId: '' });
+    }
+  }, (error) => {
+    console.warn("[FIREBASE] Subscribe Tracking error:", error.message);
+  });
+};
+
 export const getFollowUpConfig = async (): Promise<FollowUpConfig | null> => {
   try {
     const docRef = doc(db, "system_metadata", "follow_up_configuration");

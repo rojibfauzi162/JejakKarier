@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { TrackingConfig } from '../../types';
-import { getTrackingConfig, saveTrackingConfig } from '../../services/firebase';
+import { getTrackingConfig, saveTrackingConfig, subscribeTrackingConfig } from '../../services/firebase';
 import { trackingService } from '../../services/trackingService';
 
 interface TrackingSettingsProps {
@@ -20,10 +20,20 @@ const TrackingSettings: React.FC<TrackingSettingsProps> = ({ onToast }) => {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    getTrackingConfig().then(res => {
+    const unsubscribe = subscribeTrackingConfig((res) => {
       if (res) setConfig(res);
       setLoading(false);
     });
+    return () => unsubscribe();
+  }, []);
+
+  const [status, setStatus] = useState(trackingService.getStatus());
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setStatus(trackingService.getStatus());
+    }, 2000);
+    return () => clearInterval(timer);
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -76,13 +86,24 @@ const TrackingSettings: React.FC<TrackingSettingsProps> = ({ onToast }) => {
                    <p className="text-slate-400 font-medium text-sm mt-1">Kelola Pixel & Analytics untuk optimasi kampanye iklan.</p>
                 </div>
              </div>
-             <button 
-               type="button"
-               onClick={handleTestMeta}
-               className="px-6 py-3 bg-blue-50 text-blue-600 font-black rounded-2xl uppercase text-[10px] tracking-widest hover:bg-blue-100 transition-all active:scale-95"
-             >
-                <i className="bi bi-send-fill mr-2"></i> Test Pixel
-             </button>
+             <div className="flex items-center gap-4">
+                <div className="flex flex-col items-end mr-2">
+                   <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Pixel Status</span>
+                   <div className="flex items-center gap-2 mt-1">
+                      <div className={`w-2 h-2 rounded-full ${status.meta ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300'}`}></div>
+                      <span className={`text-[10px] font-bold ${status.meta ? 'text-emerald-600' : 'text-slate-400'}`}>
+                         {status.meta ? 'ACTIVE' : 'INACTIVE'}
+                      </span>
+                   </div>
+                </div>
+                <button 
+                  type="button"
+                  onClick={handleTestMeta}
+                  className="px-6 py-3 bg-blue-50 text-blue-600 font-black rounded-2xl uppercase text-[10px] tracking-widest hover:bg-blue-100 transition-all active:scale-95"
+                >
+                   <i className="bi bi-send-fill mr-2"></i> Test Pixel
+                </button>
+             </div>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-10">

@@ -8,11 +8,22 @@ import { TrackingConfig } from "../types";
 class TrackingService {
   private config: TrackingConfig | null = null;
   private injectedPlatforms: Set<string> = new Set();
+  private eventQueue: { eventName: any; data?: any }[] = [];
 
   public init(config: TrackingConfig) {
     this.config = config;
     if (typeof window === "undefined") return;
     this.injectScripts();
+    this.processQueue();
+  }
+
+  private processQueue() {
+    if (this.eventQueue.length > 0) {
+      this.eventQueue.forEach(item => {
+        this.trackEvent(item.eventName, item.data);
+      });
+      this.eventQueue = [];
+    }
   }
 
   private injectScripts() {
@@ -20,53 +31,54 @@ class TrackingService {
 
     // 1. Google Analytics (GA4)
     if (this.config.googleAnalyticsId && !this.injectedPlatforms.has('ga4_' + this.config.googleAnalyticsId)) {
-      const gaScript = document.createElement("script");
-      gaScript.async = true;
-      gaScript.src = `https://www.googletagmanager.com/gtag/js?id=${this.config.googleAnalyticsId}`;
-      document.head.appendChild(gaScript);
+      const gaId = this.config.googleAnalyticsId;
+      const script = document.createElement('script');
+      script.async = true;
+      script.src = `https://www.googletagmanager.com/gtag/js?id=${gaId}`;
+      document.head.appendChild(script);
 
-      const gaInit = document.createElement("script");
-      gaInit.innerHTML = `
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', '${this.config.googleAnalyticsId}');
-      `;
-      document.head.appendChild(gaInit);
-      this.injectedPlatforms.add('ga4_' + this.config.googleAnalyticsId);
+      (window as any).dataLayer = (window as any).dataLayer || [];
+      function gtag(...args: any[]) { (window as any).dataLayer.push(args); }
+      (window as any).gtag = gtag;
+      gtag('js', new Date());
+      gtag('config', gaId);
+      
+      this.injectedPlatforms.add('ga4_' + gaId);
     }
 
     // 2. Meta Pixel (Facebook)
     if (this.config.metaPixelId && !this.injectedPlatforms.has('meta_' + this.config.metaPixelId)) {
-      const metaInit = document.createElement("script");
-      metaInit.innerHTML = `
-        !function(f,b,e,v,n,t,s)
-        {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-        n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-        if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-        n.queue=[];t=b.createElement(e);t.async=!0;
-        t.src=v;s=b.getElementsByTagName(e)[0];
-        s.parentNode.insertBefore(t,s)}(window, document,'script',
-        'https://connect.facebook.net/en_US/fbevents.js');
-        fbq('init', '${this.config.metaPixelId}');
-        fbq('track', 'PageView');
-      `;
-      document.head.appendChild(metaInit);
-      this.injectedPlatforms.add('meta_' + this.config.metaPixelId);
+      const pixelId = this.config.metaPixelId;
+      
+      if (!(window as any).fbq) {
+        (function(f: any, b: any, e: any, v: any, n?: any, t?: any, s?: any) {
+          if (f.fbq) return; n = f.fbq = function() {
+            n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments)
+          };
+          if (!f._fbq) f._fbq = n; n.push = n; n.loaded = !0; n.version = '2.0';
+          n.queue = []; t = b.createElement(e); t.async = !0;
+          t.src = v; s = b.getElementsByTagName(e)[0];
+          s.parentNode.insertBefore(t, s)
+        })(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
+      }
+      
+      (window as any).fbq('init', pixelId);
+      (window as any).fbq('track', 'PageView');
+      
+      this.injectedPlatforms.add('meta_' + pixelId);
     }
 
     // 3. TikTok Pixel
     if (this.config.tiktokPixelId && !this.injectedPlatforms.has('tiktok_' + this.config.tiktokPixelId)) {
-      const tiktokInit = document.createElement("script");
-      tiktokInit.innerHTML = `
-        !function (w, d, t) {
-          w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie"],ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);ttq.instance=function(t){for(var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e},ttq.load=function(e,n){var i="https://analytics.tiktok.com/i18n/pixel/events.js";ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=i,ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._o=ttq._o||{},ttq._o[e]=n||{};var o=document.createElement("script");o.type="text/javascript",o.async=!0,o.src=i+"?sdkid="+e+"&lib="+t;var a=document.getElementsByTagName("script")[0];a.parentNode.insertBefore(o,a)};
-          ttq.load('${this.config.tiktokPixelId}');
-          ttq.page();
-        }(window, document, 'ttq');
-      `;
-      document.head.appendChild(tiktokInit);
-      this.injectedPlatforms.add('tiktok_' + this.config.tiktokPixelId);
+      const tiktokId = this.config.tiktokPixelId;
+      
+      (function (w: any, d: any, t: string) {
+        w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie"],ttq.setAndDefer=function(t: any,e: any){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);ttq.instance=function(t: any){for(var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e},ttq.load=function(e: any,n: any){var i="https://analytics.tiktok.com/i18n/pixel/events.js";ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=i,ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._o=ttq._o||{},ttq._o[e]=n||{};var o=document.createElement("script");o.type="text/javascript",o.async=!0,o.src=i+"?sdkid="+e+"&lib="+t;var a=document.getElementsByTagName("script")[0];if(a && a.parentNode) a.parentNode.insertBefore(o,a)};
+        ttq.load(tiktokId);
+        ttq.page();
+      })(window, document, 'ttq');
+      
+      this.injectedPlatforms.add('tiktok_' + tiktokId);
     }
   }
 
@@ -80,6 +92,12 @@ class TrackingService {
     data?: any
   ) {
     if (typeof window === "undefined") return;
+
+    // Jika belum di-init atau config belum ada, masukkan ke antrian
+    if (!this.config) {
+      this.eventQueue.push({ eventName, data });
+      return;
+    }
 
     // Meta Pixel Event Mapping
     if ((window as any).fbq) {
@@ -185,6 +203,16 @@ class TrackingService {
     const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  public getStatus() {
+    return {
+      meta: !!(window as any).fbq,
+      ga4: !!(window as any).gtag,
+      tiktok: !!(window as any).ttq,
+      config: !!this.config,
+      metaPixelId: this.config?.metaPixelId || 'None'
+    };
   }
 }
 

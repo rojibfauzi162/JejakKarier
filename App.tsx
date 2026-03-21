@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { AppData, UserRole, SubscriptionProduct, SubscriptionPlan, AccountStatus, ToDoTask, AiStrategy, Training, Certification, Skill, CareerEvent, JobStatus, EventType, ImportanceLevel, WorkExperience, Education, LandingPageConfig } from './types';
+import { AppData, UserRole, SubscriptionProduct, SubscriptionPlan, AccountStatus, ToDoTask, AiStrategy, Training, Certification, Skill, CareerEvent, JobStatus, EventType, ImportanceLevel, WorkExperience, Education, LandingPageConfig, TrackingConfig } from './types';
 import { INITIAL_DATA, DEFAULT_PRODUCTS } from './constants';
 import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
@@ -36,7 +36,7 @@ import TrainingManagement from './components/admin/TrainingManagement';
 import TrainingList from './components/public/TrainingList';
 import TrainingDetail from './components/public/TrainingDetail';
 import OnboardingFlow from './components/user/OnboardingFlow';
-import { auth, getUserData, saveUserData, getProductsCatalog, findUserByEmail, deleteUserDoc, getTrackingConfig, subscribeLandingPageConfig, sanitizeData, requestNotificationPermission } from './services/firebase';
+import { auth, getUserData, saveUserData, getProductsCatalog, findUserByEmail, deleteUserDoc, getTrackingConfig, subscribeLandingPageConfig, subscribeTrackingConfig, sanitizeData, requestNotificationPermission } from './services/firebase';
 import { onAuthStateChanged, sendEmailVerification } from 'firebase/auth';
 import { trackingService } from './services/trackingService';
 
@@ -227,15 +227,18 @@ const App: React.FC = () => {
     getProductsCatalog().then(p => {
       if (p && p.length > 0) setPublicProducts(p);
     });
-    // Inisialisasi Tracking Pixel
-    getTrackingConfig().then(cfg => {
+    // Inisialisasi Tracking Pixel (Real-time)
+    const unsubscribeTracking = subscribeTrackingConfig((cfg: TrackingConfig) => {
       if (cfg) trackingService.init(cfg);
     });
     // Subscribe to Landing Page Config (Real-time Logo & Contact)
     const unsubscribeLanding = subscribeLandingPageConfig((config) => {
       setLandingConfig(config);
     });
-    return () => unsubscribeLanding();
+    return () => {
+      unsubscribeTracking();
+      unsubscribeLanding();
+    };
   }, []);
 
   useEffect(() => {
