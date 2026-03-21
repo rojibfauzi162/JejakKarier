@@ -32,6 +32,16 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
       if (cfg && cfg.adminWhatsApp) setAdminPhone(cfg.adminWhatsApp);
     });
     trackingService.trackEvent('PageView', { page_path: '/checkout', page_title: 'Checkout' });
+    
+    // Fire AddToCart to ensure it's captured when entering checkout
+    trackingService.trackEvent('AddToCart', {
+      value: plan.price,
+      currency: 'IDR',
+      content_name: plan.name,
+      content_ids: [plan.id],
+      content_type: 'product'
+    });
+
     trackingService.trackEvent('InitiateCheckout', { 
       value: plan.price, 
       currency: 'IDR', 
@@ -39,7 +49,7 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
       content_ids: [plan.id],
       content_type: 'product'
     });
-  }, []);
+  }, [plan]);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
