@@ -67,6 +67,8 @@ class TrackingService {
           if (!f._fbq) f._fbq = n; n.push = n; n.loaded = !0; n.version = '2.0';
           n.queue = []; t = b.createElement(e); t.async = !0;
           t.src = v;
+          t.onload = () => console.log("[TRACKING] Meta Pixel script (fbevents.js) loaded successfully.");
+          t.onerror = () => console.error("[TRACKING] Failed to load Meta Pixel script (fbevents.js). Check AdBlocker!");
           b.head.appendChild(t);
         })(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
       } else {
@@ -120,8 +122,26 @@ class TrackingService {
 
     // Meta Pixel Event Mapping
     if ((window as any).fbq) {
-      console.log(`[TRACKING] Sending Meta Pixel event: ${eventName}`, data);
-      (window as any).fbq('track', eventName, data);
+      const eventId = data?.event_id || `evt_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const trackingData = { ...data };
+      
+      // Include test_event_code if available in config for easier debugging in Meta Events Manager
+      if (this.config?.metaTestCode) {
+        trackingData.test_event_code = this.config.metaTestCode;
+      }
+
+      console.log(`[TRACKING] Sending Meta Pixel event: ${eventName}`, trackingData, { eventID: eventId });
+      
+      try {
+        // Standard Meta Pixel track call with eventID for deduplication with CAPI
+        (window as any).fbq('track', eventName, trackingData, { eventID: eventId });
+        
+        // Pass the same eventId to CAPI if applicable
+        if (data) data.event_id = eventId;
+        else data = { event_id: eventId };
+      } catch (e) {
+        console.error(`[TRACKING] Error calling fbq('track', '${eventName}'):`, e);
+      }
     } else {
       console.warn(`[TRACKING] Cannot send Meta Pixel event: ${eventName}. window.fbq is missing.`);
     }
@@ -194,6 +214,7 @@ class TrackingService {
         data: [
           {
             event_name: eventName,
+            event_id: data?.event_id,
             event_time: Math.floor(Date.now() / 1000),
             action_source: "website",
             event_source_url: window.location.href,
@@ -249,6 +270,25 @@ class TrackingService {
       metaPixelId: this.config?.metaPixelId || 'None'
     };
   }
+
+  public debug() {
+    console.log("=== TRACKING SERVICE DEBUG ===");
+    console.log("Config Loaded:", !!this.config);
+    if (this.config) {
+      console.log("Meta Pixel ID:", this.config.metaPixelId || "MISSING");
+      console.log("Meta CAPI Token:", this.config.metaConversionAccessToken ? "PRESENT" : "MISSING");
+      console.log("GA4 ID:", this.config.googleAnalyticsId || "MISSING");
+      console.log("TikTok ID:", this.config.tiktokPixelId || "MISSING");
+    }
+    console.log("Injected Platforms:", Array.from(this.injectedPlatforms));
+    console.log("window.fbq exists:", !!(window as any).fbq);
+    console.log("window.gtag exists:", !!(window as any).gtag);
+    console.log("window.ttq exists:", !!(window as any).ttq);
+    console.log("==============================");
+  }
 }
 
 export const trackingService = new TrackingService();
+if (typeof window !== 'undefined') {
+  (window as any).trackingService = trackingService;
+}
