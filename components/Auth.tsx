@@ -59,6 +59,7 @@ const Auth: React.FC<AuthProps> = ({ onBack, logoUrl, logoDarkUrl }) => {
         }
       }
     } catch (err: any) {
+      console.error("[AUTH DEBUG] Full Error:", err);
       let friendlyMessage = 'Terjadi kesalahan saat menghubungi server. Silakan coba lagi.';
       const code = err.code || '';
       setErrorCode(code);
