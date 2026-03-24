@@ -159,8 +159,9 @@ class TrackingService {
       console.log(`[TRACKING] Sending Meta Pixel event: ${finalEventName}`, trackingData, { eventID: eventId });
       
       try {
-        // Standard Meta Pixel track call with eventID for deduplication with CAPI
-        (window as any).fbq('track', finalEventName, trackingData, { eventID: eventId });
+      // Standard Meta Pixel track call with eventID for deduplication with CAPI
+        const eventData = { ...trackingData, event_id: eventId };
+        (window as any).fbq('track', finalEventName, eventData, { eventID: eventId });
         
         // Pass the same eventId to CAPI if applicable
         if (data) data.event_id = eventId;
@@ -270,13 +271,20 @@ class TrackingService {
         if (userData.name) payload.data[0].user_data.fn = [await this.hashData(userData.name)];
       }
 
-      await fetch(`https://graph.facebook.com/v17.0/${pixelId}/events?access_token=${accessToken}`, {
+      const response = await fetch(`https://graph.facebook.com/v17.0/${pixelId}/events?access_token=${accessToken}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
+
+      const result = await response.json();
+      if (!response.ok) {
+        console.error("[TRACKING] Meta CAPI Error Response:", JSON.stringify(result));
+      } else {
+        console.log("[TRACKING] Meta CAPI Success:", result);
+      }
     } catch (err) {
-      console.error("Meta CAPI Error:", err);
+      console.error("[TRACKING] Meta CAPI Network Error:", err);
     }
   }
 
