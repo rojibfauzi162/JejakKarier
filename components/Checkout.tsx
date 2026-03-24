@@ -70,7 +70,23 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
         setSuccessMsg('Daftar Berhasil! Silakan cek email verifikasi.');
       }
     } catch (err: any) {
-      setError(err.message);
+      console.error("[CHECKOUT] Auth Error:", err);
+      let msg = err.message;
+      const code = err.code || '';
+      
+      if (code === 'auth/network-request-failed') {
+        msg = 'Koneksi internet terganggu atau diblokir. Silakan coba lagi atau gunakan koneksi lain.';
+      } else if (code === 'auth/email-already-in-use') {
+        msg = 'Email sudah terdaftar. Silakan gunakan menu "MASUK" di atas.';
+      } else if (code === 'auth/weak-password') {
+        msg = 'Password terlalu lemah. Gunakan minimal 6 karakter.';
+      } else if (code === 'auth/invalid-email') {
+        msg = 'Format email tidak valid.';
+      } else if (code === 'auth/user-not-found' || code === 'auth/wrong-password' || code === 'auth/invalid-credential') {
+        msg = 'Email atau Password salah.';
+      }
+      
+      setError(msg);
       if (!isLogin) localStorage.removeItem('pending_registration');
     } finally {
       setLoading(false);
@@ -258,10 +274,11 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
             <div className="space-y-10">
               <div className="space-y-2"><h3 className="text-2xl font-black text-slate-900 uppercase">Identitas Akun</h3><p className="text-slate-400 text-sm">Lengkapi data untuk membuat invoice.</p></div>
               <div className="flex bg-slate-50 p-1 rounded-2xl">
-                <button onClick={() => setIsLogin(false)} className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase transition-all ${!isLogin ? 'bg-white text-slate-900 shadow-md' : 'text-slate-400'}`}>Daftar</button>
-                <button onClick={() => setIsLogin(true)} className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase transition-all ${isLogin ? 'bg-white text-slate-900 shadow-md' : 'text-slate-400'}`}>Masuk</button>
+                <button onClick={() => { setIsLogin(false); setError(''); setSuccessMsg(''); }} className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase transition-all ${!isLogin ? 'bg-white text-slate-900 shadow-md' : 'text-slate-400'}`}>Daftar</button>
+                <button onClick={() => { setIsLogin(true); setError(''); setSuccessMsg(''); }} className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase transition-all ${isLogin ? 'bg-white text-slate-900 shadow-md' : 'text-slate-400'}`}>Masuk</button>
               </div>
-              {error && <div className="p-4 bg-rose-50 text-rose-600 text-[10px] font-bold rounded-2xl border border-rose-100 uppercase">⚠️ {error}</div>}
+              {error && <div className="p-4 bg-rose-50 text-rose-600 text-[10px] font-bold rounded-2xl border border-rose-100 uppercase animate-in slide-in-from-top-2">⚠️ {error}</div>}
+              {successMsg && <div className="p-4 bg-emerald-50 text-emerald-600 text-[10px] font-bold rounded-2xl border border-emerald-100 uppercase animate-in slide-in-from-top-2">✅ {successMsg}</div>}
               <form onSubmit={handleAuth} className="space-y-5">
                 {!isLogin && <input className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-sm" placeholder="Nama Lengkap" value={name || ''} onChange={e => setName(e.target.value)} required />}
                 {!isLogin && <input type="tel" className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-sm" placeholder="WhatsApp (08...)" value={phone || ''} onChange={e => setPhone(e.target.value)} required />}
