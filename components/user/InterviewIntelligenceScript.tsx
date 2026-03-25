@@ -570,7 +570,7 @@ const InterviewIntelligenceScript: React.FC<InterviewIntelligenceScriptProps> = 
                   >
                     <div className="space-y-6">
                       {activeScript.commonQuestions.map((q, i) => {
-                        const isSalaryQuestion = q.question.toLowerCase().includes('gaji') || q.question.toLowerCase().includes('salary');
+                        const isSalaryQuestion = (q.question || '').toLowerCase().includes('gaji') || (q.question || '').toLowerCase().includes('salary');
                         const displayQuestion = isSalaryQuestion ? "Berapa harapan gaji yang anda inginkan ?" : replacePlaceholders(q.question);
                         
                         return (

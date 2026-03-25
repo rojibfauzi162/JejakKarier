@@ -47,13 +47,13 @@ const SkillGapRadar: React.FC<SkillGapRadarProps> = ({ data, onSwitchTab, onAddS
       .sort((a, b) => b.percentage - a.percentage);
 
     // B. Stagnation Index Calculation
-    const adminCount = recentLogs.filter(l => l.category.toLowerCase().includes('admin')).length;
+    const adminCount = recentLogs.filter(l => (l.category || '').toLowerCase().includes('admin')).length;
     const adminPct = adminCount / (recentLogs.length || 1);
     
     const strategicCount = recentLogs.filter(l => 
-      l.category.toLowerCase().includes('strat') || 
-      l.activity.toLowerCase().includes('planning') ||
-      l.activity.toLowerCase().includes('analis')
+      (l.category || '').toLowerCase().includes('strat') || 
+      (l.activity || '').toLowerCase().includes('planning') ||
+      (l.activity || '').toLowerCase().includes('analis')
     ).length;
     const strategicPct = strategicCount / (recentLogs.length || 1);
     
@@ -78,13 +78,13 @@ const SkillGapRadar: React.FC<SkillGapRadarProps> = ({ data, onSwitchTab, onAddS
   };
 
   const currentRole = data.profile.currentPosition || "Default";
-  const activeBenchmark = Object.keys(benchmarks).find(key => currentRole.toLowerCase().includes(key.toLowerCase())) 
-    ? benchmarks[Object.keys(benchmarks).find(key => currentRole.toLowerCase().includes(key.toLowerCase()))!]
+  const activeBenchmark = Object.keys(benchmarks).find(key => (currentRole || '').toLowerCase().includes(key.toLowerCase())) 
+    ? benchmarks[Object.keys(benchmarks).find(key => (currentRole || '').toLowerCase().includes(key.toLowerCase()))!]
     : benchmarks["Default"];
 
   const skillGaps = useMemo(() => {
     return Object.entries(activeBenchmark).map(([skillName, required]) => {
-      const userSkill = data.skills.find(s => s.name.toLowerCase().includes(skillName.toLowerCase()));
+      const userSkill = data.skills.find(s => (s.name || '').toLowerCase().includes((skillName || '').toLowerCase()));
       const currentLevel = userSkill ? (userSkill.currentLevel / 5) * 100 : 20; // Normalize to 100
       return {
         name: skillName,
@@ -105,7 +105,7 @@ const SkillGapRadar: React.FC<SkillGapRadarProps> = ({ data, onSwitchTab, onAddS
 
   const leverageSkills = useMemo(() => {
     return multipliers.map(m => {
-      const userSkill = data.skills.find(s => s.name.toLowerCase().includes(m.skill.toLowerCase()));
+      const userSkill = data.skills.find(s => (s.name || '').toLowerCase().includes((m.skill || '').toLowerCase()));
       const currentLevel = userSkill ? userSkill.currentLevel : 1;
       return { ...m, currentLevel };
     }).sort((a, b) => b.paths.length - a.paths.length);
@@ -396,7 +396,7 @@ const SkillGapRadar: React.FC<SkillGapRadarProps> = ({ data, onSwitchTab, onAddS
                     const newSkill: Skill = {
                       id: Math.random().toString(36).substr(2, 9),
                       name: confirmSkill.skill,
-                      category: (confirmSkill.skill.toLowerCase().includes('soft') || confirmSkill.skill.toLowerCase().includes('leadership') || confirmSkill.skill.toLowerCase().includes('speaking')) 
+                      category: ((confirmSkill.skill || '').toLowerCase().includes('soft') || (confirmSkill.skill || '').toLowerCase().includes('leadership') || (confirmSkill.skill || '').toLowerCase().includes('speaking')) 
                         ? SkillCategory.SOFT
                         : SkillCategory.HARD,
                       currentLevel: 1,

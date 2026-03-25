@@ -11,7 +11,7 @@ interface AdminManagementProps {
 const AdminManagement: React.FC<AdminManagementProps> = ({ users, onUpdateMetadata }) => {
   const [searchEmail, setSearchEmail] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
-  const currentUserEmail = auth.currentUser?.email?.toLowerCase();
+  const currentUserEmail = (auth.currentUser?.email || '').toLowerCase();
   const isPrimaryAdmin = currentUserEmail === 'admin@fokuskarir.web.id';
 
   const admins = useMemo(() => {
@@ -19,7 +19,7 @@ const AdminManagement: React.FC<AdminManagementProps> = ({ users, onUpdateMetada
     const rawAdmins = users.filter(u => u.role === UserRole.SUPERADMIN);
     
     rawAdmins.forEach(u => {
-      const email = u.profile?.email?.toLowerCase();
+      const email = (u.profile?.email || '').toLowerCase();
       if (!email) return;
       
       if (!adminMap.has(email)) {
@@ -37,7 +37,7 @@ const AdminManagement: React.FC<AdminManagementProps> = ({ users, onUpdateMetada
 
   const candidate = useMemo(() => {
     if (!searchEmail.trim()) return null;
-    return users.find(u => u.profile?.email?.toLowerCase() === searchEmail.toLowerCase() && u.role !== UserRole.SUPERADMIN);
+    return users.find(u => (u.profile?.email || '').toLowerCase() === (searchEmail || '').toLowerCase() && u.role !== UserRole.SUPERADMIN);
   }, [users, searchEmail]);
 
   const handleRequestPromote = async (uid: string) => {
@@ -221,7 +221,7 @@ const AdminManagement: React.FC<AdminManagementProps> = ({ users, onUpdateMetada
                   <td className="px-10 py-5 text-right">
                     {admin.profile?.email !== 'admin@fokuskarir.web.id' && (
                       <button 
-                        onClick={() => handleDemote(admin.uid!, admin.profile.email)}
+                        onClick={() => handleDemote(admin.uid!, admin.profile?.email || '')}
                         className="px-4 py-2 bg-rose-50 text-rose-500 font-black rounded-xl text-[9px] uppercase hover:bg-rose-500 hover:text-white transition-all"
                       >
                         Demosi
@@ -263,7 +263,7 @@ const AdminManagement: React.FC<AdminManagementProps> = ({ users, onUpdateMetada
 
                 <div className="pt-4 border-t border-slate-200/50 flex justify-end">
                    {admin.profile?.email !== 'admin@fokuskarir.web.id' ? (
-                      <button onClick={() => handleDemote(admin.uid!, admin.profile.email)} className="px-6 py-2 bg-rose-50 text-rose-500 rounded-xl font-black text-[9px] uppercase">Cabut Hak Akses</button>
+                      <button onClick={() => handleDemote(admin.uid!, admin.profile?.email || '')} className="px-6 py-2 bg-rose-50 text-rose-500 rounded-xl font-black text-[9px] uppercase">Cabut Hak Akses</button>
                    ) : (
                       <span className="text-[9px] font-black text-slate-300 uppercase italic">Root Access Locked</span>
                    )}

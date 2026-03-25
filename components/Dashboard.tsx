@@ -141,7 +141,27 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenOnboardin
 
   const skillCount = data.skills.length;
   const achievedSkills = data.skills.filter(s => s.status === SkillStatus.ACHIEVED).length;
-  const progressPercent = skillCount > 0 ? Math.round((achievedSkills / skillCount) * 100) : 0;
+  
+  // NEW: Calculate readiness based on primary career path if exists
+  const careerReadiness = useMemo(() => {
+    const primaryPath = data.careerPaths.find(p => p.type === 'Utama');
+    if (!primaryPath || !primaryPath.requiredSkills || primaryPath.requiredSkills.length === 0) {
+      return skillCount > 0 ? Math.round((achievedSkills / skillCount) * 100) : 0;
+    }
+
+    let totalCurrent = 0;
+    let totalTarget = 0;
+    primaryPath.requiredSkills.forEach(req => {
+      const s = data.skills.find(sk => (sk.name || '').toLowerCase().trim() === (req.name || '').toLowerCase().trim());
+      if (s) totalCurrent += Math.min(s.currentLevel, req.level);
+      totalTarget += req.level;
+    });
+
+    if (totalTarget === 0) return 0;
+    return Math.round((totalCurrent / totalTarget) * 100);
+  }, [data.skills, data.careerPaths, skillCount, achievedSkills]);
+
+  const progressPercent = careerReadiness;
   
   // Logic: Account Readiness Score (Kesiapan Profil)
   const calculateAccountReadiness = () => {
@@ -323,7 +343,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenOnboardin
               </div>
               <div>
                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1.5">Good Morning 👋</p>
-                 <h2 className="text-xl font-black text-slate-900 tracking-tight leading-none">{data.profile.name.split(' ')[0]}</h2>
+                 <h2 className="text-xl font-black text-slate-900 tracking-tight leading-none">{(data.profile.name || '').split(' ')[0]}</h2>
               </div>
            </div>
         </header>

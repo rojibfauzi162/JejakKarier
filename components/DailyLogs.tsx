@@ -283,8 +283,8 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
 
     if (searchQuery) {
       result = result.filter((item) => 
-        item.activity.toLowerCase().includes(searchQuery.toLowerCase()) || 
-        (item.output && item.output.toLowerCase().includes(searchQuery.toLowerCase()))
+        (item.activity || '').toLowerCase().includes((searchQuery || '').toLowerCase()) || 
+        (item.output && (item.output || '').toLowerCase().includes((searchQuery || '').toLowerCase()))
       );
     }
 
@@ -412,7 +412,7 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
 
   // Logic: Filter and Paginate History list inside modal
   const filteredHistory = useMemo(() => {
-    return pastActivityTitles.filter(t => t.toLowerCase().includes(historySearch.toLowerCase()));
+    return pastActivityTitles.filter(t => (t || '').toLowerCase().includes((historySearch || '').toLowerCase()));
   }, [pastActivityTitles, historySearch]);
 
   const totalHistoryPages = Math.ceil(filteredHistory.length / historyPerPage);

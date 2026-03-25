@@ -180,8 +180,8 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
     operationType,
     path
   }
-  console.error('Firestore Error: ', JSON.stringify(errInfo));
-  throw new Error(JSON.stringify(errInfo));
+  console.error('Firestore Error: ', JSON.stringify(sanitizeData(errInfo)));
+  throw new Error(JSON.stringify(sanitizeData(errInfo)));
 }
 
 export const sanitizeData = (obj: any, visited = new WeakSet()): any => {
@@ -237,14 +237,40 @@ export const signInWithGoogle = async () => {
 /**
  * Mencari data user berdasarkan email di seluruh koleksi users
  */
-export const findUserByEmail = async (email: string): Promise<AppData | null> => {
-  if (!email) return null;
-  const q = query(collection(db, "users"), where("profile.email", "==", email.toLowerCase().trim()), limit(1));
-  const querySnapshot = await getDocs(q);
-  if (!querySnapshot.empty) {
-    return { ...querySnapshot.docs[0].data() as AppData, uid: querySnapshot.docs[0].id };
+export const findUserByEmail = async (email: string, excludeUid?: string): Promise<AppData | null> => {
+  try {
+    if (!email) return null;
+    const emailLower = email.toLowerCase().trim();
+    const emailOriginal = email.trim();
+    
+    const q1 = query(collection(db, "users"), where("profile.email", "==", emailLower));
+    const q2 = query(collection(db, "users"), where("profile.email", "==", emailOriginal));
+    
+    const [snap1, snap2] = await Promise.all([getDocs(q1), getDocs(q2)]);
+    
+    const allDocs = [...snap1.docs, ...snap2.docs];
+    const uniqueDocs = Array.from(new Set(allDocs.map(d => d.id))).map(id => allDocs.find(d => d.id === id)!);
+    
+    if (uniqueDocs.length > 0) {
+      let docs = uniqueDocs.map(d => ({ ...d.data() as AppData, uid: d.id }));
+      if (excludeUid) {
+        docs = docs.filter(d => d.uid !== excludeUid);
+      }
+      
+      if (docs.length === 0) return null;
+
+      docs.sort((a, b) => {
+        const aScore = (a.dailyReports?.length || 0) + (a.skills?.length || 0) + (a.workExperiences?.length || 0);
+        const bScore = (b.dailyReports?.length || 0) + (b.skills?.length || 0) + (b.workExperiences?.length || 0);
+        return bScore - aScore;
+      });
+      return docs[0];
+    }
+    return null;
+  } catch (error: any) {
+    console.warn("findUserByEmail error (likely permission denied):", error);
+    return null;
   }
-  return null;
 };
 
 /**

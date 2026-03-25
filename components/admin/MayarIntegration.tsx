@@ -153,7 +153,7 @@ const MayarIntegration: React.FC = () => {
                     className="flex-1 px-6 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs focus:border-blue-400 transition-all" 
                     placeholder="Contoh: drevenlight"
                     value={config.subdomain || ''}
-                    onChange={e => setConfig({...config, subdomain: e.target.value.trim().toLowerCase()})}
+                    onChange={e => setConfig({...config, subdomain: (e.target.value || '').trim().toLowerCase()})}
                   />
                   <span className="text-sm font-black text-slate-400">.myr.id</span>
                </div>

@@ -25,7 +25,7 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
   const [showManualSuccess, setShowManualSuccess] = useState(false);
   const [adminPhone, setAdminPhone] = useState('628123456789');
 
-  const CLOUD_FUNCTIONS_URL = "https://us-central1-jejakkarir-11379.cloudfunctions.net/api";
+  const CLOUD_FUNCTIONS_URL = "/api/cloud-functions";
 
   useEffect(() => {
     getLandingPageConfig().then(cfg => {

@@ -11,12 +11,29 @@ class TrackingService {
   private injectedPlatforms: Set<string> = new Set();
   private eventQueue: { eventName: any; data?: any; context?: any }[] = [];
 
+  private clientIp: string | null = null;
+  private clientIpPromise: Promise<string | null> | null = null;
+
   public init(config: TrackingConfig) {
     console.log("[TRACKING] init() called. metaPixelId:", config.metaPixelId || 'MISSING');
     this.config = config;
     if (typeof window === "undefined") return;
+    this.clientIpPromise = this.fetchClientIp();
     this.injectScripts();
     this.processQueue();
+  }
+
+  private async fetchClientIp(): Promise<string | null> {
+    try {
+      const response = await fetch('https://api.ipify.org?format=json');
+      const data = await response.json();
+      this.clientIp = data.ip;
+      console.log("[TRACKING] Client IP fetched:", this.clientIp);
+      return this.clientIp;
+    } catch (e) {
+      console.warn("[TRACKING] Failed to fetch client IP:", e);
+      return null;
+    }
   }
 
   private processQueue() {
@@ -209,6 +226,14 @@ class TrackingService {
     }
   }
 
+  private getCookie(name: string): string | null {
+    if (typeof document === 'undefined') return null;
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
+    return null;
+  }
+
   /**
    * Mengirim event ke Meta Conversion API (CAPI) dari client-side.
    * Catatan: Idealnya ini dilakukan di server-side untuk keamanan Access Token.
@@ -217,6 +242,12 @@ class TrackingService {
     if (!this.config?.metaPixelId || !this.config?.metaConversionAccessToken) {
       console.warn("[TRACKING] Meta CAPI skipped: Missing Pixel ID or Access Token");
       return;
+    }
+
+    // Tunggu IP Client jika sedang di-fetch
+    if (!this.clientIp && this.clientIpPromise) {
+      console.log("[TRACKING] Waiting for Client IP before sending CAPI...");
+      await this.clientIpPromise;
     }
 
     console.log(`[TRACKING] Sending Meta CAPI event: ${eventName}`, data);
@@ -237,6 +268,24 @@ class TrackingService {
         };
       }
 
+      // Generate anonymous external_id if no user data is available to improve matching
+      let anonId = localStorage.getItem('meta_anon_id');
+      if (!anonId) {
+        anonId = `anon_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        localStorage.setItem('meta_anon_id', anonId);
+      }
+
+      const fbp = this.getCookie('_fbp');
+      const fbc = this.getCookie('_fbc');
+
+      const userDataPayload: any = {
+        client_user_agent: navigator.userAgent,
+      };
+
+      if (fbp) userDataPayload.fbp = fbp;
+      if (fbc) userDataPayload.fbc = fbc;
+      if (this.clientIp) userDataPayload.client_ip_address = this.clientIp;
+
       const payload: any = {
         data: [
           {
@@ -245,10 +294,7 @@ class TrackingService {
             event_time: Math.floor(Date.now() / 1000),
             action_source: "website",
             event_source_url: window.location.href,
-            user_data: {
-              client_ip_address: "", // Browser tidak bisa ambil IP publik langsung tanpa API eksternal
-              client_user_agent: navigator.userAgent,
-            },
+            user_data: userDataPayload,
             custom_data: {
               value: data?.value || 0,
               currency: data?.currency || "IDR",
@@ -266,15 +312,41 @@ class TrackingService {
 
       // Hash data sensitif jika tersedia
       if (userData) {
-        if (userData.email) payload.data[0].user_data.em = [await this.hashData(userData.email)];
-        if (userData.phone) payload.data[0].user_data.ph = [await this.hashData(userData.phone)];
-        if (userData.name) payload.data[0].user_data.fn = [await this.hashData(userData.name)];
+        if (userData.email) {
+          payload.data[0].user_data.em = [await this.hashData(userData.email)];
+        }
+        if (userData.phone) {
+          // Bersihkan nomor telepon (hanya angka)
+          const cleanPhone = userData.phone.replace(/\D/g, '');
+          if (cleanPhone) {
+            payload.data[0].user_data.ph = [await this.hashData(cleanPhone)];
+          }
+        }
+        if (userData.name) {
+          const names = userData.name.trim().split(/\s+/);
+          if (names.length > 0) {
+            payload.data[0].user_data.fn = [await this.hashData(names[0])];
+            if (names.length > 1) {
+              payload.data[0].user_data.ln = [await this.hashData(names[names.length - 1])];
+            }
+          }
+        }
+        if (auth.currentUser?.uid) {
+          payload.data[0].user_data.external_id = [await this.hashData(auth.currentUser.uid)];
+        }
+      } else {
+        // Use anonymous ID as external_id if no real user data
+        payload.data[0].user_data.external_id = [await this.hashData(anonId)];
       }
 
-      const response = await fetch(`https://graph.facebook.com/v17.0/${pixelId}/events?access_token=${accessToken}`, {
+      const response = await fetch(`/api/tracking/meta-capi`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(sanitizeData(payload))
+        body: JSON.stringify(sanitizeData({
+          pixelId,
+          accessToken,
+          payload
+        }))
       });
 
       const result = await response.json();
@@ -288,7 +360,8 @@ class TrackingService {
     }
   }
 
-  private async hashData(data: string): Promise<string> {
+  private async hashData(data: string | undefined | null): Promise<string> {
+    if (!data) return '';
     const msgUint8 = new TextEncoder().encode(data.trim().toLowerCase());
     const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
     const hashArray = Array.from(new Uint8Array(hashBuffer));

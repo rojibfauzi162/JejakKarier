@@ -123,7 +123,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard', user
     // email yang pertama masuk adalah yang punya expiryDate paling lama.
     sortedRaw.forEach(u => {
       if (u.profile?.email && !u.isDeleted) {
-        const emailKey = u.profile.email.toLowerCase().trim();
+        const emailKey = (u.profile.email || '').toLowerCase().trim();
         if (!emailMap.has(emailKey)) {
           emailMap.set(emailKey, u);
         }
@@ -132,13 +132,13 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard', user
 
     // 3. Filter berdasarkan search query
     const uniqueUsers = Array.from(emailMap.values());
-    const query = searchQuery.toLowerCase().trim();
+    const query = (searchQuery || '').toLowerCase().trim();
     
     if (!query) return uniqueUsers;
 
     return uniqueUsers.filter(u => 
-      u.profile?.name?.toLowerCase().includes(query) || 
-      u.profile?.email?.toLowerCase().includes(query)
+      (u.profile?.name || '').toLowerCase().includes(query) || 
+      (u.profile?.email || '').toLowerCase().includes(query)
     );
   }, [users, searchQuery]);
 

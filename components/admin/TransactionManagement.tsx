@@ -54,10 +54,10 @@ const TransactionManagement: React.FC<TransactionManagementProps> = ({ users, pr
   const filteredTransactions = useMemo(() => {
     return rawTransactions.filter(t => {
       // 1. Text Search
-      const matchesSearch = !searchQuery || 
-        t.userName.toLowerCase().includes(searchQuery.toLowerCase()) || 
-        t.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (t.reference && t.reference.toLowerCase().includes(searchQuery.toLowerCase()));
+      const matchesSearch = !(searchQuery || '') || 
+        (t.userName || '').toLowerCase().includes((searchQuery || '').toLowerCase()) || 
+        (t.id || '').toLowerCase().includes((searchQuery || '').toLowerCase()) ||
+        (t.reference && (t.reference || '').toLowerCase().includes((searchQuery || '').toLowerCase()));
       
       // 2. Status Filter
       const matchesStatus = statusFilter === 'all' || t.status === statusFilter;

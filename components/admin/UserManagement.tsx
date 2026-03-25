@@ -26,10 +26,10 @@ const UserManagement: React.FC<UserManagementProps> = ({ users, searchQuery, set
     }
 
     let text = type === 'reminder' ? followUpConfig.expiryReminderScript : followUpConfig.justExpiredScript;
-    text = text.replace(/\[NAMA\]/g, u.profile.name);
+    text = text.replace(/\[NAMA\]/g, u.profile?.name || 'User');
     text = text.replace(/\[HARI_SISA\]/g, daysLeft.toString());
 
-    const cleanPhone = u.profile.phone.replace(/[^0-9]/g, '');
+    const cleanPhone = (u.profile?.phone || '').replace(/[^0-9]/g, '');
     const finalPhone = cleanPhone.startsWith('0') ? '62' + cleanPhone.slice(1) : cleanPhone;
 
     setConfirmModal({
@@ -206,7 +206,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ users, searchQuery, set
                     <i className="bi bi-whatsapp"></i>
                  </div>
                  <h3 className="text-xl font-black text-slate-900 uppercase">Konfirmasi Follow Up</h3>
-                 <p className="text-slate-400 text-xs font-bold mt-2 uppercase">Kirim pesan WhatsApp ke {confirmModal.user.profile.name}?</p>
+                 <p className="text-slate-400 text-xs font-bold mt-2 uppercase">Kirim pesan WhatsApp ke {confirmModal.user.profile?.name || 'User'}?</p>
               </div>
 
               <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100 mb-8">

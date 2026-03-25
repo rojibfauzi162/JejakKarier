@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { CareerPath, CareerType, AppData, CareerStatus, SubscriptionPlan } from '../types';
+import { CareerPath, CareerType, AppData, CareerStatus, SubscriptionPlan, SkillRequirement } from '../types';
 import { analyzeSkillGap } from '../services/geminiService';
 
 interface CareerPlannerProps {
@@ -17,6 +17,7 @@ const CareerPlanner: React.FC<CareerPlannerProps> = ({ paths, appData, onAddPath
   const [aiResult, setAiResult] = useState<{ trainings: string[], certifications: string[], summary: string } | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingPath, setEditingPath] = useState<CareerPath | null>(null);
+  const [selectedPathForGap, setSelectedPathForGap] = useState<CareerPath | null>(null);
 
   const currentYear = new Date().getFullYear();
   const currentDate = new Date();
@@ -35,6 +36,21 @@ const CareerPlanner: React.FC<CareerPlannerProps> = ({ paths, appData, onAddPath
   };
 
   const userAge = calculateCurrentAge(appData.profile.birthDate);
+  
+  const calculateSkillGap = (requirements: SkillRequirement[]) => {
+    if (!requirements || requirements.length === 0) return 0;
+    let totalCurrent = 0;
+    let totalTarget = 0;
+    requirements.forEach(req => {
+      const s = appData.skills.find(sk => (sk.name || '').toLowerCase().trim() === (req.name || '').toLowerCase().trim());
+      if (s) totalCurrent += Math.min(s.currentLevel, req.level);
+      totalTarget += req.level;
+    });
+    if (totalTarget === 0) return 0;
+    const readiness = (totalCurrent / totalTarget) * 100;
+    const gap = 100 - readiness;
+    return Math.max(0, Math.round(gap));
+  };
 
   const handleAiAnalysis = async () => {
     setIsAnalyzing(true);
@@ -143,8 +159,8 @@ const CareerPlanner: React.FC<CareerPlannerProps> = ({ paths, appData, onAddPath
               <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest border-r border-white/10 text-center">Perkiraan Tahun <FilterIcon /></th>
               <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest border-r border-white/10 text-center bg-blue-600">GAP YEAR <FilterIcon /></th>
               <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest border-r border-white/10 text-center bg-blue-500">USIA KAMU <FilterIcon /></th>
-              <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest border-r border-white/10">Skill yang Dibutuhkan <FilterIcon /></th>
-              <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest border-r border-white/10 text-center">Level Skill (1-5) <FilterIcon /></th>
+              <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest border-r border-white/10">Skill & Target Level <FilterIcon /></th>
+              <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest border-r border-white/10 text-center bg-rose-500">SKILL GAP (%) <FilterIcon /></th>
               <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest border-r border-white/10">Langkah Pengembangan <FilterIcon /></th>
               <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-center">Deadline Aksi</th>
             </tr>
@@ -183,10 +199,19 @@ const CareerPlanner: React.FC<CareerPlannerProps> = ({ paths, appData, onAddPath
                     {targetAge}
                   </td>
                   <td className={`px-6 py-5 border-r border-slate-100 text-xs font-semibold ${shouldStrike ? 'text-slate-300' : 'text-slate-500'} ${contentClass}`}>
-                    {path.requiredSkills.join(', ')}
+                    <div className="flex flex-wrap gap-1">
+                      {path.requiredSkills.map((req, i) => (
+                        <span key={i} className="bg-slate-100 px-2 py-1 rounded-md text-[10px] font-bold">
+                          {req.name} (Lvl {req.level})
+                        </span>
+                      ))}
+                    </div>
                   </td>
-                  <td className="px-6 py-5 border-r border-slate-100 text-center opacity-70">
-                    {renderStars(path.skillLevel)}
+                  <td 
+                    onClick={() => setSelectedPathForGap(path)}
+                    className={`px-6 py-5 border-r border-slate-100 text-center font-black cursor-pointer hover:bg-rose-50 transition-colors ${shouldStrike ? 'text-rose-300' : 'text-rose-600'}`}
+                  >
+                    {calculateSkillGap(path.requiredSkills)}%
                   </td>
                   <td className={`px-6 py-5 border-r border-slate-100 text-xs font-medium italic ${shouldStrike ? 'text-slate-300' : 'text-slate-600'} ${contentClass}`}>
                     "{path.developmentPlan}"
@@ -253,10 +278,21 @@ const CareerPlanner: React.FC<CareerPlannerProps> = ({ paths, appData, onAddPath
 
               <div className="space-y-4">
                 <div className="bg-slate-50 p-4 rounded-2xl">
-                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Required Skills & Level</p>
-                  <div className="flex items-center justify-between">
-                    <p className={`text-xs font-bold ${shouldStrike ? 'text-slate-400 line-through' : 'text-slate-600'}`}>{path.requiredSkills.join(', ')}</p>
-                    {renderStars(path.skillLevel)}
+                  <div className="flex justify-between items-center mb-2">
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Required Skills & Level</p>
+                    <div 
+                      onClick={() => setSelectedPathForGap(path)}
+                      className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest cursor-pointer hover:scale-105 transition-transform ${shouldStrike ? 'bg-rose-100 text-rose-300' : 'bg-rose-500 text-white'}`}
+                    >
+                      Gap: {calculateSkillGap(path.requiredSkills)}%
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-1">
+                    {path.requiredSkills.map((req, i) => (
+                      <span key={i} className={`px-2 py-1 rounded-md text-[10px] font-bold ${shouldStrike ? 'bg-slate-200 text-slate-400' : 'bg-white text-slate-600 border border-slate-200'}`}>
+                        {req.name} (Lvl {req.level})
+                      </span>
+                    ))}
                   </div>
                 </div>
                 <div className="pt-2">
@@ -273,60 +309,96 @@ const CareerPlanner: React.FC<CareerPlannerProps> = ({ paths, appData, onAddPath
         })}
       </div>
 
-      {/* AI Roadmap Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pt-4">
-        <div className="bg-slate-900 p-8 rounded-[2.5rem] text-white shadow-xl relative overflow-hidden flex flex-col justify-between">
-           <div className="relative z-10 space-y-4">
-              <div className="w-12 h-12 bg-blue-500 rounded-2xl flex items-center justify-center text-2xl">⚡</div>
-              <h3 className="text-xl font-black tracking-tight">AI Pathway Booster</h3>
-              <p className="text-sm text-slate-400 leading-relaxed">
-                Tekan tombol di bawah untuk mendapatkan rekomendasi training dan sertifikasi strategis berdasarkan matrix karirmu.
-              </p>
-           </div>
-           <button 
-             onClick={handleAiAnalysis}
-             disabled={isAnalyzing}
-             className="relative z-10 w-full mt-8 py-4 bg-white text-slate-900 font-black rounded-2xl shadow-lg transition-all hover:bg-slate-100 disabled:opacity-50"
-           >
-             {isAnalyzing ? 'Menganalisis...' : 'Dapatkan Roadmap Strategis'}
-           </button>
-           <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl -mr-16 -mt-16"></div>
-        </div>
-
-        <div className="lg:col-span-2">
-          {aiResult ? (
-            <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 animate-in zoom-in duration-500 h-full">
-              <h4 className="text-xl font-black text-slate-800 mb-6">Analisis Roadmap AI</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                 <div className="space-y-4">
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Recommended Learning</p>
-                    <ul className="space-y-2">
-                       {aiResult.trainings.map((t, i) => (
-                         <li key={i} className="text-xs font-bold text-blue-600 bg-blue-50 p-3 rounded-xl border border-blue-100">◆ {t}</li>
-                       ))}
-                    </ul>
-                 </div>
-                 <div className="space-y-4">
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Target Sertifikasi</p>
-                    <ul className="space-y-2">
-                       {aiResult.certifications.map((c, i) => (
-                         <li key={i} className="text-xs font-bold text-amber-600 bg-amber-50 p-3 rounded-xl border border-amber-100">★ {c}</li>
-                       ))}
-                    </ul>
-                 </div>
-                 <div className="md:col-span-2 pt-4 border-t border-slate-50">
-                    <p className="text-sm text-slate-500 italic leading-relaxed">"{aiResult.summary}"</p>
-                 </div>
+      {/* AI Roadmap Section Removed as per user request to replace with Skill Gap % */}
+      
+      {/* Skill Gap Detail Modal */}
+      {selectedPathForGap && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[110] p-4">
+          <div className="bg-white w-full max-w-3xl rounded-[2.5rem] shadow-2xl p-8 animate-in zoom-in duration-300 max-h-[90vh] overflow-y-auto no-scrollbar">
+            <div className="flex justify-between items-center mb-8">
+              <div>
+                <h3 className="text-2xl font-black text-slate-900 tracking-tight">Detail Skill Gap</h3>
+                <p className="text-sm text-slate-500 font-bold uppercase tracking-widest mt-1">{selectedPathForGap.targetPosition}</p>
               </div>
+              <button 
+                onClick={() => setSelectedPathForGap(null)}
+                className="w-10 h-10 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all"
+              >
+                ✕
+              </button>
             </div>
-          ) : (
-            <div className="h-full bg-slate-50/50 rounded-[2.5rem] border-2 border-dashed border-slate-200 flex flex-col items-center justify-center p-12 text-center">
-               <p className="text-slate-400 font-bold">Roadmap AI Akan Muncul Di Sini</p>
-               <p className="text-xs text-slate-300 mt-1">Mulai optimasi karirmu dengan bantuan kecerdasan buatan.</p>
+
+            <div className="overflow-hidden rounded-2xl border border-slate-100">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-slate-50">
+                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Skill Name</th>
+                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">Current Level</th>
+                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">Target Level</th>
+                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {selectedPathForGap.requiredSkills.map((req, idx) => {
+                    const userSkill = appData.skills.find(s => (s.name || '').toLowerCase() === (req.name || '').toLowerCase());
+                    const currentLevel = userSkill?.currentLevel || 0;
+                    const targetLevel = req.level;
+                    
+                    let statusLabel = "Gap";
+                    let statusColor = "bg-rose-100 text-rose-600";
+                    
+                    if (currentLevel >= targetLevel) {
+                      statusLabel = "Achieved";
+                      statusColor = "bg-emerald-100 text-emerald-600";
+                    } else if (currentLevel > 0) {
+                      statusLabel = "On Progress";
+                      statusColor = "bg-blue-100 text-blue-600";
+                    }
+
+                    return (
+                      <tr key={idx} className="hover:bg-slate-50/50 transition-colors">
+                        <td className="px-6 py-4">
+                          <p className="text-sm font-black text-slate-800">{req.name}</p>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <div className="flex justify-center">
+                            {renderStars(currentLevel)}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <div className="flex justify-center">
+                            {renderStars(targetLevel)}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <span className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${statusColor}`}>
+                            {statusLabel}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
-          )}
+
+            <div className="mt-8 p-6 bg-indigo-50 rounded-3xl border border-indigo-100">
+              <h4 className="text-sm font-black text-indigo-900 uppercase tracking-widest mb-2">Analisis Strategis</h4>
+              <p className="text-xs text-indigo-700 leading-relaxed font-medium">
+                Kamu memiliki gap sebesar <span className="font-black text-indigo-900">{calculateSkillGap(selectedPathForGap.requiredSkills)}%</span> untuk posisi ini. 
+                Fokuslah untuk meningkatkan skill yang masih berstatus <span className="text-rose-600 font-black">Gap</span> melalui training atau project personal agar siap mencapai target di tahun {selectedPathForGap.targetYear}.
+              </p>
+            </div>
+
+            <button 
+              onClick={() => setSelectedPathForGap(null)}
+              className="w-full mt-8 py-4 bg-slate-900 text-white font-black rounded-2xl shadow-lg hover:bg-slate-800 transition-all active:scale-[0.98]"
+            >
+              Tutup Detail
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Form Modal */}
       {isFormOpen && (
@@ -338,6 +410,7 @@ const CareerPlanner: React.FC<CareerPlannerProps> = ({ paths, appData, onAddPath
             
             <CareerForm 
               initialData={editingPath}
+              availableSkills={appData.skills.map(s => s.name)}
               onSubmit={(data) => {
                 if (editingPath) {
                   onUpdatePath({ ...editingPath, ...data } as CareerPath);
@@ -355,36 +428,60 @@ const CareerPlanner: React.FC<CareerPlannerProps> = ({ paths, appData, onAddPath
   );
 };
 
-const CareerForm: React.FC<{ initialData: CareerPath | null, onSubmit: (data: Partial<CareerPath>) => void, onCancel: () => void }> = ({ initialData, onSubmit, onCancel }) => {
+const CareerForm: React.FC<{ 
+  initialData: CareerPath | null, 
+  availableSkills: string[],
+  onSubmit: (data: Partial<CareerPath>) => void, 
+  onCancel: () => void 
+}> = ({ initialData, availableSkills, onSubmit, onCancel }) => {
   const [formData, setFormData] = useState<Partial<CareerPath>>(initialData || {
     targetPosition: '',
     type: CareerType.UTAMA,
-    targetYear: 2025,
+    targetYear: new Date().getFullYear() + 1,
     requiredSkills: [],
-    skillLevel: 3,
     developmentPlan: '',
     actionDeadline: '',
     status: CareerStatus.NOT_STARTED
   });
 
-  const [skillsText, setSkillsText] = useState(initialData ? initialData.requiredSkills.join(', ') : '');
+  const [skills, setSkills] = useState<SkillRequirement[]>(initialData?.requiredSkills || []);
 
-  const handleSkillsChange = (val: string) => {
-    setSkillsText(val);
-    const skills = val.split(',').map(s => s.trim()).filter(s => s !== '');
-    setFormData({ ...formData, requiredSkills: skills });
+  const addSkill = () => {
+    setSkills([...skills, { name: '', level: 3 }]);
+  };
+
+  const removeSkill = (index: number) => {
+    setSkills(skills.filter((_, i) => i !== index));
+  };
+
+  const updateSkill = (index: number, field: keyof SkillRequirement, value: string | number) => {
+    const newSkills = [...skills];
+    // @ts-ignore
+    newSkills[index] = { ...newSkills[index], [field]: value };
+    setSkills(newSkills);
   };
 
   return (
     <div className="space-y-6">
+      <datalist id="available-skills">
+        {availableSkills.map((s, i) => (
+          <option key={i} value={s} />
+        ))}
+      </datalist>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="md:col-span-2">
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block ml-1">Target Jabatan</label>
-          <input className="w-full px-5 py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold" value={formData.targetPosition || ''} onChange={e => setFormData({ ...formData, targetPosition: e.target.value })} />
+          <input 
+            placeholder="Contoh: Senior Product Manager"
+            className="w-full px-5 py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold focus:border-indigo-500 transition-colors" 
+            value={formData.targetPosition || ''} 
+            onChange={e => setFormData({ ...formData, targetPosition: e.target.value })} 
+          />
         </div>
         <div>
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block ml-1">Jenis Karir</label>
-          <select className="w-full px-5 py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold" value={formData.type || ''} onChange={e => setFormData({ ...formData, type: e.target.value as CareerType })}>
+          <select className="w-full px-5 py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold cursor-pointer" value={formData.type || ''} onChange={e => setFormData({ ...formData, type: e.target.value as CareerType })}>
             <option value={CareerType.UTAMA}>Utama</option>
             <option value={CareerType.SAMPINGAN}>Sampingan</option>
           </select>
@@ -397,29 +494,76 @@ const CareerForm: React.FC<{ initialData: CareerPath | null, onSubmit: (data: Pa
             <option value={CareerStatus.ACHIEVED}>Tercapai</option>
           </select>
         </div>
-        <div className="md:col-span-2">
-          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block ml-1">Required Skills (Comma separated)</label>
-          <input className="w-full px-5 py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold" value={skillsText || ''} onChange={e => handleSkillsChange(e.target.value)} />
+        
+        <div className="md:col-span-2 space-y-4">
+          <div className="flex justify-between items-center">
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block ml-1">Required Skills & Target Level (1-5)</label>
+            <button 
+              type="button"
+              onClick={addSkill}
+              className="text-[10px] font-black text-blue-600 uppercase tracking-widest bg-blue-50 px-4 py-2 rounded-xl hover:bg-blue-100 transition-all active:scale-95"
+            >
+              + Tambah Skill
+            </button>
+          </div>
+          
+          <div className="space-y-3">
+            {skills.map((skill, index) => (
+              <div key={index} className="flex gap-3 items-center animate-in slide-in-from-left duration-300">
+                <div className="flex-1 relative">
+                  <input 
+                    list="available-skills"
+                    placeholder="Nama Skill..."
+                    className="w-full px-5 py-3 rounded-xl border border-slate-200 outline-none bg-slate-50/50 font-bold text-sm focus:border-indigo-500"
+                    value={skill.name}
+                    onChange={e => updateSkill(index, 'name', e.target.value)}
+                  />
+                </div>
+                <div className="flex items-center gap-2 bg-slate-50 px-4 py-3 rounded-xl border border-slate-200">
+                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Target Lvl</span>
+                  <input 
+                    type="number" 
+                    min="1" 
+                    max="5" 
+                    className="w-10 bg-transparent outline-none font-black text-slate-700 text-center"
+                    value={skill.level}
+                    onChange={e => updateSkill(index, 'level', parseInt(e.target.value) || 1)}
+                  />
+                </div>
+                <button 
+                  type="button"
+                  onClick={() => removeSkill(index)}
+                  className="w-10 h-10 flex items-center justify-center text-slate-300 hover:text-rose-500 transition-colors bg-slate-50 rounded-xl border border-slate-200"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+            {skills.length === 0 && (
+              <div className="text-center py-8 bg-slate-50/50 rounded-[2rem] border-2 border-dashed border-slate-200">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Belum ada skill yang ditambahkan</p>
+                <button onClick={addSkill} className="text-[10px] font-black text-indigo-600 uppercase underline">Klik untuk menambah skill</button>
+              </div>
+            )}
+          </div>
         </div>
+
         <div>
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block ml-1">Target Tahun</label>
           <input type="number" className="w-full px-5 py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold" value={formData.targetYear || ''} onChange={e => setFormData({ ...formData, targetYear: parseInt(e.target.value) || 2025 })} />
         </div>
-        <div>
-          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block ml-1">Level Skill (1-5)</label>
-          <input type="number" min="1" max="5" className="w-full px-5 py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold" value={formData.skillLevel || ''} onChange={e => setFormData({ ...formData, skillLevel: parseInt(e.target.value) || 1 })} />
+        <div className="md:col-span-1">
+          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block ml-1">Deadline Aksi</label>
+          <input type="month" className="w-full px-5 py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold" value={formData.actionDeadline || ''} onChange={e => setFormData({ ...formData, actionDeadline: e.target.value })} />
         </div>
         <div className="md:col-span-2">
-          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block ml-1">Deadline Aksi (MMM YYYY)</label>
-          <div className="grid grid-cols-2 gap-4">
-             <input type="month" className="px-5 py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold" value={formData.actionDeadline || ''} onChange={e => setFormData({ ...formData, actionDeadline: e.target.value })} />
-             <textarea rows={1} placeholder="Langkah concreto..." className="px-5 py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold resize-none" value={formData.developmentPlan || ''} onChange={e => setFormData({ ...formData, developmentPlan: e.target.value })} />
-          </div>
+          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block ml-1">Langkah Pengembangan</label>
+          <textarea rows={3} placeholder="Apa langkah konkret yang akan kamu ambil? (Contoh: Ambil sertifikasi PMP, Selesaikan kursus Python di Coursera)" className="w-full px-5 py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold resize-none focus:border-indigo-500 transition-colors" value={formData.developmentPlan || ''} onChange={e => setFormData({ ...formData, developmentPlan: e.target.value })} />
         </div>
       </div>
       <div className="flex gap-4 pt-6">
-        <button onClick={onCancel} className="flex-1 py-5 text-slate-400 font-black uppercase tracking-widest hover:bg-slate-50 rounded-2xl">Batal</button>
-        <button onClick={() => onSubmit(formData)} className="flex-1 py-5 bg-slate-900 text-white font-black uppercase tracking-widest rounded-2xl shadow-xl hover:bg-black">Simpan</button>
+        <button onClick={onCancel} className="flex-1 py-5 text-slate-400 font-black uppercase tracking-widest hover:bg-slate-50 rounded-2xl transition-all">Batal</button>
+        <button onClick={() => onSubmit({ ...formData, requiredSkills: skills })} className="flex-1 py-5 bg-slate-900 text-white font-black uppercase tracking-widest rounded-2xl shadow-xl hover:bg-black transition-all active:scale-95">Simpan Target Karir</button>
       </div>
     </div>
   );

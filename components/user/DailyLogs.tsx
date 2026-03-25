@@ -277,7 +277,7 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
 
     if (searchQuery) {
       result = result.filter((item) => 
-        item.activity.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        (item.activity || '').toLowerCase().includes(searchQuery.toLowerCase()) || 
         (item.output && item.output.toLowerCase().includes(searchQuery.toLowerCase()))
       );
     }
@@ -404,7 +404,7 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
 
   // Pagination for History List in Modal
   const filteredHistory = useMemo(() => {
-    return pastActivityTitles.filter(t => t.toLowerCase().includes(historySearch.toLowerCase()));
+    return pastActivityTitles.filter(t => (t || '').toLowerCase().includes((historySearch || '').toLowerCase()));
   }, [pastActivityTitles, historySearch]);
 
   const totalHistoryPages = Math.ceil(filteredHistory.length / historyPerPage);
@@ -574,7 +574,7 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                     {currentDayGroup[1].map((log, index) => {
-                    const isPercentage = log.metricLabel.includes('%') || log.metricLabel.toLowerCase().includes('persen');
+                    const isPercentage = (log.metricLabel || '').includes('%') || (log.metricLabel || '').toLowerCase().includes('persen');
                     return (
                         <tr key={log.id} className={`hover:bg-slate-50/50 transition-colors group ${log.isPlan ? 'bg-amber-50/5 italic' : ''}`}>
                             <td className="px-10 py-6 text-center font-black text-slate-300 text-sm">{index + 1}</td>

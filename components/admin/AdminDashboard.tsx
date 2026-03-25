@@ -12,9 +12,10 @@ interface AdminDashboardProps {
     totalAiOps: number;
   };
   users: AppData[];
+  onBulkFix?: () => void;
 }
 
-const AdminDashboard: React.FC<AdminDashboardProps> = ({ stats, users }) => {
+const AdminDashboard: React.FC<AdminDashboardProps> = ({ stats, users, onBulkFix }) => {
   const [dateFilter, setDateFilter] = useState('all');
   const [planFilter, setPlanFilter] = useState('all');
 
@@ -68,6 +69,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ stats, users }) => {
     return { paidCount, unpaidCount, activeUsers, churnRate, trendData, paymentData };
   }, [filteredData]);
 
+  const handleFixSubscriptions = async () => {
+    if (onBulkFix) onBulkFix();
+  };
+
   return (
     <div className="space-y-10">
       {/* Filters Bar */}
@@ -92,9 +97,23 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ stats, users }) => {
             </select>
          </div>
          <div className="flex-1"></div>
-         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-            {filteredData.length} User Terfilter
-         </p>
+         <div className="flex items-center gap-4">
+            <button 
+              onClick={handleFixSubscriptions}
+              className="px-6 py-2 bg-indigo-50 text-indigo-600 border border-indigo-100 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-600 hover:text-white transition-all"
+            >
+              Sync & Fix Subscriptions
+            </button>
+            <button 
+              onClick={() => window.location.reload()}
+              className="px-6 py-2 bg-slate-50 text-slate-600 border border-slate-100 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-900 hover:text-white transition-all"
+            >
+              Manual Data Sync (Reload)
+            </button>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+               {filteredData.length} User Terfilter
+            </p>
+         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

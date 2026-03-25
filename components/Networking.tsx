@@ -18,9 +18,9 @@ const Networking: React.FC<NetworkingProps> = ({ contacts, onAdd, onUpdate, onDe
 
   const filteredContacts = useMemo(() => {
     return contacts.filter(c => 
-      c.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      c.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.position.toLowerCase().includes(searchQuery.toLowerCase())
+      (c.name || '').toLowerCase().includes((searchQuery || '').toLowerCase()) || 
+      (c.company || '').toLowerCase().includes((searchQuery || '').toLowerCase()) ||
+      (c.position || '').toLowerCase().includes((searchQuery || '').toLowerCase())
     );
   }, [contacts, searchQuery]);
 

@@ -248,13 +248,17 @@ export interface Certification {
   calendarEventId?: string;
 }
 
+export interface SkillRequirement {
+  name: string;
+  level: number;
+}
+
 export interface CareerPath {
   id: string;
   targetPosition: string;
   type: CareerType;
   targetYear: number;
-  requiredSkills: string[];
-  skillLevel: number;
+  requiredSkills: SkillRequirement[];
   developmentPlan: string;
   actionDeadline: string;
   status: CareerStatus;

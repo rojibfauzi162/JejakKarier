@@ -49,6 +49,20 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenNotif }) 
     return alerts;
   };
 
+  const calculateSkillGap = (requirements: any[]) => {
+    if (!requirements || requirements.length === 0) return 0;
+    let totalCurrent = 0;
+    let totalTarget = 0;
+    requirements.forEach(req => {
+      const s = data.skills.find(sk => (sk.name || '').toLowerCase() === (req.name || '').toLowerCase());
+      if (s) totalCurrent += Math.min(s.currentLevel, req.level);
+      totalTarget += req.level;
+    });
+    if (totalTarget === 0) return 0;
+    const readiness = (totalCurrent / totalTarget) * 100;
+    return Math.round(100 - readiness);
+  };
+
   const reminders = getReminders();
 
   // State untuk Widget/Pinned Menus - Default 8 menu pertama
@@ -301,7 +315,36 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenNotif }) 
                 {(data.careerPaths || []).filter(p => p.status !== 'tercapai').length > 0 ? (
                   (() => {
                     const nextGoal = (data.careerPaths || []).filter(p => p.status !== 'tercapai')[0];
-                    return (<div className="space-y-10"><div className="space-y-2"><p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30 mb-2">Jabatan Target</p><p className="text-2xl font-black tracking-tight leading-none">{nextGoal.targetPosition}</p></div><div className="grid grid-cols-2 gap-4"><div className="bg-white/5 p-4 rounded-2xl border border-white/5"><p className="text-[9px] font-black uppercase tracking-widest text-indigo-400 mb-1">Status</p><p className="text-xs font-black uppercase">{nextGoal.status}</p></div><div className="bg-white/5 p-4 rounded-2xl border border-white/5"><p className="text-[9px] font-black uppercase tracking-widest text-indigo-400 mb-1">Target Tahun</p><p className="text-xs font-black uppercase">{nextGoal.targetYear}</p></div></div><div className="space-y-3"><div className="flex justify-between items-center"><p className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em]">Indeks Kesiapan</p><p className="text-xs font-black text-indigo-400">{(nextGoal.skillLevel / 5 * 100).toFixed(0)}%</p></div><div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden"><div className="h-full bg-indigo-500 shadow-[0_0_15px_rgba(99,102,241,0.5)] transition-all duration-1000" style={{ width: `${nextGoal.skillLevel / 5 * 100}%` }}></div></div></div></div>);
+                    return (
+                      <div className="space-y-10">
+                        <div className="space-y-2">
+                          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30 mb-2">Jabatan Target</p>
+                          <p className="text-2xl font-black tracking-tight leading-none">{nextGoal.targetPosition}</p>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
+                            <p className="text-[9px] font-black uppercase tracking-widest text-indigo-400 mb-1">Status</p>
+                            <p className="text-xs font-black uppercase">{nextGoal.status}</p>
+                          </div>
+                          <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
+                            <p className="text-[9px] font-black uppercase tracking-widest text-indigo-400 mb-1">Target Tahun</p>
+                            <p className="text-xs font-black uppercase">{nextGoal.targetYear}</p>
+                          </div>
+                        </div>
+                        <div className="space-y-3">
+                          <div className="flex justify-between items-center">
+                            <p className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em]">Indeks Kesiapan</p>
+                            <p className="text-xs font-black text-indigo-400">{100 - calculateSkillGap(nextGoal.requiredSkills)}%</p>
+                          </div>
+                          <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
+                            <div 
+                              className="h-full bg-indigo-500 shadow-[0_0_15px_rgba(99,102,241,0.5)] transition-all duration-1000" 
+                              style={{ width: `${100 - calculateSkillGap(nextGoal.requiredSkills)}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                      </div>
+                    );
                   })()
                 ) : (<div className="text-center py-10"><p className="text-indigo-400 font-black uppercase tracking-[0.2em]">Target Tercapai! 🚀</p><p className="text-[10px] text-white/30 mt-3 font-bold uppercase tracking-widest leading-relaxed">Waktunya menentukan langkah hebat berikutnya.</p></div>)}
               </div>

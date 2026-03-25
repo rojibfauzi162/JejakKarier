@@ -299,7 +299,7 @@ const CertificationModule: React.FC<CertificationProps> = ({ certs, skills, onAd
                  {selectedCert.link.startsWith('data:') && (
                    <a 
                      href={selectedCert.link} 
-                     download={`sertifikat-${selectedCert.name.toLowerCase().replace(/\s+/g, '-')}.pdf`}
+                     download={`sertifikat-${(selectedCert.name || '').toLowerCase().replace(/\s+/g, '-')}.pdf`}
                      className="px-6 py-3 bg-slate-900 text-white font-black rounded-xl uppercase text-[10px] tracking-widest hover:bg-black transition-all shadow-lg"
                    >
                      Download

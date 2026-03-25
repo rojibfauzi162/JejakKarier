@@ -230,8 +230,8 @@ const ToDoList: React.FC<ToDoListProps> = ({
 
     // Search
     if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      result = result.filter(t => t.task.toLowerCase().includes(q) || (t.description || '').toLowerCase().includes(q));
+      const q = (searchQuery || '').toLowerCase();
+      result = result.filter(t => (t.task || '').toLowerCase().includes(q) || (t.description || '').toLowerCase().includes(q));
     }
 
     // Category
