@@ -272,7 +272,7 @@ const App: React.FC = () => {
     try {
       unsubscribeTracking = subscribeTrackingConfig((cfg: TrackingConfig) => {
         try {
-          console.log("[TRACKING] Received configuration update from Firestore:", JSON.stringify(cfg));
+          console.log("[TRACKING] Received configuration update from Firestore:", JSON.stringify(sanitizeData(cfg)));
           if (cfg && cfg.metaPixelId) {
             console.log("[TRACKING] Valid Meta Pixel ID found:", cfg.metaPixelId);
             trackingService.init(cfg);

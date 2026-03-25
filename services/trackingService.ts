@@ -1,6 +1,6 @@
 
 import { TrackingConfig } from "../types";
-import { auth } from "./firebase";
+import { auth, sanitizeData } from "./firebase";
 
 /**
  * Service untuk menangani Injeksi Script Tracking & Event Pixel secara dinamis.
@@ -34,7 +34,7 @@ class TrackingService {
         console.warn("[TRACKING] No config available for injection");
         return;
       }
-      console.log("[TRACKING] injectScripts() starting with config:", JSON.stringify(this.config));
+      console.log("[TRACKING] injectScripts() starting with config:", JSON.stringify(sanitizeData(this.config)));
 
     // 1. Google Analytics (GA4)
     if (this.config.googleAnalyticsId && !this.injectedPlatforms.has('ga4_' + this.config.googleAnalyticsId)) {
@@ -274,12 +274,12 @@ class TrackingService {
       const response = await fetch(`https://graph.facebook.com/v17.0/${pixelId}/events?access_token=${accessToken}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(sanitizeData(payload))
       });
 
       const result = await response.json();
       if (!response.ok) {
-        console.error("[TRACKING] Meta CAPI Error Response:", JSON.stringify(result));
+        console.error("[TRACKING] Meta CAPI Error Response:", JSON.stringify(sanitizeData(result)));
       } else {
         console.log("[TRACKING] Meta CAPI Success:", result);
       }
