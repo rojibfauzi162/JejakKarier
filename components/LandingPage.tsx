@@ -429,15 +429,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
                   moduleCount={p.allowedModules.length}
                   features={p.allowedModules.map(m => m.replace('_', ' ').toUpperCase())}
                   cta="Daftar & Checkout"
-                  onPay={() => {
-                    trackingService.trackEvent('AddToCart', {
-                      content_name: p.name,
-                      content_id: p.id,
-                      value: p.price,
-                      currency: 'IDR'
-                    }, 'selectPlanClick');
-                    handlePay(p);
-                  }}
+                  onPay={() => handlePay(p)}
                   highlight={highlight} 
                 />
               );
