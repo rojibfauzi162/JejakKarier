@@ -645,6 +645,36 @@ export interface SalesPopupConfig {
   updatedAt: string;
 }
 
+export enum FeatureRequestStatus {
+  PENDING = 'pending',
+  UNDER_REVIEW = 'under_review',
+  PLANNED = 'planned',
+  IN_PROGRESS = 'in_progress',
+  COMPLETED = 'completed',
+  REJECTED = 'rejected'
+}
+
+export interface FeatureRequest {
+  id?: string;
+  title: string;
+  description: string;
+  type: 'feature' | 'bugfix';
+  module?: string;
+  userId: string;
+  userName: string;
+  createdAt: string;
+  status: FeatureRequestStatus;
+  voteCount: number;
+  isHidden: boolean;
+}
+
+export interface FeatureVote {
+  id?: string;
+  userId: string;
+  requestId: string;
+  date: string; // YYYY-MM-DD
+}
+
 export interface AppData {
   uid?: string;
   role: UserRole;

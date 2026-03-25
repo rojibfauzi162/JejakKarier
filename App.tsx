@@ -17,6 +17,8 @@ import OnlineCVBuilder from './components/OnlineCVBuilder';
 import AccountSettings from './components/AccountSettings';
 import Billing from './components/Billing';
 import AdminPanel from './components/admin/AdminPanel';
+import FeatureRequests from './components/FeatureRequests';
+import FeatureRequestManagement from './components/admin/FeatureRequestManagement';
 import MobileNav from './components/MobileNav';
 import MobileHeader from './components/user/MobileHeader';
 import Auth from './components/Auth';
@@ -741,7 +743,7 @@ const App: React.FC = () => {
 
   const withPermission = (moduleKey: string, content: React.ReactNode) => {
     // MODUL DASAR (Tapi Sekarang Di-Lock jika Belum Verifikasi sesuai permintaan user)
-    const basicModules = ['dashboard', 'profile', 'apps_hub', 'billing', 'settings', 'calendar'];
+    const basicModules = ['dashboard', 'profile', 'apps_hub', 'billing', 'settings', 'calendar', 'feature_requests'];
 
     // LOCK TOTAL JIKA BELUM VERIFIKASI EMAIL (Kecuali Admin)
     if (user && !user.emailVerified && !isAdmin) {
@@ -813,6 +815,7 @@ const App: React.FC = () => {
       case 'admin_integrations': return <AdminPanel initialMode="integrations" userRole={data.role} />;
       case 'admin_settings': return <AdminPanel initialMode="settings" userRole={data.role} />;
       case 'admin_health': return <AdminPanel initialMode="health" userRole={data.role} />;
+      case 'admin_feature_requests': return <FeatureRequestManagement />;
       case 'email_marketing': return <AdminPanel initialMode="email_marketing" userRole={data.role} />;
       case 'admin_trainings': return <TrainingManagement onToast={(msg, type) => showToast(msg, type)} />;
       
@@ -835,6 +838,7 @@ const App: React.FC = () => {
       case 'online_cv': return withPermission('online_cv', <OnlineCVBuilder data={data} onUpdateConfig={(c) => setData(prev => ({...prev, onlineCV: c}))} />);
       case 'interview_script': return withPermission('interview_script', <InterviewIntelligenceScript data={data} onUpdateScripts={(s) => setData(prev => ({...prev, interviewScripts: s}))} onUpgrade={commonProps.onUpgrade} />);
       case 'settings': return withPermission('settings', <AccountSettings reminderConfig={data.reminderConfig} onUpdateReminders={(c) => setData(prev => ({...prev, reminderConfig: c}))} />);
+      case 'feature_requests': return withPermission('feature_requests', <FeatureRequests />);
       case 'billing': return withPermission('billing', <Billing data={data} products={publicProducts} onSelectPlan={(p) => setCheckoutPlan(p)} />);
       default: return withPermission('dashboard', <Dashboard data={data} onNavigate={handleNavigate} />);
     }
@@ -876,6 +880,7 @@ const App: React.FC = () => {
       'admin_ai': 'AI Architecture',
       'admin_products': 'Product Matrix',
       'admin_sales_popup': 'Sales Popup Manager',
+      'admin_feature_requests': 'Request Fitur',
       'admin_settings': 'Pengaturan Admin',
       'admin_health': 'System Health',
       'email_marketing': 'Email Marketing',

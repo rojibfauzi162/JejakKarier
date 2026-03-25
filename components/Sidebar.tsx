@@ -22,7 +22,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout, is
   const [adminProductDropdownOpen, setAdminProductDropdownOpen] = useState(activeTab === 'admin_products' || activeTab === 'admin_trainings');
   const [adminFinanceDropdownOpen, setAdminFinanceDropdownOpen] = useState(activeTab === 'admin_transactions' || activeTab === 'duitku');
   const [adminMarketingDropdownOpen, setAdminMarketingDropdownOpen] = useState(activeTab === 'email_marketing' || activeTab === 'admin_sales_popup' || activeTab === 'admin_followup' || activeTab === 'admin_tracking');
-  const [adminSystemDropdownOpen, setAdminSystemDropdownOpen] = useState(activeTab === 'admin_ai' || activeTab === 'admin_health' || activeTab === 'admin_settings');
+  const [adminSystemDropdownOpen, setAdminSystemDropdownOpen] = useState(activeTab === 'admin_ai' || activeTab === 'admin_health' || activeTab === 'admin_settings' || activeTab === 'admin_feature_requests');
   const [showLogoutModal, setShowLogoutModal] = useState(false); 
   
   const [groupsOpen, setGroupsOpen] = useState<Record<string, boolean>>({
@@ -164,11 +164,12 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout, is
                 icon={<i className="bi bi-gear"></i>} 
                 isOpen={adminSystemDropdownOpen} 
                 toggle={() => setAdminSystemDropdownOpen(!adminSystemDropdownOpen)}
-                active={activeTab === 'admin_ai' || activeTab === 'admin_health' || activeTab === 'admin_settings'}
+                active={activeTab === 'admin_ai' || activeTab === 'admin_health' || activeTab === 'admin_settings' || activeTab === 'admin_feature_requests'}
               >
                 <SubMenuButton active={activeTab === 'admin_ai'} onClick={() => setActiveTab('admin_ai')} label="AI Architecture" icon="bi bi-cpu" />
                 <SubMenuButton active={activeTab === 'admin_health'} onClick={() => setActiveTab('admin_health')} label="System Health" icon="bi bi-activity" />
                 <SubMenuButton active={activeTab === 'admin_settings'} onClick={() => setActiveTab('admin_settings')} label="Pengaturan Admin" icon="bi bi-sliders" />
+                <SubMenuButton active={activeTab === 'admin_feature_requests'} onClick={() => setActiveTab('admin_feature_requests')} label="Request Fitur" icon="bi bi-lightbulb" />
               </AdminGroup>
             </div>
           )}
@@ -258,6 +259,12 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout, is
               ))}
 
               <div className="mt-auto pt-2 space-y-1">
+                <SidebarStandaloneItem 
+                  active={activeTab === 'feature_requests'} 
+                  onClick={() => setActiveTab('feature_requests')} 
+                  icon={<i className="bi bi-lightbulb"></i>} 
+                  label="Request Fitur" 
+                />
                 <SidebarStandaloneItem 
                   active={activeTab === 'billing'} 
                   onClick={() => setActiveTab('billing')} 

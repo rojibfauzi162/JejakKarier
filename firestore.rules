@@ -75,6 +75,25 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
     
+    // Feature Requests
+    match /featureRequests/{requestId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAdmin() || (
+        isAuthenticated() && 
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['voteCount']) &&
+        request.resource.data.voteCount == resource.data.voteCount + 1
+      );
+      allow delete: if isAdmin();
+    }
+
+    // Feature Votes
+    match /featureVotes/{voteId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAdmin();
+    }
+    
     // Default deny for everything else
     match /{document=**} {
       allow read, write: if isAdmin();
