@@ -1,8 +1,7 @@
-const CACHE_NAME = 'fokuskarir-v3';
+const CACHE_NAME = 'fokuskarir-v4';
 const urlsToCache = [
   '/',
-  '/index.html',
-  '/manifest.json'
+  '/index.html'
 ];
 
 self.addEventListener('install', event => {
