@@ -317,13 +317,13 @@ const App: React.FC = () => {
           {
             src: landingConfig.pwaIconUrl || landingConfig.logoUrl || "/logo.svg",
             sizes: "192x192",
-            type: (landingConfig.pwaIconUrl || landingConfig.logoUrl || "/logo.svg").endsWith('.svg') ? "image/svg+xml" : "image/png",
+            type: (landingConfig.pwaIconUrl || landingConfig.logoUrl || "/logo.svg").startsWith('data:image/svg+xml') || (landingConfig.pwaIconUrl || landingConfig.logoUrl || "/logo.svg").endsWith('.svg') ? "image/svg+xml" : "image/png",
             purpose: "any maskable"
           },
           {
             src: landingConfig.pwaIconUrl || landingConfig.logoUrl || "/logo.svg",
             sizes: "512x512",
-            type: (landingConfig.pwaIconUrl || landingConfig.logoUrl || "/logo.svg").endsWith('.svg') ? "image/svg+xml" : "image/png",
+            type: (landingConfig.pwaIconUrl || landingConfig.logoUrl || "/logo.svg").startsWith('data:image/svg+xml') || (landingConfig.pwaIconUrl || landingConfig.logoUrl || "/logo.svg").endsWith('.svg') ? "image/svg+xml" : "image/png",
             purpose: "any maskable"
           }
         ]
