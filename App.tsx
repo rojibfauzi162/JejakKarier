@@ -315,15 +315,15 @@ const App: React.FC = () => {
         theme_color: landingConfig.pwaThemeColor || "#4f46e5",
         icons: [
           {
-            src: landingConfig.pwaIconUrl || landingConfig.logoUrl || "/logo.png",
+            src: landingConfig.pwaIconUrl || landingConfig.logoUrl || "/logo.svg",
             sizes: "192x192",
-            type: "image/png",
+            type: (landingConfig.pwaIconUrl || landingConfig.logoUrl || "/logo.svg").endsWith('.svg') ? "image/svg+xml" : "image/png",
             purpose: "any maskable"
           },
           {
-            src: landingConfig.pwaIconUrl || landingConfig.logoUrl || "/logo.png",
+            src: landingConfig.pwaIconUrl || landingConfig.logoUrl || "/logo.svg",
             sizes: "512x512",
-            type: "image/png",
+            type: (landingConfig.pwaIconUrl || landingConfig.logoUrl || "/logo.svg").endsWith('.svg') ? "image/svg+xml" : "image/png",
             purpose: "any maskable"
           }
         ]
@@ -348,7 +348,7 @@ const App: React.FC = () => {
         iconLink.rel = 'icon';
         document.getElementsByTagName('head')[0].appendChild(iconLink);
       }
-      iconLink.href = landingConfig.pwaIconUrl || landingConfig.logoUrl || "/logo.png";
+      iconLink.href = landingConfig.pwaIconUrl || landingConfig.logoUrl || "/logo.svg";
       
       let appleIconLink = document.querySelector('link[rel="apple-touch-icon"]') as HTMLLinkElement;
       if (!appleIconLink) {
@@ -356,7 +356,7 @@ const App: React.FC = () => {
         appleIconLink.rel = 'apple-touch-icon';
         document.getElementsByTagName('head')[0].appendChild(appleIconLink);
       }
-      appleIconLink.href = landingConfig.pwaIconUrl || landingConfig.logoUrl || "/logo.png";
+      appleIconLink.href = landingConfig.pwaIconUrl || landingConfig.logoUrl || "/logo.svg";
 
       // Update theme color meta tag
       let themeColorMeta = document.querySelector('meta[name="theme-color"]') as HTMLMetaElement;
