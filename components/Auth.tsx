@@ -211,10 +211,21 @@ const Auth: React.FC<AuthProps> = ({ onBack, logoUrl, logoDarkUrl }) => {
                   <div className="mt-3 flex flex-col gap-2">
                     <button 
                       type="button"
-                      onClick={() => window.location.reload()}
+                      onClick={() => {
+                        if ('serviceWorker' in navigator) {
+                          navigator.serviceWorker.getRegistrations().then(registrations => {
+                            for (const registration of registrations) {
+                              registration.unregister();
+                            }
+                            window.location.reload();
+                          });
+                        } else {
+                          window.location.reload();
+                        }
+                      }}
                       className="text-indigo-400 hover:text-indigo-300 text-[10px] font-black uppercase tracking-widest flex items-center gap-2"
                     >
-                      <i className="bi bi-arrow-clockwise"></i> Refresh Halaman
+                      <i className="bi bi-arrow-clockwise"></i> Refresh Halaman (Clear Cache)
                     </button>
                     <button 
                       type="button"
