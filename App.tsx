@@ -304,73 +304,113 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    let currentManifestUrl: string | null = null;
+    let currentIconBlobUrl: string | null = null;
+
     if (landingConfig) {
-      const manifest = {
-        name: "FokusKarir - Jejak Karir Digital",
-        short_name: landingConfig.pwaShortName || "FokusKarir",
-        description: "Platform All-in-One untuk Manajemen Karir, Portofolio, dan Pertumbuhan Profesional.",
-        start_url: "/login",
-        display: "standalone",
-        background_color: "#ffffff",
-        theme_color: landingConfig.pwaThemeColor || "#4f46e5",
-        icons: [
-          {
-            src: landingConfig.pwaIconUrl || landingConfig.logoUrl || "/logo.svg",
-            sizes: "192x192",
-            type: (landingConfig.pwaIconUrl || landingConfig.logoUrl || "/logo.svg").startsWith('data:image/svg+xml') || (landingConfig.pwaIconUrl || landingConfig.logoUrl || "/logo.svg").endsWith('.svg') ? "image/svg+xml" : "image/png",
-            purpose: "any maskable"
-          },
-          {
-            src: landingConfig.pwaIconUrl || landingConfig.logoUrl || "/logo.svg",
-            sizes: "512x512",
-            type: (landingConfig.pwaIconUrl || landingConfig.logoUrl || "/logo.svg").startsWith('data:image/svg+xml') || (landingConfig.pwaIconUrl || landingConfig.logoUrl || "/logo.svg").endsWith('.svg') ? "image/svg+xml" : "image/png",
-            purpose: "any maskable"
+      const generateManifest = async () => {
+        let iconSrc = landingConfig.pwaIconUrl || landingConfig.logoUrl || "/logo.svg";
+        let finalIconSrc = iconSrc;
+        
+        // If it's a base64 image, resize it to exactly 512x512 and convert to Blob URL
+        if (iconSrc.startsWith('data:image/')) {
+          try {
+            const resizedBase64 = await new Promise<string>((resolve, reject) => {
+              const img = new Image();
+              img.onload = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = 512;
+                canvas.height = 512;
+                const ctx = canvas.getContext('2d');
+                if (ctx) {
+                  // Draw image centered and scaled to fit 512x512
+                  const scale = Math.min(512 / img.width, 512 / img.height);
+                  const x = (512 / 2) - (img.width / 2) * scale;
+                  const y = (512 / 2) - (img.height / 2) * scale;
+                  ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
+                  resolve(canvas.toDataURL('image/png'));
+                } else {
+                  resolve(iconSrc);
+                }
+              };
+              img.onerror = () => resolve(iconSrc);
+              img.src = iconSrc;
+            });
+            
+            // Convert base64 to Blob
+            const res = await fetch(resizedBase64);
+            const blob = await res.blob();
+            currentIconBlobUrl = URL.createObjectURL(blob);
+            finalIconSrc = currentIconBlobUrl;
+          } catch (e) {
+            console.error("Failed to process icon", e);
           }
-        ]
+        }
+
+        const manifest = {
+          name: "FokusKarir - Jejak Karir Digital",
+          short_name: landingConfig.pwaShortName || "FokusKarir",
+          description: "Platform All-in-One untuk Manajemen Karir, Portofolio, dan Pertumbuhan Profesional.",
+          start_url: "/login",
+          display: "standalone",
+          background_color: "#ffffff",
+          theme_color: landingConfig.pwaThemeColor || "#4f46e5",
+          icons: [
+            {
+              src: finalIconSrc,
+              sizes: "192x192 512x512 any",
+              type: finalIconSrc.startsWith('data:image/svg+xml') || finalIconSrc.endsWith('.svg') ? "image/svg+xml" : "image/png",
+              purpose: "any maskable"
+            }
+          ]
+        };
+
+        const stringManifest = JSON.stringify(sanitizeData(manifest));
+        const blob = new Blob([stringManifest], {type: 'application/json'});
+        currentManifestUrl = URL.createObjectURL(blob);
+        
+        let link = document.querySelector('link[rel="manifest"]') as HTMLLinkElement;
+        if (!link) {
+          link = document.createElement('link');
+          link.rel = 'manifest';
+          document.getElementsByTagName('head')[0].appendChild(link);
+        }
+        link.href = currentManifestUrl;
+
+        // Update favicon
+        let iconLink = document.querySelector('link[rel="icon"]') as HTMLLinkElement;
+        if (!iconLink) {
+          iconLink = document.createElement('link');
+          iconLink.rel = 'icon';
+          document.getElementsByTagName('head')[0].appendChild(iconLink);
+        }
+        iconLink.href = finalIconSrc;
+        
+        let appleIconLink = document.querySelector('link[rel="apple-touch-icon"]') as HTMLLinkElement;
+        if (!appleIconLink) {
+          appleIconLink = document.createElement('link');
+          appleIconLink.rel = 'apple-touch-icon';
+          document.getElementsByTagName('head')[0].appendChild(appleIconLink);
+        }
+        appleIconLink.href = finalIconSrc;
+
+        // Update theme color meta tag
+        let themeColorMeta = document.querySelector('meta[name="theme-color"]') as HTMLMetaElement;
+        if (!themeColorMeta) {
+          themeColorMeta = document.createElement('meta');
+          themeColorMeta.name = 'theme-color';
+          document.getElementsByTagName('head')[0].appendChild(themeColorMeta);
+        }
+        themeColorMeta.content = landingConfig.pwaThemeColor || "#4f46e5";
       };
 
-      const stringManifest = JSON.stringify(sanitizeData(manifest));
-      const blob = new Blob([stringManifest], {type: 'application/json'});
-      const manifestURL = URL.createObjectURL(blob);
-      
-      let link = document.querySelector('link[rel="manifest"]') as HTMLLinkElement;
-      if (!link) {
-        link = document.createElement('link');
-        link.rel = 'manifest';
-        document.getElementsByTagName('head')[0].appendChild(link);
-      }
-      link.href = manifestURL;
-
-      // Update favicon
-      let iconLink = document.querySelector('link[rel="icon"]') as HTMLLinkElement;
-      if (!iconLink) {
-        iconLink = document.createElement('link');
-        iconLink.rel = 'icon';
-        document.getElementsByTagName('head')[0].appendChild(iconLink);
-      }
-      iconLink.href = landingConfig.pwaIconUrl || landingConfig.logoUrl || "/logo.svg";
-      
-      let appleIconLink = document.querySelector('link[rel="apple-touch-icon"]') as HTMLLinkElement;
-      if (!appleIconLink) {
-        appleIconLink = document.createElement('link');
-        appleIconLink.rel = 'apple-touch-icon';
-        document.getElementsByTagName('head')[0].appendChild(appleIconLink);
-      }
-      appleIconLink.href = landingConfig.pwaIconUrl || landingConfig.logoUrl || "/logo.svg";
-
-      // Update theme color meta tag
-      let themeColorMeta = document.querySelector('meta[name="theme-color"]') as HTMLMetaElement;
-      if (!themeColorMeta) {
-        themeColorMeta = document.createElement('meta');
-        themeColorMeta.name = 'theme-color';
-        document.getElementsByTagName('head')[0].appendChild(themeColorMeta);
-      }
-      themeColorMeta.content = landingConfig.pwaThemeColor || "#4f46e5";
-
-      return () => {
-        URL.revokeObjectURL(manifestURL);
-      };
+      generateManifest();
     }
+
+    return () => {
+      if (currentManifestUrl) URL.revokeObjectURL(currentManifestUrl);
+      if (currentIconBlobUrl) URL.revokeObjectURL(currentIconBlobUrl);
+    };
   }, [landingConfig]);
 
   useEffect(() => {
