@@ -41,10 +41,8 @@ import OnboardingFlow from './components/user/OnboardingFlow';
 import { auth, getUserData, saveUserData, getProductsCatalog, findUserByEmail, deleteUserDoc, getTrackingConfig, subscribeLandingPageConfig, subscribeTrackingConfig, sanitizeData, requestNotificationPermission } from './services/firebase';
 import { onAuthStateChanged, sendEmailVerification } from 'firebase/auth';
 import { trackingService } from './services/trackingService';
-import { usePushNotification } from './hooks/usePushNotification';
 
 const App: React.FC = () => {
-  const { fcmToken, notification } = usePushNotification();
   const [user, setUser] = useState<any>(null);
   const getCleanInitialData = () => JSON.parse(JSON.stringify(INITIAL_DATA));
   const [data, setData] = useState<AppData>(getCleanInitialData());
