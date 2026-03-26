@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fokuskarir-v5';
+const CACHE_NAME = 'fokuskarir-v6';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -34,6 +34,24 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
+  // Hanya tangani request GET
+  if (event.request.method !== 'GET') {
+    return;
+  }
+
+  const url = new URL(event.request.url);
+
+  // Abaikan request ke API eksternal (Firebase, Google, dll)
+  if (
+    url.hostname.includes('googleapis.com') ||
+    url.hostname.includes('firebaseio.com') ||
+    url.hostname.includes('firestore.googleapis.com') ||
+    url.hostname.includes('identitytoolkit.googleapis.com') ||
+    url.hostname.includes('securetoken.googleapis.com')
+  ) {
+    return;
+  }
+
   // Network First strategy for HTML and root requests
   if (event.request.mode === 'navigate' || 
       event.request.url.endsWith('/') || 
@@ -73,9 +91,12 @@ self.addEventListener('fetch', event => {
             });
           }
           return networkResponse;
-        }).catch(() => null);
+        }).catch((error) => {
+          console.error('Fetch failed:', error);
+          return null;
+        });
 
-        return response || fetchPromise;
+        return response || fetchPromise.then(res => res || new Response('Network error', { status: 408 }));
       })
   );
 });
