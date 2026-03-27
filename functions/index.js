@@ -21,6 +21,50 @@ app.use((req, res, next) => {
 // Helper MD5 Hashing
 const md5 = (str) => crypto.createHash("md5").update(str).digest("hex");
 
+// Helper to sanitize data for logging/JSON
+const sanitizeData = (obj, visited = new WeakSet()) => {
+  if (obj === null || typeof obj !== "object") return obj;
+  if (obj instanceof Date) return obj.toISOString();
+  if (visited.has(obj)) return "[Circular]";
+  visited.add(obj);
+
+  if (Array.isArray(obj)) return obj.map((item) => sanitizeData(item, visited));
+
+  // Handle Error objects explicitly
+  if (obj instanceof Error) {
+    const errorObj = {
+      name: obj.name,
+      message: obj.message,
+      stack: obj.stack,
+    };
+    // Copy other properties and sanitize them
+    Object.keys(obj).forEach((key) => {
+      try {
+        const value = obj[key];
+        if (value !== undefined) {
+          errorObj[key] = sanitizeData(value, visited);
+        }
+      } catch (e) {
+        errorObj[key] = "[Unreadable Property]";
+      }
+    });
+    return errorObj;
+  }
+
+  const sanitized = {};
+  Object.keys(obj).forEach((key) => {
+    try {
+      const value = obj[key];
+      if (value !== undefined) {
+        sanitized[key] = sanitizeData(value, visited);
+      }
+    } catch (e) {
+      sanitized[key] = "[Unreadable Property]";
+    }
+  });
+  return sanitized;
+};
+
 /**
  * ENDPOINT 1: Ambil Metode Pembayaran
  */
@@ -62,7 +106,7 @@ app.post("/getMethods", async (req, res) => {
     const response = await fetch(url, {
       method: "POST",
       headers: {"Content-Type": "application/json"},
-      body: JSON.stringify(payload),
+      body: JSON.stringify(sanitizeData(payload)),
     });
 
     const data = await response.json();
@@ -141,20 +185,20 @@ app.post("/createInquiry", async (req, res) => {
     const sandInq = "https://sandbox.duitku.com/webapi/api/merchant/v2/inquiry";
     const url = config.environment === "production" ? prodInq : sandInq;
 
-    console.log(`[DUITKU] Sending Payload to ${config.environment}:`, JSON.stringify(payload));
+    console.log(`[DUITKU] Sending Payload to ${config.environment}:`, JSON.stringify(sanitizeData(payload)));
 
     // 3. Request ke Duitku
     const response = await fetch(url, {
       method: "POST",
       headers: {"Content-Type": "application/json"},
-      body: JSON.stringify(payload),
+      body: JSON.stringify(sanitizeData(payload)),
     });
 
     const data = await response.json();
     
     // CRITICAL LOGGING: Lihat apa alasan Duitku menolak transaksi ini
     console.log(`[DUITKU] Response Code: ${response.status}`);
-    console.log(`[DUITKU] Response Body:`, JSON.stringify(data));
+    console.log(`[DUITKU] Response Body:`, JSON.stringify(sanitizeData(data)));
 
     // 4. Jika Sukses, Simpan ke History User sebagai 'Pending'
     if (data && data.statusCode === "00") {

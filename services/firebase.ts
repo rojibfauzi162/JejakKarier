@@ -198,16 +198,43 @@ export const sanitizeData = (obj: any, visited = new WeakSet()): any => {
   if (visited.has(obj)) {
     return '[Circular]';
   }
+  
+  // Handle DOM nodes (more robust check)
+  if (typeof window !== 'undefined' && (obj instanceof Node || (obj.nodeType && typeof obj.nodeName === 'string'))) {
+    return `[DOM Node: ${obj.nodeName || 'Unknown'}]`;
+  }
+
+  // Handle Error objects explicitly
+  if (obj instanceof Error) {
+    const errorObj: any = {
+      name: obj.name,
+      message: obj.message,
+      stack: obj.stack,
+    };
+    // Copy other properties and sanitize them
+    Object.keys(obj).forEach(key => {
+      try {
+        const value = (obj as any)[key];
+        if (value !== undefined) {
+          errorObj[key] = sanitizeData(value, visited);
+        }
+      } catch (e) {
+        errorObj[key] = '[Unreadable Property]';
+      }
+    });
+    return errorObj;
+  }
+
+  // Handle Blobs/Files
+  if (typeof window !== 'undefined' && (obj instanceof Blob || obj instanceof File)) {
+    return `[${obj.constructor.name}: ${obj.size} bytes, type=${obj.type}]`;
+  }
+
   visited.add(obj);
 
   // Handle Arrays
   if (Array.isArray(obj)) {
     return obj.map(item => sanitizeData(item, visited));
-  }
-
-  // Handle DOM nodes (basic check)
-  if (obj.nodeType && typeof obj.nodeName === 'string') {
-    return '[DOM Node]';
   }
 
   // Handle React Synthetic Events (basic check)
@@ -216,11 +243,21 @@ export const sanitizeData = (obj: any, visited = new WeakSet()): any => {
   }
 
   const sanitized: any = {};
-  Object.keys(obj).forEach(key => {
-    if (obj[key] !== undefined) {
-      sanitized[key] = sanitizeData(obj[key], visited);
+  // Use Object.getOwnPropertyNames to get non-enumerable properties if it's a special object
+  // but for plain objects Object.keys is enough and safer
+  const keys = Object.keys(obj);
+  
+  keys.forEach(key => {
+    try {
+      const value = obj[key];
+      if (value !== undefined) {
+        sanitized[key] = sanitizeData(value, visited);
+      }
+    } catch (e) {
+      sanitized[key] = '[Unreadable Property]';
     }
   });
+  
   return sanitized;
 };
 

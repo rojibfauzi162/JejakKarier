@@ -146,7 +146,10 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
         })
       });
 
+      console.log("[CHECKOUT] Response status:", response.status);
       const text = await response.text();
+      console.log("[CHECKOUT] Response text:", text);
+
       let res;
       try {
         res = JSON.parse(text);

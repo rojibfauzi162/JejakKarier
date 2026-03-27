@@ -44,7 +44,7 @@ import { trackingService } from './services/trackingService';
 
 const App: React.FC = () => {
   const [user, setUser] = useState<any>(null);
-  const getCleanInitialData = () => JSON.parse(JSON.stringify(INITIAL_DATA));
+  const getCleanInitialData = () => JSON.parse(JSON.stringify(sanitizeData(INITIAL_DATA)));
   const [data, setData] = useState<AppData>(getCleanInitialData());
   const [activeTab, setActiveTab] = useState('dashboard');
   const [skillsSubTab, setSkillsSubTab] = useState<string | undefined>(undefined);
