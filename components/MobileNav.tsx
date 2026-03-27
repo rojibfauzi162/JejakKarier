@@ -26,6 +26,7 @@ const MobileNav: React.FC<MobileNavProps> = ({ activeTab, setActiveTab, onLogout
     { id: 'daily_toggle', label: 'Daily', icon: 'bi-journal-text', isSpecial: true },
     { id: 'todo_list', label: 'Langkah', icon: 'bi-check2-square' },
     { id: 'calendar', label: 'Calendar', icon: 'bi-calendar3' }, 
+    { id: 'others', label: 'Lainnya', icon: 'bi-grid-fill' }, // Triggers Sidebar
   ];
 
   // Menu Khusus Super Admin - UPDATED
@@ -127,25 +128,6 @@ const MobileNav: React.FC<MobileNavProps> = ({ activeTab, setActiveTab, onLogout
               </button>
             );
           })}
-          
-          {!isAdmin && (
-            <button
-              onClick={() => { setShowDailyMenu(false); setActiveTab('apps_hub'); }}
-              className={`flex flex-col items-center gap-1.5 p-2 transition-all group ${
-                activeTab === 'apps_hub' ? 'text-indigo-600' : 'text-slate-400'
-              }`}
-            >
-              <div className={`text-2xl transition-transform ${activeTab === 'apps_hub' ? 'scale-125 -translate-y-1' : 'group-active:scale-90'}`}>
-                 <i className="bi bi-grid-fill"></i>
-              </div>
-              <span className={`text-[9px] font-black uppercase tracking-tight transition-all ${activeTab === 'apps_hub' ? 'opacity-100' : 'opacity-40'}`}>
-                Apps
-              </span>
-              {activeTab === 'apps_hub' && (
-                <span className="absolute -bottom-1 w-5 h-1 bg-indigo-600 rounded-full shadow-[0_0_10px_rgba(79,70,229,0.5)]" />
-              )}
-            </button>
-          )}
         </nav>
       </div>
 

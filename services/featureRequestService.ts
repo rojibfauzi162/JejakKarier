@@ -56,7 +56,7 @@ export const createFeatureRequest = async (title: string, description: string, t
       userName,
       createdAt: new Date().toISOString(),
       status: FeatureRequestStatus.PENDING,
-      voteCount: 0,
+      voteCount: 1, // Auto-vote on creation
       isHidden: false
     };
     
@@ -64,7 +64,20 @@ export const createFeatureRequest = async (title: string, description: string, t
       newRequest.module = module;
     }
 
-    await setDoc(newRequestRef, newRequest as FeatureRequest);
+    // Create the request and the initial vote in a transaction
+    await runTransaction(db, async (transaction) => {
+      transaction.set(newRequestRef, newRequest as FeatureRequest);
+      
+      const voteId = `${userId}_${newRequestRef.id}`;
+      const voteRef = doc(db, VOTES_COLLECTION, voteId);
+      transaction.set(voteRef, {
+        userId,
+        requestId: newRequestRef.id,
+        date: today,
+        createdAt: serverTimestamp()
+      });
+    });
+
     return { success: true, message: 'Request berhasil dibuat.' };
   } catch (error) {
     console.error('Error creating feature request:', error);
@@ -78,13 +91,13 @@ export const voteFeatureRequest = async (requestId: string): Promise<{ success: 
     if (!userId) return { success: false, message: 'User not authenticated' };
 
     const today = new Date().toISOString().split('T')[0];
-    const voteId = `${userId}_${today}`;
+    const voteId = `${userId}_${requestId}`;
     const voteRef = doc(db, VOTES_COLLECTION, voteId);
 
     return await runTransaction(db, async (transaction) => {
       const voteDoc = await transaction.get(voteRef);
       if (voteDoc.exists()) {
-        throw new Error('Anda hanya dapat memberikan 1 vote per hari.');
+        throw new Error('Anda sudah memberikan vote untuk request ini.');
       }
 
       const requestRef = doc(db, REQUESTS_COLLECTION, requestId);
