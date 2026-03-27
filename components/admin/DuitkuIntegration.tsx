@@ -13,7 +13,7 @@ const DuitkuIntegration: React.FC<DuitkuIntegrationProps> = ({ initialConfig, on
   const [form, setForm] = useState<DuitkuConfig>(initialConfig);
   
   // URL Default berdasarkan hasil deploy Cloud Functions
-  const DEFAULT_CALLBACK = window.location.origin + "/api/cloud-functions/duitkuCallback";
+  const DEFAULT_CALLBACK = window.location.origin + "/dk/cb";
   const DEFAULT_RETURN = window.location.origin + "/billing";
 
   useEffect(() => {

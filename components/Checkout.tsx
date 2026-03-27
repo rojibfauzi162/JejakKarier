@@ -25,7 +25,7 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
   const [showManualSuccess, setShowManualSuccess] = useState(false);
   const [adminPhone, setAdminPhone] = useState('628123456789');
 
-  const CLOUD_FUNCTIONS_URL = "/api/cloud-functions";
+  const CLOUD_FUNCTIONS_URL = "/api/dk";
 
   useEffect(() => {
     getLandingPageConfig().then(cfg => {
@@ -97,7 +97,7 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch(`${CLOUD_FUNCTIONS_URL}/getMethods`, {
+      const response = await fetch(`${CLOUD_FUNCTIONS_URL}/methods`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ amount: plan.price })
@@ -124,7 +124,7 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
     setError('');
     try {
       console.log("[CHECKOUT] Creating Inquiry for Plan ID:", plan.id);
-      const response = await fetch(`${CLOUD_FUNCTIONS_URL}/createInquiry`, {
+      const response = await fetch(`${CLOUD_FUNCTIONS_URL}/inquiry`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

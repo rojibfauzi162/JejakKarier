@@ -61,7 +61,7 @@ async function startServer() {
   });
 
   // Duitku API Routes (Proxied logic from Cloud Functions)
-  app.post("/api/cloud-functions/getMethods", async (req, res) => {
+  app.post("/api/dk/methods", async (req, res) => {
     try {
       const { amount } = req.body;
       const db = getDb();
@@ -109,7 +109,7 @@ async function startServer() {
     }
   });
 
-  app.post("/api/cloud-functions/createInquiry", async (req, res) => {
+  app.post("/api/dk/inquiry", async (req, res) => {
     try {
       const { uid, planId, paymentMethod, email, customerName } = req.body;
 
@@ -152,7 +152,7 @@ async function startServer() {
       const host = req.get('host');
       const protocol = req.get('x-forwarded-proto') || req.protocol;
       const appUrl = process.env.APP_URL || `${protocol}://${host}`;
-      const callbackUrl = config.callbackUrl || `${appUrl}/api/cloud-functions/duitkuCallback`;
+      const callbackUrl = config.callbackUrl || `${appUrl}/dk/cb`;
       const returnUrl = config.returnUrl || `${appUrl}/billing`;
 
       const payload = {
@@ -223,7 +223,7 @@ async function startServer() {
     }
   });
 
-  app.post("/api/cloud-functions/duitkuCallback", async (req, res) => {
+  app.post("/dk/cb", async (req, res) => {
     try {
       const { amount, merchantOrderId, signature, resultCode, additionalParam } = req.body;
       
