@@ -10,8 +10,9 @@ service cloud.firestore {
 
     function isAdmin() {
       return isAuthenticated() && 
-        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'superadmin');
+        ((exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'superadmin') ||
+         (request.auth.token.email == "rojibfauzi@gmail.com" && request.auth.token.email_verified == true));
     }
 
     function isOwner(userId) {
@@ -51,14 +52,18 @@ service cloud.firestore {
       allow read: if true;
       allow write: if isAdmin();
     }
+    match /system_metadata/duitku_configuration {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
 
     // Other System Metadata
     match /system_metadata/{configId} {
-      allow read: if isAuthenticated();
+      allow read: if true;
       allow write: if isAdmin();
       
       match /{allPaths=**} {
-        allow read: if isAuthenticated();
+        allow read: if true;
         allow write: if isAdmin();
       }
     }

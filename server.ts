@@ -3,7 +3,8 @@ import express from "express";
 import { createServer as createViteServer } from "vite";
 import path from "path";
 import { fileURLToPath } from "url";
-import * as admin from "firebase-admin";
+import { initializeApp as initializeAdminApp, getApps as getAdminApps } from "firebase-admin/app";
+import { getFirestore as getAdminFirestore } from "firebase-admin/firestore";
 import crypto from "crypto";
 import fs from "fs";
 
@@ -16,39 +17,32 @@ async function startServer() {
 
   app.use(express.json());
 
-  // Lazy-load Firestore to prevent startup crashes
-  let _db: admin.firestore.Firestore | null = null;
+  // Lazy-load Firestore Admin to prevent startup crashes
+  let _db: any = null;
   const getDb = () => {
     if (_db) return _db;
     
     const configPath = path.join(process.cwd(), 'firebase-applet-config.json');
     if (fs.existsSync(configPath)) {
       const firebaseConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-      if (!admin.apps.length) {
+      if (!getAdminApps().length) {
         try {
-          admin.initializeApp({
-            projectId: firebaseConfig.projectId
+          initializeAdminApp({
+            projectId: firebaseConfig.projectId,
           });
         } catch (err) {
           console.error("[SERVER] Firebase Admin Init Error:", err);
         }
       }
-    } else {
-      if (!admin.apps.length) {
-        try {
-          admin.initializeApp();
-        } catch (err) {
-          console.error("[SERVER] Firebase Admin Init Error (Default):", err);
-        }
+      try {
+        _db = getAdminFirestore(firebaseConfig.firestoreDatabaseId);
+        return _db;
+      } catch (err) {
+        console.error("[SERVER] Firestore Admin Access Error:", err);
+        throw new Error("Database not initialized. Check Firebase configuration.");
       }
-    }
-    
-    try {
-      _db = admin.firestore();
-      return _db;
-    } catch (err) {
-      console.error("[SERVER] Firestore Access Error:", err);
-      throw new Error("Database not initialized. Check Firebase configuration.");
+    } else {
+      throw new Error("firebase-applet-config.json not found");
     }
   };
 
@@ -58,6 +52,21 @@ async function startServer() {
   // API routes
   app.get("/api/health", (req, res) => {
     res.json({ status: "ok" });
+  });
+
+  // Tracking Config Status (Separate endpoint for debugging)
+  app.get("/api/debug/tracking-config", async (req, res) => {
+    try {
+      const db = getDb();
+      const configSnap = await db.doc("system_metadata/tracking_configuration").get();
+      const config = configSnap.exists ? configSnap.data()! : null;
+      
+      res.json({ 
+        trackingConfig: config ? "FOUND" : "NOT FOUND"
+      });
+    } catch (err: any) {
+      res.status(500).json({ status: "error", message: err.message });
+    }
   });
 
   // Duitku Config Status (Separate endpoint for debugging)
@@ -139,11 +148,16 @@ async function startServer() {
 
   // Duitku API Routes (Proxied logic from Cloud Functions)
   app.post("/api/dk/methods", async (req, res) => {
-    console.log("[SERVER] [DUITKU] Request to /api/dk/methods, body:", req.body);
+    const debugLog: string[] = [];
+    debugLog.push("Request received");
     try {
       const { amount } = req.body;
       const db = getDb();
-      const configSnap = await db.doc("system_metadata/duitku_configuration").get();
+      debugLog.push("getDb called");
+      const path = "system_metadata/duitku_configuration";
+      debugLog.push(`Calling getDoc for ${path}`);
+      const configSnap = await db.doc(path).get();
+      debugLog.push("getDoc successful");
       
       if (!configSnap.exists) {
         console.warn("[SERVER] [DUITKU] Configuration missing in Firestore");
@@ -223,7 +237,11 @@ async function startServer() {
       }
     } catch (error: any) {
       console.error("[SERVER] getMethods Error:", error);
-      return res.status(500).json({ message: "Gagal mengambil metode pembayaran: " + error.message });
+      return res.status(500).json({ 
+        message: "Gagal mengambil metode pembayaran: " + error.message, 
+        stack: error.stack,
+        debugLog
+      });
     }
   });
 
@@ -329,7 +347,7 @@ async function startServer() {
       
       if (data && data.statusCode === "00") {
         const db = getDb();
-        const userRef = db.collection("users").doc(uid);
+        const userRef = db.doc(`users/${uid}`);
         const userSnap = await userRef.get();
         
         if (userSnap.exists) {
@@ -410,36 +428,64 @@ async function startServer() {
       }
 
       if (resultCode === "00") {
-        const userRef = db.collection("users").doc(additionalParam);
+        const userRef = db.doc(`users/${additionalParam}`);
         const userSnap = await userRef.get();
         
+        let userData: any = {};
+        let transactions: any[] = [];
+        let baseDate = new Date();
+
         if (userSnap.exists) {
-          const userData = userSnap.data()!;
-          let transactions = userData.manualTransactions || [];
-
-          const txIndex = transactions.findIndex((t: any) => t.id === merchantOrderId);
-          if (txIndex > -1 && transactions[txIndex].status !== "Paid") {
-            transactions[txIndex].status = "Paid";
-
-            const days = transactions[txIndex].durationDays || 30;
-            let baseDate = new Date();
-            if (userData.expiryDate && new Date(userData.expiryDate) > baseDate) {
-              baseDate = new Date(userData.expiryDate);
-            }
-
-            const addedTime = days * 24 * 60 * 60 * 1000;
-            const newExpiry = new Date(baseDate.getTime() + addedTime);
-
-            await userRef.update({
-              manualTransactions: transactions,
-              plan: transactions[txIndex].planTier,
-              status: "Active",
-              expiryDate: newExpiry.toISOString(),
-              updatedAt: new Date().toISOString(),
-            });
-            console.log(`[SERVER] [DUITKU CALLBACK] SUCCESS: Account ${additionalParam} activated.`);
+          userData = userSnap.data()!;
+          transactions = userData.manualTransactions || [];
+          if (userData.expiryDate && new Date(userData.expiryDate) > baseDate) {
+            baseDate = new Date(userData.expiryDate);
           }
+        } else {
+          console.log("[SERVER] [DUITKU CALLBACK] User document not found, creating new one for UID:", additionalParam);
+          userData = {
+            uid: additionalParam,
+            createdAt: new Date().toISOString(),
+            role: "user"
+          };
         }
+
+        const txIndex = transactions.findIndex((t: any) => t.id === merchantOrderId);
+        let durationDays = 30;
+        let planTier = "Pro";
+
+        if (txIndex > -1) {
+          if (transactions[txIndex].status !== "Paid") {
+            transactions[txIndex].status = "Paid";
+            durationDays = transactions[txIndex].durationDays || 30;
+            planTier = transactions[txIndex].planTier || "Pro";
+          }
+        } else {
+          // If transaction not found in list, add it
+          transactions.push({
+            id: merchantOrderId,
+            amount: amount,
+            date: new Date().toISOString(),
+            status: "Paid",
+            planTier: "Pro",
+            durationDays: 30,
+            paymentMethod: "Duitku"
+          });
+        }
+
+        const addedTime = durationDays * 24 * 60 * 60 * 1000;
+        const newExpiry = new Date(baseDate.getTime() + addedTime);
+
+        await userRef.set({
+          ...userData,
+          manualTransactions: transactions,
+          plan: planTier,
+          status: "Active",
+          expiryDate: newExpiry.toISOString(),
+          updatedAt: new Date().toISOString(),
+        }, { merge: true });
+
+        console.log(`[SERVER] [DUITKU CALLBACK] SUCCESS: Account ${additionalParam} activated. New expiry: ${newExpiry.toISOString()}`);
       }
       return res.status(200).send("OK");
     } catch (error: any) {

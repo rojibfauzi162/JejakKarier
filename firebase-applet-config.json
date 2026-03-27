@@ -1,9 +1,10 @@
 {
-  "apiKey": "AIzaSyCDvX0tJX24etCFWS9D-IG9B3_BV6xFGEk",
-  "authDomain": "jejakkarir-11379.firebaseapp.com",
   "projectId": "jejakkarir-11379",
+  "appId": "1:1099213790353:web:ad3cd11a7fad4fe3d0b330",
+  "apiKey": "AIzaSyBehjPAvFXA1k42A2nIoCaaqlJO6CF206w",
+  "authDomain": "jejakkarir-11379.firebaseapp.com",
+  "firestoreDatabaseId": "ai-studio-6a779293-e299-40fc-91bc-96bed2cfa8e3",
   "storageBucket": "jejakkarir-11379.firebasestorage.app",
   "messagingSenderId": "1099213790353",
-  "appId": "1:1099213790353:web:b675b4d7b955f91cd0b330",
-  "measurementId": "G-WKBT55412G"
+  "measurementId": ""
 }

@@ -51,9 +51,37 @@
       "schema": "Training",
       "description": "Training documents"
     },
-    "/system_metadata/{configId}": {
+    "/system_metadata/tracking_configuration": {
       "schema": "SystemMetadata",
-      "description": "System configuration documents"
+      "description": "Tracking configuration"
+    },
+    "/system_metadata/duitku_configuration": {
+      "schema": "SystemMetadata",
+      "description": "Duitku configuration"
+    },
+    "/system_metadata/landing_page_configuration": {
+      "schema": "SystemMetadata",
+      "description": "Landing page configuration"
+    },
+    "/system_metadata/mayar_configuration": {
+      "schema": "SystemMetadata",
+      "description": "Mayar configuration"
+    },
+    "/system_metadata/products_catalog": {
+      "schema": "SystemMetadata",
+      "description": "Products catalog"
+    },
+    "/system_metadata/legal_configuration": {
+      "schema": "SystemMetadata",
+      "description": "Legal configuration"
+    },
+    "/system_metadata/sales_notifications_list": {
+      "schema": "SystemMetadata",
+      "description": "Sales notifications list"
+    },
+    "/system_metadata/sales_popup_configuration": {
+      "schema": "SystemMetadata",
+      "description": "Sales popup configuration"
     }
   }
 }

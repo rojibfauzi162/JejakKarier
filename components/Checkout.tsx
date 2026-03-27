@@ -112,7 +112,7 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
         if (response.status === 404) {
           throw new Error("Endpoint API tidak ditemukan (404). Silakan refresh halaman.");
         }
-        throw new Error("Respon server bukan JSON. Silakan hubungi admin.");
+        throw new Error(`Respon server bukan JSON. (${response.status}) Preview: ${text.slice(0, 100)}`);
       }
       
       if (response.ok && (res.responseCode === '00' || res.responseCode === '0')) {
@@ -152,7 +152,7 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
         res = JSON.parse(text);
       } catch (e) {
         console.error("[CHECKOUT] Inquiry JSON Parse Error:", text);
-        throw new Error("Respon Inquiry bukan JSON.");
+        throw new Error(`Respon Inquiry bukan JSON. (${response.status}) Preview: ${text.slice(0, 100)}`);
       }
 
       if (response.ok && res.statusCode === '00') {
