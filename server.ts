@@ -3,8 +3,8 @@ import express from "express";
 import { createServer as createViteServer } from "vite";
 import path from "path";
 import { fileURLToPath } from "url";
-import { initializeApp as initializeAdminApp, getApps as getAdminApps } from "firebase-admin/app";
-import { getFirestore as getAdminFirestore } from "firebase-admin/firestore";
+import { initializeApp, getApps } from "firebase/app";
+import { getFirestore, doc, getDoc, updateDoc, setDoc, collection, query, where, getDocs } from "firebase/firestore";
 import crypto from "crypto";
 import fs from "fs";
 
@@ -25,20 +25,18 @@ async function startServer() {
     const configPath = path.join(process.cwd(), 'firebase-applet-config.json');
     if (fs.existsSync(configPath)) {
       const firebaseConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-      if (!getAdminApps().length) {
+      if (!getApps().length) {
         try {
-          initializeAdminApp({
-            projectId: firebaseConfig.projectId,
-          });
+          initializeApp(firebaseConfig);
         } catch (err) {
-          console.error("[SERVER] Firebase Admin Init Error:", err);
+          console.error("[SERVER] Firebase Init Error:", err);
         }
       }
       try {
-        _db = getAdminFirestore(firebaseConfig.firestoreDatabaseId);
+        _db = getFirestore(undefined, firebaseConfig.firestoreDatabaseId);
         return _db;
       } catch (err) {
-        console.error("[SERVER] Firestore Admin Access Error:", err);
+        console.error("[SERVER] Firestore Access Error:", err);
         throw new Error("Database not initialized. Check Firebase configuration.");
       }
     } else {
@@ -58,8 +56,8 @@ async function startServer() {
   app.get("/api/debug/tracking-config", async (req, res) => {
     try {
       const db = getDb();
-      const configSnap = await db.doc("system_metadata/tracking_configuration").get();
-      const config = configSnap.exists ? configSnap.data()! : null;
+      const configSnap = await getDoc(doc(db, "system_metadata/tracking_configuration"));
+      const config = configSnap.exists() ? configSnap.data()! : null;
       
       res.json({ 
         trackingConfig: config ? "FOUND" : "NOT FOUND"
@@ -73,8 +71,8 @@ async function startServer() {
   app.get("/api/debug/duitku-config", async (req, res) => {
     try {
       const db = getDb();
-      const configSnap = await db.doc("system_metadata/duitku_configuration").get();
-      const config = configSnap.exists ? configSnap.data()! : null;
+      const configSnap = await getDoc(doc(db, "system_metadata/duitku_configuration"));
+      const config = configSnap.exists() ? configSnap.data()! : null;
       
       res.json({ 
         duitkuConfig: config ? {
@@ -92,8 +90,8 @@ async function startServer() {
   app.post("/api/dk/test", async (req, res) => {
     try {
       const db = getDb();
-      const configSnap = await db.doc("system_metadata/duitku_configuration").get();
-      if (!configSnap.exists) return res.status(404).json({ message: "Config not found" });
+      const configSnap = await getDoc(doc(db, "system_metadata/duitku_configuration"));
+      if (!configSnap.exists()) return res.status(404).json({ message: "Config not found" });
       
       const config = configSnap.data()!;
       const merchantCode = String(config.merchantCode || "").trim();
@@ -156,10 +154,10 @@ async function startServer() {
       debugLog.push("getDb called");
       const path = "system_metadata/duitku_configuration";
       debugLog.push(`Calling getDoc for ${path}`);
-      const configSnap = await db.doc(path).get();
+      const configSnap = await getDoc(doc(db, path));
       debugLog.push("getDoc successful");
       
-      if (!configSnap.exists) {
+      if (!configSnap.exists()) {
         console.warn("[SERVER] [DUITKU] Configuration missing in Firestore");
         return res.status(400).json({
           responseCode: "404",
@@ -257,11 +255,11 @@ async function startServer() {
 
       const db = getDb();
       const [configSnap, catalogSnap] = await Promise.all([
-        db.doc("system_metadata/duitku_configuration").get(),
-        db.doc("system_metadata/products_catalog").get(),
+        getDoc(doc(db, "system_metadata/duitku_configuration")),
+        getDoc(doc(db, "system_metadata/products_catalog")),
       ]);
 
-      if (!configSnap.exists) {
+      if (!configSnap.exists()) {
         console.warn("[SERVER] [DUITKU] Configuration missing in Firestore");
         return res.status(400).json({ statusCode: "404", statusMessage: "Config Duitku belum disetel." });
       }
@@ -279,7 +277,7 @@ async function startServer() {
         return res.status(400).json({ statusCode: "400", statusMessage: "Merchant Code atau API Key kosong." });
       }
 
-      const catalogData = catalogSnap.exists ? catalogSnap.data()! : { list: [] };
+      const catalogData = catalogSnap.exists() ? catalogSnap.data()! : { list: [] };
       const plans = catalogData.list || [];
       let plan = plans.find((p: any) => String(p.id) === String(planId));
 
@@ -347,14 +345,14 @@ async function startServer() {
       
       if (data && data.statusCode === "00") {
         const db = getDb();
-        const userRef = db.doc(`users/${uid}`);
-        const userSnap = await userRef.get();
+        const userRef = doc(db, `users/${uid}`);
+        const userSnap = await getDoc(userRef);
         
-        if (userSnap.exists) {
+        if (userSnap.exists()) {
           const userData = userSnap.data()!;
           const currentTxs = userData.manualTransactions || [];
 
-          await userRef.update({
+          await updateDoc(userRef, {
             manualTransactions: [...currentTxs, {
               id: orderId,
               amount: intAmount,
@@ -401,8 +399,8 @@ async function startServer() {
       }
 
       const db = getDb();
-      const configSnap = await db.doc("system_metadata/duitku_configuration").get();
-      if (!configSnap.exists) {
+      const configSnap = await getDoc(doc(db, "system_metadata/duitku_configuration"));
+      if (!configSnap.exists()) {
         console.error("[SERVER] [DUITKU CALLBACK] Configuration missing in Firestore");
         return res.status(500).send("Configuration missing");
       }
@@ -428,14 +426,14 @@ async function startServer() {
       }
 
       if (resultCode === "00") {
-        const userRef = db.doc(`users/${additionalParam}`);
-        const userSnap = await userRef.get();
+        const userRef = doc(db, `users/${additionalParam}`);
+        const userSnap = await getDoc(userRef);
         
         let userData: any = {};
         let transactions: any[] = [];
         let baseDate = new Date();
 
-        if (userSnap.exists) {
+        if (userSnap.exists()) {
           userData = userSnap.data()!;
           transactions = userData.manualTransactions || [];
           if (userData.expiryDate && new Date(userData.expiryDate) > baseDate) {
@@ -476,7 +474,7 @@ async function startServer() {
         const addedTime = durationDays * 24 * 60 * 60 * 1000;
         const newExpiry = new Date(baseDate.getTime() + addedTime);
 
-        await userRef.set({
+        await setDoc(userRef, {
           ...userData,
           manualTransactions: transactions,
           plan: planTier,
