@@ -103,7 +103,17 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
         body: JSON.stringify({ amount: plan.price })
       });
 
-      const res = await response.json();
+      const text = await response.text();
+      let res;
+      try {
+        res = JSON.parse(text);
+      } catch (e) {
+        console.error("[CHECKOUT] Failed to parse JSON:", text);
+        if (response.status === 404) {
+          throw new Error("Endpoint API tidak ditemukan (404). Silakan refresh halaman.");
+        }
+        throw new Error("Respon server bukan JSON. Silakan hubungi admin.");
+      }
       
       if (response.ok && (res.responseCode === '00' || res.responseCode === '0')) {
         setPaymentMethods(res.paymentFee || []);
@@ -136,7 +146,14 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
         })
       });
 
-      const res = await response.json();
+      const text = await response.text();
+      let res;
+      try {
+        res = JSON.parse(text);
+      } catch (e) {
+        console.error("[CHECKOUT] Inquiry JSON Parse Error:", text);
+        throw new Error("Respon Inquiry bukan JSON.");
+      }
 
       if (response.ok && res.statusCode === '00') {
         // Meta Ads: AddPaymentInfo

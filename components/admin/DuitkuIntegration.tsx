@@ -32,6 +32,33 @@ const DuitkuIntegration: React.FC<DuitkuIntegrationProps> = ({ initialConfig, on
     alert("URL disalin ke clipboard!");
   };
 
+  const [testLoading, setTestLoading] = useState(false);
+  const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
+
+  const handleTestConnection = async () => {
+    setTestLoading(true);
+    setTestResult(null);
+    try {
+      const response = await fetch("/api/dk/test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" }
+      });
+      const data = await response.json();
+      if (data.success) {
+        setTestResult({ success: true, message: "Koneksi Berhasil! API Key & Merchant Code valid." });
+      } else {
+        setTestResult({ 
+          success: false, 
+          message: `Gagal: ${data.data?.responseMessage || data.message || "Periksa kembali Merchant Code & API Key."}` 
+        });
+      }
+    } catch (err: any) {
+      setTestResult({ success: false, message: "Koneksi Gagal: " + err.message });
+    } finally {
+      setTestLoading(false);
+    }
+  };
+
   return (
     <div className="bg-white p-8 lg:p-12 rounded-[3.5rem] border border-slate-100 shadow-sm max-w-4xl animate-in fade-in duration-500">
        <div className="flex items-center gap-6 mb-10 pb-8 border-b border-slate-50">
@@ -42,15 +69,32 @@ const DuitkuIntegration: React.FC<DuitkuIntegrationProps> = ({ initialConfig, on
             <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight leading-none">Duitku API Integration</h3>
             <p className="text-slate-400 font-medium text-sm mt-1">Otomatisasi pembayaran via Duitku Payment Gateway.</p>
           </div>
-          <a 
-            href={form.environment === 'sandbox' ? "https://sandbox.duitku.com/merchant" : "https://passport.duitku.com/merchant"} 
-            target="_blank" 
-            rel="noreferrer"
-            className={`px-5 py-2.5 border rounded-xl text-[10px] font-black uppercase transition-all shadow-sm flex items-center gap-2 ${form.environment === 'sandbox' ? 'bg-amber-50 border-amber-200 text-amber-600 hover:bg-amber-100' : 'bg-indigo-50 border-indigo-200 text-indigo-600 hover:bg-indigo-100'}`}
-          >
-            {form.environment === 'sandbox' ? 'Login Sandbox Dashboard ↗' : 'Login Production Dashboard ↗'}
-          </a>
+          <div className="flex flex-col gap-2">
+            <a 
+              href={form.environment === 'sandbox' ? "https://sandbox.duitku.com/merchant" : "https://passport.duitku.com/merchant"} 
+              target="_blank" 
+              rel="noreferrer"
+              className={`px-5 py-2.5 border rounded-xl text-[10px] font-black uppercase transition-all shadow-sm flex items-center gap-2 ${form.environment === 'sandbox' ? 'bg-amber-50 border-amber-200 text-amber-600 hover:bg-amber-100' : 'bg-indigo-50 border-indigo-200 text-indigo-600 hover:bg-indigo-100'}`}
+            >
+              {form.environment === 'sandbox' ? 'Login Sandbox Dashboard ↗' : 'Login Production Dashboard ↗'}
+            </a>
+            <button 
+              type="button"
+              onClick={handleTestConnection}
+              disabled={testLoading}
+              className="px-5 py-2.5 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase hover:bg-black transition-all disabled:opacity-50"
+            >
+              {testLoading ? 'Testing...' : 'Test Koneksi API'}
+            </button>
+          </div>
        </div>
+
+       {testResult && (
+         <div className={`mb-8 p-4 rounded-2xl border flex items-center gap-3 animate-in slide-in-from-top-2 ${testResult.success ? 'bg-emerald-50 border-emerald-100 text-emerald-700' : 'bg-rose-50 border-rose-100 text-rose-700'}`}>
+           <i className={`bi ${testResult.success ? 'bi-check-circle-fill' : 'bi-exclamation-octagon-fill'} text-lg`}></i>
+           <p className="text-xs font-bold">{testResult.message}</p>
+         </div>
+       )}
 
        <form onSubmit={handleSubmit} className="space-y-8">
           {/* Warning Alert */}

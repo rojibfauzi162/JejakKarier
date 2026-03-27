@@ -60,30 +60,135 @@ async function startServer() {
     res.json({ status: "ok" });
   });
 
+  // Duitku Config Status (Separate endpoint for debugging)
+  app.get("/api/debug/duitku-config", async (req, res) => {
+    try {
+      const db = getDb();
+      const configSnap = await db.doc("system_metadata/duitku_configuration").get();
+      const config = configSnap.exists ? configSnap.data()! : null;
+      
+      res.json({ 
+        duitkuConfig: config ? {
+          merchantCode: config.merchantCode ? "SET" : "MISSING",
+          apiKey: config.apiKey ? "SET" : "MISSING",
+          environment: config.environment || "NOT SET"
+        } : "NOT FOUND"
+      });
+    } catch (err: any) {
+      res.status(500).json({ status: "error", message: err.message });
+    }
+  });
+
+  // Test Duitku Credentials
+  app.post("/api/dk/test", async (req, res) => {
+    try {
+      const db = getDb();
+      const configSnap = await db.doc("system_metadata/duitku_configuration").get();
+      if (!configSnap.exists) return res.status(404).json({ message: "Config not found" });
+      
+      const config = configSnap.data()!;
+      const merchantCode = String(config.merchantCode || "").trim();
+      const apiKey = String(config.apiKey || "").trim();
+      const env = config.environment || "sandbox";
+
+      if (!merchantCode || !apiKey) return res.status(400).json({ message: "Merchant Code or API Key missing" });
+
+      const now = new Date();
+      const wibOffset = 7 * 60 * 60 * 1000;
+      const wibTime = new Date(now.getTime() + wibOffset);
+      const datetime = wibTime.toISOString().slice(0, 19).replace("T", " ");
+      const amount = 10000;
+      
+      const sigBase = merchantCode + amount + datetime + apiKey;
+      const signature = crypto.createHash("sha256").update(sigBase).digest("hex");
+
+      const payload = {
+        merchantcode: merchantCode,
+        amount: amount,
+        datetime: datetime,
+        signature: signature,
+      };
+
+      const url = env === "production" 
+        ? "https://passport.duitku.com/webapi/api/merchant/paymentmethod/getpaymentmethod"
+        : "https://sandbox.duitku.com/webapi/api/merchant/paymentmethod/getpaymentmethod";
+
+      console.log(`[SERVER] [DUITKU TEST] Testing ${env} with URL ${url}`);
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const text = await response.text();
+      console.log(`[SERVER] [DUITKU TEST] Response:`, text);
+
+      try {
+        const data = JSON.parse(text);
+        return res.json({ 
+          success: response.ok && (data.responseCode === '00' || data.responseCode === '0'),
+          data 
+        });
+      } catch (e) {
+        return res.status(502).json({ message: "Invalid JSON from Duitku", raw: text.slice(0, 200) });
+      }
+    } catch (error: any) {
+      return res.status(500).json({ message: error.message });
+    }
+  });
+
   // Duitku API Routes (Proxied logic from Cloud Functions)
   app.post("/api/dk/methods", async (req, res) => {
+    console.log("[SERVER] [DUITKU] Request to /api/dk/methods, body:", req.body);
     try {
       const { amount } = req.body;
       const db = getDb();
       const configSnap = await db.doc("system_metadata/duitku_configuration").get();
       
       if (!configSnap.exists) {
+        console.warn("[SERVER] [DUITKU] Configuration missing in Firestore");
         return res.status(400).json({
           responseCode: "404",
           responseMessage: "Konfigurasi Duitku belum diatur di Admin Panel.",
         });
       }
       
-      const config = configSnap.data()!;
-      const merchantCode = String(config.merchantCode).trim();
-      const apiKey = String(config.apiKey).trim();
+      const config = configSnap.data();
+      if (!config) {
+        return res.status(400).json({
+          responseCode: "400",
+          responseMessage: "Data konfigurasi Duitku kosong.",
+        });
+      }
+
+      const merchantCode = String(config.merchantCode || "").trim();
+      const apiKey = String(config.apiKey || "").trim();
       
-      const intAmount = parseInt(amount);
-      const datetime = new Date().toISOString().slice(0, 19).replace("T", " ");
+      if (!merchantCode || !apiKey) {
+        console.warn("[SERVER] [DUITKU] Merchant Code or API Key is empty");
+        return res.status(400).json({
+          responseCode: "400",
+          responseMessage: "Merchant Code atau API Key kosong di konfigurasi.",
+        });
+      }
+
+      const intAmount = Math.floor(Number(amount || 0));
+      if (isNaN(intAmount) || intAmount <= 0) {
+        return res.status(400).json({
+          responseCode: "400",
+          responseMessage: "Jumlah pembayaran tidak valid.",
+        });
+      }
+
+      // Use WIB (GMT+7) for datetime
+      const now = new Date();
+      const wibOffset = 7 * 60 * 60 * 1000;
+      const wibTime = new Date(now.getTime() + wibOffset);
+      const datetime = wibTime.toISOString().slice(0, 19).replace("T", " ");
       
       const sigBase = merchantCode + intAmount + datetime + apiKey;
       const signature = crypto.createHash("sha256").update(sigBase).digest("hex");
-
+ 
       const payload = {
         merchantcode: merchantCode,
         amount: intAmount,
@@ -95,14 +200,27 @@ async function startServer() {
       const sandUrl = "https://sandbox.duitku.com/webapi/api/merchant/paymentmethod/getpaymentmethod";
       const url = config.environment === "production" ? prodUrl : sandUrl;
 
+      console.log(`[SERVER] [DUITKU] Fetching methods from ${url} with payload:`, JSON.stringify(payload));
       const response = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
-      const data = await response.json();
-      return res.json(data);
+      const text = await response.text();
+      console.log(`[SERVER] [DUITKU] Raw Response from Duitku (${response.status}):`, text);
+
+      try {
+        const data = JSON.parse(text);
+        return res.json(data);
+      } catch (parseErr) {
+        console.error("[SERVER] [DUITKU] Failed to parse Duitku response as JSON:", text);
+        return res.status(502).json({ 
+          responseCode: "502", 
+          responseMessage: "Respon dari Duitku bukan JSON yang valid.",
+          rawResponse: text.slice(0, 200)
+        });
+      }
     } catch (error: any) {
       console.error("[SERVER] getMethods Error:", error);
       return res.status(500).json({ message: "Gagal mengambil metode pembayaran: " + error.message });
@@ -110,10 +228,12 @@ async function startServer() {
   });
 
   app.post("/api/dk/inquiry", async (req, res) => {
+    console.log("[SERVER] [DUITKU] Request to /api/dk/inquiry, body:", req.body);
     try {
       const { uid, planId, paymentMethod, email, customerName } = req.body;
 
       if (!uid || !planId) {
+        console.warn("[SERVER] [DUITKU] Missing UID or PlanID");
         return res.status(400).json({ statusCode: "400", statusMessage: "UID dan Plan ID wajib diisi." });
       }
 
@@ -124,12 +244,22 @@ async function startServer() {
       ]);
 
       if (!configSnap.exists) {
+        console.warn("[SERVER] [DUITKU] Configuration missing in Firestore");
         return res.status(400).json({ statusCode: "404", statusMessage: "Config Duitku belum disetel." });
       }
       
-      const config = configSnap.data()!;
-      const merchantCode = String(config.merchantCode).trim();
-      const apiKey = String(config.apiKey).trim();
+      const config = configSnap.data();
+      if (!config) {
+        return res.status(400).json({ statusCode: "400", statusMessage: "Data konfigurasi Duitku kosong." });
+      }
+
+      const merchantCode = String(config.merchantCode || "").trim();
+      const apiKey = String(config.apiKey || "").trim();
+
+      if (!merchantCode || !apiKey) {
+        console.warn("[SERVER] [DUITKU] Merchant Code or API Key is empty");
+        return res.status(400).json({ statusCode: "400", statusMessage: "Merchant Code atau API Key kosong." });
+      }
 
       const catalogData = catalogSnap.exists ? catalogSnap.data()! : { list: [] };
       const plans = catalogData.list || [];
@@ -140,10 +270,11 @@ async function startServer() {
       }
 
       if (!plan) {
+        console.warn("[SERVER] [DUITKU] Plan not found:", planId);
         return res.status(400).json({ statusCode: "404", statusMessage: "Paket tidak ditemukan di DB." });
       }
 
-      const intAmount = Math.floor(Number(plan.price));
+      const intAmount = Math.floor(Number(plan.price || 0));
       const orderId = "FK-" + Date.now();
       
       const signature = md5(merchantCode + orderId + intAmount + apiKey);
@@ -174,19 +305,28 @@ async function startServer() {
       const sandInq = "https://sandbox.duitku.com/webapi/api/merchant/v2/inquiry";
       const url = config.environment === "production" ? prodInq : sandInq;
 
-      console.log(`[SERVER] [DUITKU] Sending Payload to ${config.environment}:`, JSON.stringify(payload));
-
+      console.log(`[SERVER] [DUITKU] Sending Inquiry to ${url} with payload:`, JSON.stringify(payload));
       const response = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
-      const data = await response.json();
-      
-      console.log(`[SERVER] [DUITKU] Response Code: ${response.status}`);
-      console.log(`[SERVER] [DUITKU] Response Body:`, JSON.stringify(data));
+      const text = await response.text();
+      console.log(`[SERVER] [DUITKU] Raw Inquiry Response (${response.status}):`, text);
 
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (parseErr) {
+        console.error("[SERVER] [DUITKU] Failed to parse Inquiry response as JSON:", text);
+        return res.status(502).json({ 
+          statusCode: "502", 
+          statusMessage: "Respon dari Duitku bukan JSON yang valid.",
+          rawResponse: text.slice(0, 200)
+        });
+      }
+      
       if (data && data.statusCode === "00") {
         const db = getDb();
         const userRef = db.collection("users").doc(uid);
@@ -223,22 +363,46 @@ async function startServer() {
     }
   });
 
-  app.post("/dk/cb", async (req, res) => {
+  // Alias for Duitku Callback (handles older or manual URLs)
+  app.post(["/cb", "/dk/cb", "/api/cloud-functions/duitkuCallback"], async (req, res) => {
     try {
-      const { amount, merchantOrderId, signature, resultCode, additionalParam } = req.body;
+      let { amount, merchantOrderId, signature, resultCode, additionalParam } = req.body;
       
-      console.log("[SERVER] [DUITKU CALLBACK] Received payload:", req.body);
+      console.log("[SERVER] [DUITKU CALLBACK] Received payload:", JSON.stringify(req.body));
+
+      // Robustness: ensure amount is string for signature calculation
+      amount = String(amount || "").trim();
+      merchantOrderId = String(merchantOrderId || "").trim();
+      signature = String(signature || "").trim();
+      resultCode = String(resultCode || "").trim();
+      additionalParam = String(additionalParam || "").trim();
+
+      if (!merchantOrderId || !signature) {
+        console.error("[SERVER] [DUITKU CALLBACK] Missing critical fields");
+        return res.status(400).send("Missing fields");
+      }
 
       const db = getDb();
       const configSnap = await db.doc("system_metadata/duitku_configuration").get();
-      if (!configSnap.exists) return res.status(500).send("Configuration missing");
+      if (!configSnap.exists) {
+        console.error("[SERVER] [DUITKU CALLBACK] Configuration missing in Firestore");
+        return res.status(500).send("Configuration missing");
+      }
       
       const config = configSnap.data()!;
-      const merchantCode = String(config.merchantCode).trim();
-      const apiKey = String(config.apiKey).trim();
+      const merchantCode = String(config.merchantCode || "").trim();
+      const apiKey = String(config.apiKey || "").trim();
+
+      if (!merchantCode || !apiKey) {
+        console.error("[SERVER] [DUITKU CALLBACK] Merchant Code or API Key missing in config");
+        return res.status(500).send("Config incomplete");
+      }
 
       const sigBase = merchantCode + amount + merchantOrderId + apiKey;
       const calcSignature = md5(sigBase);
+
+      console.log(`[SERVER] [DUITKU CALLBACK] SigBase: ${sigBase}`);
+      console.log(`[SERVER] [DUITKU CALLBACK] Calculated: ${calcSignature}, Received: ${signature}`);
 
       if (signature !== calcSignature) {
         console.error("[SERVER] [DUITKU CALLBACK] Invalid Signature mismatch");
@@ -312,6 +476,12 @@ async function startServer() {
     }
   });
 
+  // 404 Handler for API
+  app.use("/api", (req, res) => {
+    console.warn(`[SERVER] 404 Not Found: ${req.method} ${req.originalUrl}`);
+    res.status(404).json({ error: "API Route Not Found", path: req.originalUrl });
+  });
+
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
@@ -322,7 +492,7 @@ async function startServer() {
   } else {
     const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
-    app.get('*', (req, res) => {
+    app.get('*all', (req, res) => {
       res.sendFile(path.join(distPath, 'index.html'));
     });
   }

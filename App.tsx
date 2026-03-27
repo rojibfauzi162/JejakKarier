@@ -54,21 +54,38 @@ const App: React.FC = () => {
   useEffect(() => {
     let timer: any;
     let fallbackTimer: any;
+    let forceTimer: any;
+
     if (loading) {
+      console.log("[APP] Loading state is TRUE, starting fallback timers...");
+      
+      // Show reset button after 5 seconds
       timer = setTimeout(() => {
+        console.warn("[APP] Loading stuck for 5 seconds, showing reset button.");
         setLoadingStuck(true);
-        // Fallback: If onAuthStateChanged hasn't fired after 12 seconds, assume unauthenticated
-        fallbackTimer = setTimeout(() => {
-          console.warn("Auth state check timed out. Assuming unauthenticated.");
-          setLoading(false);
-        }, 2000);
+      }, 5000);
+
+      // Force load after 10 seconds regardless of auth state
+      forceTimer = setTimeout(() => {
+        console.warn("[APP] Loading stuck for 10 seconds. FORCING loading to FALSE for UX.");
+        setLoading(false);
       }, 10000);
+
+      // Auth fallback: If onAuthStateChanged hasn't fired after 8 seconds, assume unauthenticated
+      fallbackTimer = setTimeout(() => {
+        if (loading) {
+          console.warn("[APP] Auth state check timed out after 8s. Assuming unauthenticated.");
+          setLoading(false);
+        }
+      }, 8000);
     } else {
+      console.log("[APP] Loading state is FALSE.");
       setLoadingStuck(false);
     }
     return () => {
       clearTimeout(timer);
       clearTimeout(fallbackTimer);
+      clearTimeout(forceTimer);
     };
   }, [loading]);
 
@@ -414,8 +431,10 @@ const App: React.FC = () => {
   }, [landingConfig]);
 
   useEffect(() => {
+    console.log("[AUTH] Initializing onAuthStateChanged listener...");
     const unsubscribe = onAuthStateChanged(auth, async (authUser) => {
-      setLoading(true);
+      console.log("[AUTH] onAuthStateChanged fired. authUser:", authUser ? authUser.uid : "NULL");
+      // setLoading(true); // Removed to prevent repeated resets if onAuthStateChanged fires multiple times
       
       // CHECK DEMO MODE FIRST
       const isDemo = localStorage.getItem('demo_mode') === 'true';
