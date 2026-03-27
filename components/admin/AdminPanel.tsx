@@ -83,6 +83,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard', user
         getAllUsers(), getAiConfig(), getProductsCatalog(), getDuitkuConfig(), getFollowUpConfig()
       ]);
 
+      console.log("[ADMIN PANEL] Users fetched:", usersData.length);
       setUsers(usersData);
       if (configData) setAiConfigState(configData);
       
@@ -110,8 +111,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard', user
 
   // LOGIKA FILTER DAN DEDUPLIKASI EMAIL
   const filteredUsers = useMemo(() => {
-    const emailMap = new Map<string, AppData>();
-    
     // 1. Sort semua user: Prioritaskan yang expiryDate-nya paling jauh (terlama)
     const sortedRaw = [...users].sort((a, b) => {
       const dateA = a.expiryDate ? new Date(a.expiryDate).getTime() : 0;
@@ -119,24 +118,12 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard', user
       return dateB - dateA; // Descending: 2028 akan di atas 2026
     });
 
-    // 2. Masukkan ke Map berdasarkan email. Karena sudah disort, 
-    // email yang pertama masuk adalah yang punya expiryDate paling lama.
-    sortedRaw.forEach(u => {
-      if (u.profile?.email && !u.isDeleted) {
-        const emailKey = (u.profile.email || '').toLowerCase().trim();
-        if (!emailMap.has(emailKey)) {
-          emailMap.set(emailKey, u);
-        }
-      }
-    });
-
-    // 3. Filter berdasarkan search query
-    const uniqueUsers = Array.from(emailMap.values());
+    // 2. Filter berdasarkan search query
     const query = (searchQuery || '').toLowerCase().trim();
     
-    if (!query) return uniqueUsers;
+    if (!query) return sortedRaw;
 
-    return uniqueUsers.filter(u => 
+    return sortedRaw.filter(u => 
       (u.profile?.name || '').toLowerCase().includes(query) || 
       (u.profile?.email || '').toLowerCase().includes(query)
     );

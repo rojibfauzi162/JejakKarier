@@ -140,6 +140,7 @@ async function startServer() {
     try {
       const db = getDb();
       const configSnap = await db.doc("system_metadata/duitku_configuration").get();
+      console.log(`[SERVER] [DUITKU TEST] Config path: system_metadata/duitku_configuration, exists: ${configSnap.exists}`);
       if (!configSnap.exists) return res.status(404).json({ message: "Config not found" });
       
       const config = configSnap.data()!;

@@ -604,11 +604,11 @@ const App: React.FC = () => {
 
           if (userData) {
             // Force demote rojibfauzi@gmail.com if they are still superadmin
-            if (authUser.email === 'rojibfauzi@gmail.com' && (userData as AppData).role === UserRole.SUPERADMIN) {
-              console.log("[AUTH] Demoting rojibfauzi@gmail.com to user role as requested.");
-              (userData as AppData).role = UserRole.USER;
-              await saveUserData(authUser.uid, userData as AppData);
-            }
+            // if (authUser.email === 'rojibfauzi@gmail.com' && (userData as AppData).role === UserRole.SUPERADMIN) {
+            //   console.log("[AUTH] Demoting rojibfauzi@gmail.com to user role as requested.");
+            //   (userData as AppData).role = UserRole.USER;
+            //   await saveUserData(authUser.uid, userData as AppData);
+            // }
 
             const currentPlanConfig = catalog.find(p => p.tier === (userData as AppData).plan);
             if (currentPlanConfig) {

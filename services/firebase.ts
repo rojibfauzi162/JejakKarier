@@ -234,6 +234,7 @@ export const sanitizeData = (obj: any, visited = new WeakSet()): any => {
 
   // Handle Arrays
   if (Array.isArray(obj)) {
+    visited.add(obj);
     return obj.map(item => sanitizeData(item, visited));
   }
 
@@ -243,6 +244,8 @@ export const sanitizeData = (obj: any, visited = new WeakSet()): any => {
   }
 
   const sanitized: any = {};
+  visited.add(obj);
+  
   // Use Object.getOwnPropertyNames to get non-enumerable properties if it's a special object
   // but for plain objects Object.keys is enough and safer
   const keys = Object.keys(obj);
@@ -347,8 +350,7 @@ export const getAllUsers = async (): Promise<AppData[]> => {
       .map(doc => ({
         ...(doc.data() as AppData),
         uid: doc.id
-      }))
-      .filter(u => u.profile); // Ensure profile exists
+      }));
   } catch (error: any) {
     if (error.code === 'permission-denied') return [];
     handleFirestoreError(error, OperationType.GET, "users");
