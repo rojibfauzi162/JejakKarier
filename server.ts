@@ -3,7 +3,7 @@ import express from "express";
 import { createServer as createViteServer } from "vite";
 import path from "path";
 import { fileURLToPath } from "url";
-import admin from "firebase-admin";
+import * as admin from "firebase-admin";
 import crypto from "crypto";
 import fs from "fs";
 
@@ -27,15 +27,19 @@ async function startServer() {
       if (admin.apps.length === 0) {
         try {
           admin.initializeApp({
-            projectId: firebaseConfig.projectId,
+            credential: admin.credential.applicationDefault(),
           });
         } catch (err) {
           console.error("[SERVER] Firebase Admin Init Error:", err);
         }
       }
       try {
+        console.log("[SERVER] admin object keys:", Object.keys(admin));
         _db = admin.firestore();
+        console.log("[SERVER] Firestore Admin initialized");
+        console.log("[SERVER] _db:", _db);
         if (firebaseConfig.firestoreDatabaseId && firebaseConfig.firestoreDatabaseId !== '(default)') {
+          console.log(`[SERVER] Using custom database ID: ${firebaseConfig.firestoreDatabaseId}`);
           _db = admin.firestore(firebaseConfig.firestoreDatabaseId);
         }
         return _db;
@@ -197,6 +201,7 @@ async function startServer() {
   // Duitku API Routes (Proxied logic from Cloud Functions)
   app.all("/api/dk/methods", async (req, res) => {
     console.log(`[SERVER] [DUITKU] Received ${req.method} request to /api/dk/methods`);
+    const debugLog: string[] = [];
     if (req.method !== 'POST') {
       console.warn(`[SERVER] [DUITKU] Method ${req.method} not allowed for /api/dk/methods`);
       return res.status(405).json({ error: "Method Not Allowed" });
@@ -292,7 +297,7 @@ async function startServer() {
       return res.status(500).json({ 
         message: "Gagal mengambil metode pembayaran: " + error.message, 
         stack: error.stack,
-        debugLog
+        debugLog: typeof debugLog !== 'undefined' ? debugLog : []
       });
     }
   });
@@ -562,10 +567,14 @@ async function startServer() {
 
     try {
       console.log(`[SERVER] Sending request to Facebook Graph API for pixelId: ${pixelId}`);
+      console.log(`[SERVER] Request URL: https://graph.facebook.com/v17.0/${pixelId}/events`);
+      const payloadString = JSON.stringify(sanitizeData(payload));
+      console.log(`[SERVER] Payload size: ${payloadString.length} bytes`);
+      
       const response = await fetch(`https://graph.facebook.com/v17.0/${pixelId}/events?access_token=${accessToken}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(sanitizeData(payload))
+        body: payloadString
       });
       console.log(`[SERVER] Facebook Graph API response status: ${response.status}`);
 
@@ -604,8 +613,8 @@ async function startServer() {
   }
 
   app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+    console.log(`[SERVER] Server running on http://localhost:${PORT}`);
   });
 }
 
-startServer();
+startServer().catch(err => console.error("[SERVER] Fatal error:", err));
