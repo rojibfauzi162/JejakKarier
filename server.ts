@@ -195,9 +195,13 @@ async function startServer() {
   });
 
   // Duitku API Routes (Proxied logic from Cloud Functions)
-  app.post("/api/dk/methods", async (req, res) => {
-    const debugLog: string[] = [];
-    debugLog.push("Request received");
+  app.all("/api/dk/methods", async (req, res) => {
+    console.log(`[SERVER] [DUITKU] Received ${req.method} request to /api/dk/methods`);
+    if (req.method !== 'POST') {
+      console.warn(`[SERVER] [DUITKU] Method ${req.method} not allowed for /api/dk/methods`);
+      return res.status(405).json({ error: "Method Not Allowed" });
+    }
+    
     try {
       const { amount } = req.body;
       const db = getDb();
@@ -430,7 +434,12 @@ async function startServer() {
   });
 
   // Alias for Duitku Callback (handles older or manual URLs)
-  app.post(["/cb", "/dk/cb", "/api/cloud-functions/duitkuCallback"], async (req, res) => {
+  app.all(["/cb", "/dk/cb", "/api/cloud-functions/duitkuCallback"], async (req, res) => {
+    if (req.method === 'GET') {
+      console.log("[SERVER] [DUITKU CALLBACK] Received GET request, logging query:", req.query);
+      return res.status(200).send("Callback received via GET");
+    }
+    
     try {
       let { amount, merchantOrderId, signature, resultCode, additionalParam } = req.body;
       
