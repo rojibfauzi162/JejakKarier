@@ -25,7 +25,7 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
   const [showManualSuccess, setShowManualSuccess] = useState(false);
   const [adminPhone, setAdminPhone] = useState('628123456789');
 
-  const CLOUD_FUNCTIONS_URL = "/api/dk";
+  const CLOUD_FUNCTIONS_URL = "https://ais-dev-tb6oefqv2vrpr2jp3gdoal-86548481689.asia-southeast1.run.app/api/dk";
 
   useEffect(() => {
     getLandingPageConfig().then(cfg => {

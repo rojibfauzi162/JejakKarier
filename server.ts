@@ -1,5 +1,6 @@
 
 import express from "express";
+import cors from 'cors';
 import { createServer as createViteServer } from "vite";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -15,6 +16,11 @@ async function startServer() {
   const PORT = 3000;
 
   app.use(express.json());
+  app.use(cors({
+    origin: 'https://fokuskarir.web.id',
+    methods: ['GET', 'POST'],
+    credentials: true
+  }));
 
   // Lazy-load Firestore Admin to prevent startup crashes
   let _db: any = null;
