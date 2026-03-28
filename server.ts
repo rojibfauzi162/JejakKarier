@@ -199,13 +199,9 @@ async function startServer() {
   });
 
   // Duitku API Routes (Proxied logic from Cloud Functions)
-  app.all("/api/dk/methods", async (req, res) => {
+  app.post("/api/dk/methods", async (req, res) => {
     console.log(`[SERVER] [DUITKU] Received ${req.method} request to /api/dk/methods`);
     const debugLog: string[] = [];
-    if (req.method !== 'POST') {
-      console.warn(`[SERVER] [DUITKU] Method ${req.method} not allowed for /api/dk/methods`);
-      return res.status(405).json({ error: "Method Not Allowed" });
-    }
     
     try {
       const { amount } = req.body;
