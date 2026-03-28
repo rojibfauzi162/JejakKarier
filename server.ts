@@ -544,6 +544,7 @@ async function startServer() {
 
   // Meta CAPI Proxy
   app.post("/api/tracking/meta-capi", async (req, res) => {
+    console.log("[SERVER] Received request to /api/tracking/meta-capi");
     const { pixelId, accessToken, payload } = req.body;
 
     if (!pixelId || !accessToken || !payload) {
@@ -551,11 +552,13 @@ async function startServer() {
     }
 
     try {
+      console.log(`[SERVER] Sending request to Facebook Graph API for pixelId: ${pixelId}`);
       const response = await fetch(`https://graph.facebook.com/v17.0/${pixelId}/events?access_token=${accessToken}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(sanitizeData(payload))
       });
+      console.log(`[SERVER] Facebook Graph API response status: ${response.status}`);
 
       const result = await response.json();
       if (!response.ok) {
