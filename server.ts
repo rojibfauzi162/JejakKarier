@@ -43,10 +43,12 @@ async function startServer() {
     const firebaseConfig = JSON.parse(fs.readFileSync(configPath, "utf8"));
     
     if (!admin.apps.length) {
-      admin.initializeApp({
-        projectId: firebaseConfig.projectId,
-      });
-      log(`Firebase Admin initialized for project: ${firebaseConfig.projectId}`);
+      if (!process.env.GOOGLE_CLOUD_PROJECT && firebaseConfig.projectId) {
+        process.env.GOOGLE_CLOUD_PROJECT = firebaseConfig.projectId;
+        log(`Set GOOGLE_CLOUD_PROJECT to ${firebaseConfig.projectId}`);
+      }
+      admin.initializeApp();
+      log(`Firebase Admin initialized.`);
     }
     
     // Use the specific database ID if provided, otherwise default
@@ -55,7 +57,7 @@ async function startServer() {
       : undefined;
       
     db = admin.firestore(dbId);
-    log(`Firestore Admin connected (Database: ${dbId || 'default'}).`);
+    log(`Firestore Admin connected. Database: ${dbId || 'default'}.`);
   } catch (error: any) {
     log(`CRITICAL: Firebase Admin initialization failed: ${error.message}`);
   }
@@ -118,7 +120,8 @@ async function startServer() {
       }
     } catch (error: any) {
       log(`Error in /api/dk/test: ${error.message}`);
-      res.status(500).json({ success: false, message: error.message });
+      if (error.stack) log(`Stack: ${error.stack}`);
+      res.status(500).json({ success: false, message: `Firestore Error: ${error.message}` });
     }
   });
 

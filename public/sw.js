@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fokuskarir-v6';
+const CACHE_NAME = 'fokuskarir-v7';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -11,7 +11,7 @@ self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        console.log('Opened cache');
+        console.log('Opened cache v7');
         return cache.addAll(urlsToCache);
       })
   );
@@ -34,11 +34,6 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
-  // Hanya tangani request GET
-  if (event.request.method !== 'GET') {
-    return;
-  }
-
   const url = new URL(event.request.url);
 
   // Abaikan request ke API internal atau eksternal
@@ -48,7 +43,8 @@ self.addEventListener('fetch', event => {
     url.hostname.includes('firebaseio.com') ||
     url.hostname.includes('firestore.googleapis.com') ||
     url.hostname.includes('identitytoolkit.googleapis.com') ||
-    url.hostname.includes('securetoken.googleapis.com')
+    url.hostname.includes('securetoken.googleapis.com') ||
+    event.request.method !== 'GET' // Selalu abaikan POST/PUT/DELETE
   ) {
     return;
   }

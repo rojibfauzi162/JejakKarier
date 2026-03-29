@@ -65,16 +65,16 @@ const DuitkuSetup: React.FC<DuitkuSetupProps> = ({ onToast }) => {
         } else {
           setTestResult({ 
             success: false, 
-            message: `Gagal: ${data.data?.responseMessage || data.message || "Periksa kembali Merchant Code & API Key."}` 
+            message: `Gagal: ${data.message || "Periksa kembali Merchant Code & API Key."}` 
           });
         }
       } else {
         const text = await response.text();
+        console.error("Server returned non-JSON response:", text);
         setTestResult({ 
           success: false, 
-          message: `Server Error (${response.status}): Silakan coba simpan konfigurasi terlebih dahulu.` 
+          message: `Server Error (${response.status}): Respons server tidak valid (HTML). Ini biasanya disebabkan oleh Service Worker yang lama. Silakan tekan Ctrl+F5 (Hard Refresh) atau buka di Tab Baru.` 
         });
-        console.error("Server returned non-JSON response:", text);
       }
     } catch (err: any) {
       setTestResult({ success: false, message: "Koneksi Gagal: " + err.message });
