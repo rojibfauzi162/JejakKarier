@@ -33,22 +33,14 @@ root.render(
 );
 console.log("[INDEX] React render called.");
 
-// Register Service Worker for PWA
+// Register Service Worker for PWA (DISABLED TO FIX NETWORK ERRORS)
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    // UNREGISTER ALL SERVICE WORKERS TO FIX NETWORK ERRORS
     navigator.serviceWorker.getRegistrations().then(registrations => {
       for (const registration of registrations) {
         registration.unregister();
-        console.log('SW unregistered to clear cache');
+        console.log('[SW] Unregistered existing Service Worker');
       }
-      
-      // Register the new one after unregistering the old ones
-      navigator.serviceWorker.register('/sw.js').then(registration => {
-        console.log('SW registered: ', registration);
-      }).catch(registrationError => {
-        console.log('SW registration failed: ', registrationError);
-      });
     });
   });
 }

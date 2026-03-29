@@ -64,8 +64,15 @@ async function startServer() {
 
   // --- DUITKU API ROUTES ---
 
+  // Debug route for GET
+  app.get("/api/dk/test", (req, res) => {
+    log("GET /api/dk/test called (unexpectedly)");
+    res.json({ success: false, message: "Please use POST for this endpoint." });
+  });
+
   app.post("/api/dk/test", async (req, res) => {
     try {
+      log("POST /api/dk/test called");
       log("Testing Duitku connection...");
       
       if (!db) {
@@ -146,6 +153,50 @@ async function startServer() {
       log(`Error in /api/dk/test: ${error.message}`);
       if (error.stack) log(`Stack: ${error.stack}`);
       res.status(500).json({ success: false, message: `Server Error: ${error.message}` });
+    }
+  });
+
+  // --- DUITKU TRANSACTION STATUS CHECK ---
+  app.post("/api/dk/check-status", async (req, res) => {
+    try {
+      const { merchantOrderId } = req.body;
+      log(`Checking Duitku status for Order: ${merchantOrderId}`);
+
+      if (!merchantOrderId) {
+        return res.status(400).json({ success: false, message: "Order ID diperlukan." });
+      }
+
+      const configSnap = await db.collection("system_metadata").doc("duitku_configuration").get();
+      if (!configSnap.exists) {
+        return res.status(404).json({ success: false, message: "Konfigurasi Duitku tidak ditemukan." });
+      }
+
+      const config = configSnap.data() as any;
+      const { merchantCode, apiKey, environment } = config;
+
+      // Signature for status check: md5(merchantCode + merchantOrderId + apiKey)
+      const signature = CryptoJS.MD5(merchantCode + merchantOrderId + apiKey).toString();
+
+      const url = environment === 'production'
+        ? 'https://passport.duitku.com/webapi/api/merchant/transactionStatus'
+        : 'https://sandbox.duitku.com/webapi/api/merchant/transactionStatus';
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          merchantCode,
+          merchantOrderId,
+          signature
+        })
+      });
+
+      const data = await response.json();
+      log(`Duitku Status Response: ${JSON.stringify(data)}`);
+      res.json({ success: true, data });
+    } catch (error: any) {
+      log(`Error in /api/dk/check-status: ${error.message}`);
+      res.status(500).json({ success: false, message: error.message });
     }
   });
 
