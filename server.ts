@@ -44,16 +44,18 @@ async function startServer() {
     
     if (!admin.apps.length) {
       admin.initializeApp({
-        credential: admin.credential.applicationDefault(),
         projectId: firebaseConfig.projectId,
       });
       log(`Firebase Admin initialized for project: ${firebaseConfig.projectId}`);
     }
-    db = admin.firestore();
-    if (firebaseConfig.firestoreDatabaseId && firebaseConfig.firestoreDatabaseId !== '(default)') {
-        db = admin.firestore(firebaseConfig.firestoreDatabaseId);
-    }
-    log("Firestore Admin connected.");
+    
+    // Use the specific database ID if provided, otherwise default
+    const dbId = (firebaseConfig.firestoreDatabaseId && firebaseConfig.firestoreDatabaseId !== '(default)') 
+      ? firebaseConfig.firestoreDatabaseId 
+      : undefined;
+      
+    db = admin.firestore(dbId);
+    log(`Firestore Admin connected (Database: ${dbId || 'default'}).`);
   } catch (error: any) {
     log(`CRITICAL: Firebase Admin initialization failed: ${error.message}`);
   }
@@ -63,9 +65,16 @@ async function startServer() {
   app.post("/api/dk/test", async (req, res) => {
     try {
       log("Testing Duitku connection...");
+      
+      log(`Reading Firestore path: system_metadata/duitku_configuration`);
       const configSnap = await db.collection("system_metadata").doc("duitku_configuration").get();
+      
       if (!configSnap.exists) {
-        return res.status(404).json({ success: false, message: "Konfigurasi Duitku tidak ditemukan di Firestore." });
+        log("Duitku configuration document not found.");
+        return res.status(200).json({ 
+          success: false, 
+          message: "Konfigurasi belum disimpan. Silakan isi form di bawah dan klik 'Simpan Konfigurasi' terlebih dahulu sebelum melakukan test." 
+        });
       }
       const config = configSnap.data() as any;
       const merchantCode = config.merchantCode;

@@ -56,14 +56,25 @@ const DuitkuSetup: React.FC<DuitkuSetupProps> = ({ onToast }) => {
         method: "POST",
         headers: { "Content-Type": "application/json" }
       });
-      const data = await response.json();
-      if (data.success) {
-        setTestResult({ success: true, message: "Koneksi Berhasil! API Key & Merchant Code valid." });
+      
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        const data = await response.json();
+        if (data.success) {
+          setTestResult({ success: true, message: "Koneksi Berhasil! API Key & Merchant Code valid." });
+        } else {
+          setTestResult({ 
+            success: false, 
+            message: `Gagal: ${data.data?.responseMessage || data.message || "Periksa kembali Merchant Code & API Key."}` 
+          });
+        }
       } else {
+        const text = await response.text();
         setTestResult({ 
           success: false, 
-          message: `Gagal: ${data.data?.responseMessage || data.message || "Periksa kembali Merchant Code & API Key."}` 
+          message: `Server Error (${response.status}): Silakan coba simpan konfigurasi terlebih dahulu.` 
         });
+        console.error("Server returned non-JSON response:", text);
       }
     } catch (err: any) {
       setTestResult({ success: false, message: "Koneksi Gagal: " + err.message });
