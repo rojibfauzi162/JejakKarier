@@ -53,7 +53,7 @@ const DuitkuSetup: React.FC<DuitkuSetupProps> = ({ onToast }) => {
     setTestResult(null);
     try {
       console.log("[DUITKU] Testing connection via /api/dk/test...");
-      const response = await fetch("/api/dk/test", {
+      const response = await fetch(`/api/dk/test?t=${Date.now()}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(config) // Send the current config state
@@ -75,9 +75,20 @@ const DuitkuSetup: React.FC<DuitkuSetupProps> = ({ onToast }) => {
         const text = await response.text();
         console.error("Server returned non-JSON response:", text.substring(0, 500));
         const isHtml = text.toLowerCase().includes("<!doctype html>") || text.toLowerCase().includes("<html>");
+        
+        if (isHtml && 'serviceWorker' in navigator) {
+          console.log("Detected HTML response for API. Unregistering Service Worker and reloading...");
+          const registrations = await navigator.serviceWorker.getRegistrations();
+          for(let registration of registrations) {
+            await registration.unregister();
+          }
+          window.location.reload();
+          return;
+        }
+
         setTestResult({ 
           success: false, 
-          message: `Server Error (${response.status}): Respons server tidak valid ${isHtml ? '(HTML)' : ''}. ${isHtml ? 'Ini biasanya disebabkan oleh Service Worker yang lama atau rute API tidak ditemukan.' : 'Respons: ' + text.substring(0, 50)}` 
+          message: `Server Error (${response.status}): Respons server tidak valid ${isHtml ? '(HTML)' : ''}. ${isHtml ? 'Memuat ulang halaman untuk membersihkan cache...' : 'Respons: ' + text.substring(0, 50)}` 
         });
       }
     } catch (err: any) {
@@ -139,25 +150,6 @@ const DuitkuSetup: React.FC<DuitkuSetupProps> = ({ onToast }) => {
               <i className={`bi ${testResult.success ? 'bi-check-circle-fill' : 'bi-exclamation-octagon-fill'} text-lg`}></i>
               <p className="text-xs font-bold">{testResult.message}</p>
             </div>
-            {!testResult.success && testResult.message.includes("HTML") && (
-              <button 
-                onClick={() => {
-                  if ('serviceWorker' in navigator) {
-                    navigator.serviceWorker.getRegistrations().then(registrations => {
-                      for(let registration of registrations) {
-                        registration.unregister();
-                      }
-                      window.location.reload();
-                    });
-                  } else {
-                    window.location.reload();
-                  }
-                }}
-                className="mt-2 px-4 py-2 bg-rose-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-rose-700 transition-colors w-fit"
-              >
-                Paksa Bersihkan Cache & Refresh
-              </button>
-            )}
           </div>
         )}
 

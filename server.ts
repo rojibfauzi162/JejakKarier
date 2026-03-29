@@ -325,7 +325,36 @@ async function startServer() {
         returnUrl,
         signature,
         paymentMethod,
-        expiryPeriod: 1440 // 24 hours
+        expiryPeriod: 1440, // 24 hours
+        itemDetails: [{
+          name: `Subscription ${plan.name}`,
+          price: paymentAmount,
+          quantity: 1
+        }],
+        customerDetail: {
+          firstName: customerName.split(' ')[0] || 'Customer',
+          lastName: customerName.split(' ').slice(1).join(' ') || '',
+          email: email,
+          phoneNumber: '081234567890', // Placeholder or get from user
+          billingAddress: {
+            firstName: customerName.split(' ')[0] || 'Customer',
+            lastName: customerName.split(' ').slice(1).join(' ') || '',
+            address: 'Jl. Sudirman',
+            city: 'Jakarta',
+            postalCode: '10000',
+            phone: '081234567890',
+            countryCode: 'ID'
+          },
+          shippingAddress: {
+            firstName: customerName.split(' ')[0] || 'Customer',
+            lastName: customerName.split(' ').slice(1).join(' ') || '',
+            address: 'Jl. Sudirman',
+            city: 'Jakarta',
+            postalCode: '10000',
+            phone: '081234567890',
+            countryCode: 'ID'
+          }
+        }
       };
 
       const url = config.environment === 'production'
