@@ -40,7 +40,7 @@ async function testConnection() {
     }
   }
 }
-testConnection();
+// testConnection();
 
 export const requestNotificationPermission = async (uid: string) => {
   try {

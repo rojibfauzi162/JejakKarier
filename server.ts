@@ -1,6 +1,7 @@
 
 import express from "express";
-import cors from 'cors';
+import cors from "cors";
+console.log("Module loaded");
 import { createServer as createViteServer } from "vite";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -12,55 +13,61 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 async function startServer() {
+  process.env.NODE_ENV = 'development';
+  console.log("Starting server...");
   const app = express();
   const PORT = 3000;
 
+  // Initialize Firebase Admin
+  const configPath = path.join(process.cwd(), 'firebase-applet-config.json');
+  if (fs.existsSync(configPath)) {
+    const firebaseConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    if (admin.apps.length === 0) {
+      try {
+        admin.initializeApp({
+          credential: admin.credential.applicationDefault(),
+          projectId: firebaseConfig.projectId,
+        });
+        console.log("[SERVER] Firebase Admin initialized.");
+      } catch (e) {
+        console.error("[SERVER] Firebase Admin initialization error:", e);
+      }
+    }
+  }
+
   app.use(express.json());
-  app.use(cors({
-    origin: 'https://fokuskarir.web.id',
-    methods: ['GET', 'POST'],
-    credentials: true
-  }));
+  app.use(cors());
+  
+  app.use((req, res, next) => {
+    console.log(`[SERVER] Incoming request: ${req.method} ${req.originalUrl}`);
+    next();
+  });
 
   // Lazy-load Firestore Admin to prevent startup crashes
   let _db: any = null;
   const getDb = () => {
     if (_db) return _db;
     
-    const configPath = path.join(process.cwd(), 'firebase-applet-config.json');
-    if (fs.existsSync(configPath)) {
-      const firebaseConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-      if (admin.apps.length === 0) {
-        try {
-          admin.initializeApp({
-            credential: admin.credential.applicationDefault(),
-          });
-        } catch (err) {
-          console.error("[SERVER] Firebase Admin Init Error:", err);
-        }
-      }
-      try {
+    try {
         console.log("[SERVER] admin object keys:", Object.keys(admin));
+        console.log("[SERVER] Initializing Firestore...");
         _db = admin.firestore();
         console.log("[SERVER] Firestore Admin initialized");
         console.log("[SERVER] _db:", _db);
-        if (firebaseConfig.firestoreDatabaseId && firebaseConfig.firestoreDatabaseId !== '(default)') {
-          console.log(`[SERVER] Using custom database ID: ${firebaseConfig.firestoreDatabaseId}`);
-          _db = admin.firestore(firebaseConfig.firestoreDatabaseId);
+        
+        const configPath = path.join(process.cwd(), 'firebase-applet-config.json');
+        if (fs.existsSync(configPath)) {
+          const firebaseConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+          if (firebaseConfig.firestoreDatabaseId && firebaseConfig.firestoreDatabaseId !== '(default)') {
+            console.log(`[SERVER] Using custom database ID: ${firebaseConfig.firestoreDatabaseId}`);
+            _db = admin.firestore(firebaseConfig.firestoreDatabaseId);
+          }
         }
         return _db;
       } catch (err) {
         console.error("[SERVER] Firestore Admin Access Error:", err);
         throw new Error("Database not initialized. Check Firebase configuration.");
       }
-    } else {
-      // Fallback for environment without config file (e.g. Cloud Run with default SA)
-      if (admin.apps.length === 0) {
-        admin.initializeApp();
-      }
-      _db = admin.firestore();
-      return _db;
-    }
   };
 
   // Helper MD5 Hashing
@@ -600,6 +607,7 @@ async function startServer() {
   });
 
   // Vite middleware for development
+  console.log("NODE_ENV:", process.env.NODE_ENV);
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
       server: { middlewareMode: true },
@@ -609,7 +617,7 @@ async function startServer() {
   } else {
     const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
-    app.get('*all', (req, res) => {
+    app.get('*', (req, res) => {
       res.sendFile(path.join(distPath, 'index.html'));
     });
   }
