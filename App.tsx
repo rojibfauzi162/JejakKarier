@@ -52,6 +52,7 @@ const App: React.FC = () => {
   const [loadingStuck, setLoadingStuck] = useState(false);
 
   useEffect(() => {
+    console.log("[APP] Component mounted.");
     let timer: any;
     let fallbackTimer: any;
     let forceTimer: any;
@@ -83,6 +84,7 @@ const App: React.FC = () => {
       setLoadingStuck(false);
     }
     return () => {
+      console.log("[APP] Component unmounting or loading state changed.");
       clearTimeout(timer);
       clearTimeout(fallbackTimer);
       clearTimeout(forceTimer);
@@ -434,12 +436,14 @@ const App: React.FC = () => {
     console.log("[AUTH] Initializing onAuthStateChanged listener...");
     const unsubscribe = onAuthStateChanged(auth, async (authUser) => {
       console.log("[AUTH] onAuthStateChanged fired. authUser:", authUser ? authUser.uid : "NULL");
-      // setLoading(true); // Removed to prevent repeated resets if onAuthStateChanged fires multiple times
       
-      // CHECK DEMO MODE FIRST
-      const isDemo = localStorage.getItem('demo_mode') === 'true';
-      const isAdminDemo = localStorage.getItem('admin_demo_mode') === 'true';
-      const localSessionEmail = localStorage.getItem('local_session_user');
+      try {
+        // CHECK DEMO MODE FIRST
+        const isDemo = localStorage.getItem('demo_mode') === 'true';
+        const isAdminDemo = localStorage.getItem('admin_demo_mode') === 'true';
+        const localSessionEmail = localStorage.getItem('local_session_user');
+        
+        console.log("[AUTH] Demo states:", { isDemo, isAdminDemo, localSessionEmail });
       
       // Clear any lingering demo/local session if a real user is now authenticated
       if (authUser && (isDemo || isAdminDemo || localSessionEmail)) {
@@ -557,10 +561,9 @@ const App: React.FC = () => {
       // SET USER SECEPAT MUNGKIN AGAR LAYAR BERPINDAH
       setUser(authUser);
 
-      try {
-        const timeoutPromise = new Promise<null>((_, reject) => 
-          setTimeout(() => reject(new Error("Firestore timeout")), 8000)
-        );
+      const timeoutPromise = new Promise<null>((_, reject) => 
+        setTimeout(() => reject(new Error("Firestore timeout")), 8000)
+      );
 
         let userData: AppData | null | 'TIMEOUT' = await Promise.race([
           getUserData(authUser.uid),

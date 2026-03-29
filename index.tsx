@@ -18,17 +18,20 @@ window.onerror = (message, source, lineno, colno, error) => {
   }
 };
 
+console.log("[INDEX] Starting application...");
 const rootElement = document.getElementById('root');
 if (!rootElement) {
+  console.error("[INDEX] Could not find root element to mount to");
   throw new Error("Could not find root element to mount to");
 }
-
+console.log("[INDEX] Root element found, mounting React...");
 const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
     <App />
   </React.StrictMode>
 );
+console.log("[INDEX] React render called.");
 
 // Register Service Worker for PWA
 if ('serviceWorker' in navigator) {

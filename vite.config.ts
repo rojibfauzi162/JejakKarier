@@ -10,6 +10,8 @@ export default defineConfig({
     minify: 'terser'
   },
   server: {
-    port: 3000
+    port: 3000,
+    host: true,
+    hmr: false
   }
 });

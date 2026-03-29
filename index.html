@@ -10,6 +10,13 @@
     <link rel="manifest" href="/manifest.json">
     <link rel="icon" type="image/svg+xml" href="/logo.svg">
     <link rel="apple-touch-icon" href="/logo.svg">
+    <script>
+        // Clear potential reload loops from demo mode
+        if (window.location.search.includes('clear=true')) {
+            localStorage.clear();
+            console.log("LocalStorage cleared via URL param");
+        }
+    </script>
     <title>FokusKarir - Career & Performance Tracker</title>
     <!-- Server check -->
     <script src="https://cdn.tailwindcss.com"></script>
