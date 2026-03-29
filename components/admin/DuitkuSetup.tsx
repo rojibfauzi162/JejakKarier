@@ -77,18 +77,17 @@ const DuitkuSetup: React.FC<DuitkuSetupProps> = ({ onToast }) => {
         const isHtml = text.toLowerCase().includes("<!doctype html>") || text.toLowerCase().includes("<html>");
         
         if (isHtml && 'serviceWorker' in navigator) {
-          console.log("Detected HTML response for API. Unregistering Service Worker and reloading...");
+          console.log("Detected HTML response for API. Unregistering Service Worker...");
           const registrations = await navigator.serviceWorker.getRegistrations();
           for(let registration of registrations) {
             await registration.unregister();
           }
-          window.location.reload();
-          return;
+          // Removed auto-reload to prevent infinite loops
         }
 
         setTestResult({ 
           success: false, 
-          message: `Server Error (${response.status}): Respons server tidak valid ${isHtml ? '(HTML)' : ''}. ${isHtml ? 'Memuat ulang halaman untuk membersihkan cache...' : 'Respons: ' + text.substring(0, 50)}` 
+          message: `Server Error (${response.status}): Respons server tidak valid ${isHtml ? '(HTML)' : ''}. ${isHtml ? 'Service Worker lama telah dihapus. Silakan coba klik Test Koneksi lagi.' : 'Respons: ' + text.substring(0, 50)}` 
         });
       }
     } catch (err: any) {
