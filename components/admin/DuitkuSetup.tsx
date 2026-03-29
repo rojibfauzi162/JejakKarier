@@ -141,10 +141,21 @@ const DuitkuSetup: React.FC<DuitkuSetupProps> = ({ onToast }) => {
             </div>
             {!testResult.success && testResult.message.includes("HTML") && (
               <button 
-                onClick={() => window.location.reload()}
+                onClick={() => {
+                  if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.getRegistrations().then(registrations => {
+                      for(let registration of registrations) {
+                        registration.unregister();
+                      }
+                      window.location.reload();
+                    });
+                  } else {
+                    window.location.reload();
+                  }
+                }}
                 className="mt-2 px-4 py-2 bg-rose-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-rose-700 transition-colors w-fit"
               >
-                Paksa Refresh (Hard Refresh)
+                Paksa Bersihkan Cache & Refresh
               </button>
             )}
           </div>

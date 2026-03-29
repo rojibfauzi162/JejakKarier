@@ -23,7 +23,15 @@ service cloud.firestore {
     // Rules for Collections
     // ===============================================================
 
-    // PUBLIC CONFIGURATIONS - MUST BE READABLE BY EVERYONE
+    // KONFIGURASI SENSITIF - HANYA ADMIN
+    match /system_metadata/duitku_configuration {
+      allow read, write: if isAdmin();
+    }
+    match /system_metadata/mayar_configuration {
+      allow read, write: if isAdmin();
+    }
+
+    // KONFIGURASI PUBLIK (Dibutuhkan Landing Page)
     match /system_metadata/tracking_configuration {
       allow read: if true;
       allow write: if isAdmin();
@@ -45,14 +53,6 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
     match /system_metadata/sales_popup_configuration {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-    match /system_metadata/mayar_configuration {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-    match /system_metadata/duitku_configuration {
       allow read: if true;
       allow write: if isAdmin();
     }

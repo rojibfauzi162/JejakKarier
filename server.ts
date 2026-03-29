@@ -43,12 +43,15 @@ async function startServer() {
     const firebaseConfig = JSON.parse(fs.readFileSync(configPath, "utf8"));
     
     if (!admin.apps.length) {
-      if (!process.env.GOOGLE_CLOUD_PROJECT && firebaseConfig.projectId) {
-        process.env.GOOGLE_CLOUD_PROJECT = firebaseConfig.projectId;
-        log(`Set GOOGLE_CLOUD_PROJECT to ${firebaseConfig.projectId}`);
+      const projectId = firebaseConfig.projectId || process.env.GOOGLE_CLOUD_PROJECT;
+      if (projectId) {
+        process.env.GOOGLE_CLOUD_PROJECT = projectId;
+        log(`Set GOOGLE_CLOUD_PROJECT to ${projectId}`);
       }
-      admin.initializeApp();
-      log(`Firebase Admin initialized.`);
+      admin.initializeApp({
+        projectId: projectId
+      });
+      log(`Firebase Admin initialized for project: ${projectId}`);
     }
     
     // Use the specific database ID if provided, otherwise default
@@ -98,19 +101,23 @@ async function startServer() {
         return res.status(200).json({ success: false, message: "Merchant Code atau API Key belum diisi." });
       }
 
-      // Format datetime: YYYY-MM-DD HH:mm:ss (WIB/Local)
+      // Format datetime: YYYY-MM-DD HH:mm:ss (WIB - GMT+7)
       const now = new Date();
-      // Duitku expects local time string
-      const datetime = now.getFullYear() + "-" + 
-        String(now.getMonth() + 1).padStart(2, '0') + "-" + 
-        String(now.getDate()).padStart(2, '0') + " " + 
-        String(now.getHours()).padStart(2, '0') + ":" + 
-        String(now.getMinutes()).padStart(2, '0') + ":" + 
-        String(now.getSeconds()).padStart(2, '0');
+      // Adjust to WIB (GMT+7)
+      const wibOffset = 7 * 60; // in minutes
+      const localOffset = now.getTimezoneOffset(); // in minutes (usually 0 in this env)
+      const wibTime = new Date(now.getTime() + (wibOffset + localOffset) * 60000);
+      
+      const datetime = wibTime.getFullYear() + "-" + 
+        String(wibTime.getMonth() + 1).padStart(2, '0') + "-" + 
+        String(wibTime.getDate()).padStart(2, '0') + " " + 
+        String(wibTime.getHours()).padStart(2, '0') + ":" + 
+        String(wibTime.getMinutes()).padStart(2, '0') + ":" + 
+        String(wibTime.getSeconds()).padStart(2, '0');
 
       const amount = 10000; // Test amount
       // Signature: sha256(merchantCode + amount + datetime + apiKey)
-      const signature = CryptoJS.SHA256(merchantCode + amount + datetime + apiKey).toString();
+      const signature = CryptoJS.SHA256(merchantCode + String(amount) + datetime + apiKey).toString();
 
       const url = config.environment === 'production' 
         ? 'https://passport.duitku.com/webapi/api/merchant/paymentmethod/getpaymentmethod'
@@ -214,17 +221,21 @@ async function startServer() {
       const merchantCode = config.merchantCode;
       const apiKey = config.apiKey;
       
-      // Format datetime: YYYY-MM-DD HH:mm:ss
+      // Format datetime: YYYY-MM-DD HH:mm:ss (WIB)
       const now = new Date();
-      const datetime = now.getFullYear() + "-" + 
-        String(now.getMonth() + 1).padStart(2, '0') + "-" + 
-        String(now.getDate()).padStart(2, '0') + " " + 
-        String(now.getHours()).padStart(2, '0') + ":" + 
-        String(now.getMinutes()).padStart(2, '0') + ":" + 
-        String(now.getSeconds()).padStart(2, '0');
+      const wibOffset = 7 * 60;
+      const localOffset = now.getTimezoneOffset();
+      const wibTime = new Date(now.getTime() + (wibOffset + localOffset) * 60000);
+
+      const datetime = wibTime.getFullYear() + "-" + 
+        String(wibTime.getMonth() + 1).padStart(2, '0') + "-" + 
+        String(wibTime.getDate()).padStart(2, '0') + " " + 
+        String(wibTime.getHours()).padStart(2, '0') + ":" + 
+        String(wibTime.getMinutes()).padStart(2, '0') + ":" + 
+        String(wibTime.getSeconds()).padStart(2, '0');
 
       // Signature menggunakan SHA256 sesuai dokumentasi terbaru Get Payment Method
-      const signature = CryptoJS.SHA256(merchantCode + amount + datetime + apiKey).toString();
+      const signature = CryptoJS.SHA256(merchantCode + String(amount) + datetime + apiKey).toString();
 
       const url = config.environment === 'production' 
         ? 'https://passport.duitku.com/webapi/api/merchant/paymentmethod/getpaymentmethod'
@@ -270,7 +281,8 @@ async function startServer() {
       const merchantOrderId = `TX-${Date.now()}-${uid.slice(-4)}`;
       const paymentAmount = Math.floor(plan.price);
       
-      const signature = CryptoJS.MD5(merchantCode + merchantOrderId + paymentAmount + apiKey).toString();
+      // Inquiry V2 signature: md5(merchantCode + merchantOrderId + paymentAmount + apiKey)
+      const signature = CryptoJS.MD5(merchantCode + merchantOrderId + String(paymentAmount) + apiKey).toString();
 
       const callbackUrl = config.callbackUrl || `https://${req.get('host')}/api/dk/cb`;
       const returnUrl = config.returnUrl || `https://${req.get('host')}/`;
@@ -339,8 +351,8 @@ async function startServer() {
       const configSnap = await db.collection("system_metadata").doc("duitku_configuration").get();
       const config = configSnap.data() as any;
 
-      // Verify signature
-      const calcSignature = CryptoJS.MD5(config.merchantCode + amount + merchantOrderId + config.apiKey).toString();
+      // Verify signature: md5(merchantCode + amount + merchantOrderId + apiKey)
+      const calcSignature = CryptoJS.MD5(config.merchantCode + String(amount) + merchantOrderId + config.apiKey).toString();
 
       if (signature !== calcSignature) {
         log("Invalid signature in callback");
