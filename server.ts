@@ -44,14 +44,22 @@ async function startServer() {
     
     if (!admin.apps.length) {
       const projectId = firebaseConfig.projectId || process.env.GOOGLE_CLOUD_PROJECT;
+      
+      // Try to initialize with default credentials first
+      try {
+        admin.initializeApp();
+        log(`Firebase Admin initialized with default credentials.`);
+      } catch (e) {
+        log(`Default initialization failed, trying with projectId: ${projectId}`);
+        admin.initializeApp({
+          projectId: projectId
+        });
+        log(`Firebase Admin initialized with projectId: ${projectId}`);
+      }
+      
       if (projectId) {
         process.env.GOOGLE_CLOUD_PROJECT = projectId;
-        log(`Set GOOGLE_CLOUD_PROJECT to ${projectId}`);
       }
-      admin.initializeApp({
-        projectId: projectId
-      });
-      log(`Firebase Admin initialized for project: ${projectId}`);
     }
     
     // Use the specific database ID if provided, otherwise default
@@ -78,24 +86,43 @@ async function startServer() {
       log("POST /api/dk/test called");
       log("Testing Duitku connection...");
       
-      if (!db) {
-        log("CRITICAL: Firestore Admin not initialized.");
-        return res.status(500).json({ success: false, message: "Server Error: Database tidak terhubung. Silakan cek log server." });
-      }
+      let merchantCode, apiKey, environment;
 
-      log(`Reading Firestore path: system_metadata/duitku_configuration`);
-      const configSnap = await db.collection("system_metadata").doc("duitku_configuration").get();
-      
-      if (!configSnap.exists) {
-        log("Duitku configuration document not found.");
-        return res.status(200).json({ 
-          success: false, 
-          message: "Konfigurasi belum disimpan. Silakan isi form di bawah dan klik 'Simpan Konfigurasi' terlebih dahulu sebelum melakukan test." 
-        });
+      // Try to get config from body first (fallback if server can't read Firestore)
+      if (req.body.merchantCode && req.body.apiKey) {
+        log("Using config provided in request body.");
+        merchantCode = req.body.merchantCode;
+        apiKey = req.body.apiKey;
+        environment = req.body.environment || 'sandbox';
+      } else {
+        if (!db) {
+          log("CRITICAL: Firestore Admin not initialized.");
+          return res.status(500).json({ success: false, message: "Server Error: Database tidak terhubung." });
+        }
+
+        log(`Reading Firestore path: system_metadata/duitku_configuration`);
+        let configSnap;
+        try {
+          configSnap = await db.collection("system_metadata").doc("duitku_configuration").get();
+          if (configSnap.exists) {
+            const config = configSnap.data() as any;
+            merchantCode = config.merchantCode;
+            apiKey = config.apiKey;
+            environment = config.environment;
+          } else {
+            return res.status(200).json({ 
+              success: false, 
+              message: "Konfigurasi belum disimpan di database. Silakan klik 'Simpan Konfigurasi' terlebih dahulu." 
+            });
+          }
+        } catch (err: any) {
+          log(`ERROR reading Firestore: ${err.message}`);
+          return res.status(500).json({ 
+            success: false, 
+            message: `Server Error: ${err.message}. Silakan coba simpan konfigurasi terlebih dahulu.` 
+          });
+        }
       }
-      const config = configSnap.data() as any;
-      const merchantCode = config.merchantCode;
-      const apiKey = config.apiKey;
 
       if (!merchantCode || !apiKey) {
         return res.status(200).json({ success: false, message: "Merchant Code atau API Key belum diisi." });
@@ -119,7 +146,7 @@ async function startServer() {
       // Signature: sha256(merchantCode + amount + datetime + apiKey)
       const signature = CryptoJS.SHA256(merchantCode + String(amount) + datetime + apiKey).toString();
 
-      const url = config.environment === 'production' 
+      const url = environment === 'production' 
         ? 'https://passport.duitku.com/webapi/api/merchant/paymentmethod/getpaymentmethod'
         : 'https://sandbox.duitku.com/webapi/api/merchant/paymentmethod/getpaymentmethod';
 

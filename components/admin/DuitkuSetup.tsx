@@ -56,7 +56,7 @@ const DuitkuSetup: React.FC<DuitkuSetupProps> = ({ onToast }) => {
       const response = await fetch("/api/dk/test", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "test" }) // Add dummy body
+        body: JSON.stringify(config) // Send the current config state
       });
       
       const contentType = response.headers.get("content-type");
