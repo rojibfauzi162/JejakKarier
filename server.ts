@@ -68,6 +68,11 @@ async function startServer() {
     try {
       log("Testing Duitku connection...");
       
+      if (!db) {
+        log("CRITICAL: Firestore Admin not initialized.");
+        return res.status(500).json({ success: false, message: "Server Error: Database tidak terhubung. Silakan cek log server." });
+      }
+
       log(`Reading Firestore path: system_metadata/duitku_configuration`);
       const configSnap = await db.collection("system_metadata").doc("duitku_configuration").get();
       
@@ -83,10 +88,12 @@ async function startServer() {
       const apiKey = config.apiKey;
 
       if (!merchantCode || !apiKey) {
-        return res.status(400).json({ success: false, message: "Merchant Code atau API Key belum diisi." });
+        return res.status(200).json({ success: false, message: "Merchant Code atau API Key belum diisi." });
       }
 
+      // Format datetime: YYYY-MM-DD HH:mm:ss (WIB/Local)
       const now = new Date();
+      // Duitku expects local time string
       const datetime = now.getFullYear() + "-" + 
         String(now.getMonth() + 1).padStart(2, '0') + "-" + 
         String(now.getDate()).padStart(2, '0') + " " + 
@@ -95,15 +102,22 @@ async function startServer() {
         String(now.getSeconds()).padStart(2, '0');
 
       const amount = 10000; // Test amount
+      // Signature: sha256(merchantCode + amount + datetime + apiKey)
       const signature = CryptoJS.SHA256(merchantCode + amount + datetime + apiKey).toString();
 
       const url = config.environment === 'production' 
         ? 'https://passport.duitku.com/webapi/api/merchant/paymentmethod/getpaymentmethod'
         : 'https://sandbox.duitku.com/webapi/api/merchant/paymentmethod/getpaymentmethod';
 
+      log(`Sending request to Duitku: ${url}`);
+      log(`Params: merchantcode=${merchantCode}, amount=${amount}, datetime=${datetime}`);
+
       const response = await fetch(url, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
         body: JSON.stringify({
           merchantcode: merchantCode,
           amount,
@@ -112,16 +126,26 @@ async function startServer() {
         })
       });
 
-      const data = await response.json();
-      if (data.responseCode === '00' || data.responseCode === '0') {
+      const responseText = await response.text();
+      log(`Duitku Raw Response: ${responseText}`);
+
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (e) {
+        log(`Failed to parse Duitku response as JSON: ${responseText}`);
+        return res.status(200).json({ success: false, message: `Duitku API Error: Respons bukan JSON. (${response.status})` });
+      }
+
+      if (data.responseCode === '00' || data.responseCode === '0' || (data.paymentFee && data.paymentFee.length > 0)) {
         res.json({ success: true, data });
       } else {
-        res.json({ success: false, data });
+        res.json({ success: false, message: data.responseMessage || data.Message || "Gagal mendapatkan metode pembayaran.", data });
       }
     } catch (error: any) {
       log(`Error in /api/dk/test: ${error.message}`);
       if (error.stack) log(`Stack: ${error.stack}`);
-      res.status(500).json({ success: false, message: `Firestore Error: ${error.message}` });
+      res.status(500).json({ success: false, message: `Server Error: ${error.message}` });
     }
   });
 
@@ -348,6 +372,12 @@ async function startServer() {
       log(`Error in /api/tracking/meta-capi: ${error.message}`);
       res.status(500).json({ error: error.message });
     }
+  });
+
+  // Catch-all for unhandled API routes
+  app.all("/api/*all", (req, res) => {
+    log(`Unhandled API request: ${req.method} ${req.url}`);
+    res.status(404).json({ success: false, message: `API route not found: ${req.method} ${req.url}` });
   });
 
   // Debug endpoints

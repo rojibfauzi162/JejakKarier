@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fokuskarir-v7';
+const CACHE_NAME = 'fokuskarir-v10';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -11,7 +11,7 @@ self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        console.log('Opened cache v7');
+        console.log('Opened cache v10');
         return cache.addAll(urlsToCache);
       })
   );
@@ -36,32 +36,32 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
 
-  // Abaikan request ke API internal atau eksternal
+  // CRITICAL: NEVER intercept API calls or non-GET requests
+  if (url.pathname.includes('/api') || event.request.method !== 'GET') {
+    // console.log('SW skipping API/non-GET request:', url.pathname);
+    return;
+  }
+
+  // Abaikan request ke Firebase/Google APIs
   if (
-    url.pathname.startsWith('/api/') ||
     url.hostname.includes('googleapis.com') ||
     url.hostname.includes('firebaseio.com') ||
-    url.hostname.includes('firestore.googleapis.com') ||
     url.hostname.includes('identitytoolkit.googleapis.com') ||
-    url.hostname.includes('securetoken.googleapis.com') ||
-    event.request.method !== 'GET' // Selalu abaikan POST/PUT/DELETE
+    url.hostname.includes('securetoken.googleapis.com')
   ) {
     return;
   }
 
   // Network First strategy for HTML and root requests
   if (event.request.mode === 'navigate' || 
-      event.request.url.endsWith('/') || 
-      event.request.url.endsWith('index.html')) {
+      url.pathname === '/' || 
+      url.pathname.endsWith('index.html')) {
     event.respondWith(
       fetch(event.request)
         .then(response => {
-          // If the response is a 404 (not found), it might be an SPA route
-          // Serve /index.html from cache instead
           if (response.status === 404) {
             return caches.match('/') || caches.match('/index.html') || response;
           }
-          // Update cache with the new response
           const responseClone = response.clone();
           caches.open(CACHE_NAME).then(cache => {
             cache.put(event.request, responseClone);
@@ -69,7 +69,6 @@ self.addEventListener('fetch', event => {
           return response;
         })
         .catch(() => {
-          // Fallback to /index.html from cache if network fails
           return caches.match('/') || caches.match('/index.html');
         })
     );
@@ -88,10 +87,7 @@ self.addEventListener('fetch', event => {
             });
           }
           return networkResponse;
-        }).catch((error) => {
-          console.error('Fetch failed:', error);
-          return null;
-        });
+        }).catch(() => null);
 
         return response || fetchPromise.then(res => res || new Response('Network error', { status: 408 }));
       })

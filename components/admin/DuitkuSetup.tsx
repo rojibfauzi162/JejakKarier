@@ -52,14 +52,17 @@ const DuitkuSetup: React.FC<DuitkuSetupProps> = ({ onToast }) => {
     setTestLoading(true);
     setTestResult(null);
     try {
+      console.log("[DUITKU] Testing connection via /api/dk/test...");
       const response = await fetch("/api/dk/test", {
         method: "POST",
-        headers: { "Content-Type": "application/json" }
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "test" }) // Add dummy body
       });
       
       const contentType = response.headers.get("content-type");
       if (contentType && contentType.includes("application/json")) {
         const data = await response.json();
+        console.log("[DUITKU] API Response:", data);
         if (data.success) {
           setTestResult({ success: true, message: "Koneksi Berhasil! API Key & Merchant Code valid." });
         } else {
@@ -70,13 +73,15 @@ const DuitkuSetup: React.FC<DuitkuSetupProps> = ({ onToast }) => {
         }
       } else {
         const text = await response.text();
-        console.error("Server returned non-JSON response:", text);
+        console.error("Server returned non-JSON response:", text.substring(0, 500));
+        const isHtml = text.toLowerCase().includes("<!doctype html>") || text.toLowerCase().includes("<html>");
         setTestResult({ 
           success: false, 
-          message: `Server Error (${response.status}): Respons server tidak valid (HTML). Ini biasanya disebabkan oleh Service Worker yang lama. Silakan tekan Ctrl+F5 (Hard Refresh) atau buka di Tab Baru.` 
+          message: `Server Error (${response.status}): Respons server tidak valid ${isHtml ? '(HTML)' : ''}. ${isHtml ? 'Ini biasanya disebabkan oleh Service Worker yang lama atau rute API tidak ditemukan.' : 'Respons: ' + text.substring(0, 50)}` 
         });
       }
     } catch (err: any) {
+      console.error("[DUITKU] Fetch error:", err);
       setTestResult({ success: false, message: "Koneksi Gagal: " + err.message });
     } finally {
       setTestLoading(false);
@@ -129,9 +134,19 @@ const DuitkuSetup: React.FC<DuitkuSetupProps> = ({ onToast }) => {
         </div>
 
         {testResult && (
-          <div className={`m-8 p-4 rounded-2xl border flex items-center gap-3 animate-in slide-in-from-top-2 ${testResult.success ? 'bg-emerald-50 border-emerald-100 text-emerald-700' : 'bg-rose-50 border-rose-100 text-rose-700'}`}>
-            <i className={`bi ${testResult.success ? 'bi-check-circle-fill' : 'bi-exclamation-octagon-fill'} text-lg`}></i>
-            <p className="text-xs font-bold">{testResult.message}</p>
+          <div className={`m-8 p-4 rounded-2xl border flex flex-col gap-3 animate-in slide-in-from-top-2 ${testResult.success ? 'bg-emerald-50 border-emerald-100 text-emerald-700' : 'bg-rose-50 border-rose-100 text-rose-700'}`}>
+            <div className="flex items-center gap-3">
+              <i className={`bi ${testResult.success ? 'bi-check-circle-fill' : 'bi-exclamation-octagon-fill'} text-lg`}></i>
+              <p className="text-xs font-bold">{testResult.message}</p>
+            </div>
+            {!testResult.success && testResult.message.includes("HTML") && (
+              <button 
+                onClick={() => window.location.reload()}
+                className="mt-2 px-4 py-2 bg-rose-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-rose-700 transition-colors w-fit"
+              >
+                Paksa Refresh (Hard Refresh)
+              </button>
+            )}
           </div>
         )}
 
