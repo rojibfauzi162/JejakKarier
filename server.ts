@@ -60,6 +60,59 @@ async function startServer() {
 
   // --- DUITKU API ROUTES ---
 
+  app.post("/api/dk/test", async (req, res) => {
+    try {
+      log("Testing Duitku connection...");
+      const configSnap = await db.collection("system_metadata").doc("duitku_configuration").get();
+      if (!configSnap.exists) {
+        return res.status(404).json({ success: false, message: "Konfigurasi Duitku tidak ditemukan di Firestore." });
+      }
+      const config = configSnap.data() as any;
+      const merchantCode = config.merchantCode;
+      const apiKey = config.apiKey;
+
+      if (!merchantCode || !apiKey) {
+        return res.status(400).json({ success: false, message: "Merchant Code atau API Key belum diisi." });
+      }
+
+      const now = new Date();
+      const datetime = now.getFullYear() + "-" + 
+        String(now.getMonth() + 1).padStart(2, '0') + "-" + 
+        String(now.getDate()).padStart(2, '0') + " " + 
+        String(now.getHours()).padStart(2, '0') + ":" + 
+        String(now.getMinutes()).padStart(2, '0') + ":" + 
+        String(now.getSeconds()).padStart(2, '0');
+
+      const amount = 10000; // Test amount
+      const signature = CryptoJS.SHA256(merchantCode + amount + datetime + apiKey).toString();
+
+      const url = config.environment === 'production' 
+        ? 'https://passport.duitku.com/webapi/api/merchant/paymentmethod/getpaymentmethod'
+        : 'https://sandbox.duitku.com/webapi/api/merchant/paymentmethod/getpaymentmethod';
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          merchantcode: merchantCode,
+          amount,
+          datetime,
+          signature
+        })
+      });
+
+      const data = await response.json();
+      if (data.responseCode === '00' || data.responseCode === '0') {
+        res.json({ success: true, data });
+      } else {
+        res.json({ success: false, data });
+      }
+    } catch (error: any) {
+      log(`Error in /api/dk/test: ${error.message}`);
+      res.status(500).json({ success: false, message: error.message });
+    }
+  });
+
   app.post("/api/dk/methods", async (req, res) => {
     try {
       const { amount } = req.body;
@@ -73,8 +126,18 @@ async function startServer() {
 
       const merchantCode = config.merchantCode;
       const apiKey = config.apiKey;
-      const datetime = new Date().toISOString();
-      const signature = CryptoJS.MD5(merchantCode + amount + datetime + apiKey).toString();
+      
+      // Format datetime: YYYY-MM-DD HH:mm:ss
+      const now = new Date();
+      const datetime = now.getFullYear() + "-" + 
+        String(now.getMonth() + 1).padStart(2, '0') + "-" + 
+        String(now.getDate()).padStart(2, '0') + " " + 
+        String(now.getHours()).padStart(2, '0') + ":" + 
+        String(now.getMinutes()).padStart(2, '0') + ":" + 
+        String(now.getSeconds()).padStart(2, '0');
+
+      // Signature menggunakan SHA256 sesuai dokumentasi terbaru Get Payment Method
+      const signature = CryptoJS.SHA256(merchantCode + amount + datetime + apiKey).toString();
 
       const url = config.environment === 'production' 
         ? 'https://passport.duitku.com/webapi/api/merchant/paymentmethod/getpaymentmethod'
@@ -84,7 +147,7 @@ async function startServer() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          merchantCode,
+          merchantcode: merchantCode,
           amount,
           datetime,
           signature
