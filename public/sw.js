@@ -41,8 +41,9 @@ self.addEventListener('fetch', event => {
 
   const url = new URL(event.request.url);
 
-  // Abaikan request ke API eksternal (Firebase, Google, dll)
+  // Abaikan request ke API internal atau eksternal
   if (
+    url.pathname.startsWith('/api/') ||
     url.hostname.includes('googleapis.com') ||
     url.hostname.includes('firebaseio.com') ||
     url.hostname.includes('firestore.googleapis.com') ||
