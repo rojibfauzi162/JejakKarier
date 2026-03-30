@@ -651,3 +651,194 @@
 [2026-03-30T10:29:41.822Z] Firebase Admin initialized with default credentials.
 [2026-03-30T10:29:41.917Z] Firestore Admin connected. Database: default.
 [2026-03-30T10:29:41.928Z] Server running on http://0.0.0.0:3000
+[2026-03-30T10:29:51.900Z] !!! SERVER STARTING !!!
+[2026-03-30T10:29:51.904Z] Firebase Admin initialized with default credentials.
+[2026-03-30T10:29:52.006Z] Firestore Admin connected. Database: default.
+[2026-03-30T10:29:52.008Z] Initializing Vite middleware...
+[2026-03-30T10:29:52.869Z] Vite middleware attached.
+[2026-03-30T10:29:52.874Z] Server running on http://0.0.0.0:3000
+[2026-03-30T10:30:01.708Z] !!! SERVER STARTING !!!
+[2026-03-30T10:30:01.714Z] Firebase Admin initialized with default credentials.
+[2026-03-30T10:30:01.825Z] Firestore Admin connected. Database: default.
+[2026-03-30T10:30:01.827Z] Initializing Vite middleware...
+[2026-03-30T10:30:02.697Z] Vite middleware attached.
+[2026-03-30T10:30:02.701Z] Server running on http://0.0.0.0:3000
+[2026-03-30T10:30:02.805Z] GET /
+[2026-03-30T10:30:08.192Z] GET /
+[2026-03-30T10:30:08.280Z] GET /@vite/client
+[2026-03-30T10:30:08.307Z] GET /index.tsx
+[2026-03-30T10:30:08.400Z] GET /node_modules/vite/dist/client/env.mjs
+[2026-03-30T10:30:09.231Z] GET /App.tsx
+[2026-03-30T10:30:09.312Z] GET /types.ts
+[2026-03-30T10:30:09.324Z] GET /constants.ts
+[2026-03-30T10:30:09.325Z] GET /components/Sidebar.tsx
+[2026-03-30T10:30:09.334Z] GET /components/DailyLogs.tsx
+[2026-03-30T10:30:09.335Z] GET /components/Dashboard.tsx
+[2026-03-30T10:30:09.347Z] GET /components/ProfileView.tsx
+[2026-03-30T10:30:09.354Z] GET /components/CareerPlanner.tsx
+[2026-03-30T10:30:09.384Z] GET /components/user/SkillTracker.tsx
+[2026-03-30T10:30:09.386Z] GET /components/Networking.tsx
+[2026-03-30T10:30:09.414Z] GET /components/AchievementTracker.tsx
+[2026-03-30T10:30:09.420Z] GET /components/JobTracker.tsx
+[2026-03-30T10:30:09.421Z] GET /components/OnlineCVBuilder.tsx
+[2026-03-30T10:30:09.422Z] GET /components/PersonalProjectTracker.tsx
+[2026-03-30T10:30:09.422Z] GET /components/CVGenerator.tsx
+[2026-03-30T10:30:09.423Z] GET /components/AccountSettings.tsx
+[2026-03-30T10:30:09.433Z] GET /components/Billing.tsx
+[2026-03-30T10:30:09.434Z] GET /components/admin/AdminPanel.tsx
+[2026-03-30T10:30:09.452Z] GET /components/MobileNav.tsx
+[2026-03-30T10:30:09.453Z] GET /components/user/MobileHeader.tsx
+[2026-03-30T10:30:09.454Z] GET /components/PublicLegalView.tsx
+[2026-03-30T10:30:09.455Z] GET /components/admin/TrainingManagement.tsx
+[2026-03-30T10:30:09.456Z] GET /services/firebase.ts
+[2026-03-30T10:30:09.457Z] GET /components/Auth.tsx
+[2026-03-30T10:30:09.458Z] GET /components/public/TrainingList.tsx
+[2026-03-30T10:30:09.458Z] GET /components/LandingPage.tsx
+[2026-03-30T10:30:09.459Z] GET /components/user/UpgradeModal.tsx
+[2026-03-30T10:30:09.460Z] GET /components/admin/FeatureRequestManagement.tsx
+[2026-03-30T10:30:09.460Z] GET /components/user/CareerCalendar.tsx
+[2026-03-30T10:30:09.461Z] GET /components/user/InterviewIntelligenceScript.tsx
+[2026-03-30T10:30:09.461Z] GET /components/user/OnboardingFlow.tsx
+[2026-03-30T10:30:09.462Z] GET /components/FeatureRequests.tsx
+[2026-03-30T10:30:09.464Z] GET /components/PerformanceReports.tsx
+[2026-03-30T10:30:09.465Z] GET /components/AiInsightActivity.tsx
+[2026-03-30T10:30:09.465Z] GET /components/public/TrainingDetail.tsx
+[2026-03-30T10:30:09.466Z] GET /components/user/MobileStats.tsx
+[2026-03-30T10:30:09.466Z] GET /components/ToDoList.tsx
+[2026-03-30T10:30:09.467Z] GET /components/user/AppsHub.tsx
+[2026-03-30T10:30:09.467Z] GET /services/trackingService.ts
+[2026-03-30T10:30:09.468Z] GET /components/Checkout.tsx
+[2026-03-30T10:30:09.468Z] GET /components/WorkReflection.tsx
+[2026-03-30T10:30:09.476Z] GET /services/geminiService.ts
+[2026-03-30T10:30:09.486Z] GET /components/user/skill-learning/TrainingHistory.tsx
+[2026-03-30T10:30:09.487Z] GET /components/user/skill-learning/SkillGapRadar.tsx
+[2026-03-30T10:30:09.489Z] GET /components/user/skill-learning/AiStrategist.tsx
+[2026-03-30T10:30:09.491Z] GET /components/user/skill-learning/Certification.tsx
+[2026-03-30T10:30:09.493Z] GET /components/user/skill-learning/SkillMatrix.tsx
+[2026-03-30T10:30:09.584Z] GET /components/admin/AdminDashboard.tsx
+[2026-03-30T10:30:09.614Z] GET /components/admin/UserManagement.tsx
+[2026-03-30T10:30:09.618Z] GET /components/admin/ProductMatrix.tsx
+[2026-03-30T10:30:09.623Z] GET /components/admin/AiArchitecture.tsx
+[2026-03-30T10:30:09.625Z] GET /components/admin/DuitkuSetup.tsx
+[2026-03-30T10:30:09.627Z] GET /components/admin/SalesNotificationManager.tsx
+[2026-03-30T10:30:09.629Z] GET /components/admin/AdminManagement.tsx
+[2026-03-30T10:30:09.634Z] GET /components/admin/EmailMarketing.tsx
+[2026-03-30T10:30:09.641Z] GET /components/admin/TrackingSettings.tsx
+[2026-03-30T10:30:09.643Z] GET /components/admin/AdminSettings.tsx
+[2026-03-30T10:30:09.645Z] GET /components/admin/ProductForm.tsx
+[2026-03-30T10:30:09.648Z] GET /components/admin/MayarIntegration.tsx
+[2026-03-30T10:30:09.650Z] GET /components/admin/FollowUpManager.tsx
+[2026-03-30T10:30:09.652Z] GET /components/admin/TransactionManagement.tsx
+[2026-03-30T10:30:09.657Z] GET /firebase-applet-config.json?import
+[2026-03-30T10:30:09.670Z] GET /services/featureRequestService.ts
+[2026-03-30T10:30:09.710Z] GET /components/common/SalesNotificationPopup.tsx
+[2026-03-30T10:30:09.733Z] GET /components/common/PdfViewer.tsx
+[2026-03-30T10:30:09.734Z] GET /components/admin/AdminStatCard.tsx
+[2026-03-30T10:30:48.958Z] POST /api/dk/test?t=1774866649412
+[2026-03-30T10:30:48.958Z] POST /api/dk/test called
+[2026-03-30T10:30:48.959Z] Testing Duitku connection...
+[2026-03-30T10:30:48.959Z] Using config provided in request body.
+[2026-03-30T10:30:48.960Z] Sending request to Duitku: https://passport.duitku.com/webapi/api/merchant/paymentmethod/getpaymentmethod
+[2026-03-30T10:30:48.960Z] Params: merchantcode=D21696, amount=10000, datetime=2026-03-30 17:30:48
+[2026-03-30T10:30:49.107Z] Duitku Raw Response: {"paymentFee":[{"paymentMethod":"FT","paymentName":"RETAIL","paymentImage":"https://images.duitku.com/hotlink-ok/RETAIL.PNG","totalFee":"0"},{"paymentMethod":"BT","paymentName":"PERMATA VA","paymentImage":"https://images.duitku.com/hotlink-ok/PERMATA.PNG","totalFee":"0"},{"paymentMethod":"A1","paymentName":"ATM BERSAMA VA","paymentImage":"https://images.duitku.com/hotlink-ok/A1.PNG","totalFee":"0"},{"paymentMethod":"I1","paymentName":"BNI VA","paymentImage":"https://images.duitku.com/hotlink-ok/I1.PNG","totalFee":"0"},{"paymentMethod":"SP","paymentName":"SHOPEEPAY QRIS","paymentImage":"https://images.duitku.com/hotlink-ok/QR.PNG","totalFee":"0"},{"paymentMethod":"M2","paymentName":"MANDIRI VA H2H","paymentImage":"https://images.duitku.com/hotlink-ok/MV.PNG","totalFee":"0"},{"paymentMethod":"BR","paymentName":"BRI VA","paymentImage":"https://images.duitku.com/hotlink-ok/BR.PNG","totalFee":"0"},{"paymentMethod":"BV","paymentName":"BSI VA","paymentImage":"https://images.duitku.com/hotlink-ok/BSI.PNG","totalFee":"0"},{"paymentMethod":"SQ","paymentName":"NUSAPAY QRIS","paymentImage":"https://images.duitku.com/hotlink-ok/SQ.PNG","totalFee":"0"},{"paymentMethod":"OV","paymentName":"OVO","paymentImage":"https://images.duitku.com/hotlink-ok/OV.PNG","totalFee":"0"},{"paymentMethod":"SA","paymentName":"SHOPEEPAY APP","paymentImage":"https://images.duitku.com/hotlink-ok/SHOPEEPAY.PNG","totalFee":"0"}],"responseCode":"00","responseMessage":"SUCCESS"}
+[2026-03-30T10:37:58.740Z] !!! SERVER STARTING !!!
+[2026-03-30T10:37:58.747Z] Firebase Admin initialized with default credentials.
+[2026-03-30T10:37:58.824Z] Firestore Admin connected. Database: default.
+[2026-03-30T10:37:58.837Z] Server running on http://0.0.0.0:3000
+[2026-03-30T10:38:11.713Z] !!! SERVER STARTING !!!
+[2026-03-30T10:38:11.718Z] Firebase Admin initialized with default credentials.
+[2026-03-30T10:38:11.799Z] Firestore Admin connected. Database: default.
+[2026-03-30T10:38:11.810Z] Server running on http://0.0.0.0:3000
+[2026-03-30T10:38:52.016Z] !!! SERVER STARTING !!!
+[2026-03-30T10:38:52.021Z] Firebase Admin initialized with default credentials.
+[2026-03-30T10:38:52.119Z] Firestore Admin connected. Database: default.
+[2026-03-30T10:38:52.122Z] Initializing Vite middleware...
+[2026-03-30T10:38:52.968Z] Vite middleware attached.
+[2026-03-30T10:38:52.973Z] Server running on http://0.0.0.0:3000
+[2026-03-30T10:38:53.166Z] GET /
+[2026-03-30T10:38:59.200Z] GET /
+[2026-03-30T10:38:59.327Z] GET /@vite/client
+[2026-03-30T10:38:59.349Z] GET /index.tsx
+[2026-03-30T10:38:59.900Z] GET /node_modules/vite/dist/client/env.mjs
+[2026-03-30T10:38:59.921Z] GET /App.tsx
+[2026-03-30T10:38:59.993Z] GET /constants.ts
+[2026-03-30T10:38:59.996Z] GET /types.ts
+[2026-03-30T10:39:00.009Z] GET /components/Sidebar.tsx
+[2026-03-30T10:39:00.024Z] GET /components/ProfileView.tsx
+[2026-03-30T10:39:00.025Z] GET /components/Dashboard.tsx
+[2026-03-30T10:39:00.029Z] GET /components/DailyLogs.tsx
+[2026-03-30T10:39:00.036Z] GET /components/CareerPlanner.tsx
+[2026-03-30T10:39:00.040Z] GET /components/Networking.tsx
+[2026-03-30T10:39:00.041Z] GET /components/user/SkillTracker.tsx
+[2026-03-30T10:39:00.052Z] GET /components/AchievementTracker.tsx
+[2026-03-30T10:39:00.058Z] GET /components/PersonalProjectTracker.tsx
+[2026-03-30T10:39:00.058Z] GET /components/CVGenerator.tsx
+[2026-03-30T10:39:00.059Z] GET /components/JobTracker.tsx
+[2026-03-30T10:39:00.066Z] GET /components/OnlineCVBuilder.tsx
+[2026-03-30T10:39:00.071Z] GET /components/FeatureRequests.tsx
+[2026-03-30T10:39:00.071Z] GET /components/AccountSettings.tsx
+[2026-03-30T10:39:00.072Z] GET /components/Billing.tsx
+[2026-03-30T10:39:00.073Z] GET /components/admin/FeatureRequestManagement.tsx
+[2026-03-30T10:39:00.073Z] GET /components/admin/AdminPanel.tsx
+[2026-03-30T10:39:00.074Z] GET /components/MobileNav.tsx
+[2026-03-30T10:39:00.074Z] GET /components/user/MobileHeader.tsx
+[2026-03-30T10:39:00.078Z] GET /components/Auth.tsx
+[2026-03-30T10:39:00.081Z] GET /components/Checkout.tsx
+[2026-03-30T10:39:00.083Z] GET /components/LandingPage.tsx
+[2026-03-30T10:39:00.083Z] GET /components/PerformanceReports.tsx
+[2026-03-30T10:39:00.084Z] GET /components/user/AppsHub.tsx
+[2026-03-30T10:39:00.086Z] GET /components/PublicLegalView.tsx
+[2026-03-30T10:39:00.088Z] GET /components/WorkReflection.tsx
+[2026-03-30T10:39:00.089Z] GET /components/AiInsightActivity.tsx
+[2026-03-30T10:39:00.093Z] GET /components/user/UpgradeModal.tsx
+[2026-03-30T10:39:00.094Z] GET /components/ToDoList.tsx
+[2026-03-30T10:39:00.096Z] GET /components/user/CareerCalendar.tsx
+[2026-03-30T10:39:00.099Z] GET /components/user/MobileStats.tsx
+[2026-03-30T10:39:00.101Z] GET /components/user/InterviewIntelligenceScript.tsx
+[2026-03-30T10:39:00.103Z] GET /components/public/TrainingDetail.tsx
+[2026-03-30T10:39:00.106Z] GET /components/public/TrainingList.tsx
+[2026-03-30T10:39:00.108Z] GET /services/firebase.ts
+[2026-03-30T10:39:00.111Z] GET /components/admin/TrainingManagement.tsx
+[2026-03-30T10:39:00.112Z] GET /components/user/OnboardingFlow.tsx
+[2026-03-30T10:39:00.113Z] GET /services/trackingService.ts
+[2026-03-30T10:39:00.113Z] GET /services/geminiService.ts
+[2026-03-30T10:39:00.139Z] GET /components/user/skill-learning/SkillMatrix.tsx
+[2026-03-30T10:39:00.141Z] GET /components/user/skill-learning/TrainingHistory.tsx
+[2026-03-30T10:39:00.144Z] GET /components/user/skill-learning/AiStrategist.tsx
+[2026-03-30T10:39:00.147Z] GET /components/user/skill-learning/Certification.tsx
+[2026-03-30T10:39:00.151Z] GET /components/user/skill-learning/SkillGapRadar.tsx
+[2026-03-30T10:39:00.155Z] GET /components/admin/AiArchitecture.tsx
+[2026-03-30T10:39:00.157Z] GET /components/admin/AdminDashboard.tsx
+[2026-03-30T10:39:00.158Z] GET /services/featureRequestService.ts
+[2026-03-30T10:39:00.160Z] GET /components/admin/UserManagement.tsx
+[2026-03-30T10:39:00.165Z] GET /components/admin/TransactionManagement.tsx
+[2026-03-30T10:39:00.169Z] GET /components/admin/ProductMatrix.tsx
+[2026-03-30T10:39:00.171Z] GET /components/admin/ProductForm.tsx
+[2026-03-30T10:39:00.173Z] GET /components/admin/AdminManagement.tsx
+[2026-03-30T10:39:00.175Z] GET /components/admin/FollowUpManager.tsx
+[2026-03-30T10:39:00.177Z] GET /components/admin/AdminSettings.tsx
+[2026-03-30T10:39:00.180Z] GET /components/admin/MayarIntegration.tsx
+[2026-03-30T10:39:00.182Z] GET /components/admin/TrackingSettings.tsx
+[2026-03-30T10:39:00.184Z] GET /components/admin/EmailMarketing.tsx
+[2026-03-30T10:39:00.239Z] GET /components/admin/DuitkuSetup.tsx
+[2026-03-30T10:39:00.241Z] GET /components/admin/SalesNotificationManager.tsx
+[2026-03-30T10:39:00.242Z] GET /components/common/SalesNotificationPopup.tsx
+[2026-03-30T10:39:00.248Z] GET /components/admin/AdminStatCard.tsx
+[2026-03-30T10:39:00.249Z] GET /components/common/PdfViewer.tsx
+[2026-03-30T10:39:00.249Z] GET /firebase-applet-config.json?import
+[2026-03-30T11:14:29.500Z] !!! SERVER STARTING !!!
+[2026-03-30T11:14:29.505Z] Firebase Admin initialized with default credentials.
+[2026-03-30T11:14:29.583Z] Firestore Admin connected. Database: default.
+[2026-03-30T11:14:29.586Z] Initializing Vite middleware...
+[2026-03-30T11:14:29.796Z] Vite middleware attached.
+[2026-03-30T11:14:29.801Z] Server running on http://0.0.0.0:3000
+[2026-03-30T11:20:28.511Z] !!! SERVER STARTING !!!
+[2026-03-30T11:20:28.517Z] Firebase Admin initialized with default credentials.
+[2026-03-30T11:20:28.588Z] Firestore Admin connected. Database: default.
+[2026-03-30T11:20:28.590Z] Initializing Vite middleware...
+[2026-03-30T11:20:28.823Z] Vite middleware attached.
+[2026-03-30T11:20:28.829Z] Server running on http://0.0.0.0:3000
+[2026-03-30T11:22:28.108Z] !!! SERVER STARTING !!!
+[2026-03-30T11:22:28.115Z] Firebase Admin initialized with default credentials.
+[2026-03-30T11:22:28.217Z] Firestore Admin connected. Database: default.
+[2026-03-30T11:22:28.258Z] Server running on http://0.0.0.0:3000
