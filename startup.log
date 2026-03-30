@@ -1,0 +1,114 @@
+[2026-03-30T08:22:19.742Z] !!! SERVER STARTING !!!
+[2026-03-30T08:22:19.746Z] Firebase Admin initialized with default credentials.
+[2026-03-30T08:22:19.852Z] Firestore Admin connected. Database: default.
+[2026-03-30T08:22:19.854Z] Initializing Vite middleware...
+[2026-03-30T08:22:19.938Z] Vite middleware attached.
+[2026-03-30T08:22:19.943Z] Server running on http://0.0.0.0:3000
+[2026-03-30T08:22:19.991Z] GET /
+[2026-03-30T08:22:21.863Z] GET /
+[2026-03-30T08:22:21.944Z] GET /@vite/client
+[2026-03-30T08:22:21.947Z] GET /index.tsx
+[2026-03-30T08:22:22.354Z] GET /node_modules/vite/dist/client/env.mjs
+[2026-03-30T08:22:22.409Z] GET /node_modules/.vite/deps/react_jsx-dev-runtime.js?v=e1582552
+[2026-03-30T08:22:22.410Z] GET /node_modules/.vite/deps/react.js?v=e1582552
+[2026-03-30T08:22:24.616Z] GET /node_modules/.vite/deps/react-dom_client.js?v=a5cec1b5
+[2026-03-30T08:22:24.626Z] GET /App.tsx
+[2026-03-30T08:22:24.707Z] GET /node_modules/.vite/deps/chunk-DFQNUVCC.js?v=fd5630e6
+[2026-03-30T08:22:24.723Z] GET /node_modules/.vite/deps/chunk-WOOG5QLI.js?v=fd5630e6
+[2026-03-30T08:22:24.754Z] GET /types.ts
+[2026-03-30T08:22:24.769Z] GET /constants.ts
+[2026-03-30T08:22:24.799Z] GET /components/Sidebar.tsx
+[2026-03-30T08:22:24.811Z] GET /components/Dashboard.tsx
+[2026-03-30T08:22:24.850Z] GET /components/DailyLogs.tsx
+[2026-03-30T08:22:24.861Z] GET /components/ProfileView.tsx
+[2026-03-30T08:22:24.906Z] GET /components/CareerPlanner.tsx
+[2026-03-30T08:22:24.917Z] GET /components/user/SkillTracker.tsx
+[2026-03-30T08:22:24.965Z] GET /components/Networking.tsx
+[2026-03-30T08:22:24.967Z] GET /components/AchievementTracker.tsx
+[2026-03-30T08:22:25.018Z] GET /components/JobTracker.tsx
+[2026-03-30T08:22:25.023Z] GET /components/PersonalProjectTracker.tsx
+[2026-03-30T08:22:25.073Z] GET /components/CVGenerator.tsx
+[2026-03-30T08:22:25.077Z] GET /components/OnlineCVBuilder.tsx
+[2026-03-30T08:22:25.127Z] GET /components/AccountSettings.tsx
+[2026-03-30T08:22:25.130Z] GET /components/Billing.tsx
+[2026-03-30T08:22:25.183Z] GET /components/admin/AdminPanel.tsx
+[2026-03-30T08:22:25.186Z] GET /components/FeatureRequests.tsx
+[2026-03-30T08:22:25.238Z] GET /components/admin/FeatureRequestManagement.tsx
+[2026-03-30T08:22:25.241Z] GET /components/MobileNav.tsx
+[2026-03-30T08:22:25.288Z] GET /components/user/MobileHeader.tsx
+[2026-03-30T08:22:25.290Z] GET /components/Auth.tsx
+[2026-03-30T08:22:25.339Z] GET /components/Checkout.tsx
+[2026-03-30T08:22:25.341Z] GET /components/LandingPage.tsx
+[2026-03-30T08:22:25.389Z] GET /components/PublicLegalView.tsx
+[2026-03-30T08:22:25.399Z] GET /components/WorkReflection.tsx
+[2026-03-30T08:22:25.436Z] GET /components/PerformanceReports.tsx
+[2026-03-30T08:22:25.455Z] GET /components/AiInsightActivity.tsx
+[2026-03-30T08:22:25.493Z] GET /components/ToDoList.tsx
+[2026-03-30T08:22:25.506Z] GET /components/user/AppsHub.tsx
+[2026-03-30T08:22:25.546Z] GET /components/user/UpgradeModal.tsx
+[2026-03-30T08:22:25.551Z] GET /components/user/MobileStats.tsx
+[2026-03-30T08:22:25.594Z] GET /components/user/CareerCalendar.tsx
+[2026-03-30T08:22:25.601Z] GET /components/user/InterviewIntelligenceScript.tsx
+[2026-03-30T08:22:25.648Z] GET /components/admin/TrainingManagement.tsx
+[2026-03-30T08:22:25.655Z] GET /components/public/TrainingList.tsx
+[2026-03-30T08:22:25.698Z] GET /components/public/TrainingDetail.tsx
+[2026-03-30T08:22:25.701Z] GET /components/user/OnboardingFlow.tsx
+[2026-03-30T08:22:25.744Z] GET /services/firebase.ts
+[2026-03-30T08:22:25.753Z] GET /node_modules/.vite/deps/firebase_auth.js?v=b1b82424
+[2026-03-30T08:22:25.798Z] GET /services/trackingService.ts
+[2026-03-30T08:22:25.814Z] GET /node_modules/.vite/deps/chunk-LHDVKITD.js?v=fd5630e6
+[2026-03-30T08:22:25.839Z] GET /node_modules/.vite/deps/recharts.js?v=5d7bf78a
+[2026-03-30T08:22:25.861Z] GET /services/geminiService.ts
+[2026-03-30T08:22:25.917Z] GET /components/user/skill-learning/SkillMatrix.tsx
+[2026-03-30T08:22:25.944Z] GET /components/user/skill-learning/TrainingHistory.tsx
+[2026-03-30T08:22:25.966Z] GET /components/user/skill-learning/Certification.tsx
+[2026-03-30T08:22:25.998Z] GET /components/user/skill-learning/AiStrategist.tsx
+[2026-03-30T08:22:26.021Z] GET /components/user/skill-learning/SkillGapRadar.tsx
+[2026-03-30T08:22:26.051Z] GET /components/admin/AdminDashboard.tsx
+[2026-03-30T08:22:26.070Z] GET /components/admin/UserManagement.tsx
+[2026-03-30T08:22:26.098Z] GET /components/admin/AiArchitecture.tsx
+[2026-03-30T08:22:26.117Z] GET /components/admin/ProductMatrix.tsx
+[2026-03-30T08:22:26.146Z] GET /components/admin/ProductForm.tsx
+[2026-03-30T08:22:26.164Z] GET /components/admin/TransactionManagement.tsx
+[2026-03-30T08:22:26.194Z] GET /components/admin/AdminManagement.tsx
+[2026-03-30T08:22:26.217Z] GET /components/admin/AdminSettings.tsx
+[2026-03-30T08:22:26.243Z] GET /components/admin/MayarIntegration.tsx
+[2026-03-30T08:22:26.270Z] GET /components/admin/DuitkuSetup.tsx
+[2026-03-30T08:22:26.290Z] GET /components/admin/FollowUpManager.tsx
+[2026-03-30T08:22:26.317Z] GET /components/admin/TrackingSettings.tsx
+[2026-03-30T08:22:26.337Z] GET /components/admin/EmailMarketing.tsx
+[2026-03-30T08:22:26.368Z] GET /components/admin/SalesNotificationManager.tsx
+[2026-03-30T08:22:26.384Z] GET /services/featureRequestService.ts
+[2026-03-30T08:22:26.416Z] GET /components/common/SalesNotificationPopup.tsx
+[2026-03-30T08:22:26.430Z] GET /node_modules/.vite/deps/motion_react.js?v=c16d79cf
+[2026-03-30T08:22:26.468Z] GET /node_modules/.vite/deps/jspdf.js?v=776b7139
+[2026-03-30T08:22:26.517Z] GET /node_modules/.vite/deps/docx.js?v=0ac48c78
+[2026-03-30T08:22:26.592Z] GET /node_modules/.vite/deps/file-saver.js?v=7ea14582
+[2026-03-30T08:22:26.656Z] GET /node_modules/.vite/deps/lucide-react.js?v=71583d92
+[2026-03-30T08:22:26.671Z] GET /node_modules/.vite/deps/firebase_app.js?v=a9d4c8c4
+[2026-03-30T08:22:26.764Z] GET /node_modules/.vite/deps/firebase_firestore.js?v=9d592e16
+[2026-03-30T08:22:26.794Z] GET /node_modules/.vite/deps/firebase_storage.js?v=927c4ba8
+[2026-03-30T08:22:26.845Z] GET /node_modules/.vite/deps/firebase_messaging.js?v=de536bb4
+[2026-03-30T08:22:26.855Z] GET /firebase-applet-config.json?import
+[2026-03-30T08:22:26.891Z] GET /node_modules/.vite/deps/chunk-B47YKNV5.js?v=fd5630e6
+[2026-03-30T08:22:26.897Z] GET /node_modules/.vite/deps/@google_genai.js?v=583dbe98
+[2026-03-30T08:22:26.942Z] GET /components/common/PdfViewer.tsx
+[2026-03-30T08:22:26.963Z] GET /components/admin/AdminStatCard.tsx
+[2026-03-30T08:22:26.988Z] GET /node_modules/.vite/deps/chunk-6AL2VBJN.js?v=fd5630e6
+[2026-03-30T08:22:27.016Z] GET /node_modules/.vite/deps/chunk-D7ZASVPN.js?v=fd5630e6
+[2026-03-30T08:22:27.044Z] GET /node_modules/.vite/deps/pdfjs-dist.js?v=ba70da68
+[2026-03-30T08:26:56.808Z] !!! SERVER STARTING !!!
+[2026-03-30T08:26:56.813Z] Firebase Admin initialized with default credentials.
+[2026-03-30T08:26:56.931Z] Firestore Admin connected. Database: default.
+[2026-03-30T08:26:56.933Z] Initializing Vite middleware...
+[2026-03-30T08:26:57.009Z] Vite middleware attached.
+[2026-03-30T08:26:57.014Z] Server running on http://0.0.0.0:3000
+[2026-03-30T08:28:12.835Z] GET /api/debug/duitku-config
+[2026-03-30T08:28:12.836Z] Unhandled API request: GET /api/debug/duitku-config
+[2026-03-30T08:28:28.111Z] POST /api/dk/test
+[2026-03-30T08:28:28.111Z] POST /api/dk/test called
+[2026-03-30T08:28:28.111Z] Testing Duitku connection...
+[2026-03-30T08:28:28.111Z] Using config provided in request body.
+[2026-03-30T08:28:28.112Z] Sending request to Duitku: https://sandbox.duitku.com/webapi/api/merchant/paymentmethod/getpaymentmethod
+[2026-03-30T08:28:28.113Z] Params: merchantcode=DXXXX, amount=10000, datetime=2026-03-30 15:28:28
+[2026-03-30T08:28:28.223Z] Duitku Raw Response: {"Message":"Merchant not found."}

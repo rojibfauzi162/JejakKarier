@@ -25,6 +25,12 @@ async function startServer() {
   const app = express();
   const PORT = 3000;
 
+  // Log EVERY request immediately
+  app.use((req, res, next) => {
+    console.log(`[RAW REQUEST] ${req.method} ${req.url}`);
+    next();
+  });
+
   // Middleware
   app.use(cors());
   app.use(express.json());
@@ -94,6 +100,11 @@ async function startServer() {
         merchantCode = req.body.merchantCode;
         apiKey = req.body.apiKey;
         environment = req.body.environment || 'sandbox';
+      } else if (process.env.DUITKU_MERCHANT_CODE && process.env.DUITKU_API_KEY) {
+        log("Using config provided in environment variables.");
+        merchantCode = process.env.DUITKU_MERCHANT_CODE;
+        apiKey = process.env.DUITKU_API_KEY;
+        environment = process.env.DUITKU_ENVIRONMENT || 'sandbox';
       } else {
         if (!db) {
           log("CRITICAL: Firestore Admin not initialized.");
@@ -239,14 +250,27 @@ async function startServer() {
       const { amount } = req.body;
       log(`Fetching payment methods for amount: ${amount}`);
 
-      const configSnap = await db.collection("system_metadata").doc("duitku_configuration").get();
-      if (!configSnap.exists) {
-        return res.status(404).json({ responseMessage: "Duitku configuration not found in Firestore" });
-      }
-      const config = configSnap.data() as any;
+      let merchantCode = process.env.DUITKU_MERCHANT_CODE;
+      let apiKey = process.env.DUITKU_API_KEY;
+      let environment = process.env.DUITKU_ENVIRONMENT || 'sandbox';
 
-      const merchantCode = config.merchantCode;
-      const apiKey = config.apiKey;
+      if (!merchantCode || !apiKey) {
+        if (!db) {
+          return res.status(500).json({ responseMessage: "Database not initialized and env vars missing." });
+        }
+        const configSnap = await db.collection("system_metadata").doc("duitku_configuration").get();
+        if (!configSnap.exists) {
+          return res.status(404).json({ responseMessage: "Duitku configuration not found in Firestore or Environment Variables" });
+        }
+        const config = configSnap.data() as any;
+        merchantCode = config.merchantCode;
+        apiKey = config.apiKey;
+        environment = config.environment || 'sandbox';
+      }
+
+      if (!merchantCode || !apiKey) {
+        return res.status(400).json({ responseMessage: "Merchant Code or API Key is missing." });
+      }
       
       // Format datetime: YYYY-MM-DD HH:mm:ss (WIB)
       const now = new Date();
@@ -264,7 +288,7 @@ async function startServer() {
       // Signature menggunakan SHA256 sesuai dokumentasi terbaru Get Payment Method
       const signature = CryptoJS.SHA256(merchantCode + String(amount) + datetime + apiKey).toString();
 
-      const url = config.environment === 'production' 
+      const url = environment === 'production' 
         ? 'https://passport.duitku.com/webapi/api/merchant/paymentmethod/getpaymentmethod'
         : 'https://sandbox.duitku.com/webapi/api/merchant/paymentmethod/getpaymentmethod';
 

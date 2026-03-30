@@ -22,7 +22,7 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://ais-dev-tb6oefqv2vrpr2jp3gdoal-86548481689.asia-southeast1.run.app/api/$1"
+      "destination": "https://ais-pre-tb6oefqv2vrpr2jp3gdoal-86548481689.asia-southeast1.run.app/api/$1"
     },
     {
       "source": "/(.*)",
