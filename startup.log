@@ -545,3 +545,109 @@
 [2026-03-30T09:42:20.118Z] Testing Duitku connection...
 [2026-03-30T09:42:20.118Z] Reading Firestore path: system_metadata/duitku_configuration
 [2026-03-30T09:42:20.767Z] ERROR reading Firestore: 7 PERMISSION_DENIED: Missing or insufficient permissions.
+[2026-03-30T09:42:37.284Z] !!! SERVER STARTING !!!
+[2026-03-30T09:42:37.288Z] Firebase Admin initialized with default credentials.
+[2026-03-30T09:42:37.378Z] Firestore Admin connected. Database: default.
+[2026-03-30T09:42:37.380Z] Initializing Vite middleware...
+[2026-03-30T09:42:37.472Z] Vite middleware attached.
+[2026-03-30T09:42:37.477Z] Server running on http://0.0.0.0:3000
+[2026-03-30T09:42:37.698Z] GET /
+[2026-03-30T09:42:43.854Z] GET /
+[2026-03-30T09:42:43.947Z] GET /@vite/client
+[2026-03-30T09:42:43.950Z] GET /index.tsx
+[2026-03-30T09:42:44.317Z] GET /node_modules/vite/dist/client/env.mjs
+[2026-03-30T09:42:44.338Z] GET /App.tsx
+[2026-03-30T09:42:44.444Z] GET /types.ts
+[2026-03-30T09:42:44.449Z] GET /constants.ts
+[2026-03-30T09:42:44.450Z] GET /components/Sidebar.tsx
+[2026-03-30T09:42:44.453Z] GET /components/Networking.tsx
+[2026-03-30T09:42:44.455Z] GET /components/Dashboard.tsx
+[2026-03-30T09:42:44.456Z] GET /components/CareerPlanner.tsx
+[2026-03-30T09:42:44.457Z] GET /components/ProfileView.tsx
+[2026-03-30T09:42:44.459Z] GET /components/DailyLogs.tsx
+[2026-03-30T09:42:44.460Z] GET /components/AchievementTracker.tsx
+[2026-03-30T09:42:44.462Z] GET /components/user/SkillTracker.tsx
+[2026-03-30T09:42:44.463Z] GET /components/JobTracker.tsx
+[2026-03-30T09:42:44.464Z] GET /components/OnlineCVBuilder.tsx
+[2026-03-30T09:42:44.466Z] GET /components/PersonalProjectTracker.tsx
+[2026-03-30T09:42:44.467Z] GET /components/Billing.tsx
+[2026-03-30T09:42:44.468Z] GET /components/AccountSettings.tsx
+[2026-03-30T09:42:44.469Z] GET /components/CVGenerator.tsx
+[2026-03-30T09:42:44.471Z] GET /components/admin/AdminPanel.tsx
+[2026-03-30T09:42:44.477Z] GET /components/FeatureRequests.tsx
+[2026-03-30T09:42:44.479Z] GET /components/user/MobileHeader.tsx
+[2026-03-30T09:42:44.480Z] GET /components/MobileNav.tsx
+[2026-03-30T09:42:44.482Z] GET /components/Auth.tsx
+[2026-03-30T09:42:44.484Z] GET /components/LandingPage.tsx
+[2026-03-30T09:42:44.486Z] GET /components/admin/FeatureRequestManagement.tsx
+[2026-03-30T09:42:44.487Z] GET /components/Checkout.tsx
+[2026-03-30T09:42:44.489Z] GET /components/PublicLegalView.tsx
+[2026-03-30T09:42:44.491Z] GET /components/ToDoList.tsx
+[2026-03-30T09:42:44.492Z] GET /components/WorkReflection.tsx
+[2026-03-30T09:42:44.493Z] GET /components/AiInsightActivity.tsx
+[2026-03-30T09:42:44.494Z] GET /components/PerformanceReports.tsx
+[2026-03-30T09:42:44.499Z] GET /components/user/UpgradeModal.tsx
+[2026-03-30T09:42:44.501Z] GET /components/user/AppsHub.tsx
+[2026-03-30T09:42:44.503Z] GET /components/admin/TrainingManagement.tsx
+[2026-03-30T09:42:44.504Z] GET /components/user/CareerCalendar.tsx
+[2026-03-30T09:42:44.507Z] GET /components/user/MobileStats.tsx
+[2026-03-30T09:42:44.508Z] GET /services/firebase.ts
+[2026-03-30T09:42:44.510Z] GET /components/public/TrainingList.tsx
+[2026-03-30T09:42:44.512Z] GET /components/user/OnboardingFlow.tsx
+[2026-03-30T09:42:44.515Z] GET /components/public/TrainingDetail.tsx
+[2026-03-30T09:42:44.517Z] GET /components/user/InterviewIntelligenceScript.tsx
+[2026-03-30T09:42:44.519Z] GET /services/trackingService.ts
+[2026-03-30T09:42:44.652Z] GET /components/user/skill-learning/SkillGapRadar.tsx
+[2026-03-30T09:42:44.653Z] GET /services/geminiService.ts
+[2026-03-30T09:42:44.654Z] GET /components/admin/UserManagement.tsx
+[2026-03-30T09:42:44.654Z] GET /components/admin/AiArchitecture.tsx
+[2026-03-30T09:42:44.655Z] GET /components/user/skill-learning/AiStrategist.tsx
+[2026-03-30T09:42:44.656Z] GET /components/user/skill-learning/Certification.tsx
+[2026-03-30T09:42:44.657Z] GET /components/admin/MayarIntegration.tsx
+[2026-03-30T09:42:44.657Z] GET /components/admin/AdminSettings.tsx
+[2026-03-30T09:42:44.658Z] GET /components/user/skill-learning/SkillMatrix.tsx
+[2026-03-30T09:42:44.659Z] GET /components/admin/TransactionManagement.tsx
+[2026-03-30T09:42:44.660Z] GET /components/admin/AdminManagement.tsx
+[2026-03-30T09:42:44.661Z] GET /components/admin/ProductMatrix.tsx
+[2026-03-30T09:42:44.662Z] GET /components/user/skill-learning/TrainingHistory.tsx
+[2026-03-30T09:42:44.662Z] GET /components/admin/ProductForm.tsx
+[2026-03-30T09:42:44.663Z] GET /components/admin/AdminDashboard.tsx
+[2026-03-30T09:42:44.667Z] GET /components/admin/DuitkuSetup.tsx
+[2026-03-30T09:42:44.672Z] GET /components/admin/FollowUpManager.tsx
+[2026-03-30T09:42:44.676Z] GET /components/admin/SalesNotificationManager.tsx
+[2026-03-30T09:42:44.678Z] GET /services/featureRequestService.ts
+[2026-03-30T09:42:44.680Z] GET /components/admin/TrackingSettings.tsx
+[2026-03-30T09:42:44.686Z] GET /components/admin/EmailMarketing.tsx
+[2026-03-30T09:42:44.687Z] GET /components/common/SalesNotificationPopup.tsx
+[2026-03-30T09:42:44.689Z] GET /firebase-applet-config.json?import
+[2026-03-30T09:42:44.748Z] GET /components/common/PdfViewer.tsx
+[2026-03-30T09:42:44.813Z] GET /components/admin/AdminStatCard.tsx
+[2026-03-30T10:18:51.099Z] POST /api/dk/test?t=1774865930025
+[2026-03-30T10:18:51.099Z] POST /api/dk/test called
+[2026-03-30T10:18:51.100Z] Testing Duitku connection...
+[2026-03-30T10:18:51.100Z] Using config provided in request body.
+[2026-03-30T10:18:51.100Z] Sending request to Duitku: https://passport.duitku.com/webapi/api/merchant/paymentmethod/getpaymentmethod
+[2026-03-30T10:18:51.101Z] Params: merchantcode=D21696, amount=10000, datetime=2026-03-30 17:18:51
+[2026-03-30T10:18:51.734Z] Duitku Raw Response: {"paymentFee":[{"paymentMethod":"FT","paymentName":"RETAIL","paymentImage":"https://images.duitku.com/hotlink-ok/RETAIL.PNG","totalFee":"0"},{"paymentMethod":"BT","paymentName":"PERMATA VA","paymentImage":"https://images.duitku.com/hotlink-ok/PERMATA.PNG","totalFee":"0"},{"paymentMethod":"A1","paymentName":"ATM BERSAMA VA","paymentImage":"https://images.duitku.com/hotlink-ok/A1.PNG","totalFee":"0"},{"paymentMethod":"I1","paymentName":"BNI VA","paymentImage":"https://images.duitku.com/hotlink-ok/I1.PNG","totalFee":"0"},{"paymentMethod":"SP","paymentName":"SHOPEEPAY QRIS","paymentImage":"https://images.duitku.com/hotlink-ok/QR.PNG","totalFee":"0"},{"paymentMethod":"M2","paymentName":"MANDIRI VA H2H","paymentImage":"https://images.duitku.com/hotlink-ok/MV.PNG","totalFee":"0"},{"paymentMethod":"BR","paymentName":"BRI VA","paymentImage":"https://images.duitku.com/hotlink-ok/BR.PNG","totalFee":"0"},{"paymentMethod":"BV","paymentName":"BSI VA","paymentImage":"https://images.duitku.com/hotlink-ok/BSI.PNG","totalFee":"0"},{"paymentMethod":"SQ","paymentName":"NUSAPAY QRIS","paymentImage":"https://images.duitku.com/hotlink-ok/SQ.PNG","totalFee":"0"},{"paymentMethod":"OV","paymentName":"OVO","paymentImage":"https://images.duitku.com/hotlink-ok/OV.PNG","totalFee":"0"},{"paymentMethod":"SA","paymentName":"SHOPEEPAY APP","paymentImage":"https://images.duitku.com/hotlink-ok/SHOPEEPAY.PNG","totalFee":"0"}],"responseCode":"00","responseMessage":"SUCCESS"}
+[2026-03-30T10:23:25.887Z] !!! SERVER STARTING !!!
+[2026-03-30T10:23:25.892Z] Firebase Admin initialized with default credentials.
+[2026-03-30T10:23:25.960Z] Firestore Admin connected. Database: default.
+[2026-03-30T10:23:25.963Z] Initializing Vite middleware...
+[2026-03-30T10:23:26.024Z] Vite middleware attached.
+[2026-03-30T10:23:26.029Z] Server running on http://0.0.0.0:3000
+[2026-03-30T10:28:35.043Z] !!! SERVER STARTING !!!
+[2026-03-30T10:28:35.047Z] Firebase Admin initialized with default credentials.
+[2026-03-30T10:28:35.117Z] Firestore Admin connected. Database: default.
+[2026-03-30T10:28:35.119Z] Initializing Vite middleware...
+[2026-03-30T10:28:35.206Z] Vite middleware attached.
+[2026-03-30T10:28:35.213Z] Server running on http://0.0.0.0:3000
+[2026-03-30T10:29:32.173Z] !!! SERVER STARTING !!!
+[2026-03-30T10:29:32.178Z] Firebase Admin initialized with default credentials.
+[2026-03-30T10:29:32.250Z] Firestore Admin connected. Database: default.
+[2026-03-30T10:29:32.252Z] Initializing Vite middleware...
+[2026-03-30T10:29:32.473Z] Vite middleware attached.
+[2026-03-30T10:29:32.478Z] Server running on http://0.0.0.0:3000
+[2026-03-30T10:29:41.817Z] !!! SERVER STARTING !!!
+[2026-03-30T10:29:41.822Z] Firebase Admin initialized with default credentials.
+[2026-03-30T10:29:41.917Z] Firestore Admin connected. Database: default.
+[2026-03-30T10:29:41.928Z] Server running on http://0.0.0.0:3000

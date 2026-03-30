@@ -5,7 +5,6 @@ import { fileURLToPath } from "url";
 import express from "express";
 import cors from "cors";
 import admin from "firebase-admin";
-import { createServer as createViteServer } from "vite";
 import CryptoJS from "crypto-js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -531,6 +530,7 @@ async function startServer() {
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
     log("Initializing Vite middleware...");
+    const { createServer: createViteServer } = await import("vite");
     const vite = await createViteServer({
       server: { 
         middlewareMode: true,
