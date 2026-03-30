@@ -112,3 +112,436 @@
 [2026-03-30T08:28:28.112Z] Sending request to Duitku: https://sandbox.duitku.com/webapi/api/merchant/paymentmethod/getpaymentmethod
 [2026-03-30T08:28:28.113Z] Params: merchantcode=DXXXX, amount=10000, datetime=2026-03-30 15:28:28
 [2026-03-30T08:28:28.223Z] Duitku Raw Response: {"Message":"Merchant not found."}
+[2026-03-30T08:31:36.017Z] !!! SERVER STARTING !!!
+[2026-03-30T08:31:36.021Z] Firebase Admin initialized with default credentials.
+[2026-03-30T08:31:36.129Z] Firestore Admin connected. Database: default.
+[2026-03-30T08:31:36.131Z] Initializing Vite middleware...
+[2026-03-30T08:31:36.210Z] Vite middleware attached.
+[2026-03-30T08:31:36.214Z] Server running on http://0.0.0.0:3000
+[2026-03-30T08:31:52.748Z] !!! SERVER STARTING !!!
+[2026-03-30T08:31:52.753Z] Firebase Admin initialized with default credentials.
+[2026-03-30T08:31:52.839Z] Firestore Admin connected. Database: default.
+[2026-03-30T08:31:52.842Z] Initializing Vite middleware...
+[2026-03-30T08:31:52.918Z] Vite middleware attached.
+[2026-03-30T08:31:52.923Z] Server running on http://0.0.0.0:3000
+[2026-03-30T08:31:52.969Z] GET /
+[2026-03-30T08:35:22.875Z] GET /
+[2026-03-30T08:35:22.955Z] GET /@vite/client
+[2026-03-30T08:35:22.981Z] GET /index.tsx
+[2026-03-30T08:35:23.227Z] GET /node_modules/vite/dist/client/env.mjs
+[2026-03-30T08:35:23.264Z] GET /App.tsx
+[2026-03-30T08:35:23.346Z] GET /types.ts
+[2026-03-30T08:35:23.349Z] GET /constants.ts
+[2026-03-30T08:35:23.393Z] GET /components/Sidebar.tsx
+[2026-03-30T08:35:23.397Z] GET /components/Dashboard.tsx
+[2026-03-30T08:35:23.449Z] GET /components/DailyLogs.tsx
+[2026-03-30T08:35:23.460Z] GET /components/ProfileView.tsx
+[2026-03-30T08:35:23.514Z] GET /components/CareerPlanner.tsx
+[2026-03-30T08:35:23.523Z] GET /components/user/SkillTracker.tsx
+[2026-03-30T08:35:23.568Z] GET /components/Networking.tsx
+[2026-03-30T08:35:23.574Z] GET /components/AchievementTracker.tsx
+[2026-03-30T08:35:23.621Z] GET /components/JobTracker.tsx
+[2026-03-30T08:35:23.629Z] GET /components/PersonalProjectTracker.tsx
+[2026-03-30T08:35:23.674Z] GET /components/CVGenerator.tsx
+[2026-03-30T08:35:23.685Z] GET /components/OnlineCVBuilder.tsx
+[2026-03-30T08:35:23.729Z] GET /components/AccountSettings.tsx
+[2026-03-30T08:35:23.738Z] GET /components/Billing.tsx
+[2026-03-30T08:35:23.783Z] GET /components/admin/AdminPanel.tsx
+[2026-03-30T08:35:23.789Z] GET /components/FeatureRequests.tsx
+[2026-03-30T08:35:23.832Z] GET /components/admin/FeatureRequestManagement.tsx
+[2026-03-30T08:35:23.838Z] GET /components/MobileNav.tsx
+[2026-03-30T08:35:23.879Z] GET /components/user/MobileHeader.tsx
+[2026-03-30T08:35:23.885Z] GET /components/Auth.tsx
+[2026-03-30T08:35:23.928Z] GET /components/LandingPage.tsx
+[2026-03-30T08:35:23.938Z] GET /components/Checkout.tsx
+[2026-03-30T08:35:23.992Z] GET /components/WorkReflection.tsx
+[2026-03-30T08:35:23.997Z] GET /components/PublicLegalView.tsx
+[2026-03-30T08:35:24.051Z] GET /components/PerformanceReports.tsx
+[2026-03-30T08:35:24.057Z] GET /components/AiInsightActivity.tsx
+[2026-03-30T08:35:24.109Z] GET /components/ToDoList.tsx
+[2026-03-30T08:35:24.113Z] GET /components/user/AppsHub.tsx
+[2026-03-30T08:35:24.163Z] GET /components/user/UpgradeModal.tsx
+[2026-03-30T08:35:24.168Z] GET /components/user/MobileStats.tsx
+[2026-03-30T08:35:24.212Z] GET /components/user/CareerCalendar.tsx
+[2026-03-30T08:35:24.215Z] GET /components/user/InterviewIntelligenceScript.tsx
+[2026-03-30T08:35:24.273Z] GET /components/admin/TrainingManagement.tsx
+[2026-03-30T08:35:24.275Z] GET /components/public/TrainingList.tsx
+[2026-03-30T08:35:24.326Z] GET /components/public/TrainingDetail.tsx
+[2026-03-30T08:35:24.329Z] GET /components/user/OnboardingFlow.tsx
+[2026-03-30T08:35:24.372Z] GET /services/firebase.ts
+[2026-03-30T08:35:24.394Z] GET /services/trackingService.ts
+[2026-03-30T08:35:24.442Z] GET /services/geminiService.ts
+[2026-03-30T08:35:24.477Z] GET /components/user/skill-learning/SkillMatrix.tsx
+[2026-03-30T08:35:24.533Z] GET /components/user/skill-learning/Certification.tsx
+[2026-03-30T08:35:24.537Z] GET /components/user/skill-learning/TrainingHistory.tsx
+[2026-03-30T08:35:24.590Z] GET /components/user/skill-learning/AiStrategist.tsx
+[2026-03-30T08:35:24.594Z] GET /components/user/skill-learning/SkillGapRadar.tsx
+[2026-03-30T08:35:24.644Z] GET /components/admin/AdminDashboard.tsx
+[2026-03-30T08:35:24.649Z] GET /components/admin/UserManagement.tsx
+[2026-03-30T08:35:24.693Z] GET /components/admin/AiArchitecture.tsx
+[2026-03-30T08:35:24.697Z] GET /components/admin/ProductMatrix.tsx
+[2026-03-30T08:35:24.743Z] GET /components/admin/ProductForm.tsx
+[2026-03-30T08:35:24.746Z] GET /components/admin/TransactionManagement.tsx
+[2026-03-30T08:35:24.792Z] GET /components/admin/AdminManagement.tsx
+[2026-03-30T08:35:24.797Z] GET /components/admin/AdminSettings.tsx
+[2026-03-30T08:35:24.841Z] GET /components/admin/MayarIntegration.tsx
+[2026-03-30T08:35:24.851Z] GET /components/admin/DuitkuSetup.tsx
+[2026-03-30T08:35:24.890Z] GET /components/admin/FollowUpManager.tsx
+[2026-03-30T08:35:24.898Z] GET /components/admin/TrackingSettings.tsx
+[2026-03-30T08:35:24.937Z] GET /components/admin/EmailMarketing.tsx
+[2026-03-30T08:35:24.946Z] GET /components/admin/SalesNotificationManager.tsx
+[2026-03-30T08:35:24.989Z] GET /services/featureRequestService.ts
+[2026-03-30T08:35:24.993Z] GET /components/common/SalesNotificationPopup.tsx
+[2026-03-30T08:35:25.098Z] GET /node_modules/.vite/deps/chunk-B47YKNV5.js?v=a2d7aedb
+[2026-03-30T08:35:25.166Z] GET /firebase-applet-config.json?import
+[2026-03-30T08:35:25.192Z] GET /components/common/PdfViewer.tsx
+[2026-03-30T08:35:25.224Z] GET /components/admin/AdminStatCard.tsx
+[2026-03-30T08:35:25.237Z] GET /node_modules/.vite/deps/chunk-6AL2VBJN.js?v=a2d7aedb
+[2026-03-30T08:35:25.267Z] GET /node_modules/.vite/deps/chunk-D7ZASVPN.js?v=a2d7aedb
+[2026-03-30T09:26:36.992Z] !!! SERVER STARTING !!!
+[2026-03-30T09:26:36.997Z] Firebase Admin initialized with default credentials.
+[2026-03-30T09:26:37.103Z] Firestore Admin connected. Database: default.
+[2026-03-30T09:26:37.106Z] Initializing Vite middleware...
+[2026-03-30T09:26:37.199Z] Vite middleware attached.
+[2026-03-30T09:26:37.204Z] Server running on http://0.0.0.0:3000
+[2026-03-30T09:26:37.320Z] GET /
+[2026-03-30T09:26:44.215Z] GET /
+[2026-03-30T09:26:44.571Z] GET /@vite/client
+[2026-03-30T09:26:44.573Z] GET /index.tsx
+[2026-03-30T09:26:45.093Z] GET /App.tsx
+[2026-03-30T09:26:45.096Z] GET /node_modules/vite/dist/client/env.mjs
+[2026-03-30T09:26:45.167Z] GET /types.ts
+[2026-03-30T09:26:45.172Z] GET /components/Sidebar.tsx
+[2026-03-30T09:26:45.174Z] GET /components/Dashboard.tsx
+[2026-03-30T09:26:45.176Z] GET /constants.ts
+[2026-03-30T09:26:45.178Z] GET /components/DailyLogs.tsx
+[2026-03-30T09:26:45.186Z] GET /components/ProfileView.tsx
+[2026-03-30T09:26:45.187Z] GET /components/CareerPlanner.tsx
+[2026-03-30T09:26:45.189Z] GET /components/Networking.tsx
+[2026-03-30T09:26:45.191Z] GET /components/user/SkillTracker.tsx
+[2026-03-30T09:26:45.192Z] GET /components/JobTracker.tsx
+[2026-03-30T09:26:45.195Z] GET /components/AchievementTracker.tsx
+[2026-03-30T09:26:45.203Z] GET /components/PersonalProjectTracker.tsx
+[2026-03-30T09:26:45.207Z] GET /components/CVGenerator.tsx
+[2026-03-30T09:26:45.231Z] GET /components/OnlineCVBuilder.tsx
+[2026-03-30T09:26:45.232Z] GET /components/AccountSettings.tsx
+[2026-03-30T09:26:45.233Z] GET /components/Billing.tsx
+[2026-03-30T09:26:45.234Z] GET /components/FeatureRequests.tsx
+[2026-03-30T09:26:45.235Z] GET /components/admin/AdminPanel.tsx
+[2026-03-30T09:26:45.237Z] GET /components/admin/FeatureRequestManagement.tsx
+[2026-03-30T09:26:45.239Z] GET /components/Auth.tsx
+[2026-03-30T09:26:45.240Z] GET /components/LandingPage.tsx
+[2026-03-30T09:26:45.241Z] GET /components/MobileNav.tsx
+[2026-03-30T09:26:45.242Z] GET /components/user/MobileHeader.tsx
+[2026-03-30T09:26:45.243Z] GET /components/Checkout.tsx
+[2026-03-30T09:26:45.244Z] GET /components/WorkReflection.tsx
+[2026-03-30T09:26:45.245Z] GET /components/AiInsightActivity.tsx
+[2026-03-30T09:26:45.246Z] GET /components/PublicLegalView.tsx
+[2026-03-30T09:26:45.247Z] GET /components/PerformanceReports.tsx
+[2026-03-30T09:26:45.261Z] GET /components/ToDoList.tsx
+[2026-03-30T09:26:45.291Z] GET /components/user/UpgradeModal.tsx
+[2026-03-30T09:26:45.293Z] GET /components/public/TrainingList.tsx
+[2026-03-30T09:26:45.294Z] GET /components/admin/TrainingManagement.tsx
+[2026-03-30T09:26:45.295Z] GET /components/user/MobileStats.tsx
+[2026-03-30T09:26:45.296Z] GET /components/user/AppsHub.tsx
+[2026-03-30T09:26:45.296Z] GET /components/user/CareerCalendar.tsx
+[2026-03-30T09:26:45.298Z] GET /components/user/InterviewIntelligenceScript.tsx
+[2026-03-30T09:26:45.299Z] GET /components/user/OnboardingFlow.tsx
+[2026-03-30T09:26:45.300Z] GET /services/trackingService.ts
+[2026-03-30T09:26:45.301Z] GET /services/firebase.ts
+[2026-03-30T09:26:45.302Z] GET /components/public/TrainingDetail.tsx
+[2026-03-30T09:26:45.426Z] GET /components/user/skill-learning/TrainingHistory.tsx
+[2026-03-30T09:26:45.427Z] GET /components/user/skill-learning/SkillMatrix.tsx
+[2026-03-30T09:26:45.429Z] GET /services/geminiService.ts
+[2026-03-30T09:26:45.431Z] GET /components/user/skill-learning/Certification.tsx
+[2026-03-30T09:26:45.432Z] GET /services/featureRequestService.ts
+[2026-03-30T09:26:45.433Z] GET /components/user/skill-learning/AiStrategist.tsx
+[2026-03-30T09:26:45.435Z] GET /components/admin/AdminDashboard.tsx
+[2026-03-30T09:26:45.436Z] GET /components/user/skill-learning/SkillGapRadar.tsx
+[2026-03-30T09:26:45.456Z] GET /components/admin/UserManagement.tsx
+[2026-03-30T09:26:45.457Z] GET /components/admin/AiArchitecture.tsx
+[2026-03-30T09:26:45.460Z] GET /components/admin/ProductForm.tsx
+[2026-03-30T09:26:45.461Z] GET /components/admin/MayarIntegration.tsx
+[2026-03-30T09:26:45.462Z] GET /components/admin/TrackingSettings.tsx
+[2026-03-30T09:26:45.463Z] GET /components/admin/AdminSettings.tsx
+[2026-03-30T09:26:45.465Z] GET /components/admin/AdminManagement.tsx
+[2026-03-30T09:26:45.466Z] GET /components/common/SalesNotificationPopup.tsx
+[2026-03-30T09:26:45.467Z] GET /components/admin/FollowUpManager.tsx
+[2026-03-30T09:26:45.468Z] GET /components/admin/ProductMatrix.tsx
+[2026-03-30T09:26:45.469Z] GET /components/admin/EmailMarketing.tsx
+[2026-03-30T09:26:45.470Z] GET /components/admin/SalesNotificationManager.tsx
+[2026-03-30T09:26:45.471Z] GET /components/admin/DuitkuSetup.tsx
+[2026-03-30T09:26:45.472Z] GET /components/admin/TransactionManagement.tsx
+[2026-03-30T09:26:45.691Z] GET /firebase-applet-config.json?import
+[2026-03-30T09:26:45.696Z] GET /components/common/PdfViewer.tsx
+[2026-03-30T09:26:45.720Z] GET /components/admin/AdminStatCard.tsx
+[2026-03-30T09:27:25.834Z] POST /api/dk/test?t=1774862846330
+[2026-03-30T09:27:25.835Z] POST /api/dk/test called
+[2026-03-30T09:27:25.835Z] Testing Duitku connection...
+[2026-03-30T09:27:25.835Z] Using config provided in request body.
+[2026-03-30T09:27:25.836Z] Sending request to Duitku: https://passport.duitku.com/webapi/api/merchant/paymentmethod/getpaymentmethod
+[2026-03-30T09:27:25.836Z] Params: merchantcode=DS28062, amount=10000, datetime=2026-03-30 16:27:25
+[2026-03-30T09:27:25.935Z] Duitku Raw Response: {"Message":"Merchant not found."}
+[2026-03-30T09:27:30.147Z] POST /api/dk/test?t=1774862850695
+[2026-03-30T09:27:30.147Z] POST /api/dk/test called
+[2026-03-30T09:27:30.147Z] Testing Duitku connection...
+[2026-03-30T09:27:30.147Z] Using config provided in request body.
+[2026-03-30T09:27:30.148Z] Sending request to Duitku: https://passport.duitku.com/webapi/api/merchant/paymentmethod/getpaymentmethod
+[2026-03-30T09:27:30.148Z] Params: merchantcode=DS28062, amount=10000, datetime=2026-03-30 16:27:30
+[2026-03-30T09:27:30.203Z] Duitku Raw Response: {"Message":"Merchant not found."}
+[2026-03-30T09:27:49.096Z] POST /api/dk/test?t=1774862869647
+[2026-03-30T09:27:49.096Z] POST /api/dk/test called
+[2026-03-30T09:27:49.096Z] Testing Duitku connection...
+[2026-03-30T09:27:49.096Z] Using config provided in request body.
+[2026-03-30T09:27:49.097Z] Sending request to Duitku: https://passport.duitku.com/webapi/api/merchant/paymentmethod/getpaymentmethod
+[2026-03-30T09:27:49.097Z] Params: merchantcode=DS28062, amount=10000, datetime=2026-03-30 16:27:49
+[2026-03-30T09:27:49.165Z] Duitku Raw Response: {"Message":"Merchant not found."}
+[2026-03-30T09:27:49.790Z] POST /api/dk/test?t=1774862870346
+[2026-03-30T09:27:49.790Z] POST /api/dk/test called
+[2026-03-30T09:27:49.790Z] Testing Duitku connection...
+[2026-03-30T09:27:49.790Z] Using config provided in request body.
+[2026-03-30T09:27:49.791Z] Sending request to Duitku: https://passport.duitku.com/webapi/api/merchant/paymentmethod/getpaymentmethod
+[2026-03-30T09:27:49.791Z] Params: merchantcode=DS28062, amount=10000, datetime=2026-03-30 16:27:49
+[2026-03-30T09:27:49.834Z] Duitku Raw Response: {"Message":"Merchant not found."}
+[2026-03-30T09:31:01.170Z] GET /
+[2026-03-30T09:31:01.235Z] GET /@vite/client
+[2026-03-30T09:31:01.237Z] GET /index.tsx
+[2026-03-30T09:31:01.385Z] GET /App.tsx
+[2026-03-30T09:31:01.389Z] GET /node_modules/vite/dist/client/env.mjs
+[2026-03-30T09:31:01.467Z] GET /types.ts
+[2026-03-30T09:31:01.468Z] GET /constants.ts
+[2026-03-30T09:31:01.471Z] GET /components/Sidebar.tsx
+[2026-03-30T09:31:01.473Z] GET /components/DailyLogs.tsx
+[2026-03-30T09:31:01.474Z] GET /components/OnlineCVBuilder.tsx
+[2026-03-30T09:31:01.476Z] GET /components/AchievementTracker.tsx
+[2026-03-30T09:31:01.477Z] GET /components/user/SkillTracker.tsx
+[2026-03-30T09:31:01.479Z] GET /components/ProfileView.tsx
+[2026-03-30T09:31:01.480Z] GET /components/admin/AdminPanel.tsx
+[2026-03-30T09:31:01.481Z] GET /components/Dashboard.tsx
+[2026-03-30T09:31:01.483Z] GET /components/CVGenerator.tsx
+[2026-03-30T09:31:01.484Z] GET /components/Billing.tsx
+[2026-03-30T09:31:01.485Z] GET /components/CareerPlanner.tsx
+[2026-03-30T09:31:01.487Z] GET /components/Networking.tsx
+[2026-03-30T09:31:01.488Z] GET /components/AccountSettings.tsx
+[2026-03-30T09:31:01.489Z] GET /components/FeatureRequests.tsx
+[2026-03-30T09:31:01.490Z] GET /components/MobileNav.tsx
+[2026-03-30T09:31:01.492Z] GET /components/PersonalProjectTracker.tsx
+[2026-03-30T09:31:01.493Z] GET /components/user/MobileHeader.tsx
+[2026-03-30T09:31:01.494Z] GET /components/admin/FeatureRequestManagement.tsx
+[2026-03-30T09:31:01.495Z] GET /components/Auth.tsx
+[2026-03-30T09:31:01.496Z] GET /components/Checkout.tsx
+[2026-03-30T09:31:01.497Z] GET /components/LandingPage.tsx
+[2026-03-30T09:31:01.498Z] GET /components/PerformanceReports.tsx
+[2026-03-30T09:31:01.499Z] GET /components/JobTracker.tsx
+[2026-03-30T09:31:01.500Z] GET /components/WorkReflection.tsx
+[2026-03-30T09:31:01.501Z] GET /components/user/UpgradeModal.tsx
+[2026-03-30T09:31:01.502Z] GET /components/user/CareerCalendar.tsx
+[2026-03-30T09:31:01.504Z] GET /components/user/MobileStats.tsx
+[2026-03-30T09:31:01.505Z] GET /components/PublicLegalView.tsx
+[2026-03-30T09:31:01.506Z] GET /components/public/TrainingList.tsx
+[2026-03-30T09:31:01.507Z] GET /components/user/InterviewIntelligenceScript.tsx
+[2026-03-30T09:31:01.509Z] GET /components/admin/TrainingManagement.tsx
+[2026-03-30T09:31:01.510Z] GET /components/AiInsightActivity.tsx
+[2026-03-30T09:31:01.511Z] GET /components/user/AppsHub.tsx
+[2026-03-30T09:31:01.512Z] GET /services/trackingService.ts
+[2026-03-30T09:31:01.514Z] GET /components/ToDoList.tsx
+[2026-03-30T09:31:01.515Z] GET /services/firebase.ts
+[2026-03-30T09:31:01.516Z] GET /components/public/TrainingDetail.tsx
+[2026-03-30T09:31:01.517Z] GET /components/user/OnboardingFlow.tsx
+[2026-03-30T09:31:01.639Z] GET /components/user/skill-learning/SkillMatrix.tsx
+[2026-03-30T09:31:01.645Z] GET /components/user/skill-learning/TrainingHistory.tsx
+[2026-03-30T09:31:01.647Z] GET /components/admin/UserManagement.tsx
+[2026-03-30T09:31:01.648Z] GET /components/admin/AiArchitecture.tsx
+[2026-03-30T09:31:01.650Z] GET /components/user/skill-learning/Certification.tsx
+[2026-03-30T09:31:01.651Z] GET /components/admin/TransactionManagement.tsx
+[2026-03-30T09:31:01.652Z] GET /components/user/skill-learning/SkillGapRadar.tsx
+[2026-03-30T09:31:01.653Z] GET /components/user/skill-learning/AiStrategist.tsx
+[2026-03-30T09:31:01.654Z] GET /components/admin/AdminSettings.tsx
+[2026-03-30T09:31:01.655Z] GET /components/admin/ProductForm.tsx
+[2026-03-30T09:31:01.656Z] GET /components/admin/ProductMatrix.tsx
+[2026-03-30T09:31:01.657Z] GET /components/admin/AdminManagement.tsx
+[2026-03-30T09:31:01.658Z] GET /services/geminiService.ts
+[2026-03-30T09:31:01.659Z] GET /components/admin/AdminDashboard.tsx
+[2026-03-30T09:31:01.661Z] GET /components/admin/DuitkuSetup.tsx
+[2026-03-30T09:31:01.662Z] GET /components/admin/MayarIntegration.tsx
+[2026-03-30T09:31:01.663Z] GET /components/admin/TrackingSettings.tsx
+[2026-03-30T09:31:01.664Z] GET /components/admin/EmailMarketing.tsx
+[2026-03-30T09:31:01.665Z] GET /components/admin/FollowUpManager.tsx
+[2026-03-30T09:31:01.666Z] GET /services/featureRequestService.ts
+[2026-03-30T09:31:01.668Z] GET /components/common/SalesNotificationPopup.tsx
+[2026-03-30T09:31:01.669Z] GET /components/admin/SalesNotificationManager.tsx
+[2026-03-30T09:31:01.670Z] GET /firebase-applet-config.json?import
+[2026-03-30T09:31:01.703Z] GET /components/common/PdfViewer.tsx
+[2026-03-30T09:31:01.730Z] GET /components/admin/AdminStatCard.tsx
+[2026-03-30T09:31:09.321Z] POST /api/dk/test?t=1774863069871
+[2026-03-30T09:31:09.321Z] POST /api/dk/test called
+[2026-03-30T09:31:09.321Z] Testing Duitku connection...
+[2026-03-30T09:31:09.321Z] Using config provided in request body.
+[2026-03-30T09:31:09.322Z] Sending request to Duitku: https://passport.duitku.com/webapi/api/merchant/paymentmethod/getpaymentmethod
+[2026-03-30T09:31:09.322Z] Params: merchantcode=DS28062, amount=10000, datetime=2026-03-30 16:31:09
+[2026-03-30T09:31:09.381Z] Duitku Raw Response: {"Message":"Merchant not found."}
+[2026-03-30T09:31:33.969Z] POST /api/dk/test?t=1774863094509
+[2026-03-30T09:31:33.970Z] POST /api/dk/test called
+[2026-03-30T09:31:33.970Z] Testing Duitku connection...
+[2026-03-30T09:31:33.970Z] Using config provided in request body.
+[2026-03-30T09:31:33.970Z] Sending request to Duitku: https://passport.duitku.com/webapi/api/merchant/paymentmethod/getpaymentmethod
+[2026-03-30T09:31:33.970Z] Params: merchantcode=D21696, amount=10000, datetime=2026-03-30 16:31:33
+[2026-03-30T09:31:34.086Z] Duitku Raw Response: {"paymentFee":[{"paymentMethod":"FT","paymentName":"RETAIL","paymentImage":"https://images.duitku.com/hotlink-ok/RETAIL.PNG","totalFee":"0"},{"paymentMethod":"BT","paymentName":"PERMATA VA","paymentImage":"https://images.duitku.com/hotlink-ok/PERMATA.PNG","totalFee":"0"},{"paymentMethod":"A1","paymentName":"ATM BERSAMA VA","paymentImage":"https://images.duitku.com/hotlink-ok/A1.PNG","totalFee":"0"},{"paymentMethod":"I1","paymentName":"BNI VA","paymentImage":"https://images.duitku.com/hotlink-ok/I1.PNG","totalFee":"0"},{"paymentMethod":"SP","paymentName":"SHOPEEPAY QRIS","paymentImage":"https://images.duitku.com/hotlink-ok/QR.PNG","totalFee":"0"},{"paymentMethod":"M2","paymentName":"MANDIRI VA H2H","paymentImage":"https://images.duitku.com/hotlink-ok/MV.PNG","totalFee":"0"},{"paymentMethod":"BR","paymentName":"BRI VA","paymentImage":"https://images.duitku.com/hotlink-ok/BR.PNG","totalFee":"0"},{"paymentMethod":"BV","paymentName":"BSI VA","paymentImage":"https://images.duitku.com/hotlink-ok/BSI.PNG","totalFee":"0"},{"paymentMethod":"SQ","paymentName":"NUSAPAY QRIS","paymentImage":"https://images.duitku.com/hotlink-ok/SQ.PNG","totalFee":"0"},{"paymentMethod":"OV","paymentName":"OVO","paymentImage":"https://images.duitku.com/hotlink-ok/OV.PNG","totalFee":"0"},{"paymentMethod":"SA","paymentName":"SHOPEEPAY APP","paymentImage":"https://images.duitku.com/hotlink-ok/SHOPEEPAY.PNG","totalFee":"0"}],"responseCode":"00","responseMessage":"SUCCESS"}
+[2026-03-30T09:37:12.816Z] GET /
+[2026-03-30T09:37:20.365Z] GET /
+[2026-03-30T09:37:32.637Z] GET /@vite/client
+[2026-03-30T09:37:32.639Z] GET /index.tsx
+[2026-03-30T09:37:32.680Z] GET /@vite/client
+[2026-03-30T09:37:32.709Z] GET /index.tsx
+[2026-03-30T09:37:32.799Z] GET /node_modules/vite/dist/client/env.mjs
+[2026-03-30T09:37:32.838Z] GET /node_modules/vite/dist/client/env.mjs
+[2026-03-30T09:37:33.443Z] GET /App.tsx
+[2026-03-30T09:37:33.482Z] GET /App.tsx
+[2026-03-30T09:37:33.767Z] GET /types.ts
+[2026-03-30T09:37:33.780Z] GET /constants.ts
+[2026-03-30T09:37:33.814Z] GET /types.ts
+[2026-03-30T09:37:33.832Z] GET /components/Sidebar.tsx
+[2026-03-30T09:37:33.846Z] GET /constants.ts
+[2026-03-30T09:37:33.849Z] GET /components/Dashboard.tsx
+[2026-03-30T09:37:33.917Z] GET /components/Sidebar.tsx
+[2026-03-30T09:37:33.920Z] GET /components/DailyLogs.tsx
+[2026-03-30T09:37:33.938Z] GET /components/Dashboard.tsx
+[2026-03-30T09:37:33.944Z] GET /components/ProfileView.tsx
+[2026-03-30T09:37:33.954Z] GET /components/CareerPlanner.tsx
+[2026-03-30T09:37:33.961Z] GET /components/user/SkillTracker.tsx
+[2026-03-30T09:37:33.962Z] GET /components/DailyLogs.tsx
+[2026-03-30T09:37:33.970Z] GET /components/Networking.tsx
+[2026-03-30T09:37:33.987Z] GET /components/AchievementTracker.tsx
+[2026-03-30T09:37:33.991Z] GET /components/JobTracker.tsx
+[2026-03-30T09:37:33.995Z] GET /components/ProfileView.tsx
+[2026-03-30T09:37:33.995Z] GET /components/CareerPlanner.tsx
+[2026-03-30T09:37:34.002Z] GET /components/user/SkillTracker.tsx
+[2026-03-30T09:37:34.014Z] GET /components/Networking.tsx
+[2026-03-30T09:37:34.017Z] GET /components/PersonalProjectTracker.tsx
+[2026-03-30T09:37:34.019Z] GET /components/CVGenerator.tsx
+[2026-03-30T09:37:34.021Z] GET /components/OnlineCVBuilder.tsx
+[2026-03-30T09:37:34.028Z] GET /components/AchievementTracker.tsx
+[2026-03-30T09:37:34.035Z] GET /components/JobTracker.tsx
+[2026-03-30T09:37:34.037Z] GET /components/AccountSettings.tsx
+[2026-03-30T09:37:34.073Z] GET /components/PersonalProjectTracker.tsx
+[2026-03-30T09:37:34.088Z] GET /components/Billing.tsx
+[2026-03-30T09:37:34.091Z] GET /components/CVGenerator.tsx
+[2026-03-30T09:37:34.168Z] GET /components/admin/AdminPanel.tsx
+[2026-03-30T09:37:34.184Z] GET /components/OnlineCVBuilder.tsx
+[2026-03-30T09:37:34.190Z] GET /components/FeatureRequests.tsx
+[2026-03-30T09:37:34.193Z] GET /components/AccountSettings.tsx
+[2026-03-30T09:37:34.198Z] GET /components/admin/FeatureRequestManagement.tsx
+[2026-03-30T09:37:34.204Z] GET /components/MobileNav.tsx
+[2026-03-30T09:37:34.237Z] GET /components/Billing.tsx
+[2026-03-30T09:37:34.240Z] GET /components/admin/AdminPanel.tsx
+[2026-03-30T09:37:34.241Z] GET /components/FeatureRequests.tsx
+[2026-03-30T09:37:34.242Z] GET /components/admin/FeatureRequestManagement.tsx
+[2026-03-30T09:37:34.245Z] GET /components/MobileNav.tsx
+[2026-03-30T09:37:34.246Z] GET /components/LandingPage.tsx
+[2026-03-30T09:37:34.247Z] GET /components/user/MobileHeader.tsx
+[2026-03-30T09:37:34.250Z] GET /components/Auth.tsx
+[2026-03-30T09:37:34.258Z] GET /components/Checkout.tsx
+[2026-03-30T09:37:34.260Z] GET /components/WorkReflection.tsx
+[2026-03-30T09:37:34.261Z] GET /components/PublicLegalView.tsx
+[2026-03-30T09:37:34.262Z] GET /components/PerformanceReports.tsx
+[2026-03-30T09:37:34.265Z] GET /components/AiInsightActivity.tsx
+[2026-03-30T09:37:34.278Z] GET /components/ToDoList.tsx
+[2026-03-30T09:37:34.295Z] GET /components/user/AppsHub.tsx
+[2026-03-30T09:37:34.298Z] GET /components/LandingPage.tsx
+[2026-03-30T09:37:34.299Z] GET /components/user/MobileHeader.tsx
+[2026-03-30T09:37:34.301Z] GET /components/Auth.tsx
+[2026-03-30T09:37:34.307Z] GET /components/Checkout.tsx
+[2026-03-30T09:37:34.309Z] GET /components/PublicLegalView.tsx
+[2026-03-30T09:37:34.310Z] GET /components/WorkReflection.tsx
+[2026-03-30T09:37:34.310Z] GET /components/PerformanceReports.tsx
+[2026-03-30T09:37:34.311Z] GET /components/AiInsightActivity.tsx
+[2026-03-30T09:37:34.367Z] GET /components/ToDoList.tsx
+[2026-03-30T09:37:34.376Z] GET /components/user/AppsHub.tsx
+[2026-03-30T09:37:34.382Z] GET /components/user/UpgradeModal.tsx
+[2026-03-30T09:37:34.387Z] GET /components/user/MobileStats.tsx
+[2026-03-30T09:37:34.397Z] GET /components/user/CareerCalendar.tsx
+[2026-03-30T09:37:34.444Z] GET /components/user/UpgradeModal.tsx
+[2026-03-30T09:37:34.447Z] GET /components/user/InterviewIntelligenceScript.tsx
+[2026-03-30T09:37:34.461Z] GET /components/user/MobileStats.tsx
+[2026-03-30T09:37:34.462Z] GET /components/admin/TrainingManagement.tsx
+[2026-03-30T09:37:34.467Z] GET /components/user/CareerCalendar.tsx
+[2026-03-30T09:37:34.468Z] GET /components/public/TrainingList.tsx
+[2026-03-30T09:37:34.475Z] GET /components/public/TrainingDetail.tsx
+[2026-03-30T09:37:34.483Z] GET /components/user/OnboardingFlow.tsx
+[2026-03-30T09:37:34.486Z] GET /components/user/InterviewIntelligenceScript.tsx
+[2026-03-30T09:37:34.501Z] GET /services/firebase.ts
+[2026-03-30T09:37:34.501Z] GET /components/admin/TrainingManagement.tsx
+[2026-03-30T09:37:34.507Z] GET /components/public/TrainingList.tsx
+[2026-03-30T09:37:34.514Z] GET /components/public/TrainingDetail.tsx
+[2026-03-30T09:37:34.574Z] GET /components/user/OnboardingFlow.tsx
+[2026-03-30T09:37:34.605Z] GET /services/firebase.ts
+[2026-03-30T09:37:34.635Z] GET /services/trackingService.ts
+[2026-03-30T09:37:34.737Z] GET /services/trackingService.ts
+[2026-03-30T09:37:35.654Z] GET /services/geminiService.ts
+[2026-03-30T09:37:35.657Z] GET /components/user/skill-learning/AiStrategist.tsx
+[2026-03-30T09:37:35.659Z] GET /components/user/skill-learning/SkillMatrix.tsx
+[2026-03-30T09:37:35.660Z] GET /components/user/skill-learning/TrainingHistory.tsx
+[2026-03-30T09:37:35.665Z] GET /components/user/skill-learning/Certification.tsx
+[2026-03-30T09:37:35.667Z] GET /components/user/skill-learning/SkillGapRadar.tsx
+[2026-03-30T09:37:36.196Z] GET /components/user/skill-learning/SkillMatrix.tsx
+[2026-03-30T09:37:36.315Z] GET /components/admin/AdminDashboard.tsx
+[2026-03-30T09:37:36.328Z] GET /components/user/skill-learning/TrainingHistory.tsx
+[2026-03-30T09:37:36.335Z] GET /components/user/skill-learning/Certification.tsx
+[2026-03-30T09:37:36.336Z] GET /services/geminiService.ts
+[2026-03-30T09:37:36.338Z] GET /components/user/skill-learning/AiStrategist.tsx
+[2026-03-30T09:37:36.339Z] GET /components/user/skill-learning/SkillGapRadar.tsx
+[2026-03-30T09:37:36.366Z] GET /components/admin/UserManagement.tsx
+[2026-03-30T09:37:36.401Z] GET /components/admin/AiArchitecture.tsx
+[2026-03-30T09:37:36.430Z] GET /components/admin/ProductMatrix.tsx
+[2026-03-30T09:37:36.459Z] GET /components/admin/ProductForm.tsx
+[2026-03-30T09:37:36.462Z] GET /components/admin/TransactionManagement.tsx
+[2026-03-30T09:37:36.463Z] GET /components/admin/AdminManagement.tsx
+[2026-03-30T09:37:36.465Z] GET /components/admin/AdminSettings.tsx
+[2026-03-30T09:37:36.466Z] GET /components/admin/MayarIntegration.tsx
+[2026-03-30T09:37:36.484Z] GET /components/admin/DuitkuSetup.tsx
+[2026-03-30T09:37:36.510Z] GET /components/admin/FollowUpManager.tsx
+[2026-03-30T09:37:36.524Z] GET /components/admin/AdminDashboard.tsx
+[2026-03-30T09:37:36.530Z] GET /components/admin/TrackingSettings.tsx
+[2026-03-30T09:37:36.540Z] GET /components/admin/EmailMarketing.tsx
+[2026-03-30T09:37:36.544Z] GET /components/admin/SalesNotificationManager.tsx
+[2026-03-30T09:37:36.546Z] GET /services/featureRequestService.ts
+[2026-03-30T09:37:36.635Z] GET /components/admin/AiArchitecture.tsx
+[2026-03-30T09:37:36.636Z] GET /components/admin/UserManagement.tsx
+[2026-03-30T09:37:36.638Z] GET /components/admin/ProductMatrix.tsx
+[2026-03-30T09:37:36.642Z] GET /components/admin/ProductForm.tsx
+[2026-03-30T09:37:36.657Z] GET /components/common/SalesNotificationPopup.tsx
+[2026-03-30T09:37:36.660Z] GET /components/admin/TransactionManagement.tsx
+[2026-03-30T09:37:36.814Z] GET /components/admin/AdminManagement.tsx
+[2026-03-30T09:37:36.868Z] GET /components/admin/AdminSettings.tsx
+[2026-03-30T09:37:36.886Z] GET /components/admin/MayarIntegration.tsx
+[2026-03-30T09:37:36.912Z] GET /components/admin/DuitkuSetup.tsx
+[2026-03-30T09:37:36.968Z] GET /components/admin/FollowUpManager.tsx
+[2026-03-30T09:37:36.989Z] GET /components/admin/TrackingSettings.tsx
+[2026-03-30T09:37:37.022Z] GET /components/admin/EmailMarketing.tsx
+[2026-03-30T09:37:37.084Z] GET /components/admin/SalesNotificationManager.tsx
+[2026-03-30T09:37:37.103Z] GET /services/featureRequestService.ts
+[2026-03-30T09:37:37.150Z] GET /components/common/SalesNotificationPopup.tsx
+[2026-03-30T09:37:37.328Z] GET /firebase-applet-config.json?import
+[2026-03-30T09:37:37.661Z] GET /firebase-applet-config.json?import
+[2026-03-30T09:37:38.957Z] GET /components/common/PdfViewer.tsx
+[2026-03-30T09:37:38.964Z] GET /components/admin/AdminStatCard.tsx
+[2026-03-30T09:37:39.008Z] GET /components/common/PdfViewer.tsx
+[2026-03-30T09:37:39.011Z] GET /components/admin/AdminStatCard.tsx
+[2026-03-30T09:37:46.163Z] POST /api/dk/test?t=1774863466709
+[2026-03-30T09:37:46.164Z] POST /api/dk/test called
+[2026-03-30T09:37:46.164Z] Testing Duitku connection...
+[2026-03-30T09:37:46.164Z] Using config provided in request body.
+[2026-03-30T09:37:46.164Z] Sending request to Duitku: https://passport.duitku.com/webapi/api/merchant/paymentmethod/getpaymentmethod
+[2026-03-30T09:37:46.164Z] Params: merchantcode=D21696, amount=10000, datetime=2026-03-30 16:37:46
+[2026-03-30T09:37:46.292Z] Duitku Raw Response: {"paymentFee":[{"paymentMethod":"FT","paymentName":"RETAIL","paymentImage":"https://images.duitku.com/hotlink-ok/RETAIL.PNG","totalFee":"0"},{"paymentMethod":"BT","paymentName":"PERMATA VA","paymentImage":"https://images.duitku.com/hotlink-ok/PERMATA.PNG","totalFee":"0"},{"paymentMethod":"A1","paymentName":"ATM BERSAMA VA","paymentImage":"https://images.duitku.com/hotlink-ok/A1.PNG","totalFee":"0"},{"paymentMethod":"I1","paymentName":"BNI VA","paymentImage":"https://images.duitku.com/hotlink-ok/I1.PNG","totalFee":"0"},{"paymentMethod":"SP","paymentName":"SHOPEEPAY QRIS","paymentImage":"https://images.duitku.com/hotlink-ok/QR.PNG","totalFee":"0"},{"paymentMethod":"M2","paymentName":"MANDIRI VA H2H","paymentImage":"https://images.duitku.com/hotlink-ok/MV.PNG","totalFee":"0"},{"paymentMethod":"BR","paymentName":"BRI VA","paymentImage":"https://images.duitku.com/hotlink-ok/BR.PNG","totalFee":"0"},{"paymentMethod":"BV","paymentName":"BSI VA","paymentImage":"https://images.duitku.com/hotlink-ok/BSI.PNG","totalFee":"0"},{"paymentMethod":"SQ","paymentName":"NUSAPAY QRIS","paymentImage":"https://images.duitku.com/hotlink-ok/SQ.PNG","totalFee":"0"},{"paymentMethod":"OV","paymentName":"OVO","paymentImage":"https://images.duitku.com/hotlink-ok/OV.PNG","totalFee":"0"},{"paymentMethod":"SA","paymentName":"SHOPEEPAY APP","paymentImage":"https://images.duitku.com/hotlink-ok/SHOPEEPAY.PNG","totalFee":"0"}],"responseCode":"00","responseMessage":"SUCCESS"}
+[2026-03-30T09:42:03.637Z] !!! SERVER STARTING !!!
+[2026-03-30T09:42:03.642Z] Firebase Admin initialized with default credentials.
+[2026-03-30T09:42:03.745Z] Firestore Admin connected. Database: default.
+[2026-03-30T09:42:03.748Z] Initializing Vite middleware...
+[2026-03-30T09:42:03.814Z] Vite middleware attached.
+[2026-03-30T09:42:03.819Z] Server running on http://0.0.0.0:3000
+[2026-03-30T09:42:20.117Z] POST /api/dk/test
+[2026-03-30T09:42:20.117Z] POST /api/dk/test called
+[2026-03-30T09:42:20.118Z] Testing Duitku connection...
+[2026-03-30T09:42:20.118Z] Reading Firestore path: system_metadata/duitku_configuration
+[2026-03-30T09:42:20.767Z] ERROR reading Firestore: 7 PERMISSION_DENIED: Missing or insufficient permissions.
