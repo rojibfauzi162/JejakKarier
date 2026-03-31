@@ -67,13 +67,16 @@ async function startServer() {
         projectId: projectId
       });
       db = admin.firestore(adminApp);
-      if (firebaseConfig.firestoreDatabaseId && firebaseConfig.firestoreDatabaseId !== "(default)") {
-        db = adminApp.firestore(firebaseConfig.firestoreDatabaseId);
+      // Ensure we use (default) if not specified or explicitly set to (default)
+      const dbId = firebaseConfig.firestoreDatabaseId || "(default)";
+      if (dbId !== "(default)") {
+        db = adminApp.firestore(dbId);
       }
     } else {
       db = admin.firestore();
-      if (firebaseConfig.firestoreDatabaseId && firebaseConfig.firestoreDatabaseId !== "(default)") {
-        db = admin.app().firestore(firebaseConfig.firestoreDatabaseId);
+      const dbId = firebaseConfig.firestoreDatabaseId || "(default)";
+      if (dbId !== "(default)") {
+        db = admin.app().firestore(dbId);
       }
     }
     log(`Firebase Admin SDK initialized with database: ${firebaseConfig.firestoreDatabaseId || "(default)"}`);
@@ -560,10 +563,10 @@ async function startServer() {
         }
       }
 
-      res.status(200).send("OK");
+      res.status(200).json({ res: "OK" });
     } catch (error: any) {
       log(`Error in callback: ${error.message}`);
-      res.status(500).send(error.message);
+      res.status(500).json({ res: "ERROR", message: error.message });
     }
   });
 
