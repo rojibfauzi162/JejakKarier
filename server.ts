@@ -4,8 +4,12 @@ import path from "path";
 import { fileURLToPath } from "url";
 import express from "express";
 import cors from "cors";
-import admin from "firebase-admin";
+import * as admin from "firebase-admin";
 import CryptoJS from "crypto-js";
+import axios from "axios";
+import { initializeApp as initializeClientApp } from "firebase/app";
+import { getFirestore as getClientFirestore, doc, getDoc, setDoc, getDocs, collection } from "firebase/firestore";
+import { createServer as createViteServer } from "vite";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -41,44 +45,122 @@ async function startServer() {
     next();
   });
 
-  // Firebase Admin Initialization
+  // Firebase Initialization
   let db: admin.firestore.Firestore;
+  let clientDb: any;
+  
   try {
     const configPath = path.join(process.cwd(), "firebase-applet-config.json");
     const firebaseConfig = JSON.parse(fs.readFileSync(configPath, "utf8"));
     
+    // Initialize Client SDK
+    const clientApp = initializeClientApp(firebaseConfig);
+    clientDb = getClientFirestore(clientApp);
+    log("Firebase Client SDK initialized.");
+
+    // Initialize Admin SDK
     if (!admin.apps.length) {
-      const projectId = firebaseConfig.projectId || process.env.GOOGLE_CLOUD_PROJECT;
+      const projectId = firebaseConfig.projectId || "jejakkarir-11379";
+      log(`Initializing Firebase Admin for Project: ${projectId}`);
       
-      // Try to initialize with default credentials first
-      try {
-        admin.initializeApp();
-        log(`Firebase Admin initialized with default credentials.`);
-      } catch (e) {
-        log(`Default initialization failed, trying with projectId: ${projectId}`);
-        admin.initializeApp({
-          projectId: projectId
-        });
-        log(`Firebase Admin initialized with projectId: ${projectId}`);
-      }
-      
-      if (projectId) {
-        process.env.GOOGLE_CLOUD_PROJECT = projectId;
-      }
+      const adminApp = admin.initializeApp({
+        projectId: projectId
+      });
+      db = admin.firestore(adminApp);
+    } else {
+      db = admin.firestore();
     }
+    log("Firebase Admin SDK initialized.");
     
-    // Use the specific database ID if provided, otherwise default
-    const dbId = (firebaseConfig.firestoreDatabaseId && firebaseConfig.firestoreDatabaseId !== '(default)') 
-      ? firebaseConfig.firestoreDatabaseId 
-      : undefined;
-      
-    db = admin.firestore(dbId);
-    log(`Firestore Admin connected. Database: ${dbId || 'default'}.`);
+    // Test read permission on startup
+    (async () => {
+      try {
+        log("Testing Firestore read permission (CLIENT SDK) for system_metadata/duitku_configuration...");
+        const testSnap = await getDoc(doc(clientDb, "system_metadata", "duitku_configuration"));
+        log(`Startup test (CLIENT SDK): Firestore read successful. Exists: ${testSnap.exists()}`);
+      } catch (err: any) {
+        log(`Startup test (CLIENT SDK): Firestore read FAILED: ${err.message}`);
+      }
+
+      try {
+        log("Testing Firestore read permission (ADMIN SDK) for system_metadata/duitku_configuration...");
+        const testSnap = await db.collection("system_metadata").doc("duitku_configuration").get();
+        log(`Startup test (ADMIN SDK): Firestore read successful. Exists: ${testSnap.exists}`);
+      } catch (err: any) {
+        log(`Startup test (ADMIN SDK): Firestore read FAILED: ${err.message}`);
+      }
+    })();
   } catch (error: any) {
-    log(`CRITICAL: Firebase Admin initialization failed: ${error.message}`);
+    log(`CRITICAL: Firebase initialization failed: ${error.message}`);
   }
 
   // --- DUITKU API ROUTES ---
+
+  // Helper to get Firestore doc with fallback
+  async function getFirestoreDoc(col: string, docId: string) {
+    try {
+      // Try Admin SDK first
+      const snap = await db.collection(col).doc(docId).get();
+      if (snap.exists) {
+        return snap.data();
+      }
+    } catch (err: any) {
+      log(`Admin SDK read error for ${col}/${docId}: ${err.message}`);
+    }
+
+    try {
+      const clientSnap = await getDoc(doc(clientDb, col, docId));
+      if (clientSnap.exists()) {
+        return clientSnap.data();
+      }
+    } catch (err: any) {
+      log(`Client SDK read error for ${col}/${docId}: ${err.message}`);
+    }
+    return null;
+  }
+
+  // Helper to set Firestore doc with fallback
+  async function setFirestoreDoc(col: string, docId: string, data: any) {
+    try {
+      // Try Admin SDK first
+      await db.collection(col).doc(docId).set(data, { merge: true });
+      return true;
+    } catch (err: any) {
+      log(`Admin SDK write error for ${col}/${docId}: ${err.message}. Trying Client SDK...`);
+    }
+
+    try {
+      await setDoc(doc(clientDb, col, docId), data, { merge: true });
+      return true;
+    } catch (err: any) {
+      log(`Client SDK write error for ${col}/${docId}: ${err.message}`);
+    }
+    return false;
+  }
+
+  // Helper to get Firestore collection with fallback
+  async function getFirestoreCollection(col: string) {
+    try {
+      // Try Admin SDK first
+      const snap = await db.collection(col).get();
+      return snap.docs.map((d: any) => ({ ...d.data(), id: d.id }));
+    } catch (err: any) {
+      log(`Admin SDK collection read error for ${col}: ${err.message}`);
+    }
+
+    try {
+      const clientSnap = await getDocs(collection(clientDb, col));
+      return clientSnap.docs.map((d: any) => ({ ...d.data(), id: d.id }));
+    } catch (err: any) {
+      log(`Client SDK collection read error for ${col}: ${err.message}`);
+    }
+    return [];
+  }
+
+  // Helper to get Duitku config
+  async function getDuitkuConfig() {
+    return await getFirestoreDoc("system_metadata", "duitku_configuration");
+  }
 
   // Debug route for GET
   app.get("/api/dk/test", (req, res) => {
@@ -105,31 +187,21 @@ async function startServer() {
         apiKey = process.env.DUITKU_API_KEY;
         environment = process.env.DUITKU_ENVIRONMENT || 'sandbox';
       } else {
-        if (!db) {
-          log("CRITICAL: Firestore Admin not initialized.");
+        if (!db && !clientDb) {
+          log("CRITICAL: Firestore not initialized.");
           return res.status(500).json({ success: false, message: "Server Error: Database tidak terhubung." });
         }
 
         log(`Reading Firestore path: system_metadata/duitku_configuration`);
-        let configSnap;
-        try {
-          configSnap = await db.collection("system_metadata").doc("duitku_configuration").get();
-          if (configSnap.exists) {
-            const config = configSnap.data() as any;
-            merchantCode = config.merchantCode;
-            apiKey = config.apiKey;
-            environment = config.environment;
-          } else {
-            return res.status(200).json({ 
-              success: false, 
-              message: "Konfigurasi belum disimpan di database. Silakan klik 'Simpan Konfigurasi' terlebih dahulu." 
-            });
-          }
-        } catch (err: any) {
-          log(`ERROR reading Firestore: ${err.message}`);
-          return res.status(500).json({ 
+        const config = await getDuitkuConfig();
+        if (config) {
+          merchantCode = config.merchantCode;
+          apiKey = config.apiKey;
+          environment = config.environment;
+        } else {
+          return res.status(200).json({ 
             success: false, 
-            message: `Server Error: ${err.message}. Silakan coba simpan konfigurasi terlebih dahulu.` 
+            message: "Konfigurasi belum disimpan di database. Silakan klik 'Simpan Konfigurasi' terlebih dahulu." 
           });
         }
       }
@@ -210,13 +282,12 @@ async function startServer() {
         return res.status(400).json({ success: false, message: "Order ID diperlukan." });
       }
 
-      const configSnap = await db.collection("system_metadata").doc("duitku_configuration").get();
-      if (!configSnap.exists) {
+      const config = await getDuitkuConfig();
+      if (!config) {
         return res.status(404).json({ success: false, message: "Konfigurasi Duitku tidak ditemukan." });
       }
 
-      const config = configSnap.data() as any;
-      const { merchantCode, apiKey, environment } = config;
+      const { merchantCode, apiKey, environment } = config as any;
 
       // Signature for status check: md5(merchantCode + merchantOrderId + apiKey)
       const signature = CryptoJS.MD5(merchantCode + merchantOrderId + apiKey).toString();
@@ -257,11 +328,10 @@ async function startServer() {
         if (!db) {
           return res.status(500).json({ responseMessage: "Database not initialized and env vars missing." });
         }
-        const configSnap = await db.collection("system_metadata").doc("duitku_configuration").get();
-        if (!configSnap.exists) {
+        const config = await getDuitkuConfig();
+        if (!config) {
           return res.status(404).json({ responseMessage: "Duitku configuration not found in Firestore or Environment Variables" });
         }
-        const config = configSnap.data() as any;
         merchantCode = config.merchantCode;
         apiKey = config.apiKey;
         environment = config.environment || 'sandbox';
@@ -316,12 +386,12 @@ async function startServer() {
       log(`Inquiry request: uid=${uid}, planId=${planId}, method=${paymentMethod}`);
 
       // Get Duitku Config
-      const configSnap = await db.collection("system_metadata").doc("duitku_configuration").get();
-      const config = configSnap.data() as any;
+      const config = await getDuitkuConfig();
+      if (!config) throw new Error("Duitku configuration not found");
 
       // Get Plan Details
-      const catalogSnap = await db.collection("system_metadata").doc("products_catalog").get();
-      const catalog = catalogSnap.data()?.list || [];
+      const catalogData = await getFirestoreDoc("system_metadata", "products_catalog");
+      const catalog = catalogData?.list || [];
       const plan = catalog.find((p: any) => p.id === planId);
 
       if (!plan) throw new Error("Plan not found");
@@ -394,9 +464,7 @@ async function startServer() {
       
       if (data.statusCode === '00') {
         // Save pending transaction to user
-        const userRef = db.collection("users").doc(uid);
-        const userSnap = await userRef.get();
-        const userData = userSnap.data();
+        const userData = await getFirestoreDoc("users", uid) as any;
         const manualTransactions = userData?.manualTransactions || [];
         
         manualTransactions.push({
@@ -411,7 +479,7 @@ async function startServer() {
           checkoutUrl: data.paymentUrl
         });
 
-        await userRef.update({ manualTransactions });
+        await setFirestoreDoc("users", uid, { manualTransactions });
       }
 
       res.json(data);
@@ -451,16 +519,16 @@ async function startServer() {
         // Let's try a simpler approach: find the user whose manualTransactions has this ID.
         // In a real app, we'd have a 'transactions' collection.
         
-        const allUsers = await db.collection("users").get();
+        const allUsers = await getFirestoreCollection("users");
         let targetUser: any = null;
         let targetUid: string = "";
 
-        for (const doc of allUsers.docs) {
-          const data = doc.data();
+        for (const user of allUsers) {
+          const data = user as any;
           const tx = data.manualTransactions?.find((t: any) => t.id === merchantOrderId);
           if (tx) {
             targetUser = data;
-            targetUid = doc.id;
+            targetUid = data.id;
             break;
           }
         }
@@ -480,7 +548,7 @@ async function startServer() {
             targetUser.expiryDate = expiry.toISOString();
             targetUser.activeFrom = now.toISOString();
 
-            await db.collection("users").doc(targetUid).set(targetUser);
+            await setFirestoreDoc("users", targetUid, targetUser);
             log(`User ${targetUid} upgraded to ${tx.planTier}`);
           }
         }

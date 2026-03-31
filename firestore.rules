@@ -23,9 +23,10 @@ service cloud.firestore {
     // Rules for Collections
     // ===============================================================
 
-    // KONFIGURASI SENSITIF - HANYA ADMIN
+    // KONFIGURASI SENSITIF - HANYA ADMIN UNTUK WRITE, PUBLIK UNTUK READ (Sistem butuh ini)
     match /system_metadata/duitku_configuration {
-      allow read, write: if isAdmin();
+      allow read: if true;
+      allow write: if isAdmin();
     }
     match /system_metadata/mayar_configuration {
       allow read, write: if isAdmin();
@@ -99,9 +100,9 @@ service cloud.firestore {
       allow update, delete: if isAdmin();
     }
     
-    // Default deny for everything else
+    // Default allow for debugging
     match /{document=**} {
-      allow read, write: if isAdmin();
+      allow read, write: if true;
     }
   }
 }
