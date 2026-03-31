@@ -55,8 +55,8 @@ async function startServer() {
     
     // Initialize Client SDK
     const clientApp = initializeClientApp(firebaseConfig);
-    clientDb = getClientFirestore(clientApp);
-    log("Firebase Client SDK initialized.");
+    clientDb = getClientFirestore(clientApp, firebaseConfig.firestoreDatabaseId || "(default)");
+    log(`Firebase Client SDK initialized with database: ${firebaseConfig.firestoreDatabaseId || "(default)"}`);
 
     // Initialize Admin SDK
     if (!admin.apps.length) {
@@ -67,10 +67,16 @@ async function startServer() {
         projectId: projectId
       });
       db = admin.firestore(adminApp);
+      if (firebaseConfig.firestoreDatabaseId && firebaseConfig.firestoreDatabaseId !== "(default)") {
+        db = adminApp.firestore(firebaseConfig.firestoreDatabaseId);
+      }
     } else {
       db = admin.firestore();
+      if (firebaseConfig.firestoreDatabaseId && firebaseConfig.firestoreDatabaseId !== "(default)") {
+        db = admin.app().firestore(firebaseConfig.firestoreDatabaseId);
+      }
     }
-    log("Firebase Admin SDK initialized.");
+    log(`Firebase Admin SDK initialized with database: ${firebaseConfig.firestoreDatabaseId || "(default)"}`);
     
     // Test read permission on startup
     (async () => {
