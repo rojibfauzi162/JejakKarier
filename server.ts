@@ -4,11 +4,11 @@ import path from "path";
 import { fileURLToPath } from "url";
 import express from "express";
 import cors from "cors";
-import * as admin from "firebase-admin";
+import admin from "firebase-admin";
 import CryptoJS from "crypto-js";
 import axios from "axios";
-import { initializeApp as initializeClientApp } from "firebase/app";
-import { getFirestore as getClientFirestore, doc, getDoc, setDoc, getDocs, collection } from "firebase/firestore";
+import { initializeApp as initializeClientApp, getApp as getClientApp, getApps as getClientApps } from "firebase/app";
+import { getFirestore as getClientFirestore, doc, getDoc, setDoc, getDocs, collection, query, where, limit, updateDoc, increment } from "firebase/firestore";
 import { createServer as createViteServer } from "vite";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -30,7 +30,7 @@ async function startServer() {
 
   // Log EVERY request immediately
   app.use((req, res, next) => {
-    console.log(`[RAW REQUEST] ${req.method} ${req.url}`);
+    log(`[RAW REQUEST] ${req.method} ${req.url}`);
     next();
   });
 
@@ -51,35 +51,41 @@ async function startServer() {
   
   try {
     const configPath = path.join(process.cwd(), "firebase-applet-config.json");
+    if (!fs.existsSync(configPath)) {
+      throw new Error("firebase-applet-config.json not found. Please run 'set_up_firebase' tool.");
+    }
     const firebaseConfig = JSON.parse(fs.readFileSync(configPath, "utf8"));
     
     // Initialize Client SDK
-    const clientApp = initializeClientApp(firebaseConfig);
+    const clientApp = getClientApps().length === 0 
+      ? initializeClientApp(firebaseConfig) 
+      : getClientApp();
     clientDb = getClientFirestore(clientApp, firebaseConfig.firestoreDatabaseId || "(default)");
     log(`Firebase Client SDK initialized with database: ${firebaseConfig.firestoreDatabaseId || "(default)"}`);
 
     // Initialize Admin SDK
-    if (!admin.apps.length) {
-      const projectId = firebaseConfig.projectId || "jejakkarir-11379";
-      log(`Initializing Firebase Admin for Project: ${projectId}`);
-      
-      const adminApp = admin.initializeApp({
-        projectId: projectId
-      });
-      db = admin.firestore(adminApp);
-      // Ensure we use (default) if not specified or explicitly set to (default)
-      const dbId = firebaseConfig.firestoreDatabaseId || "(default)";
-      if (dbId !== "(default)") {
-        db = adminApp.firestore(dbId);
-      }
-    } else {
-      db = admin.firestore();
-      const dbId = firebaseConfig.firestoreDatabaseId || "(default)";
-      if (dbId !== "(default)") {
-        db = admin.app().firestore(dbId);
+    if (admin.apps.length === 0) {
+      log(`Initializing Firebase Admin...`);
+      try {
+        // Try initializing without arguments first (ADC)
+        admin.initializeApp();
+        log("Firebase Admin initialized via ADC.");
+      } catch (e: any) {
+        log(`ADC initialization failed: ${e.message}. Falling back to projectId.`);
+        admin.initializeApp({
+          projectId: firebaseConfig.projectId
+        });
+        log(`Firebase Admin initialized with projectId: ${firebaseConfig.projectId}`);
       }
     }
-    log(`Firebase Admin SDK initialized with database: ${firebaseConfig.firestoreDatabaseId || "(default)"}`);
+    
+    const dbId = firebaseConfig.firestoreDatabaseId || "(default)";
+    if (dbId !== "(default)" && dbId !== "") {
+      db = admin.firestore(dbId);
+    } else {
+      db = admin.firestore();
+    }
+    log(`Firebase Admin SDK instance created. Project: ${admin.app().options.projectId || firebaseConfig.projectId}. Database: ${dbId}`);
     
     // Test read permission on startup
     (async () => {
@@ -215,7 +221,15 @@ async function startServer() {
         }
       }
 
+      // Trim credentials to avoid "Merchant not found" due to whitespace
+      merchantCode = (merchantCode || "").toString().trim();
+      apiKey = (apiKey || "").toString().trim();
+      
+      log(`[DUITKU DEBUG] Testing with Merchant: "${merchantCode}", Env: ${environment}`);
+      log(`[DUITKU DEBUG] API Key length: ${apiKey.length}`);
+
       if (!merchantCode || !apiKey) {
+        log("[DUITKU DEBUG] Missing credentials.");
         return res.status(200).json({ success: false, message: "Merchant Code atau API Key belum diisi." });
       }
 
@@ -223,7 +237,7 @@ async function startServer() {
       const now = new Date();
       // Adjust to WIB (GMT+7)
       const wibOffset = 7 * 60; // in minutes
-      const localOffset = now.getTimezoneOffset(); // in minutes (usually 0 in this env)
+      const localOffset = now.getTimezoneOffset(); // in minutes
       const wibTime = new Date(now.getTime() + (wibOffset + localOffset) * 60000);
       
       const datetime = wibTime.getFullYear() + "-" + 
@@ -234,40 +248,36 @@ async function startServer() {
         String(wibTime.getSeconds()).padStart(2, '0');
 
       const amount = 10000; // Test amount
+      
       // Signature: sha256(merchantCode + amount + datetime + apiKey)
-      const signature = CryptoJS.SHA256(merchantCode + String(amount) + datetime + apiKey).toString();
+      const signaturePayload = merchantCode + String(amount) + datetime + apiKey;
+      log(`[DUITKU DEBUG] Signature Payload: ${signaturePayload}`);
+      const signature = CryptoJS.SHA256(signaturePayload).toString();
+      log(`[DUITKU DEBUG] Generated Signature: ${signature}`);
 
       const url = environment === 'production' 
         ? 'https://passport.duitku.com/webapi/api/merchant/paymentmethod/getpaymentmethod'
         : 'https://sandbox.duitku.com/webapi/api/merchant/paymentmethod/getpaymentmethod';
 
-      log(`Sending request to Duitku: ${url}`);
-      log(`Params: merchantcode=${merchantCode}, amount=${amount}, datetime=${datetime}`);
+      log(`[DUITKU DEBUG] Sending request to Duitku: ${url}`);
+      log(`[DUITKU DEBUG] Body: ${JSON.stringify({ merchantcode: merchantCode, amount, datetime, signature })}`);
 
-      const response = await fetch(url, {
-        method: 'POST',
+      const response = await axios.post(url, {
+        merchantcode: merchantCode,
+        amount,
+        datetime,
+        signature
+      }, {
         headers: { 
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
-        body: JSON.stringify({
-          merchantcode: merchantCode,
-          amount,
-          datetime,
-          signature
-        })
+        timeout: 10000
       });
 
-      const responseText = await response.text();
-      log(`Duitku Raw Response: ${responseText}`);
-
-      let data;
-      try {
-        data = JSON.parse(responseText);
-      } catch (e) {
-        log(`Failed to parse Duitku response as JSON: ${responseText}`);
-        return res.status(200).json({ success: false, message: `Duitku API Error: Respons bukan JSON. (${response.status})` });
-      }
+      log(`Duitku Response Status: ${response.status}`);
+      const data = response.data;
+      log(`Duitku Response Data: ${JSON.stringify(data)}`);
 
       if (data.responseCode === '00' || data.responseCode === '0' || (data.paymentFee && data.paymentFee.length > 0)) {
         res.json({ success: true, data });
@@ -276,7 +286,9 @@ async function startServer() {
       }
     } catch (error: any) {
       log(`Error in /api/dk/test: ${error.message}`);
-      if (error.stack) log(`Stack: ${error.stack}`);
+      if (error.response) {
+        log(`Duitku Error Response: ${JSON.stringify(error.response.data)}`);
+      }
       res.status(500).json({ success: false, message: `Server Error: ${error.message}` });
     }
   });
@@ -305,17 +317,16 @@ async function startServer() {
         ? 'https://passport.duitku.com/webapi/api/merchant/transactionStatus'
         : 'https://sandbox.duitku.com/webapi/api/merchant/transactionStatus';
 
-      const response = await fetch(url, {
-        method: 'POST',
+      const response = await axios.post(url, {
+        merchantCode,
+        merchantOrderId,
+        signature
+      }, {
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          merchantCode,
-          merchantOrderId,
-          signature
-        })
+        timeout: 10000
       });
 
-      const data = await response.json();
+      const data = response.data;
       log(`Duitku Status Response: ${JSON.stringify(data)}`);
       res.json({ success: true, data });
     } catch (error: any) {
@@ -370,18 +381,17 @@ async function startServer() {
         ? 'https://passport.duitku.com/webapi/api/merchant/paymentmethod/getpaymentmethod'
         : 'https://sandbox.duitku.com/webapi/api/merchant/paymentmethod/getpaymentmethod';
 
-      const response = await fetch(url, {
-        method: 'POST',
+      const response = await axios.post(url, {
+        merchantcode: merchantCode,
+        amount,
+        datetime,
+        signature
+      }, {
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          merchantcode: merchantCode,
-          amount,
-          datetime,
-          signature
-        })
+        timeout: 10000
       });
 
-      const data = await response.json();
+      const data = response.data;
       res.json(data);
     } catch (error: any) {
       log(`Error in /api/dk/methods: ${error.message}`);
@@ -463,13 +473,12 @@ async function startServer() {
         ? 'https://passport.duitku.com/webapi/api/merchant/v2/inquiry'
         : 'https://sandbox.duitku.com/webapi/api/merchant/v2/inquiry';
 
-      const response = await fetch(url, {
-        method: 'POST',
+      const response = await axios.post(url, payload, {
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        timeout: 10000
       });
 
-      const data = await response.json();
+      const data = response.data;
       
       if (data.statusCode === '00') {
         // Save pending transaction to user
@@ -504,8 +513,11 @@ async function startServer() {
       log(`Duitku Callback received: ${JSON.stringify(req.body)}`);
       const { merchantCode, amount, merchantOrderId, signature, resultCode, reference } = req.body;
 
-      const configSnap = await db.collection("system_metadata").doc("duitku_configuration").get();
-      const config = configSnap.data() as any;
+      const config = await getDuitkuConfig();
+      if (!config) {
+        log("Callback Error: Duitku configuration not found in database.");
+        return res.status(404).json({ res: "ERROR", message: "Config not found" });
+      }
 
       // Verify signature: md5(merchantCode + amount + merchantOrderId + apiKey)
       const calcSignature = CryptoJS.MD5(config.merchantCode + String(amount) + merchantOrderId + config.apiKey).toString();
@@ -517,16 +529,6 @@ async function startServer() {
 
       if (resultCode === '00') {
         log(`Payment SUCCESS for Order: ${merchantOrderId}`);
-        
-        // Find user by orderId
-        const usersSnap = await db.collection("users").where("manualTransactions", "array-contains-any", [{ id: merchantOrderId }]).get();
-        
-        // Wait, array-contains-any with objects is tricky. Let's find manually if needed or use a better query.
-        // For simplicity in this environment, we might need to search.
-        // But usually, the orderId contains the UID or we can store it in a separate collection.
-        
-        // Let's try a simpler approach: find the user whose manualTransactions has this ID.
-        // In a real app, we'd have a 'transactions' collection.
         
         const allUsers = await getFirestoreCollection("users");
         let targetUser: any = null;
@@ -558,12 +560,14 @@ async function startServer() {
             targetUser.activeFrom = now.toISOString();
 
             await setFirestoreDoc("users", targetUid, targetUser);
-            log(`User ${targetUid} upgraded to ${tx.planTier}`);
+            log(`Payment status updated for Order: ${merchantOrderId}`);
           }
         }
+      } else {
+        log(`Payment FAILED/PENDING for Order: ${merchantOrderId}, ResultCode: ${resultCode}`);
       }
 
-      res.status(200).json({ res: "OK" });
+      res.json({ res: "OK" });
     } catch (error: any) {
       log(`Error in callback: ${error.message}`);
       res.status(500).json({ res: "ERROR", message: error.message });
@@ -594,9 +598,13 @@ async function startServer() {
   });
 
   // Catch-all for unhandled API routes
-  app.all("/api/*all", (req, res) => {
-    log(`Unhandled API request: ${req.method} ${req.url}`);
-    res.status(404).json({ success: false, message: `API route not found: ${req.method} ${req.url}` });
+  app.use("/api", (req, res) => {
+    log(`Unhandled API request: ${req.method} ${req.originalUrl || req.url}`);
+    res.status(404).json({ 
+      success: false, 
+      message: `API route not found: ${req.method} ${req.originalUrl || req.url}`,
+      hint: "Pastikan URL dan Method (GET/POST) sudah benar."
+    });
   });
 
   // Debug endpoints
@@ -622,7 +630,7 @@ async function startServer() {
   } else {
     const distPath = path.join(process.cwd(), "dist");
     app.use(express.static(distPath));
-    app.get("*all", (req, res) => {
+    app.get("*", (req, res) => {
       res.sendFile(path.join(distPath, "index.html"));
     });
   }
