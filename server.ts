@@ -594,13 +594,22 @@ const PORT = parseInt(process.env.PORT || '8080');
     app.use(vite.middlewares);
     log("Vite middleware attached.");
   } else {
-    const distPath = path.join(process.cwd(), "dist");
+  const distPath = path.join(process.cwd(), "dist");
+  
+  // Cek dulu apakah dist ada
+  if (fs.existsSync(distPath)) {
     app.use(express.static(distPath));
     app.get("*", (req, res) => {
       res.sendFile(path.join(distPath, "index.html"));
     });
+    log(`Serving static files from: ${distPath}`);
+  } else {
+    log(`WARNING: dist folder not found at ${distPath}`);
+    app.get("*", (req, res) => {
+      res.json({ status: "ok", message: "API server running, no frontend" });
+    });
   }
-
+}
   app.listen(PORT, "0.0.0.0", () => {
     log(`Server running on http://0.0.0.0:${PORT}`);
   });
