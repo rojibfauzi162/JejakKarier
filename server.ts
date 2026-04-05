@@ -108,22 +108,22 @@ const PORT = parseInt(process.env.PORT || '8080');
     };
 
     // Test read permission on startup
-    (async () => {
-      await testConnectivity();
-      try {
-        log("Testing Firestore read permission (ADMIN SDK) for system_metadata/duitku_configuration...");
-        const testSnap = await db.collection("system_metadata").doc("duitku_configuration").get();
-        log(`Startup test (ADMIN SDK): Firestore read successful. Exists: ${testSnap.exists}`);
-      } catch (err: any) {
-        log(`Startup test (ADMIN SDK): Firestore read FAILED: ${err.message}`);
-        if (err.message.includes("Cloud Firestore API has not been used in project")) {
-          log("HINT: This error suggests the Admin SDK is using the wrong project ID. Check firebase-applet-config.json.");
-        }
-      }
-    })();
-  } catch (error: any) {
-    log(`CRITICAL: Firebase initialization failed: ${error.message}`);
-  }
+  //   (async () => {
+  //     await testConnectivity();
+  //     try {
+  //       log("Testing Firestore read permission (ADMIN SDK) for system_metadata/duitku_configuration...");
+  //       const testSnap = await db.collection("system_metadata").doc("duitku_configuration").get();
+  //       log(`Startup test (ADMIN SDK): Firestore read successful. Exists: ${testSnap.exists}`);
+  //     } catch (err: any) {
+  //       log(`Startup test (ADMIN SDK): Firestore read FAILED: ${err.message}`);
+  //       if (err.message.includes("Cloud Firestore API has not been used in project")) {
+  //         log("HINT: This error suggests the Admin SDK is using the wrong project ID. Check firebase-applet-config.json.");
+  //       }
+  //     }
+  //   })();
+  // } catch (error: any) {
+  //   log(`CRITICAL: Firebase initialization failed: ${error.message}`);
+  // }
 
   // --- API ROUTES ---
   const apiRouter = express.Router();
