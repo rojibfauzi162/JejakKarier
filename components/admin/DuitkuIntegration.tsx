@@ -39,7 +39,8 @@ const DuitkuIntegration: React.FC<DuitkuIntegrationProps> = ({ initialConfig, on
     setTestLoading(true);
     setTestResult(null);
     try {
-      const response = await fetch("/api/dk/test", {
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://api.fokuskarir.web.id';
+      const response = await fetch(`${API_BASE_URL}/api/dk/test`, {
         method: "POST",
         headers: { "Content-Type": "application/json" }
       });

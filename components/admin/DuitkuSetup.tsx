@@ -53,7 +53,8 @@ const DuitkuSetup: React.FC<DuitkuSetupProps> = ({ onToast }) => {
     setTestResult(null);
     try {
       console.log("[DUITKU] Testing connection via /api/dk/test...");
-      const response = await fetch(`/api/dk/test?t=${Date.now()}`, {
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://api.fokuskarir.web.id';
+      const response = await fetch(`${API_BASE_URL}/api/dk/test?t=${Date.now()}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(config) // Send the current config state

@@ -384,8 +384,8 @@ async function startServer() {
       const signature = crypto.createHash('md5').update(merchantCode + merchantOrderId + String(paymentAmount) + apiKey).digest('hex');
 
       // const callbackUrl = config.callbackUrl || `https://${req.get('host')}/api/dk/cb`;
-      const callbackUrl = config.callbackUrl || `${process.env.BASE_URL || 'https://fokuskarir.web.id'}/api/dk/cb`;
-const returnUrl   = config.returnUrl   || `${process.env.BASE_URL || 'https://fokuskarir.web.id'}/payment/success`;
+      const callbackUrl = config.callbackUrl || `${process.env.API_BASE_URL || 'https://api.fokuskarir.web.id'}/api/dk/cb`;
+      const returnUrl   = config.returnUrl   || `${process.env.FRONTEND_URL || 'https://fokuskarir.web.id'}/payment/success`;
       // const returnUrl = config.returnUrl || `https://${req.get('host')}/`;
 
       const payload = {

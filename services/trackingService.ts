@@ -339,7 +339,8 @@ class TrackingService {
         payload.data[0].user_data.external_id = [await this.hashData(anonId)];
       }
 
-      const response = await fetch(`/api/tracking/meta-capi`, {
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://api.fokuskarir.web.id';
+      const response = await fetch(`${API_BASE_URL}/api/tracking/meta-capi`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(sanitizeData({

@@ -25,7 +25,8 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
   const [showManualSuccess, setShowManualSuccess] = useState(false);
   const [adminPhone, setAdminPhone] = useState('628123456789');
 
-  const CLOUD_FUNCTIONS_URL = `${window.location.origin}/api/dk`;
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://api.fokuskarir.web.id';
+  const CLOUD_FUNCTIONS_URL = `${API_BASE_URL}/api/dk`;
 
   useEffect(() => {
     getLandingPageConfig().then(cfg => {
