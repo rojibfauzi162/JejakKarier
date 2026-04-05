@@ -605,7 +605,7 @@ const PORT = parseInt(process.env.PORT || '8080');
     log(`Serving static files from: ${distPath}`);
   } else {
     log(`WARNING: dist folder not found at ${distPath}`);
-    app.get("*", (req, res) => {
+    app.get("/{*path}", (req, res) => {
       res.json({ status: "ok", message: "API server running, no frontend" });
     });
   }
