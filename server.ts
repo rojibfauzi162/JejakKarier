@@ -599,7 +599,7 @@ const PORT = parseInt(process.env.PORT || '8080');
   // Cek dulu apakah dist ada
   if (fs.existsSync(distPath)) {
     app.use(express.static(distPath));
-    app.get("*", (req, res) => {
+    app.get("/{*path}", (req, res) => {
       res.sendFile(path.join(distPath, "index.html"));
     });
     log(`Serving static files from: ${distPath}`);
