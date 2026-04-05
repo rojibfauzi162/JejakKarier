@@ -24,8 +24,8 @@ log("!!! SERVER STARTING !!!");
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
-
+  // const PORT = 3000;
+const PORT = parseInt(process.env.PORT || '8080');
   // Log EVERY request immediately
   app.use((req, res, next) => {
     log(`[RAW REQUEST] ${req.method} ${req.url}`);
