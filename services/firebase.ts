@@ -14,7 +14,8 @@ export const auth = getAuth(app);
 setPersistence(auth, browserLocalPersistence).catch((error) => {
   console.error("Firebase persistence error:", error);
 });
-export const db = getFirestore(app, (firebaseConfig as any).firestoreDatabaseId || '(default)');
+const dbId = (firebaseConfig as any).firestoreDatabaseId;
+export const db = getFirestore(app, dbId && dbId !== '(default)' ? dbId : undefined);
 export const storage = getStorage(app);
 
 export let messaging: any = null;

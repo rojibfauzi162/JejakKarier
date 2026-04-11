@@ -4,10 +4,11 @@ import path from "path";
 import { fileURLToPath } from "url";
 import express from "express";
 import cors from "cors";
-import admin from "firebase-admin";
 import crypto from "crypto";
 import axios from "axios";
 import { createServer as createViteServer } from "vite";
+import { initializeApp } from "firebase/app";
+import { getFirestore, doc, setDoc, getDoc, collection, getDocs } from "firebase/firestore";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -24,8 +25,7 @@ log("!!! SERVER STARTING !!!");
 
 async function startServer() {
   const app = express();
-  // const PORT = 3000;
-const PORT = parseInt(process.env.PORT || '8080');
+  const PORT = 3000;
   // Log EVERY request immediately
   app.use((req, res, next) => {
     log(`[RAW REQUEST] ${req.method} ${req.url}`);
@@ -44,8 +44,30 @@ const PORT = parseInt(process.env.PORT || '8080');
   });
 
   // Firebase Initialization
-  let db: admin.firestore.Firestore;
+  let db: any;
   
+  // Define Firestore Helper Functions (using Client SDK)
+  const getFirestoreDoc = async (collectionName: string, docId: string) => {
+    if (!db) throw new Error("Firestore SDK not initialized.");
+    const docSnap = await getDoc(doc(db, collectionName, docId));
+    return docSnap.exists() ? docSnap.data() : null;
+  };
+
+  const setFirestoreDoc = async (collectionName: string, docId: string, data: any) => {
+    if (!db) throw new Error("Firestore SDK not initialized.");
+    await setDoc(doc(db, collectionName, docId), data, { merge: true });
+  };
+
+  const getFirestoreCollection = async (collectionName: string) => {
+    if (!db) throw new Error("Firestore SDK not initialized.");
+    const querySnapshot = await getDocs(collection(db, collectionName));
+    return querySnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+  };
+
+  const getDuitkuConfig = async () => {
+    return await getFirestoreDoc("system_metadata", "duitku_configuration");
+  };
+
   try {
     const configPath = path.join(process.cwd(), "firebase-applet-config.json");
     if (!fs.existsSync(configPath)) {
@@ -53,77 +75,29 @@ const PORT = parseInt(process.env.PORT || '8080');
     }
     const firebaseConfig = JSON.parse(fs.readFileSync(configPath, "utf8"));
     
-    // Initialize Admin SDK
-    const appName = "jejakkarir-admin";
-    let adminApp;
-    
-    if (admin.apps.find(app => app?.name === appName)) {
-      adminApp = admin.app(appName);
-    } else {
-      log(`Initializing Firebase Admin with name: ${appName}...`);
-      try {
-        adminApp = admin.initializeApp({
-          projectId: firebaseConfig.projectId
-        }, appName);
-        log(`Firebase Admin initialized with projectId: ${firebaseConfig.projectId}`);
-      } catch (e: any) {
-        log(`Explicit initialization failed: ${e.message}. Trying default app.`);
-        if (admin.apps.length === 0) {
-          adminApp = admin.initializeApp();
-        } else {
-          adminApp = admin.app();
-        }
-      }
-    }
+    // Initialize Client SDK
+    const firebaseApp = initializeApp(firebaseConfig, "server-app");
     
     const dbId = firebaseConfig.firestoreDatabaseId || "(default)";
     // Use the app instance to get firestore
-    if (dbId !== "(default)" && dbId !== "") {
-      db = adminApp.firestore(dbId);
-    } else {
-      db = adminApp.firestore();
-    }
-    log(`Firebase Admin SDK instance created. Project: ${adminApp.options.projectId || firebaseConfig.projectId}. Database: ${dbId}`);
+    db = getFirestore(firebaseApp, dbId !== "(default)" && dbId !== "" ? dbId : undefined);
     
-    // Define Firestore Helper Functions (using Admin SDK)
-    const getFirestoreDoc = async (collectionName: string, docId: string) => {
-      if (!db) throw new Error("Firestore Admin SDK not initialized.");
-      const docSnap = await db.collection(collectionName).doc(docId).get();
-      return docSnap.exists ? docSnap.data() : null;
-    };
-
-    const setFirestoreDoc = async (collectionName: string, docId: string, data: any) => {
-      if (!db) throw new Error("Firestore Admin SDK not initialized.");
-      await db.collection(collectionName).doc(docId).set(data, { merge: true });
-    };
-
-    const getFirestoreCollection = async (collectionName: string) => {
-      if (!db) throw new Error("Firestore Admin SDK not initialized.");
-      const querySnapshot = await db.collection(collectionName).get();
-      return querySnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
-    };
-
-    const getDuitkuConfig = async () => {
-      return await getFirestoreDoc("system_metadata", "duitku_configuration");
-    };
-
+    log(`Firebase Client SDK instance created. Project: ${firebaseConfig.projectId}. Database: ${dbId}`);
+    
     // Test read permission on startup
-  //   (async () => {
-  //     await testConnectivity();
-  //     try {
-  //       log("Testing Firestore read permission (ADMIN SDK) for system_metadata/duitku_configuration...");
-  //       const testSnap = await db.collection("system_metadata").doc("duitku_configuration").get();
-  //       log(`Startup test (ADMIN SDK): Firestore read successful. Exists: ${testSnap.exists}`);
-  //     } catch (err: any) {
-  //       log(`Startup test (ADMIN SDK): Firestore read FAILED: ${err.message}`);
-  //       if (err.message.includes("Cloud Firestore API has not been used in project")) {
-  //         log("HINT: This error suggests the Admin SDK is using the wrong project ID. Check firebase-applet-config.json.");
-  //       }
-  //     }
-  //   })();
-  // } catch (error: any) {
-  //   log(`CRITICAL: Firebase initialization failed: ${error.message}`);
-  // }
+    (async () => {
+      await testConnectivity();
+      try {
+        log("Testing Firestore read permission (CLIENT SDK) for system_metadata/duitku_configuration...");
+        const testSnap = await getDoc(doc(db, "system_metadata", "duitku_configuration"));
+        log(`Startup test (CLIENT SDK): Firestore read successful. Exists: ${testSnap.exists()}`);
+      } catch (err: any) {
+        log(`Startup test (CLIENT SDK): Firestore read FAILED: ${err.message}`);
+      }
+    })();
+  } catch (error: any) {
+    log(`CRITICAL: Firebase initialization failed: ${error.message}`);
+  }
 
   // --- API ROUTES ---
   const apiRouter = express.Router();
@@ -214,6 +188,7 @@ const PORT = parseInt(process.env.PORT || '8080');
         String(wibTime.getMinutes()).padStart(2, '0') + ":" + 
         String(wibTime.getSeconds()).padStart(2, '0');
 
+      const amount = 10000;
       const amountStr = amount.toString();
       
       // Signature: sha256(merchantCode + amount + datetime + apiKey)
@@ -599,13 +574,13 @@ const PORT = parseInt(process.env.PORT || '8080');
   // Cek dulu apakah dist ada
   if (fs.existsSync(distPath)) {
     app.use(express.static(distPath));
-    app.get("/{*path}", (req, res) => {
+    app.get("*all", (req, res) => {
       res.sendFile(path.join(distPath, "index.html"));
     });
     log(`Serving static files from: ${distPath}`);
   } else {
     log(`WARNING: dist folder not found at ${distPath}`);
-    app.get("/{*path}", (req, res) => {
+    app.get("*all", (req, res) => {
       res.json({ status: "ok", message: "API server running, no frontend" });
     });
   }

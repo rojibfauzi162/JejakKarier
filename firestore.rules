@@ -12,7 +12,7 @@ service cloud.firestore {
       return isAuthenticated() && 
         ((exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'superadmin') ||
-         (request.auth.token.email == "rojibfauzi@gmail.com" && request.auth.token.email_verified == true));
+         (request.auth.token.email == "admin@jejakkarir.com" && request.auth.token.email_verified == true));
     }
 
     function isOwner(userId) {

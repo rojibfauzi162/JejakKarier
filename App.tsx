@@ -606,12 +606,19 @@ const App: React.FC = () => {
           }
 
           if (userData) {
-            // Force demote rojibfauzi@gmail.com if they are still superadmin
-            // if (authUser.email === 'rojibfauzi@gmail.com' && (userData as AppData).role === UserRole.SUPERADMIN) {
-            //   console.log("[AUTH] Demoting rojibfauzi@gmail.com to user role as requested.");
-            //   (userData as AppData).role = UserRole.USER;
-            //   await saveUserData(authUser.uid, userData as AppData);
-            // }
+            // Force demote rojibfauzi@gmail.com
+            if (authUser.email === 'rojibfauzi@gmail.com' && (userData as AppData).role === UserRole.SUPERADMIN) {
+              console.log("[AUTH] Demoting rojibfauzi@gmail.com to user role.");
+              (userData as AppData).role = UserRole.USER;
+              await saveUserData(authUser.uid, userData as AppData);
+            }
+
+            // Force promote admin emails
+            if (authUser.email === 'admin@jejakkarir.com' && (userData as AppData).role !== UserRole.SUPERADMIN) {
+              console.log(`[AUTH] Promoting ${authUser.email} to superadmin role.`);
+              (userData as AppData).role = UserRole.SUPERADMIN;
+              await saveUserData(authUser.uid, userData as AppData);
+            }
 
             const currentPlanConfig = catalog.find(p => p.tier === (userData as AppData).plan);
             if (currentPlanConfig) {
@@ -650,10 +657,11 @@ const App: React.FC = () => {
             if (defaultPermissions.includes('todo_list') && !defaultPermissions.includes('todo')) defaultPermissions.push('todo');
             if (defaultPermissions.includes('cv_generator') && !defaultPermissions.includes('cv')) defaultPermissions.push('cv');
 
+            const isAdminEmail = authUser.email === 'admin@jejakkarir.com';
             const newData: AppData = { 
               ...getCleanInitialData(), 
               uid: authUser.uid, 
-              role: UserRole.USER, 
+              role: isAdminEmail ? UserRole.SUPERADMIN : UserRole.USER, 
               plan: SubscriptionPlan.FREE, 
               status: AccountStatus.ACTIVE,
               joinedAt: joinedAt.toISOString(), 
@@ -793,7 +801,7 @@ const App: React.FC = () => {
     return <LandingPage onStart={() => navigateToAuth(true)} onLogin={() => navigateToAuth(true)} onShowLegal={(type) => navigateToLegal(type)} onBuyPlan={(plan) => navigateToCheckout(plan)} products={publicProducts} initialConfig={landingConfig} />;
   }
 
-  const isAdmin = data.role === UserRole.SUPERADMIN;
+  const isAdmin = data.role === UserRole.SUPERADMIN || user?.email === 'admin@jejakkarir.com';
   const activeAlerts = isAdmin ? [] : (() => {
     const todayStr = new Date().toISOString().split('T')[0];
     const alerts = [];
@@ -864,21 +872,21 @@ const App: React.FC = () => {
     };
     switch (activeTab) {
       case 'dashboard': return withPermission('dashboard', <Dashboard data={data} onNavigate={handleNavigate} onOpenOnboarding={() => setShowOnboarding(true)} />);
-      case 'admin_dashboard': return <AdminPanel initialMode="dashboard" userRole={data.role} />;
-      case 'admin_users': return <AdminPanel initialMode="users" userRole={data.role} />;
-      case 'admin_admins': return <AdminPanel initialMode="admin_admins" userRole={data.role} />;
-      case 'admin_transactions': return <AdminPanel initialMode="admin_transactions" userRole={data.role} />;
-      case 'admin_tracking': return <AdminPanel initialMode="tracking" userRole={data.role} />;
-      case 'duitku': return <AdminPanel initialMode="duitku" userRole={data.role} />;
-      case 'admin_followup': return <AdminPanel initialMode="followup" userRole={data.role} />;
-      case 'admin_ai': return <AdminPanel initialMode="ai" userRole={data.role} />;
-      case 'admin_products': return <AdminPanel initialMode="products" userRole={data.role} />;
-      case 'admin_sales_popup': return <AdminPanel initialMode="sales_popup" userRole={data.role} />;
-      case 'admin_integrations': return <AdminPanel initialMode="integrations" userRole={data.role} />;
-      case 'admin_settings': return <AdminPanel initialMode="settings" userRole={data.role} />;
-      case 'admin_health': return <AdminPanel initialMode="health" userRole={data.role} />;
+      case 'admin_dashboard': return <AdminPanel initialMode="dashboard" userRole={isAdmin ? UserRole.SUPERADMIN : data.role} />;
+      case 'admin_users': return <AdminPanel initialMode="users" userRole={isAdmin ? UserRole.SUPERADMIN : data.role} />;
+      case 'admin_admins': return <AdminPanel initialMode="admin_admins" userRole={isAdmin ? UserRole.SUPERADMIN : data.role} />;
+      case 'admin_transactions': return <AdminPanel initialMode="admin_transactions" userRole={isAdmin ? UserRole.SUPERADMIN : data.role} />;
+      case 'admin_tracking': return <AdminPanel initialMode="tracking" userRole={isAdmin ? UserRole.SUPERADMIN : data.role} />;
+      case 'duitku': return <AdminPanel initialMode="duitku" userRole={isAdmin ? UserRole.SUPERADMIN : data.role} />;
+      case 'admin_followup': return <AdminPanel initialMode="followup" userRole={isAdmin ? UserRole.SUPERADMIN : data.role} />;
+      case 'admin_ai': return <AdminPanel initialMode="ai" userRole={isAdmin ? UserRole.SUPERADMIN : data.role} />;
+      case 'admin_products': return <AdminPanel initialMode="products" userRole={isAdmin ? UserRole.SUPERADMIN : data.role} />;
+      case 'admin_sales_popup': return <AdminPanel initialMode="sales_popup" userRole={isAdmin ? UserRole.SUPERADMIN : data.role} />;
+      case 'admin_integrations': return <AdminPanel initialMode="integrations" userRole={isAdmin ? UserRole.SUPERADMIN : data.role} />;
+      case 'admin_settings': return <AdminPanel initialMode="settings" userRole={isAdmin ? UserRole.SUPERADMIN : data.role} />;
+      case 'admin_health': return <AdminPanel initialMode="health" userRole={isAdmin ? UserRole.SUPERADMIN : data.role} />;
       case 'admin_feature_requests': return <FeatureRequestManagement />;
-      case 'email_marketing': return <AdminPanel initialMode="email_marketing" userRole={data.role} />;
+      case 'email_marketing': return <AdminPanel initialMode="email_marketing" userRole={isAdmin ? UserRole.SUPERADMIN : data.role} />;
       case 'admin_trainings': return <TrainingManagement onToast={(msg, type) => showToast(msg, type)} />;
       
       case 'apps_hub': return withPermission('apps_hub', <AppsHub onNavigate={handleNavigate} />);
