@@ -275,6 +275,24 @@ export const signInWithGoogle = async () => {
   }
 };
 
+export const signInWithGoogleContacts = async () => {
+  try {
+    const provider = new GoogleAuthProvider();
+    provider.addScope('https://www.googleapis.com/auth/contacts');
+    provider.setCustomParameters({ prompt: 'select_account' });
+    
+    const result = await signInWithPopup(auth, provider);
+    const credential = GoogleAuthProvider.credentialFromResult(result);
+    return {
+      user: result.user,
+      accessToken: credential?.accessToken
+    };
+  } catch (error: any) {
+    console.error("Error signing in with Google Contacts:", error);
+    throw error;
+  }
+};
+
 /**
  * Mencari data user berdasarkan email di seluruh koleksi users
  */

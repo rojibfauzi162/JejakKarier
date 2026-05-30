@@ -139,7 +139,7 @@ const AchievementTracker: React.FC<AchievementTrackerProps> = ({ achievements, p
   );
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700 pb-24 lg:pb-20">
+    <div className="space-y-4 md:space-y-8 animate-in fade-in duration-700 pb-24 lg:pb-20">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl lg:text-3xl font-extrabold text-slate-900 tracking-tight">Achievement Tracker</h2>
@@ -152,7 +152,7 @@ const AchievementTracker: React.FC<AchievementTrackerProps> = ({ achievements, p
 
       {/* INFO KUOTA (QUOTA BANNER) - HIDDEN FOR PRO USERS */}
       {appData?.plan === SubscriptionPlan.FREE && (
-        <div className="bg-indigo-50 border border-indigo-100 p-5 rounded-[2rem] flex flex-col sm:flex-row justify-between items-center gap-6 mx-1 shadow-sm">
+        <div className="bg-indigo-50 border border-indigo-100 p-5 rounded-[2rem] flex flex-col sm:flex-row justify-between items-center gap-3 md:gap-6 mx-1 shadow-sm">
            <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-indigo-600 text-white rounded-2xl flex items-center justify-center text-xl shadow-lg shadow-indigo-200">
                  <i className="bi bi-trophy-fill"></i>
@@ -225,7 +225,7 @@ const AchievementTracker: React.FC<AchievementTrackerProps> = ({ achievements, p
       {/* MOBILE VIEW: CARDS WITH PAGINATION */}
       <div className="lg:hidden space-y-4">
         {paginatedAchievements.map(achievement => (
-          <div key={achievement.id} className="bg-white p-6 rounded-[2.5rem] shadow-sm border border-slate-100 group relative overflow-hidden">
+          <div key={achievement.id} className="bg-white p-3 md:p-6 rounded-[2.5rem] shadow-sm border border-slate-100 group relative overflow-hidden">
             <div className="flex justify-between items-start mb-4">
                <div>
                   <p className="text-[9px] font-black text-indigo-600 uppercase tracking-widest mb-1">{achievement.category}</p>
@@ -265,7 +265,7 @@ const AchievementTracker: React.FC<AchievementTrackerProps> = ({ achievements, p
 
         {/* PAGINATION CONTROLS (MOBILE ONLY) */}
         {totalPages > 1 && (
-           <div className="flex items-center justify-between bg-white px-6 py-4 rounded-2xl border border-slate-100 shadow-sm mt-6">
+           <div className="flex items-center justify-between bg-white px-4 py-3 md:px-6 md:py-4 rounded-2xl border border-slate-100 shadow-sm mt-6">
               <button 
                 disabled={currentPage === 1} 
                 onClick={() => setCurrentPage(p => p - 1)} 
@@ -297,14 +297,14 @@ const AchievementTracker: React.FC<AchievementTrackerProps> = ({ achievements, p
 
       {/* FORM MODAL (ADD/EDIT) */}
       {isFormOpen && (
-        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md z-[200] flex items-center justify-center p-6">
-          <div className="bg-white max-w-2xl w-full rounded-[3.5rem] p-10 border border-slate-100 shadow-2xl animate-in zoom-in duration-300 overflow-y-auto max-h-[90vh] no-scrollbar relative">
+        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md z-[200] flex items-center justify-center p-2 sm:p-6">
+          <div className="bg-white max-w-2xl w-full rounded-[2rem] md:rounded-[3.5rem] p-4 md:p-10 border border-slate-100 shadow-2xl animate-in zoom-in duration-300 overflow-y-auto max-h-[90vh] no-scrollbar relative">
             <button onClick={() => setIsFormOpen(false)} className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center bg-slate-50 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors z-[60]"><i className="bi bi-x-lg"></i></button>
-            <div className="mb-8">
+            <div className="mb-4 md:mb-8">
                <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">{editingItem ? 'Ubah Data Prestasi' : 'Log New Achievement'}</h3>
             </div>
             
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-3 md:space-y-6">
               <div className="space-y-1.5">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Judul Pencapaian</label>
                 <input className="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-slate-50 font-bold text-xs outline-none focus:border-indigo-400 transition-all" value={formData.title || ''} onChange={e => setFormData({...formData, title: e.target.value})} placeholder="Contoh: Optimasi Pelaporan Pajak Bulanan" required />

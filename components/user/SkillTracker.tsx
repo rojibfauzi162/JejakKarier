@@ -42,8 +42,8 @@ const SkillTracker: React.FC<SkillTrackerProps> = (props) => {
   }, [props.initialSubTab]);
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700 pb-16">
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+    <div className="space-y-4 md:space-y-8 animate-in fade-in duration-700 pb-16">
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-6">
         <div className="w-full">
           <h2 className="text-3xl font-black text-slate-900 tracking-tight">Growth & Intelligence</h2>
           <div className="relative mt-5">

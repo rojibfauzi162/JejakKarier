@@ -447,10 +447,10 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
   };
 
   return (
-    <div className="space-y-8 animate-in slide-in-from-bottom duration-500 pb-20">
+    <div className="space-y-4 md:space-y-8 animate-in slide-in-from-bottom duration-500 pb-20">
       {/* Banner Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-6 lg:p-8 rounded-[2rem] lg:rounded-[2.5rem] text-white relative overflow-hidden shadow-xl shadow-blue-500/10">
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-3 md:p-6 lg:p-8 rounded-[2rem] lg:rounded-[2.5rem] text-white relative overflow-hidden shadow-xl shadow-blue-500/10">
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-6">
           <div>
             <h2 className="text-2xl lg:text-3xl font-black tracking-tight uppercase">Aktivitas Harian</h2>
             <p className="opacity-80 max-w-lg mt-2 italic text-xs lg:text-sm font-medium">"{affirmation}"</p>
@@ -477,7 +477,7 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
 
       {/* INFO KUOTA - HIDDEN FOR PRO */}
       {appData?.plan === SubscriptionPlan.FREE && (
-        <div className="bg-indigo-50 border border-indigo-100 p-5 rounded-[2rem] flex flex-col sm:flex-row justify-between items-center gap-6 mx-1 shadow-sm">
+        <div className="bg-indigo-50 border border-indigo-100 p-5 rounded-[2rem] flex flex-col sm:flex-row justify-between items-center gap-3 md:gap-6 mx-1 shadow-sm">
            <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-indigo-600 text-white rounded-2xl flex items-center justify-center text-xl shadow-lg shadow-indigo-200">
                  <i className="bi bi-database-fill"></i>
@@ -500,8 +500,8 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
       )}
 
       {/* Primary Filters */}
-      <div className="bg-white p-6 lg:p-10 rounded-[3rem] shadow-sm border border-slate-100 space-y-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-end">
+      <div className="bg-white p-4 md:p-6 lg:p-10 rounded-[3rem] shadow-sm border border-slate-100 space-y-4 md:space-y-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 md:gap-6 items-end">
             <div className="lg:col-span-6 space-y-2">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Pencarian Aktivitas</label>
                 <div className="relative">
@@ -518,7 +518,7 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
             <div className="lg:col-span-3 space-y-2">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Kategori</label>
                 <select 
-                    className="w-full px-6 py-4 rounded-[1.5rem] border border-slate-200 bg-slate-50/50 text-sm font-bold outline-none cursor-pointer"
+                    className="w-full px-4 py-3 md:px-6 md:py-4 rounded-[1.5rem] border border-slate-200 bg-slate-50/50 text-sm font-bold outline-none cursor-pointer"
                     value={filterCat}
                     onChange={(e) => { setFilterCat(e.target.value); setCurrentPage(1); }}
                 >
@@ -529,7 +529,7 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
             <div className="lg:col-span-3 space-y-2">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Navigasi Waktu</label>
                 <select 
-                    className="w-full px-6 py-4 rounded-[1.5rem] border border-slate-200 bg-slate-50/50 text-sm font-bold outline-none cursor-pointer"
+                    className="w-full px-4 py-3 md:px-6 md:py-4 rounded-[1.5rem] border border-slate-200 bg-slate-50/50 text-sm font-bold outline-none cursor-pointer"
                     value={filterTime}
                     onChange={(e) => handleSetTimeFilter(e.target.value as TimeFilter)}
                 >
@@ -545,8 +545,8 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
 
         {/* Modern Range Calendar Interface */}
         {(filterTime === 'range' || filterTime !== 'all') && (
-            <div className="animate-in slide-in-from-top-4 duration-500 bg-slate-50 p-6 lg:p-8 rounded-[2.5rem] border border-slate-200 grid grid-cols-1 md:grid-cols-12 gap-8 relative overflow-hidden">
-                <div className="md:col-span-8 space-y-6 relative z-10">
+            <div className="animate-in slide-in-from-top-4 duration-500 bg-slate-50 p-3 md:p-6 lg:p-8 rounded-[2.5rem] border border-slate-200 grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-8 relative overflow-hidden">
+                <div className="md:col-span-8 space-y-3 md:space-y-6 relative z-10">
                     <div className="flex items-center justify-between px-2">
                         <div className="flex gap-2">
                             <button type="button" onClick={() => setCalDate(new Date(calDate.getFullYear(), calDate.getMonth() - 1))} className="w-8 h-8 rounded-full hover:bg-slate-200 flex items-center justify-center text-slate-400">←</button>
@@ -561,7 +561,7 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
                         {renderCalendarGrid()}
                     </div>
                 </div>
-                <div className="md:col-span-4 bg-indigo-600 text-white p-8 rounded-[2rem] flex flex-col justify-between shadow-2xl shadow-indigo-200">
+                <div className="md:col-span-4 bg-indigo-600 text-white p-4 md:p-8 rounded-[2rem] flex flex-col justify-between shadow-2xl shadow-indigo-200">
                     <div>
                         <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60 mb-2">Terdeteksi</p>
                         <p className="text-4xl font-black tracking-tighter">{totalPages} <span className="text-lg opacity-40">Hari</span></p>
@@ -667,7 +667,7 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
             </div>
           </div>
         ) : (
-          <div className="flex-1 flex flex-col items-center justify-center py-32 space-y-6">
+          <div className="flex-1 flex flex-col items-center justify-center py-32 space-y-3 md:space-y-6">
              <div className="text-7xl opacity-20 grayscale">🕯️</div>
              <button type="button" onClick={() => handleOpenModal()} className="px-10 py-4 bg-blue-600 text-white font-black uppercase tracking-widest text-[10px] rounded-2xl shadow-xl shadow-blue-100 hover:bg-blue-700 transition-all">+ Catat Aktivitas</button>
           </div>
@@ -676,14 +676,14 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
 
       {/* MODAL MANAJEMEN KATEGORI */}
       {isManageCatsOpen && (
-        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-xl flex items-center justify-center z-[500] p-4">
-          <div className="bg-white w-full max-w-lg rounded-[3rem] shadow-2xl p-8 lg:p-10 animate-in zoom-in duration-300 overflow-hidden">
-             <div className="flex justify-between items-center mb-8">
+        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-xl flex items-center justify-center z-[500] p-0 sm:p-4">
+          <div className="bg-white w-full max-w-lg rounded-[2rem] md:rounded-[3rem] shadow-2xl p-3 md:p-8 lg:p-10 animate-in zoom-in duration-300 overflow-hidden">
+             <div className="flex justify-between items-center mb-4 md:mb-8">
                 <h3 className="text-2xl font-black text-slate-900 uppercase">Kelola Kategori</h3>
                 <button type="button" onClick={() => { setIsManageCatsOpen(false); setEditingCat(null); }} className="text-slate-400 hover:text-rose-600"><i className="bi bi-x-lg text-xl"></i></button>
              </div>
 
-             <div className="space-y-6">
+             <div className="space-y-3 md:space-y-6">
                 <div className="flex gap-2">
                    <input 
                     className="flex-1 px-5 py-3 rounded-2xl bg-slate-50 border border-slate-200 font-bold text-xs outline-none focus:border-indigo-400"
@@ -728,26 +728,26 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
 
       {/* MULTI-ACTIVITY MODAL */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-xl flex items-center justify-center z-[200] p-4">
-          <div className="bg-white w-full max-w-5xl rounded-[3.5rem] shadow-2xl p-8 lg:p-14 animate-in zoom-in duration-300 overflow-y-auto max-h-[95vh] no-scrollbar relative">
+        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-xl flex items-center justify-center z-[200] p-0 sm:p-4">
+          <div className="bg-white w-full max-w-5xl rounded-[2rem] md:rounded-[3.5rem] shadow-2xl p-4 sm:p-6 md:p-8 lg:p-14 animate-in zoom-in duration-300 overflow-y-auto max-h-[95vh] no-scrollbar relative">
             <button type="button" onClick={() => setIsModalOpen(false)} className="absolute top-6 right-6 w-10 h-10 flex items-center justify-center bg-slate-50 text-slate-400 hover:text-rose-600 hover:bg-slate-100 rounded-full transition-colors font-black z-10"><i className="bi bi-x-lg"></i></button>
-            <div className="mb-10">
+            <div className="mb-6 md:mb-10">
               <div className="space-y-1">
                 <h3 className="text-3xl lg:text-4xl font-black text-slate-900 tracking-tighter uppercase leading-none">{editingLogId ? 'Ubah Catatan' : 'Catat Pekerjaan Baru'}</h3>
                 <p className="text-slate-400 font-bold uppercase text-[10px] tracking-[0.3em]">Log Aktivitas Produktivitas v2.0</p>
               </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-10">
+            <form onSubmit={handleSubmit} className="space-y-3 md:space-y-6 md:space-y-10">
               {/* Header Fields */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 bg-slate-50/50 p-8 rounded-[3rem] border border-slate-100 shadow-inner">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8 bg-slate-50/50 p-4 md:p-8 rounded-[3rem] border border-slate-100 shadow-inner">
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tanggal</label>
-                  <input type="date" className="w-full px-6 py-4 rounded-2xl border border-slate-200 bg-white font-black text-sm text-blue-600 focus:ring-4 focus:ring-blue-500/5 transition-all shadow-sm" value={headerData.date || ''} onChange={e => setHeaderData({ ...headerData, date: e.target.value })} />
+                  <input type="date" className="w-full px-4 py-3 md:px-6 md:py-4 rounded-2xl border border-slate-200 bg-white font-black text-sm text-blue-600 focus:ring-4 focus:ring-blue-500/5 transition-all shadow-sm" value={headerData.date || ''} onChange={e => setHeaderData({ ...headerData, date: e.target.value })} />
                 </div>
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Konteks Pekerjaan</label>
-                  <select className="w-full px-6 py-4 rounded-2xl border border-slate-200 bg-white font-black text-sm cursor-pointer shadow-sm" value={headerData.context || ''} onChange={e => setHeaderData({ ...headerData, context: e.target.value as any })}>
+                  <select className="w-full px-4 py-3 md:px-6 md:py-4 rounded-2xl border border-slate-200 bg-white font-black text-sm cursor-pointer shadow-sm" value={headerData.context || ''} onChange={e => setHeaderData({ ...headerData, context: e.target.value as any })}>
                     <option value="Perusahaan">Kantor (Perusahaan)</option>
                     <option value="Personal">Personal Proyek</option>
                     <option value="Sampingan">Freelance / Sampingan</option>
@@ -755,12 +755,12 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
                 </div>
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Identitas Instansi</label>
-                  <input placeholder="Nama Perusahaan" className="w-full px-6 py-4 rounded-2xl border border-slate-200 bg-white font-black text-sm shadow-sm" value={headerData.companyName || ''} onChange={e => setHeaderData({ ...headerData, companyName: e.target.value })} />
+                  <input placeholder="Nama Perusahaan" className="w-full px-4 py-3 md:px-6 md:py-4 rounded-2xl border border-slate-200 bg-white font-black text-sm shadow-sm" value={headerData.companyName || ''} onChange={e => setHeaderData({ ...headerData, companyName: e.target.value })} />
                 </div>
               </div>
 
               {/* Activity Section */}
-              <div className="space-y-6">
+              <div className="space-y-3 md:space-y-6">
                 <div className="flex items-center justify-between px-4">
                   <h4 className="text-xs font-black text-slate-900 uppercase tracking-[0.4em]">Daftar Pekerjaan</h4>
                   <button type="button" onClick={handleAddLine} className="px-6 py-2 bg-indigo-50 text-indigo-600 rounded-full font-black text-[10px] uppercase tracking-widest hover:bg-indigo-100 transition-all flex items-center gap-2">
@@ -768,20 +768,22 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
                   </button>
                 </div>
 
-                <div className="space-y-6">
+                <div className="space-y-3 md:space-y-6">
                   {activityLines.map((line) => (
-                    <div key={line.tempId} className={`p-8 lg:p-10 border rounded-[3rem] shadow-sm space-y-6 animate-in slide-in-from-top-4 relative group ${line.isPlan ? 'bg-white border-slate-100' : 'bg-emerald-50/10 border-emerald-100'}`}>
+                    <div key={line.tempId} className={`p-4 md:p-8 lg:p-10 border rounded-[3rem] shadow-sm space-y-3 md:space-y-6 animate-in slide-in-from-top-4 relative group ${line.isPlan ? 'bg-white border-slate-100' : 'bg-emerald-50/10 border-emerald-100'}`}>
                       {activityLines.length > 1 && (
                         <button type="button" onClick={() => handleRemoveLine(line.tempId)} className="absolute -top-3 -right-3 w-10 h-10 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center font-black shadow-lg hover:bg-rose-500 hover:text-white transition-all z-20">✕</button>
                       )}
                       
-                      <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
-                        <div className="md:col-span-8 space-y-6">
+                      <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-8">
+                        <div className="md:col-span-8 space-y-3 md:space-y-6">
                           <div className="space-y-2">
-                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Aktivitas Utama</label>
+                             <div className="flex justify-between items-center ml-1">
+                               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Aktivitas Utama</label>
+                               <button type="button" onClick={() => setShowHistoryFor(showHistoryFor === line.tempId ? null : line.tempId)} className="px-3 py-1.5 bg-indigo-50 border border-indigo-100 rounded-xl text-[9px] font-black text-indigo-600 hover:bg-indigo-600 hover:text-white transition-all shadow-sm">🕒 RIWAYAT</button>
+                             </div>
                              <div className="relative">
-                               <input placeholder="Ketik apa yang Anda kerjakan..." className="w-full px-6 py-4 rounded-2xl border border-slate-200 bg-white font-black text-sm focus:ring-4 focus:ring-blue-500/5 transition-all shadow-sm pr-24" value={line.activity || ''} onChange={e => updateLine(line.tempId, { activity: e.target.value })} />
-                               <button type="button" onClick={() => setShowHistoryFor(showHistoryFor === line.tempId ? null : line.tempId)} className="absolute right-3 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-indigo-50 border border-indigo-100 rounded-xl text-[9px] font-black text-indigo-600 hover:bg-indigo-600 hover:text-white transition-all shadow-sm">🕒 RIWAYAT</button>
+                               <textarea placeholder="Ketik apa yang Anda kerjakan..." rows={3} className="w-full px-4 py-3 md:px-6 md:py-4 rounded-2xl border border-slate-200 bg-white font-black text-sm focus:ring-4 focus:ring-blue-500/5 transition-all shadow-sm resize-none" value={line.activity || ''} onChange={e => updateLine(line.tempId, { activity: e.target.value })}></textarea>
 
                                {showHistoryFor === line.tempId && (
                                  <div className="absolute top-[calc(100%+8px)] left-0 right-0 bg-white border border-slate-200 rounded-[1.5rem] shadow-2xl z-[100] p-4 max-h-[350px] overflow-hidden animate-in slide-in-from-top-2 flex flex-col">
@@ -804,7 +806,7 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
                                           </button>
                                         ))
                                       ) : (
-                                        <div className="p-10 text-center text-[10px] text-slate-400 italic">Data tidak ditemukan</div>
+                                        <div className="p-4 md:p-10 text-center text-[10px] text-slate-400 italic">Data tidak ditemukan</div>
                                       )}
                                     </div>
                                     {totalHistoryPages > 1 && (
@@ -823,7 +825,7 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
                              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Deskripsi (Opsional)</label>
                              <textarea 
                                placeholder="Tambahkan detail pekerjaan..." 
-                               className="w-full px-6 py-4 rounded-2xl border border-slate-200 bg-white font-medium text-sm focus:ring-4 focus:ring-blue-500/5 transition-all shadow-sm resize-none h-24"
+                               className="w-full px-4 py-3 md:px-6 md:py-4 rounded-2xl border border-slate-200 bg-white font-medium text-sm focus:ring-4 focus:ring-blue-500/5 transition-all shadow-sm resize-none h-24"
                                value={line.description || ''}
                                onChange={e => updateLine(line.tempId, { description: e.target.value })}
                              />
@@ -845,7 +847,7 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
                              </div>
                              <input 
                                placeholder={line.useCustomOutput ? "Masukkan hasil kustom..." : "Otomatis menggunakan nama aktivitas"} 
-                               className={`w-full px-6 py-4 rounded-2xl border border-slate-200 bg-white font-black text-sm focus:ring-4 focus:ring-blue-500/5 transition-all shadow-sm ${!line.useCustomOutput ? 'bg-slate-50 text-slate-400' : 'text-indigo-600'}`}
+                               className={`w-full px-4 py-3 md:px-6 md:py-4 rounded-2xl border border-slate-200 bg-white font-black text-sm focus:ring-4 focus:ring-blue-500/5 transition-all shadow-sm ${!line.useCustomOutput ? 'bg-slate-50 text-slate-400' : 'text-indigo-600'}`}
                                value={line.useCustomOutput ? line.output : (line.isPlan ? '' : line.activity)}
                                disabled={!line.useCustomOutput}
                                onChange={e => updateLine(line.tempId, { output: e.target.value })}
@@ -857,35 +859,35 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
 
                         </div>
 
-                        <div className="md:col-span-4 space-y-6">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="md:col-span-4 space-y-3 md:space-y-6">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6">
                             <div className="space-y-2">
                               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Target</label>
-                              <input type="number" disabled={!line.isPlan} className={`w-full px-6 py-4 rounded-2xl border border-slate-200 bg-white font-black text-sm shadow-sm ${!line.isPlan ? 'opacity-50 cursor-not-allowed' : ''}`} value={line.targetValue || 0} onChange={e => updateLine(line.tempId, { targetValue: Number(e.target.value) })} />
+                              <input type="number" disabled={!line.isPlan} className={`w-full px-4 py-3 md:px-6 md:py-4 rounded-2xl border border-slate-200 bg-white font-black text-sm shadow-sm ${!line.isPlan ? 'opacity-50 cursor-not-allowed' : ''}`} value={line.targetValue || 0} onChange={e => updateLine(line.tempId, { targetValue: Number(e.target.value) })} />
                             </div>
                             <div className="space-y-2">
                               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Realisasi</label>
-                              <input type="number" disabled={line.isPlan} className={`w-full px-6 py-4 rounded-2xl border border-slate-200 bg-white font-black text-sm shadow-sm ${line.isPlan ? 'opacity-50 cursor-not-allowed' : ''}`} value={line.metricValue || 0} onChange={e => updateLine(line.tempId, { metricValue: Number(e.target.value) })} />
+                              <input type="number" disabled={line.isPlan} className={`w-full px-4 py-3 md:px-6 md:py-4 rounded-2xl border border-slate-200 bg-white font-black text-sm shadow-sm ${line.isPlan ? 'opacity-50 cursor-not-allowed' : ''}`} value={line.metricValue || 0} onChange={e => updateLine(line.tempId, { metricValue: Number(e.target.value) })} />
                             </div>
                           </div>
 
                           <div className="space-y-2">
                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Kategori</label>
-                            <select className="w-full px-6 py-4 rounded-2xl border border-slate-200 bg-white font-black text-sm outline-none shadow-sm cursor-pointer" value={line.category || ''} onChange={e => updateLine(line.tempId, { category: e.target.value })}>
+                            <select className="w-full px-4 py-3 md:px-6 md:py-4 rounded-2xl border border-slate-200 bg-white font-black text-sm outline-none shadow-sm cursor-pointer" value={line.category || ''} onChange={e => updateLine(line.tempId, { category: e.target.value })}>
                               {categories.map(c => <option key={c} value={c}>{c}</option>)}
                             </select>
                           </div>
 
                           <div className="space-y-2">
                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Kategori Matriks</label>
-                            <select className="w-full px-6 py-4 rounded-2xl border border-slate-200 bg-white font-black text-sm outline-none shadow-sm cursor-pointer" value={line.metricOption} onChange={e => updateLine(line.tempId, { metricOption: e.target.value })}>
+                            <select className="w-full px-4 py-3 md:px-6 md:py-4 rounded-2xl border border-slate-200 bg-white font-black text-sm outline-none shadow-sm cursor-pointer" value={line.metricOption} onChange={e => updateLine(line.tempId, { metricOption: e.target.value })}>
                               {metricChoices.map(m => <option key={m} value={m}>{m}</option>)}
                             </select>
                           </div>
                           {line.metricOption === 'Custom' && (
                             <div className="space-y-2">
                               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Label Matriks Custom</label>
-                              <input className="w-full px-6 py-4 rounded-2xl border border-slate-200 bg-white font-black text-sm shadow-sm" value={line.customMetricLabel || ''} onChange={e => updateLine(line.tempId, { customMetricLabel: e.target.value })} />
+                              <input className="w-full px-4 py-3 md:px-6 md:py-4 rounded-2xl border border-slate-200 bg-white font-black text-sm shadow-sm" value={line.customMetricLabel || ''} onChange={e => updateLine(line.tempId, { customMetricLabel: e.target.value })} />
                             </div>
                           )}
 
@@ -900,7 +902,7 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
                 </div>
               </div>
               
-              <div className="flex gap-6 pt-10 border-t border-slate-100">
+              <div className="flex gap-3 md:gap-6 pt-10 border-t border-slate-100">
                 <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-5 text-slate-400 font-black uppercase tracking-widest hover:bg-slate-50 rounded-[2rem] text-[11px]">Batal</button>
                 <button type="submit" className="flex-[2] py-5 bg-blue-600 text-white font-black uppercase tracking-[0.2em] rounded-[2rem] shadow-blue-500/20 hover:bg-blue-700 transition-all text-[11px]">🚀 Simpan Laporan</button>
               </div>

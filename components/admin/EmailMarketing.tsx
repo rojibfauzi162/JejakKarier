@@ -180,7 +180,7 @@ const EmailMarketing: React.FC<EmailMarketingProps> = ({ data, onUpdateData }) =
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
+    <div className="space-y-4 md:space-y-8 animate-in fade-in duration-500">
       <div className="flex flex-col md:flex-row justify-between items-center gap-4">
         <div>
             <h2 className="text-3xl font-black text-slate-900 uppercase tracking-tight">Email Marketing</h2>
@@ -200,18 +200,18 @@ const EmailMarketing: React.FC<EmailMarketingProps> = ({ data, onUpdateData }) =
       </div>
 
       {activeTab === 'dashboard' && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-6">
+            <div className="bg-white p-4 md:p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
                 <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center text-xl mb-4"><i className="bi bi-envelope-paper-fill"></i></div>
                 <h3 className="text-4xl font-black text-slate-900">{campaigns.length}</h3>
                 <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Total Campaign</p>
             </div>
-            <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
+            <div className="bg-white p-4 md:p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
                 <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center text-xl mb-4"><i className="bi bi-check-circle-fill"></i></div>
                 <h3 className="text-4xl font-black text-slate-900">{logs.filter(l => l.status === 'sent').length}</h3>
                 <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Email Terkirim</p>
             </div>
-            <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
+            <div className="bg-white p-4 md:p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
                 <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-xl mb-4"><i className="bi bi-people-fill"></i></div>
                 <h3 className="text-4xl font-black text-slate-900">{users.length}</h3>
                 <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Total Audience</p>
@@ -220,10 +220,10 @@ const EmailMarketing: React.FC<EmailMarketingProps> = ({ data, onUpdateData }) =
       )}
 
       {activeTab === 'settings' && (
-        <div className="bg-white p-8 lg:p-10 rounded-[2.5rem] border border-slate-100 shadow-sm max-w-3xl">
-            <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight mb-8">Konfigurasi SMTP / API</h3>
-            <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-white p-4 md:p-8 lg:p-10 rounded-[2.5rem] border border-slate-100 shadow-sm max-w-3xl">
+            <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight mb-4 md:mb-8">Konfigurasi SMTP / API</h3>
+            <div className="space-y-3 md:space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6">
                     <div className="space-y-2">
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Sender Name</label>
                         <input 
@@ -254,7 +254,7 @@ const EmailMarketing: React.FC<EmailMarketingProps> = ({ data, onUpdateData }) =
                     <p className="text-[10px] text-slate-400 italic">API Key disimpan secara aman di database konfigurasi sistem.</p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-6">
                     <div className="md:col-span-2 space-y-2">
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">SMTP Host</label>
                         <input 
@@ -275,16 +275,16 @@ const EmailMarketing: React.FC<EmailMarketingProps> = ({ data, onUpdateData }) =
                 </div>
 
                 <div className="pt-6">
-                    <button onClick={handleSaveSettings} className="px-8 py-4 bg-indigo-600 text-white font-black rounded-2xl uppercase text-[10px] tracking-widest shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95">Simpan Konfigurasi</button>
+                    <button onClick={handleSaveSettings} className="px-5 py-3 md:px-8 md:py-4 bg-indigo-600 text-white font-black rounded-2xl uppercase text-[10px] tracking-widest shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95">Simpan Konfigurasi</button>
                 </div>
             </div>
         </div>
       )}
 
       {activeTab === 'create' && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 space-y-6">
-                <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
+            <div className="lg:col-span-2 space-y-3 md:space-y-6">
+                <div className="bg-white p-4 md:p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-3 md:space-y-6">
                     <div className="space-y-2">
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Judul Campaign (Internal)</label>
                         <input 
@@ -345,8 +345,8 @@ const EmailMarketing: React.FC<EmailMarketingProps> = ({ data, onUpdateData }) =
                 </div>
             </div>
 
-            <div className="lg:col-span-1 space-y-6">
-                <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-6 sticky top-8">
+            <div className="lg:col-span-1 space-y-3 md:space-y-6">
+                <div className="bg-white p-4 md:p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-3 md:space-y-6 sticky top-8">
                     <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">Target Audience</h3>
                     
                     <div className="space-y-4">

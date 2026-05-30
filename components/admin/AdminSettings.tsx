@@ -159,9 +159,9 @@ const AdminSettings: React.FC = () => {
   }
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500 max-w-6xl pb-20">
+    <div className="space-y-4 md:space-y-8 animate-in fade-in duration-500 max-w-6xl pb-20">
       {message && (
-        <div className={`p-6 rounded-[2rem] text-[10px] font-black uppercase tracking-widest border flex items-center gap-4 animate-in slide-in-from-top-2 ${
+        <div className={`p-3 md:p-6 rounded-[2rem] text-[10px] font-black uppercase tracking-widest border flex items-center gap-4 animate-in slide-in-from-top-2 ${
           message.type === 'success' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-rose-50 text-rose-600 border-rose-100'
         }`}>
           <i className={`bi ${message.type === 'success' ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill'} text-lg`}></i>
@@ -170,8 +170,8 @@ const AdminSettings: React.FC = () => {
       )}
 
       {/* SECTION: LOGO APLIKASI */}
-      <div className="bg-white p-8 lg:p-12 rounded-[3.5rem] shadow-sm border-2 border-indigo-50 space-y-12">
-        <div className="flex items-center gap-6 pb-8 border-b border-slate-50">
+      <div className="bg-white p-4 md:p-8 lg:p-12 rounded-[3.5rem] shadow-sm border-2 border-indigo-50 space-y-12">
+        <div className="flex items-center gap-3 md:gap-6 pb-8 border-b border-slate-50">
           <div className="w-16 h-16 bg-slate-900 text-white rounded-[1.75rem] flex items-center justify-center text-3xl shadow-xl">
             <i className="bi bi-star-fill"></i>
           </div>
@@ -182,8 +182,8 @@ const AdminSettings: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-           <div className="space-y-6">
-              <div className="p-8 bg-slate-50 rounded-[2.5rem] border-2 border-dashed border-slate-200 flex items-center justify-center min-h-[200px]">
+           <div className="space-y-3 md:space-y-6">
+              <div className="p-4 md:p-8 bg-slate-50 rounded-[2.5rem] border-2 border-dashed border-slate-200 flex items-center justify-center min-h-[200px]">
                 {landingConfig.logoUrl ? (
                   <img src={landingConfig.logoUrl} alt="Logo Preview" className="max-h-32 object-contain drop-shadow-md" />
                 ) : (
@@ -195,7 +195,7 @@ const AdminSettings: React.FC = () => {
               </div>
            </div>
 
-           <div className="space-y-6">
+           <div className="space-y-3 md:space-y-6">
               <div className="space-y-2">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">URL Logo Utama (Untuk Background Gelap)</label>
                 <input 
@@ -232,9 +232,9 @@ const AdminSettings: React.FC = () => {
 
         {/* Logo Dark (Untuk Background Putih) */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center pt-12 border-t border-slate-50">
-           <div className="space-y-6">
+           <div className="space-y-3 md:space-y-6">
               <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Logo Dark (Untuk Background Putih)</p>
-              <div className="p-8 bg-white rounded-[2.5rem] border-2 border-dashed border-slate-200 flex items-center justify-center min-h-[200px]">
+              <div className="p-4 md:p-8 bg-white rounded-[2.5rem] border-2 border-dashed border-slate-200 flex items-center justify-center min-h-[200px]">
                 {landingConfig.logoDarkUrl ? (
                   <img src={landingConfig.logoDarkUrl} alt="Logo Dark Preview" className="max-h-32 object-contain drop-shadow-md" />
                 ) : (
@@ -246,7 +246,7 @@ const AdminSettings: React.FC = () => {
               </div>
            </div>
 
-           <div className="space-y-6">
+           <div className="space-y-3 md:space-y-6">
               <div className="space-y-2">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">URL Logo Dark (Opsional)</label>
                 <input 
@@ -283,8 +283,8 @@ const AdminSettings: React.FC = () => {
       </div>
 
       {/* SECTION: PWA SETTINGS */}
-      <div className="bg-white p-8 lg:p-12 rounded-[3.5rem] shadow-sm border-2 border-indigo-50 space-y-12">
-        <div className="flex items-center gap-6 pb-8 border-b border-slate-50">
+      <div className="bg-white p-4 md:p-8 lg:p-12 rounded-[3.5rem] shadow-sm border-2 border-indigo-50 space-y-12">
+        <div className="flex items-center gap-3 md:gap-6 pb-8 border-b border-slate-50">
           <div className="w-16 h-16 bg-indigo-600 text-white rounded-[1.75rem] flex items-center justify-center text-3xl shadow-xl">
             <i className="bi bi-phone-fill"></i>
           </div>
@@ -295,8 +295,8 @@ const AdminSettings: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-           <div className="space-y-6">
-              <div className="p-8 bg-slate-50 rounded-[2.5rem] border-2 border-dashed border-slate-200 flex items-center justify-center min-h-[200px]">
+           <div className="space-y-3 md:space-y-6">
+              <div className="p-4 md:p-8 bg-slate-50 rounded-[2.5rem] border-2 border-dashed border-slate-200 flex items-center justify-center min-h-[200px]">
                 {landingConfig.pwaIconUrl ? (
                   <img src={landingConfig.pwaIconUrl} alt="PWA Icon Preview" className="w-32 h-32 object-cover rounded-3xl shadow-md" />
                 ) : (
@@ -308,7 +308,7 @@ const AdminSettings: React.FC = () => {
               </div>
            </div>
 
-           <div className="space-y-6">
+           <div className="space-y-3 md:space-y-6">
               <div className="space-y-2">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nama Pendek PWA (Short Name)</label>
                 <input 
@@ -373,8 +373,8 @@ const AdminSettings: React.FC = () => {
       </div>
 
       {/* SECTION: ASSET VISUAL LANDING PAGE */}
-      <div className="bg-white p-8 lg:p-12 rounded-[3.5rem] shadow-sm border-2 border-indigo-50 space-y-12">
-        <div className="flex items-center gap-6 pb-8 border-b border-slate-50">
+      <div className="bg-white p-4 md:p-8 lg:p-12 rounded-[3.5rem] shadow-sm border-2 border-indigo-50 space-y-12">
+        <div className="flex items-center gap-3 md:gap-6 pb-8 border-b border-slate-50">
           <div className="w-16 h-16 bg-emerald-600 text-white rounded-[1.75rem] flex items-center justify-center text-3xl shadow-xl">
             <i className="bi bi-images"></i>
           </div>
@@ -405,7 +405,7 @@ const AdminSettings: React.FC = () => {
                   type="button"
                   onClick={() => desktopFileRef.current?.click()}
                   disabled={uploadingImage}
-                  className="px-6 py-4 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-black transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-4 py-3 md:px-6 md:py-4 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-black transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {uploadingImage ? 'MENGUPLOAD...' : 'Upload'}
                 </button>
@@ -433,7 +433,7 @@ const AdminSettings: React.FC = () => {
                   type="button"
                   onClick={() => mobileFileRef.current?.click()}
                   disabled={uploadingImage}
-                  className="px-6 py-4 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-black transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-4 py-3 md:px-6 md:py-4 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-black transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {uploadingImage ? 'MENGUPLOAD...' : 'Upload'}
                 </button>
@@ -444,8 +444,8 @@ const AdminSettings: React.FC = () => {
       </div>
 
       {/* SECTION: KONTAK ADMIN & IDENTITAS USAHA */}
-      <div className="bg-white p-8 lg:p-12 rounded-[3.5rem] shadow-sm border border-indigo-100 space-y-12">
-        <div className="flex items-center gap-6 pb-8 border-b border-slate-50">
+      <div className="bg-white p-4 md:p-8 lg:p-12 rounded-[3.5rem] shadow-sm border border-indigo-100 space-y-12">
+        <div className="flex items-center gap-3 md:gap-6 pb-8 border-b border-slate-50">
           <div className="w-16 h-16 bg-indigo-600 text-white rounded-[1.75rem] flex items-center justify-center text-3xl shadow-xl">
             <i className="bi bi-shop"></i>
           </div>
@@ -455,7 +455,7 @@ const AdminSettings: React.FC = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
            <div className="space-y-2">
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">WhatsApp Admin (628...)</label>
               <input 
@@ -497,8 +497,8 @@ const AdminSettings: React.FC = () => {
       </div>
 
       {/* SECTION: VIDEO DEMO CONFIG */}
-      <div className="bg-white p-8 lg:p-12 rounded-[3.5rem] shadow-sm border border-slate-100 space-y-12">
-        <div className="flex items-center gap-6 pb-8 border-b border-slate-50">
+      <div className="bg-white p-4 md:p-8 lg:p-12 rounded-[3.5rem] shadow-sm border border-slate-100 space-y-12">
+        <div className="flex items-center gap-3 md:gap-6 pb-8 border-b border-slate-50">
           <div className="w-16 h-16 bg-blue-600 text-white rounded-[1.75rem] flex items-center justify-center text-3xl shadow-xl">
             <i className="bi bi-play-btn-fill"></i>
           </div>
@@ -508,7 +508,7 @@ const AdminSettings: React.FC = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
            {ALL_FEATURES.map(f => (
              <div key={f.id} className="space-y-2">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{f.label}</label>
@@ -523,8 +523,8 @@ const AdminSettings: React.FC = () => {
         </div>
       </div>
 
-      <div className="bg-white p-8 lg:p-12 rounded-[3.5rem] shadow-sm border border-slate-100 space-y-12">
-        <div className="flex items-center gap-6 pb-8 border-b border-slate-50">
+      <div className="bg-white p-4 md:p-8 lg:p-12 rounded-[3.5rem] shadow-sm border border-slate-100 space-y-12">
+        <div className="flex items-center gap-3 md:gap-6 pb-8 border-b border-slate-50">
           <div className="w-16 h-16 bg-slate-900 text-white rounded-[1.75rem] flex items-center justify-center text-3xl shadow-xl">
             <i className="bi bi-gear-fill"></i>
           </div>
@@ -534,10 +534,10 @@ const AdminSettings: React.FC = () => {
           </div>
         </div>
 
-        <div className="space-y-10">
+        <div className="space-y-3 md:space-y-6 md:space-y-10">
           <div className="space-y-4">
             <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Privacy Policy (Kebijakan Privasi)</label>
-            <div className="rounded-[2rem] overflow-hidden border border-slate-200 bg-slate-50 p-6">
+            <div className="rounded-[2rem] overflow-hidden border border-slate-200 bg-slate-50 p-3 md:p-6">
               <textarea
                 className="w-full min-h-[300px] bg-transparent outline-none font-medium text-sm text-slate-700 leading-relaxed resize-y focus:ring-4 focus:ring-indigo-500/5 transition-all"
                 value={config.privacyPolicy || ''}
@@ -549,7 +549,7 @@ const AdminSettings: React.FC = () => {
 
           <div className="space-y-4">
             <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Terms of Service (Syarat Layanan)</label>
-            <div className="rounded-[2rem] overflow-hidden border border-slate-200 bg-slate-50 p-6">
+            <div className="rounded-[2rem] overflow-hidden border border-slate-200 bg-slate-50 p-3 md:p-6">
               <textarea
                 className="w-full min-h-[300px] bg-transparent outline-none font-medium text-sm text-slate-700 leading-relaxed resize-y focus:ring-4 focus:ring-indigo-500/5 transition-all"
                 value={config.termsOfService || ''}
@@ -582,7 +582,7 @@ const AdminSettings: React.FC = () => {
         </div>
       </div>
 
-      <div className="bg-slate-900 p-10 rounded-[3rem] text-white flex flex-col md:flex-row items-center gap-8 shadow-2xl">
+      <div className="bg-slate-900 p-4 md:p-10 rounded-[3rem] text-white flex flex-col md:flex-row items-center gap-4 md:gap-8 shadow-2xl">
         <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center text-3xl shrink-0"><i className="bi bi-info-circle"></i></div>
         <div className="flex-1 text-center md:text-left">
           <h4 className="text-xl font-black uppercase tracking-tight mb-1">Informasi Pembaruan</h4>

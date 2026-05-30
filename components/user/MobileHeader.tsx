@@ -45,7 +45,7 @@ const MobileHeader: React.FC<MobileHeaderProps> = ({ profile = {} as any, notifi
 
   return (
     <>
-      <header className="lg:hidden sticky top-0 z-[110] bg-white/80 backdrop-blur-xl border-b border-slate-100 px-6 py-4 flex items-center justify-between shadow-sm">
+      <header className="lg:hidden sticky top-0 z-[110] bg-white/80 backdrop-blur-xl border-b border-slate-100 px-4 py-3 md:px-6 md:py-4 flex items-center justify-between shadow-sm">
         {/* Brand & Logo */}
         <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => onNavigate('dashboard')}>
           {logoDarkUrl ? (
@@ -165,11 +165,11 @@ const MobileHeader: React.FC<MobileHeaderProps> = ({ profile = {} as any, notifi
 
       {/* Modal Konfirmasi Logout Mobile */}
       {showLogoutModal && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-6">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-2 sm:p-6">
           <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm" onClick={() => setShowLogoutModal(false)}></div>
-          <div className="relative bg-white w-full max-w-sm rounded-[2.5rem] p-8 lg:p-10 shadow-2xl animate-in zoom-in duration-300">
+          <div className="relative bg-white w-full max-w-sm rounded-[1.5rem] md:rounded-[2.5rem] p-3 md:p-8 lg:p-10 shadow-2xl animate-in zoom-in duration-300">
             <button onClick={() => setShowLogoutModal(false)} className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center bg-slate-50 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors z-10"><i className="bi bi-x-lg"></i></button>
-            <div className="text-center mb-8">
+            <div className="text-center mb-4 md:mb-8">
               <div className="w-16 h-16 bg-rose-50 text-rose-500 rounded-3xl flex items-center justify-center mx-auto mb-4 text-2xl shadow-inner">
                 <i className="bi bi-door-open-fill"></i>
               </div>

@@ -104,15 +104,15 @@ const AiStrategist: React.FC<AiStrategistProps> = ({
   };
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-3 md:space-y-6 md:space-y-10">
       {confirmation && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[2000] flex items-center justify-center p-6">
-           <div className="bg-white max-w-md w-full rounded-[3.5rem] p-10 border border-slate-100 shadow-2xl animate-in zoom-in duration-300 relative">
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[2000] flex items-center justify-center p-2 sm:p-6">
+           <div className="bg-white max-w-md w-full rounded-[2rem] md:rounded-[3.5rem] p-4 md:p-10 border border-slate-100 shadow-2xl animate-in zoom-in duration-300 relative">
               <button onClick={() => setConfirmation(null)} className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center bg-slate-50 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors z-10"><i className="bi bi-x-lg"></i></button>
               <div className="text-center">
-                 <div className="w-20 h-20 bg-indigo-50 text-indigo-600 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-inner"><i className="bi bi-question-lg text-3xl"></i></div>
+                 <div className="w-20 h-20 bg-indigo-50 text-indigo-600 rounded-3xl flex items-center justify-center mx-auto mb-4 md:mb-8 shadow-inner"><i className="bi bi-question-lg text-3xl"></i></div>
                  <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight mb-4">Konfirmasi</h3>
-                 <p className="text-slate-400 font-bold text-xs uppercase tracking-widest leading-relaxed mb-10">Tambahkan langkah mikro ini ke Rencana Harian Anda?</p>
+                 <p className="text-slate-400 font-bold text-xs uppercase tracking-widest leading-relaxed mb-6 md:mb-10">Tambahkan langkah mikro ini ke Rencana Harian Anda?</p>
                  <div className="flex gap-4">
                     <button onClick={() => setConfirmation(null)} className="flex-1 py-4 bg-slate-50 text-slate-400 font-black rounded-2xl uppercase text-[10px] tracking-widest">Batal</button>
                     <button onClick={executeAddAction} className="flex-[2] py-4 bg-indigo-600 text-white font-black rounded-2xl uppercase text-[10px] tracking-widest shadow-xl hover:bg-indigo-700 transition-all">Ya, Tambahkan!</button>
@@ -122,9 +122,9 @@ const AiStrategist: React.FC<AiStrategistProps> = ({
         </div>
       )}
 
-      <div className="bg-slate-950 p-8 lg:p-12 rounded-[3.5rem] text-white relative overflow-hidden shadow-[0_40px_100px_-20px_rgba(0,0,0,0.4)]">
+      <div className="bg-slate-950 p-4 md:p-8 lg:p-12 rounded-[3.5rem] text-white relative overflow-hidden shadow-[0_40px_100px_-20px_rgba(0,0,0,0.4)]">
         <div className="relative z-10">
-          <div className="flex justify-between items-start mb-10">
+          <div className="flex justify-between items-start mb-6 md:mb-10">
             <div className="w-20 h-20 bg-indigo-600 rounded-[2.5rem] flex items-center justify-center text-4xl shadow-[0_0_50px_rgba(79,70,229,0.4)]">🧠</div>
             <div className="flex flex-col items-end gap-3">
                <div className="flex gap-2 bg-white/5 p-1.5 rounded-2xl border border-white/10 backdrop-blur-md">
@@ -144,7 +144,7 @@ const AiStrategist: React.FC<AiStrategistProps> = ({
           <h3 className="text-3xl lg:text-4xl font-black tracking-tighter mb-6 uppercase leading-none">AI Qualification Strategist</h3>
           <p className="text-slate-400 text-base lg:text-lg max-w-2xl leading-relaxed font-medium">Sistem analisis kompetensi berbasis AI untuk memetakan kesiapan karier dan rekomendasi akselerasi kualifikasi.</p>
           {isAiAnalyzing && (
-            <div className="mt-10 space-y-6">
+            <div className="mt-6 md:mt-10 space-y-3 md:space-y-6">
                <div className="flex justify-between items-end mb-2">
                   <p className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-400 animate-pulse">Menghitung Strategi Karir...</p>
                   <p className="text-2xl font-black text-white">{Math.round(aiProgress)}%</p>
@@ -154,7 +154,7 @@ const AiStrategist: React.FC<AiStrategistProps> = ({
                </div>
             </div>
           )}
-          <div className="mt-10 flex flex-wrap gap-4">
+          <div className="mt-6 md:mt-10 flex flex-wrap gap-4">
             <button onClick={handleRunAiStrategist} disabled={isAiAnalyzing} className="px-12 py-5 bg-indigo-600 text-white font-black rounded-[2rem] uppercase text-[11px] shadow-xl hover:bg-indigo-500 active:scale-95 disabled:opacity-50 transition-all">{isAiAnalyzing ? 'SEDANG MENGANALISIS...' : 'UPDATE STRATEGI KARIR'}</button>
           </div>
         </div>
@@ -162,14 +162,14 @@ const AiStrategist: React.FC<AiStrategistProps> = ({
 
       {/* HISTORY LIST UI */}
       {showHistoryList && data.aiStrategies && data.aiStrategies.length > 0 && (
-        <div className="bg-white p-8 lg:p-10 rounded-[3.5rem] border border-slate-100 shadow-sm animate-in slide-in-from-top-4 duration-500">
-           <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.4em] mb-8">Riwayat Generate Strategi</h4>
+        <div className="bg-white p-4 md:p-8 lg:p-10 rounded-[3.5rem] border border-slate-100 shadow-sm animate-in slide-in-from-top-4 duration-500">
+           <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.4em] mb-4 md:mb-8">Riwayat Generate Strategi</h4>
            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {data.aiStrategies.slice().sort((a,b) => b.version - a.version).map((strat, idx) => (
                 <button 
                   key={idx} 
                   onClick={() => { setAiResults(strat); setShowHistoryList(false); }}
-                  className={`p-6 rounded-[2rem] border-2 text-left transition-all ${aiResults?.version === strat.version ? 'bg-indigo-50 border-indigo-500 shadow-lg' : 'bg-slate-50 border-slate-100 hover:bg-white hover:border-slate-200'}`}
+                  className={`p-3 md:p-6 rounded-[2rem] border-2 text-left transition-all ${aiResults?.version === strat.version ? 'bg-indigo-50 border-indigo-500 shadow-lg' : 'bg-slate-50 border-slate-100 hover:bg-white hover:border-slate-200'}`}
                 >
                   <div className="flex justify-between items-start mb-2">
                     <span className="px-3 py-1 bg-slate-900 text-white text-[8px] font-black rounded-full uppercase tracking-widest">v{strat.version}</span>
@@ -184,24 +184,24 @@ const AiStrategist: React.FC<AiStrategistProps> = ({
       )}
 
       {aiResults && !isAiAnalyzing && (
-        <div className="space-y-10 animate-in zoom-in duration-700">
+        <div className="space-y-3 md:space-y-6 md:space-y-10 animate-in zoom-in duration-700">
            {/* NEXT SMALL ACTIONS */}
-           <div className="bg-white p-10 lg:p-14 rounded-[4rem] shadow-sm border border-slate-100 text-center">
+           <div className="bg-white p-4 md:p-10 lg:p-14 rounded-[4rem] shadow-sm border border-slate-100 text-center">
               <div className="flex flex-col items-center mb-12">
                 <span className="px-4 py-1.5 bg-slate-900 text-white rounded-full text-[9px] font-black uppercase tracking-widest mb-4 shadow-xl">Versi {aiResults.version} • {new Date(aiResults.date).toLocaleDateString('id-ID')}</span>
                 <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.4em]">Langkah Mikro (Action Items)</h4>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
                  <ActionCard timeframe="MINGGU INI" action={safeRender(aiResults.immediateActions?.weekly, "Analisis detail segera hadir...")} color="rose" icon="🗓️" onPlan={() => setConfirmation({ type: 'todo', item: aiResults.immediateActions?.weekly })} />
                  <ActionCard timeframe="BULAN INI" action={safeRender(aiResults.immediateActions?.monthly, "Menyusun strategi bulan ini...")} color="indigo" icon="🗓️" onPlan={() => setConfirmation({ type: 'todo', item: aiResults.immediateActions?.monthly })} />
                  <ActionCard timeframe="BULAN DEPAN" action={safeRender(aiResults.immediateActions?.nextMonth, "Target strategis bulan depan...")} color="emerald" icon="🚀" onPlan={() => setConfirmation({ type: 'todo', item: aiResults.immediateActions?.nextMonth })} />
               </div>
            </div>
 
-           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-8 items-start">
              {/* READINESS INDEX */}
-             <div className="lg:col-span-4 bg-white p-10 rounded-[3.5rem] shadow-sm border border-slate-100 flex flex-col items-center text-center">
-                <div className="relative mb-8 flex items-center justify-center">
+             <div className="lg:col-span-4 bg-white p-4 md:p-10 rounded-[3.5rem] shadow-sm border border-slate-100 flex flex-col items-center text-center">
+                <div className="relative mb-4 md:mb-8 flex items-center justify-center">
                    <div className="w-48 h-48 rounded-full border-[14px] border-slate-50 flex flex-col items-center justify-center relative shadow-inner bg-slate-50/20">
                       <p className="text-6xl font-black text-slate-900 tracking-tighter leading-none">{safeRender(aiResults.readinessScore, "0")}</p>
                       <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2">/ 100</p>
@@ -214,23 +214,23 @@ const AiStrategist: React.FC<AiStrategistProps> = ({
              </div>
 
              {/* EXECUTIVE ANALYSIS */}
-             <div className="lg:col-span-8 bg-white p-10 rounded-[3.5rem] shadow-sm border border-slate-100 h-full flex flex-col justify-center">
-                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] mb-8">Analisis Strategis & Peluang</h4>
+             <div className="lg:col-span-8 bg-white p-4 md:p-10 rounded-[3.5rem] shadow-sm border border-slate-100 h-full flex flex-col justify-center">
+                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] mb-4 md:mb-8">Analisis Strategis & Peluang</h4>
                 <p className="text-base text-slate-600 leading-relaxed font-medium italic">"{safeRender(aiResults.scoreExplanation, "AI sedang merumuskan analisis kualifikasi mendalam untuk profil Anda...")}"</p>
-                <div className="mt-8 p-6 bg-indigo-50 rounded-[2rem] border border-indigo-100 text-sm font-black text-indigo-900 italic">"{safeRender(aiResults.motivation, "Setiap langkah kecil yang terdokumentasi adalah bukti nyata kemajuan karier Anda.")}"</div>
+                <div className="mt-8 p-3 md:p-6 bg-indigo-50 rounded-[2rem] border border-indigo-100 text-sm font-black text-indigo-900 italic">"{safeRender(aiResults.motivation, "Setiap langkah kecil yang terdokumentasi adalah bukti nyata kemajuan karier Anda.")}"</div>
              </div>
            </div>
 
            {/* REQUIREMENTS OVERVIEW */}
-           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="bg-white p-8 lg:p-10 rounded-[3.5rem] border border-slate-100 shadow-sm flex items-start gap-6">
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
+              <div className="bg-white p-4 md:p-8 lg:p-10 rounded-[3.5rem] border border-slate-100 shadow-sm flex items-start gap-3 md:gap-6">
                  <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-[1.75rem] flex items-center justify-center text-3xl shadow-inner shrink-0">⏳</div>
                  <div>
                     <h4 className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-3">Prasyarat Pengalaman</h4>
                     <p className="text-sm font-black text-slate-800 leading-relaxed uppercase">{safeRender(aiResults.experiencePrerequisites, "Standard industri sedang dikalkulasi...")}</p>
                  </div>
               </div>
-              <div className="bg-white p-8 lg:p-10 rounded-[3.5rem] border border-slate-100 shadow-sm flex items-start gap-6">
+              <div className="bg-white p-4 md:p-8 lg:p-10 rounded-[3.5rem] border border-slate-100 shadow-sm flex items-start gap-3 md:gap-6">
                  <div className="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-[1.75rem] flex items-center justify-center text-3xl shadow-inner shrink-0">🎓</div>
                  <div>
                     <h4 className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-3">Pendidikan Yang Relevan</h4>
@@ -242,11 +242,11 @@ const AiStrategist: React.FC<AiStrategistProps> = ({
               </div>
            </div>
 
-           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 md:gap-10">
               {/* STRATEGIC RECOMMENDATIONS */}
-              <div className="bg-white p-10 rounded-[3.5rem] shadow-sm border border-slate-100">
-                 <h4 className="text-[10px] font-black text-indigo-600 uppercase tracking-[0.4em] mb-8">Rekomendasi Kursus & Sertifikasi</h4>
-                 <div className="space-y-8">
+              <div className="bg-white p-4 md:p-10 rounded-[3.5rem] shadow-sm border border-slate-100">
+                 <h4 className="text-[10px] font-black text-indigo-600 uppercase tracking-[0.4em] mb-4 md:mb-8">Rekomendasi Kursus & Sertifikasi</h4>
+                 <div className="space-y-4 md:space-y-8">
                     <div>
                        <p className="text-[9px] font-black text-slate-400 uppercase mb-4 flex items-center gap-2"><span className="w-1.5 h-1.5 bg-indigo-500 rounded-full"></span>PELATIHAN STRATEGIS</p>
                        {Array.isArray(aiResults.recommendations?.trainings) && aiResults.recommendations.trainings.length > 0 ? aiResults.recommendations.trainings.map((t: AiRecommendation, i: number) => (
@@ -263,21 +263,21 @@ const AiStrategist: React.FC<AiStrategistProps> = ({
               </div>
 
               {/* CRITICAL GAPS */}
-              <div className="bg-white p-10 rounded-[3.5rem] shadow-sm border border-slate-100 h-full">
-                 <h4 className="text-[10px] font-black text-rose-500 uppercase tracking-[0.4em] mb-8">Identifikasi Skill Gap Kritis</h4>
-                 <div className="space-y-6">
+              <div className="bg-white p-4 md:p-10 rounded-[3.5rem] shadow-sm border border-slate-100 h-full">
+                 <h4 className="text-[10px] font-black text-rose-500 uppercase tracking-[0.4em] mb-4 md:mb-8">Identifikasi Skill Gap Kritis</h4>
+                 <div className="space-y-3 md:space-y-6">
                     {Array.isArray(aiResults.criticalGaps) && aiResults.criticalGaps.length > 0 ? aiResults.criticalGaps.map((gap: any, i: number) => (
-                      <div key={i} className="p-6 bg-rose-50/40 rounded-[2.5rem] border border-rose-100">
+                      <div key={i} className="p-3 md:p-6 bg-rose-50/40 rounded-[2.5rem] border border-rose-100">
                         <div className="flex justify-between mb-3"><p className="font-black text-slate-800 text-sm uppercase">{safeRender(gap.skill, "Kompetensi")}</p><span className="px-3 py-1 bg-rose-600 text-white text-[8px] font-black rounded-full uppercase">{safeRender(gap.priority, "High")}</span></div>
                         <p className="text-[12px] text-slate-600 leading-relaxed font-bold italic opacity-70">"{safeRender(gap.why, "Area ini memerlukan penguatan untuk mencapai standard industri.")}"</p>
                       </div>
-                    )) : <p className="text-[10px] text-slate-400 italic p-6">Menganalisis celah kompetensi...</p>}
+                    )) : <p className="text-[10px] text-slate-400 italic p-3 md:p-6">Menganalisis celah kompetensi...</p>}
                  </div>
               </div>
            </div>
 
            {/* EXPERIENCE ROADMAP PREREQUISITES */}
-           <div className="bg-white p-10 lg:p-14 rounded-[4rem] shadow-sm border border-slate-100">
+           <div className="bg-white p-4 md:p-10 lg:p-14 rounded-[4rem] shadow-sm border border-slate-100">
               <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.4em] mb-12">Peta Jalan Pengalaman Karier</h4>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative">
                  {Array.isArray(aiResults.experienceRoadmap) && aiResults.experienceRoadmap.length > 0 ? aiResults.experienceRoadmap.map((step: any, i: number) => (
@@ -297,7 +297,7 @@ const AiStrategist: React.FC<AiStrategistProps> = ({
            </div>
 
            {/* ROADMAP DETAILED STEPS */}
-           <div className="bg-white p-10 lg:p-14 rounded-[4rem] shadow-sm border border-slate-100">
+           <div className="bg-white p-4 md:p-10 lg:p-14 rounded-[4rem] shadow-sm border border-slate-100">
               <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.4em] mb-12">Detail Rencana Eksekusi</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                  {Array.isArray(aiResults.roadmapSteps) && aiResults.roadmapSteps.length > 0 ? aiResults.roadmapSteps.map((step: any, i: number) => (
@@ -311,8 +311,8 @@ const AiStrategist: React.FC<AiStrategistProps> = ({
            </div>
 
            {/* EXECUTIVE SUMMARY CONCLUSION */}
-           <div className="bg-indigo-600 p-10 lg:p-14 rounded-[4rem] shadow-2xl text-white">
-              <h4 className="text-[11px] font-black text-white/50 uppercase tracking-[0.4em] mb-8 text-center">KESIMPULAN STRATEGIS</h4>
+           <div className="bg-indigo-600 p-4 md:p-10 lg:p-14 rounded-[4rem] shadow-2xl text-white">
+              <h4 className="text-[11px] font-black text-white/50 uppercase tracking-[0.4em] mb-4 md:mb-8 text-center">KESIMPULAN STRATEGIS</h4>
               <p className="text-lg lg:text-xl font-bold leading-relaxed text-center max-w-4xl mx-auto italic">"{safeRender(aiResults.executiveSummary, "Hasil kalibrasi AI menunjukkan potensi optimalisasi pada portofolio Anda untuk akselerasi karier.")}"</p>
            </div>
         </div>
@@ -325,10 +325,10 @@ const ActionCard = ({ timeframe, action, color, icon, onPlan }: any) => {
   const colors: any = { rose: 'bg-rose-50 text-rose-600', indigo: 'bg-indigo-50 text-indigo-600', emerald: 'bg-emerald-50 text-emerald-600' };
   const btns: any = { rose: 'bg-rose-600 hover:bg-rose-700', indigo: 'bg-indigo-600 hover:bg-indigo-700', emerald: 'bg-emerald-600 hover:bg-emerald-700' };
   return (
-    <div className={`p-8 rounded-[3rem] border-2 group hover:shadow-2xl transition-all ${colors[color]}`}>
+    <div className={`p-4 md:p-8 rounded-[3rem] border-2 group hover:shadow-2xl transition-all ${colors[color]}`}>
        <div className="w-14 h-14 rounded-2xl bg-white flex items-center justify-center text-2xl shadow-inner mb-6 group-hover:scale-110 transition-transform">{icon}</div>
        <p className="text-[10px] font-black uppercase tracking-[0.3em] mb-4 opacity-70">{timeframe}</p>
-       <p className="text-xs font-bold leading-relaxed flex-1 mb-8">{action}</p>
+       <p className="text-xs font-bold leading-relaxed flex-1 mb-4 md:mb-8">{action}</p>
        <button onClick={onPlan} className={`w-full py-4 text-white text-[9px] font-black uppercase rounded-2xl transition-all tracking-widest ${btns[color]}`}>+ Add to Daily Plan 🚀</button>
     </div>
   );
@@ -338,7 +338,7 @@ const RecommendationCard = ({ item, onPlan, color, safeRender }: any) => {
   const colors: any = { indigo: 'bg-indigo-50 text-indigo-600 border-indigo-100', emerald: 'bg-emerald-50 text-emerald-600 border-emerald-100' };
   const btns: any = { indigo: 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-100', emerald: 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-100' };
   return (
-    <div className={`p-6 rounded-[2.5rem] border group hover:shadow-lg transition-all duration-500 flex flex-col mb-4 ${colors[color]}`}>
+    <div className={`p-3 md:p-6 rounded-[2.5rem] border group hover:shadow-lg transition-all duration-500 flex flex-col mb-4 ${colors[color]}`}>
       <div className="flex-1 mb-4">
           <p className="text-xs font-black text-slate-800 uppercase tracking-tight leading-snug">{safeRender(item.name, "Item Rekomendasi")}</p>
           <div className="flex flex-wrap gap-4 mt-3">

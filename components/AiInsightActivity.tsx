@@ -73,7 +73,7 @@ const AiInsightActivity: React.FC<AiInsightActivityProps> = ({ data, onUpdateIns
   }, [availableDatesMap, selectedYear]);
 
   const availableWeeks = useMemo(() => {
-    if (!selectedYear || !selectedMonth || !availableDatesMap[selectedYear][selectedMonth]) return [];
+    if (!selectedYear || !selectedMonth || !availableDatesMap[selectedYear] || !availableDatesMap[selectedYear][selectedMonth]) return [];
     return Array.from(availableDatesMap[selectedYear][selectedMonth]).sort();
   }, [availableDatesMap, selectedYear, selectedMonth]);
 
@@ -255,8 +255,8 @@ const AiInsightActivity: React.FC<AiInsightActivityProps> = ({ data, onUpdateIns
   );
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700 pb-20 relative">
-      <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+    <div className="space-y-4 md:space-y-8 animate-in fade-in duration-700 pb-20 relative">
+      <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 md:gap-6">
         <div>
           <h2 className="text-3xl font-black text-slate-900 tracking-tight uppercase">AI Insight Activity</h2>
           <p className="text-slate-500 font-medium italic">"Resume performa cerdas untuk refleksi diri dan bukti kontribusi."</p>
@@ -280,11 +280,11 @@ const AiInsightActivity: React.FC<AiInsightActivityProps> = ({ data, onUpdateIns
       {/* PREMIUM SHIELD OVERLAY (FOR EXPIRED TRIAL) */}
       {isExpired && (
         <div className="absolute inset-0 z-[150] flex flex-col items-center justify-center bg-white/20 backdrop-blur-lg rounded-[4rem] animate-in fade-in duration-1000 p-12 text-center border-4 border-dashed border-indigo-100">
-           <div className="w-24 h-24 bg-indigo-600 text-white rounded-[2.5rem] flex items-center justify-center text-4xl shadow-2xl shadow-indigo-200 mb-8 animate-bounce">
+           <div className="w-24 h-24 bg-indigo-600 text-white rounded-[2.5rem] flex items-center justify-center text-4xl shadow-2xl shadow-indigo-200 mb-4 md:mb-8 animate-bounce">
               <i className="bi bi-rocket-takeoff-fill"></i>
            </div>
            <h3 className="text-3xl lg:text-4xl font-black text-slate-900 uppercase tracking-tighter mb-4">Lanjutkan Analisis Karier?</h3>
-           <p className="text-slate-500 font-bold text-lg max-w-lg mb-10 leading-relaxed italic">"Masa trial Anda telah usai. Data Anda kini cukup banyak untuk dianalisis secara mendalam. Jangan biarkan pola pertumbuhan Anda terputus!"</p>
+           <p className="text-slate-500 font-bold text-lg max-w-lg mb-6 md:mb-10 leading-relaxed italic">"Masa trial Anda telah usai. Data Anda kini cukup banyak untuk dianalisis secara mendalam. Jangan biarkan pola pertumbuhan Anda terputus!"</p>
            <button 
             onClick={onUpgrade}
             className="px-12 py-5 bg-indigo-600 text-white font-black rounded-[2rem] uppercase tracking-[0.2em] text-xs shadow-2xl hover:bg-indigo-700 transition-all active:scale-95"
@@ -295,8 +295,8 @@ const AiInsightActivity: React.FC<AiInsightActivityProps> = ({ data, onUpdateIns
         </div>
       )}
 
-      <div className={`grid grid-cols-1 lg:grid-cols-12 gap-8 ${isExpired ? 'blur-sm grayscale opacity-30 pointer-events-none' : ''}`}>
-        <div className="lg:col-span-4 bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 flex flex-col justify-between">
+      <div className={`grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-8 ${isExpired ? 'blur-sm grayscale opacity-30 pointer-events-none' : ''}`}>
+        <div className="lg:col-span-4 bg-white p-4 md:p-8 rounded-[2.5rem] shadow-sm border border-slate-100 flex flex-col justify-between">
           <div>
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-6">Pilih Konteks Data</p>
             <div className="space-y-3">
@@ -308,8 +308,8 @@ const AiInsightActivity: React.FC<AiInsightActivityProps> = ({ data, onUpdateIns
           </div>
         </div>
 
-        <div className="lg:col-span-8 bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100">
-           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+        <div className="lg:col-span-8 bg-white p-4 md:p-8 rounded-[2.5rem] shadow-sm border border-slate-100">
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 mb-4 md:mb-8">
               <div>
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Audiens Laporan</p>
                 <div className="flex bg-slate-100 p-1 rounded-2xl">
@@ -348,8 +348,8 @@ const AiInsightActivity: React.FC<AiInsightActivityProps> = ({ data, onUpdateIns
 
       {/* Rest of the UI remains original but will be blurred if isExpired is true */}
       <div className={`${isExpired ? 'blur-sm grayscale opacity-30 pointer-events-none' : ''}`}>
-        <div className="bg-[#0f172a] p-10 rounded-[3rem] text-white shadow-2xl relative overflow-hidden">
-           <div className="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-8 text-center items-center">
+        <div className="bg-[#0f172a] p-4 md:p-10 rounded-[3rem] text-white shadow-2xl relative overflow-hidden">
+           <div className="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8 text-center items-center">
               <div className="space-y-2">
                  <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">Tugas Selesai</p>
                  <p className="text-6xl font-black text-[#10b981] tracking-tighter">{taskStats.selesai}</p>
@@ -366,9 +366,9 @@ const AiInsightActivity: React.FC<AiInsightActivityProps> = ({ data, onUpdateIns
         </div>
 
         {insightResult && (
-          <div className="animate-in zoom-in duration-500 space-y-10 mt-10">
-            <div className="bg-white p-10 lg:p-14 rounded-[4rem] shadow-2xl border border-slate-100">
-              <div className="flex flex-col md:flex-row justify-between items-start mb-8 gap-8">
+          <div className="animate-in zoom-in duration-500 space-y-3 md:space-y-6 md:space-y-10 mt-6 md:mt-10">
+            <div className="bg-white p-4 md:p-10 lg:p-14 rounded-[4rem] shadow-2xl border border-slate-100">
+              <div className="flex flex-col md:flex-row justify-between items-start mb-4 md:mb-8 gap-4 md:gap-8">
                  <div className="space-y-4">
                     <h3 className="text-3xl lg:text-4xl font-black text-slate-900 tracking-tighter uppercase leading-none break-words">{insightResult.title}</h3>
                     <div className="flex flex-wrap gap-3">
@@ -380,7 +380,7 @@ const AiInsightActivity: React.FC<AiInsightActivityProps> = ({ data, onUpdateIns
               </div>
               <div className="space-y-12">
                 {/* Executive Summary */}
-                <div className="space-y-6">
+                <div className="space-y-3 md:space-y-6">
                   <div className="flex items-center gap-3">
                     <div className="w-1.5 h-8 bg-indigo-600 rounded-full"></div>
                     <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Executive Summary</h4>
@@ -392,9 +392,9 @@ const AiInsightActivity: React.FC<AiInsightActivityProps> = ({ data, onUpdateIns
 
                 {/* Metrics Grid */}
                 {insightResult.metrics && insightResult.metrics.length > 0 && (
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
                     {insightResult.metrics.map((metric: any, i: number) => (
-                      <div key={i} className="bg-slate-50 p-6 rounded-3xl border border-slate-100 text-center space-y-2">
+                      <div key={i} className="bg-slate-50 p-3 md:p-6 rounded-3xl border border-slate-100 text-center space-y-2">
                         <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{metric.label}</p>
                         <p className="text-2xl font-black text-slate-900">{metric.value}</p>
                       </div>
@@ -403,14 +403,14 @@ const AiInsightActivity: React.FC<AiInsightActivityProps> = ({ data, onUpdateIns
                 )}
 
                 {/* Detailed Sections */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-10">
                   {insightResult.sections?.map((section: any, i: number) => (
                     <div key={i} className="space-y-4">
                       <h5 className="text-xs font-black text-slate-900 uppercase tracking-widest flex items-center gap-3">
                         <span className="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-[10px]">{i + 1}</span>
                         {section.label}
                       </h5>
-                      <div className="bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100">
+                      <div className="bg-slate-50/50 p-3 md:p-6 rounded-[2rem] border border-slate-100">
                         <p className="text-sm text-slate-600 font-medium leading-relaxed">{section.content}</p>
                       </div>
                     </div>
@@ -419,16 +419,16 @@ const AiInsightActivity: React.FC<AiInsightActivityProps> = ({ data, onUpdateIns
 
                 {/* Detected Achievements */}
                 {insightResult.detectedAchievements && insightResult.detectedAchievements.length > 0 && (
-                  <div className="space-y-6 pt-6 border-t border-slate-50">
+                  <div className="space-y-3 md:space-y-6 pt-6 border-t border-slate-50">
                     <div className="flex items-center justify-between">
                       <h4 className="text-[10px] font-black text-emerald-600 uppercase tracking-[0.3em] flex items-center gap-3">
                         <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
                         Detected Potential Achievements
                       </h4>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6">
                       {insightResult.detectedAchievements.map((ach: any, i: number) => (
-                        <div key={i} className="bg-emerald-50/30 p-8 rounded-[2.5rem] border border-emerald-100/50 flex flex-col justify-between group hover:bg-emerald-50 transition-all">
+                        <div key={i} className="bg-emerald-50/30 p-4 md:p-8 rounded-[2.5rem] border border-emerald-100/50 flex flex-col justify-between group hover:bg-emerald-50 transition-all">
                           <div className="space-y-4">
                             <div className="flex justify-between items-start">
                               <span className="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-[8px] font-black uppercase tracking-widest">{ach.category}</span>
@@ -453,8 +453,8 @@ const AiInsightActivity: React.FC<AiInsightActivityProps> = ({ data, onUpdateIns
                 )}
 
                 {/* AI Reflection */}
-                <div className="bg-slate-900 p-10 lg:p-14 rounded-[3.5rem] text-white relative overflow-hidden">
-                  <div className="relative z-10 space-y-6">
+                <div className="bg-slate-900 p-4 md:p-10 lg:p-14 rounded-[3.5rem] text-white relative overflow-hidden">
+                  <div className="relative z-10 space-y-3 md:space-y-6">
                     <div className="flex items-center gap-4">
                       <span className="text-3xl">💡</span>
                       <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">AI Strategic Reflection</h4>

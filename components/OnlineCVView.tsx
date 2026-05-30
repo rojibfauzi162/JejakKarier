@@ -14,11 +14,11 @@ const OnlineCVView: React.FC<OnlineCVViewProps> = ({ slug, initialData }) => {
   // Jika tidak aktif, tampilkan 404 sederhana
   if (!config.isActive || config.username !== slug) {
     return (
-      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-6 text-center text-white font-sans">
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-3 md:p-6 text-center text-white font-sans">
         <div className="w-20 h-20 bg-rose-500/20 text-rose-500 rounded-3xl flex items-center justify-center text-4xl mb-6">🔒</div>
         <h1 className="text-4xl font-black tracking-tight mb-2">Profile not available</h1>
-        <p className="text-slate-500 max-w-sm mx-auto mb-8 font-medium">Halaman yang Anda cari sedang offline atau belum dipublikasikan oleh pemiliknya.</p>
-        <button onClick={() => window.location.href = '/'} className="px-8 py-4 bg-white text-slate-900 font-black rounded-2xl uppercase tracking-widest text-[10px]">Back to Platform</button>
+        <p className="text-slate-500 max-w-sm mx-auto mb-4 md:mb-8 font-medium">Halaman yang Anda cari sedang offline atau belum dipublikasikan oleh pemiliknya.</p>
+        <button onClick={() => window.location.href = '/'} className="px-5 py-3 md:px-8 md:py-4 bg-white text-slate-900 font-black rounded-2xl uppercase tracking-widest text-[10px]">Back to Platform</button>
       </div>
     );
   }

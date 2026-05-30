@@ -74,9 +74,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ stats, users, onBulkFix
   };
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-3 md:space-y-6 md:space-y-10">
       {/* Filters Bar */}
-      <div className="bg-white p-6 rounded-[2.5rem] shadow-sm border border-slate-100 flex flex-wrap gap-4 items-center">
+      <div className="bg-white p-3 md:p-6 rounded-[2.5rem] shadow-sm border border-slate-100 flex flex-wrap gap-4 items-center">
          <div className="flex items-center gap-3">
             <span className="text-[10px] font-black uppercase text-slate-400">Filter:</span>
             <select 
@@ -116,17 +116,17 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ stats, users, onBulkFix
          </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
          <AdminStatCard title="User Aktif" value={financialStats.activeUsers} sub="Member Premium" icon="⭐" color="blue" />
          <AdminStatCard title="Churn Rate" value={`${financialStats.churnRate}%`} sub="Tingkat Berhenti" icon="📉" color="rose" />
          <AdminStatCard title="Sudah Bayar" value={financialStats.paidCount} sub="Transaksi Sukses" icon="💰" color="emerald" />
          <AdminStatCard title="Belum Bayar" value={financialStats.unpaidCount} sub="Invoice Pending" icon="⏳" color="amber" />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-8">
          {/* Trend Pendapatan Manual */}
-         <div className="lg:col-span-8 bg-white p-10 rounded-[3rem] shadow-sm border border-slate-100">
-            <div className="flex justify-between items-center mb-8">
+         <div className="lg:col-span-8 bg-white p-4 md:p-10 rounded-[3rem] shadow-sm border border-slate-100">
+            <div className="flex justify-between items-center mb-4 md:mb-8">
                <h4 className="text-sm font-black uppercase text-slate-900">Trend Pendapatan (Manual)</h4>
                <span className="text-[9px] font-black text-emerald-500 bg-emerald-50 px-3 py-1 rounded-full tracking-widest uppercase">Last 7 Days</span>
             </div>
@@ -144,8 +144,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ stats, users, onBulkFix
          </div>
 
          {/* Status Pembayaran Pie Chart */}
-         <div className="lg:col-span-4 bg-white p-10 rounded-[3rem] shadow-sm border border-slate-100 flex flex-col items-center">
-            <h4 className="text-sm font-black uppercase text-slate-900 mb-8 self-start">Rasio Pembayaran</h4>
+         <div className="lg:col-span-4 bg-white p-4 md:p-10 rounded-[3rem] shadow-sm border border-slate-100 flex flex-col items-center">
+            <h4 className="text-sm font-black uppercase text-slate-900 mb-4 md:mb-8 self-start">Rasio Pembayaran</h4>
             <div className="h-64 w-full">
                <ResponsiveContainer width="100%" height="100%">
                   <PieChart>

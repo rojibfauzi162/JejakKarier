@@ -110,7 +110,7 @@ const CareerPlanner: React.FC<CareerPlannerProps> = ({ paths, appData, onAddPath
   const limit = appData?.planLimits?.careerPath || 10;
 
   return (
-    <div className="space-y-8 animate-in slide-in-from-right duration-500 pb-20">
+    <div className="space-y-4 md:space-y-8 animate-in slide-in-from-right duration-500 pb-20">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">Career Path Planner</h2>
@@ -128,7 +128,7 @@ const CareerPlanner: React.FC<CareerPlannerProps> = ({ paths, appData, onAddPath
 
       {/* INFO KUOTA (QUOTA BANNER) - HIDDEN FOR PRO USERS */}
       {appData?.plan === SubscriptionPlan.FREE && (
-        <div className="bg-indigo-50 border border-indigo-100 p-5 rounded-[2rem] flex flex-col sm:flex-row justify-between items-center gap-6 shadow-sm mx-1">
+        <div className="bg-indigo-50 border border-indigo-100 p-5 rounded-[2rem] flex flex-col sm:flex-row justify-between items-center gap-3 md:gap-6 shadow-sm mx-1">
            <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-indigo-600 text-white rounded-2xl flex items-center justify-center text-xl shadow-lg shadow-indigo-200">
                  <i className="bi bi-rocket-takeoff-fill"></i>
@@ -150,19 +150,19 @@ const CareerPlanner: React.FC<CareerPlannerProps> = ({ paths, appData, onAddPath
       )}
 
       {/* Desktop Spreadsheet Table */}
-      <div className="hidden lg:block bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden overflow-x-auto">
+      <div className="hidden lg:block bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-x-auto">
         <table className="w-full text-left border-collapse min-w-[1200px]">
           <thead>
             <tr className="bg-emerald-500 text-white select-none">
-              <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest border-r border-white/10">Target Jabatan <FilterIcon /></th>
-              <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest border-r border-white/10 text-center">Jenis Karir <FilterIcon /></th>
-              <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest border-r border-white/10 text-center">Perkiraan Tahun <FilterIcon /></th>
-              <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest border-r border-white/10 text-center bg-blue-600">GAP YEAR <FilterIcon /></th>
-              <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest border-r border-white/10 text-center bg-blue-500">USIA KAMU <FilterIcon /></th>
-              <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest border-r border-white/10">Skill & Target Level <FilterIcon /></th>
-              <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest border-r border-white/10 text-center bg-rose-500">SKILL GAP (%) <FilterIcon /></th>
-              <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest border-r border-white/10">Langkah Pengembangan <FilterIcon /></th>
-              <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-center">Deadline Aksi</th>
+              <th className="px-4 py-3 md:px-6 md:py-4 text-[10px] font-black uppercase tracking-widest border-r border-white/10">Target Jabatan <FilterIcon /></th>
+              <th className="px-4 py-3 md:px-6 md:py-4 text-[10px] font-black uppercase tracking-widest border-r border-white/10 text-center">Jenis Karir <FilterIcon /></th>
+              <th className="px-4 py-3 md:px-6 md:py-4 text-[10px] font-black uppercase tracking-widest border-r border-white/10 text-center">Perkiraan Tahun <FilterIcon /></th>
+              <th className="px-4 py-3 md:px-6 md:py-4 text-[10px] font-black uppercase tracking-widest border-r border-white/10 text-center bg-blue-600">GAP YEAR <FilterIcon /></th>
+              <th className="px-4 py-3 md:px-6 md:py-4 text-[10px] font-black uppercase tracking-widest border-r border-white/10 text-center bg-blue-500">USIA KAMU <FilterIcon /></th>
+              <th className="px-4 py-3 md:px-6 md:py-4 text-[10px] font-black uppercase tracking-widest border-r border-white/10">Skill & Target Level <FilterIcon /></th>
+              <th className="px-4 py-3 md:px-6 md:py-4 text-[10px] font-black uppercase tracking-widest border-r border-white/10 text-center bg-rose-500">SKILL GAP (%) <FilterIcon /></th>
+              <th className="px-4 py-3 md:px-6 md:py-4 text-[10px] font-black uppercase tracking-widest border-r border-white/10">To Do List <FilterIcon /></th>
+              <th className="px-4 py-3 md:px-6 md:py-4 text-[10px] font-black uppercase tracking-widest text-center">Deadline Aksi</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
@@ -236,7 +236,7 @@ const CareerPlanner: React.FC<CareerPlannerProps> = ({ paths, appData, onAddPath
       </div>
 
       {/* Mobile Grid/Card View */}
-      <div className="lg:hidden space-y-6">
+      <div className="lg:hidden space-y-3 md:space-y-6">
         {paths.map((path) => {
           const gapYear = path.targetYear - currentYear;
           const targetAge = userAge + (gapYear < 0 ? 0 : gapYear);
@@ -245,7 +245,7 @@ const CareerPlanner: React.FC<CareerPlannerProps> = ({ paths, appData, onAddPath
           const shouldStrike = isAchieved || overdue;
 
           return (
-            <div key={path.id} className={`p-8 rounded-[2.5rem] border border-slate-100 shadow-sm relative overflow-hidden group ${shouldStrike ? 'bg-slate-50 opacity-80' : 'bg-white'}`}>
+            <div key={path.id} className={`p-4 md:p-8 rounded-[2.5rem] border border-slate-100 shadow-sm relative overflow-hidden group ${shouldStrike ? 'bg-slate-50 opacity-80' : 'bg-white'}`}>
               <div className="flex justify-between items-start mb-6">
                 <div>
                   <h3 className={`text-xl font-black tracking-tight ${shouldStrike ? 'text-slate-400 line-through' : 'text-slate-800'}`}>
@@ -313,10 +313,10 @@ const CareerPlanner: React.FC<CareerPlannerProps> = ({ paths, appData, onAddPath
       
       {/* Skill Gap Detail Modal */}
       {selectedPathForGap && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[110] p-4">
-          <div className="bg-white w-full max-w-3xl rounded-[2.5rem] shadow-2xl p-8 animate-in zoom-in duration-300 max-h-[90vh] overflow-y-auto no-scrollbar relative">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[110] p-0 sm:p-4">
+          <div className="bg-white w-full max-w-3xl rounded-[1.5rem] md:rounded-[2.5rem] shadow-2xl p-4 sm:p-6 md:p-8 animate-in zoom-in duration-300 max-h-[90vh] overflow-y-auto no-scrollbar relative">
             <button onClick={() => setSelectedPathForGap(null)} className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center bg-slate-50 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors z-[60]"><i className="bi bi-x-lg"></i></button>
-            <div className="mb-8">
+            <div className="mb-4 md:mb-8">
               <div>
                 <h3 className="text-2xl font-black text-slate-900 tracking-tight">Detail Skill Gap</h3>
                 <p className="text-sm text-slate-500 font-bold uppercase tracking-widest mt-1">{selectedPathForGap.targetPosition}</p>
@@ -327,10 +327,10 @@ const CareerPlanner: React.FC<CareerPlannerProps> = ({ paths, appData, onAddPath
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-slate-50">
-                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Skill Name</th>
-                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">Current Level</th>
-                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">Target Level</th>
-                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">Status</th>
+                    <th className="px-4 py-3 md:px-6 md:py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Skill Name</th>
+                    <th className="px-4 py-3 md:px-6 md:py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">Current Level</th>
+                    <th className="px-4 py-3 md:px-6 md:py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">Target Level</th>
+                    <th className="px-4 py-3 md:px-6 md:py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">Status</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -352,20 +352,20 @@ const CareerPlanner: React.FC<CareerPlannerProps> = ({ paths, appData, onAddPath
 
                     return (
                       <tr key={idx} className="hover:bg-slate-50/50 transition-colors">
-                        <td className="px-6 py-4">
+                        <td className="px-4 py-3 md:px-6 md:py-4">
                           <p className="text-sm font-black text-slate-800">{req.name}</p>
                         </td>
-                        <td className="px-6 py-4 text-center">
+                        <td className="px-4 py-3 md:px-6 md:py-4 text-center">
                           <div className="flex justify-center">
                             {renderStars(currentLevel)}
                           </div>
                         </td>
-                        <td className="px-6 py-4 text-center">
+                        <td className="px-4 py-3 md:px-6 md:py-4 text-center">
                           <div className="flex justify-center">
                             {renderStars(targetLevel)}
                           </div>
                         </td>
-                        <td className="px-6 py-4 text-center">
+                        <td className="px-4 py-3 md:px-6 md:py-4 text-center">
                           <span className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${statusColor}`}>
                             {statusLabel}
                           </span>
@@ -377,7 +377,7 @@ const CareerPlanner: React.FC<CareerPlannerProps> = ({ paths, appData, onAddPath
               </table>
             </div>
 
-            <div className="mt-8 p-6 bg-indigo-50 rounded-3xl border border-indigo-100">
+            <div className="mt-8 p-3 md:p-6 bg-indigo-50 rounded-3xl border border-indigo-100">
               <h4 className="text-sm font-black text-indigo-900 uppercase tracking-widest mb-2">Analisis Strategis</h4>
               <p className="text-xs text-indigo-700 leading-relaxed font-medium">
                 Kamu memiliki gap sebesar <span className="font-black text-indigo-900">{calculateSkillGap(selectedPathForGap.requiredSkills)}%</span> untuk posisi ini. 
@@ -397,10 +397,10 @@ const CareerPlanner: React.FC<CareerPlannerProps> = ({ paths, appData, onAddPath
 
       {/* Form Modal */}
       {isFormOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[100] p-4">
-          <div className="bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl p-10 animate-in zoom-in duration-300 max-h-[90vh] overflow-y-auto no-scrollbar relative">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[100] p-0 sm:p-4">
+          <div className="bg-white w-full max-w-2xl rounded-[1.5rem] md:rounded-[2.5rem] shadow-2xl p-4 sm:p-6 md:p-10 animate-in zoom-in duration-300 max-h-[90vh] overflow-y-auto no-scrollbar relative">
             <button onClick={() => setIsFormOpen(false)} className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center bg-slate-50 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors z-[60]"><i className="bi bi-x-lg"></i></button>
-            <h3 className="text-3xl font-black text-slate-900 tracking-tight mb-8">
+            <h3 className="text-3xl font-black text-slate-900 tracking-tight mb-4 md:mb-8">
               {editingPath ? 'Update Target Karir' : 'Target Karir Baru'}
             </h3>
             
@@ -458,14 +458,14 @@ const CareerForm: React.FC<{
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3 md:space-y-6">
       <datalist id="available-skills">
         {availableSkills.map((s, i) => (
           <option key={i} value={s} />
         ))}
       </datalist>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6">
         <div className="md:col-span-2">
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block ml-1">Target Jabatan</label>
           <input 
@@ -553,7 +553,7 @@ const CareerForm: React.FC<{
           <input type="month" className="w-full px-5 py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold" value={formData.actionDeadline || ''} onChange={e => setFormData({ ...formData, actionDeadline: e.target.value })} />
         </div>
         <div className="md:col-span-2">
-          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block ml-1">Langkah Pengembangan</label>
+          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block ml-1">To Do List</label>
           <textarea rows={3} placeholder="Apa langkah konkret yang akan kamu ambil? (Contoh: Ambil sertifikasi PMP, Selesaikan kursus Python di Coursera)" className="w-full px-5 py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold resize-none focus:border-indigo-500 transition-colors" value={formData.developmentPlan || ''} onChange={e => setFormData({ ...formData, developmentPlan: e.target.value })} />
         </div>
       </div>

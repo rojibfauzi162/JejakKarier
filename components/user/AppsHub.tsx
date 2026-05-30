@@ -14,7 +14,7 @@ const AppsHub: React.FC<AppsHubProps> = ({ onNavigate }) => {
         { id: 'calendar', label: 'Calendar', icon: 'bi-calendar3', color: 'bg-indigo-50 text-indigo-600' }, // NEW ITEM
         { id: 'work_reflection', label: 'Refleksi Kerja', icon: 'bi-chat-quote', color: 'bg-rose-50 text-rose-600' },
         { id: 'reports', label: 'Laporan pekerjaan', icon: 'bi-graph-up', color: 'bg-blue-50 text-blue-600' },
-        { id: 'todo_list', label: 'Langkah Pengembangan', icon: 'bi-check2-square', color: 'bg-indigo-50 text-indigo-600' },
+        { id: 'todo_list', label: 'To Do List', icon: 'bi-check2-square', color: 'bg-indigo-50 text-indigo-600' },
         { id: 'mobile_stats', label: 'Data Statistik', icon: 'bi-bar-chart-line', color: 'bg-emerald-50 text-emerald-600' },
         { id: 'ai_insights', label: 'AI Insights', icon: 'bi-cpu', color: 'bg-purple-50 text-purple-600' },
         { id: 'reviews', label: 'Monthly Review', icon: 'bi-calendar-check', color: 'bg-amber-50 text-amber-600' },
@@ -52,14 +52,14 @@ const AppsHub: React.FC<AppsHubProps> = ({ onNavigate }) => {
   ];
 
   return (
-    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-24">
+    <div className="space-y-3 md:space-y-6 md:space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-24">
       <header className="px-1">
         <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Main Hub</h2>
         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Akses seluruh fitur dalam satu layar.</p>
       </header>
 
       {categories.map((cat, idx) => (
-        <div key={idx} className="space-y-6">
+        <div key={idx} className="space-y-3 md:space-y-6">
           <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] px-2">{cat.title}</h3>
           <div className="grid grid-cols-4 gap-y-8 gap-x-4">
             {cat.items.map((item, i) => (

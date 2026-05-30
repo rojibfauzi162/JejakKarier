@@ -35,7 +35,7 @@ const TrainingList: React.FC = () => {
           <p className="text-slate-600 max-w-2xl mx-auto">Join our expert-led trainings and workshops to accelerate your career growth.</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">
           {trainings.map(training => (
             <div key={training.id} className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all border border-slate-100 flex flex-col h-full">
               <div className="h-48 bg-slate-200 relative">
@@ -52,7 +52,7 @@ const TrainingList: React.FC = () => {
                    </span>
                 </div>
               </div>
-              <div className="p-6 flex-1 flex flex-col">
+              <div className="p-3 md:p-6 flex-1 flex flex-col">
                 <div className="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
                   <i className="bi bi-calendar-event"></i>
                   {new Date(training.date).toLocaleDateString()} • {training.time}

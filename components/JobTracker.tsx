@@ -149,8 +149,8 @@ const JobTracker: React.FC<JobTrackerProps> = ({ applications, careerEvents, onA
   const limit = appData?.planLimits?.jobTracker || 10;
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-700 pb-24 lg:pb-16">
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+    <div className="space-y-3 md:space-y-6 animate-in fade-in duration-700 pb-24 lg:pb-16">
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-6">
         <div>
           <h2 className="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight uppercase">Loker Tracker</h2>
           <p className="text-slate-500 mt-1 font-medium text-xs lg:text-sm">Monitoring status lamaran kerja secara real-time.</p>
@@ -162,7 +162,7 @@ const JobTracker: React.FC<JobTrackerProps> = ({ applications, careerEvents, onA
 
       {/* INFO KUOTA (QUOTA BANNER) - HIDDEN FOR PRO USERS */}
       {appData?.plan === SubscriptionPlan.FREE && (
-        <div className="bg-indigo-50 border border-indigo-100 p-5 rounded-[2rem] flex flex-col sm:flex-row justify-between items-center gap-6 mx-1 shadow-sm">
+        <div className="bg-indigo-50 border border-indigo-100 p-5 rounded-[2rem] flex flex-col sm:flex-row justify-between items-center gap-3 md:gap-6 mx-1 shadow-sm">
            <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-indigo-600 text-white rounded-2xl flex items-center justify-center text-xl shadow-lg shadow-indigo-200">
                  <i className="bi bi-briefcase-fill"></i>
@@ -219,7 +219,7 @@ const JobTracker: React.FC<JobTrackerProps> = ({ applications, careerEvents, onA
       </div>
 
       {/* Responsive Content: Table for Desktop, Cards for Mobile */}
-      <div className="hidden lg:block bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden overflow-x-auto">
+      <div className="hidden lg:block bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-x-auto">
         <table className="w-full text-left border-collapse min-w-[1100px] table-fixed">
           <thead>
             <tr className="bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest">
@@ -227,13 +227,13 @@ const JobTracker: React.FC<JobTrackerProps> = ({ applications, careerEvents, onA
                 <input type="checkbox" onChange={handleSelectAll} checked={selectedIds.size === filteredApplications.length && filteredApplications.length > 0} className="w-4 h-4 rounded" />
               </th>
               <th className="px-4 py-4 w-12 text-center bg-blue-500 border-r border-white/10">No</th>
-              <th className="px-6 py-4 w-44 border-r border-white/10">Posisi</th>
-              <th className="px-6 py-4 w-44 border-r border-white/10">Perusahaan</th>
-              <th className="px-6 py-4 w-40 border-r border-white/10">Lokasi</th>
-              <th className="px-6 py-4 w-32 border-r border-white/10 text-center">Tgl Lamar</th>
-              <th className="px-6 py-4 w-48 border-r border-white/10 text-center">Status</th>
-              <th className="px-6 py-4 w-52">Catatan</th>
-              <th className="px-8 py-4 w-36 text-right">Aksi</th>
+              <th className="px-4 py-3 md:px-6 md:py-4 w-44 border-r border-white/10">Posisi</th>
+              <th className="px-4 py-3 md:px-6 md:py-4 w-44 border-r border-white/10">Perusahaan</th>
+              <th className="px-4 py-3 md:px-6 md:py-4 w-40 border-r border-white/10">Lokasi</th>
+              <th className="px-4 py-3 md:px-6 md:py-4 w-32 border-r border-white/10 text-center">Tgl Lamar</th>
+              <th className="px-4 py-3 md:px-6 md:py-4 w-48 border-r border-white/10 text-center">Status</th>
+              <th className="px-4 py-3 md:px-6 md:py-4 w-52">Catatan</th>
+              <th className="px-5 py-3 md:px-8 md:py-4 w-36 text-right">Aksi</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
@@ -294,7 +294,7 @@ const JobTracker: React.FC<JobTrackerProps> = ({ applications, careerEvents, onA
           const isSchedulable = (app.status === JobStatus.PERLU_FOLLOW_UP || app.status === JobStatus.WAWANCARA) && !isActuallyScheduled;
           
           return (
-            <div key={app.id} className="bg-white rounded-[2rem] p-6 border border-slate-100 shadow-sm relative group overflow-hidden">
+            <div key={app.id} className="bg-white rounded-[2rem] p-3 md:p-6 border border-slate-100 shadow-sm relative group overflow-hidden">
               <div className="flex justify-between items-start mb-4">
                 <div className="flex items-center gap-3">
                   <input type="checkbox" checked={selectedIds.has(app.id)} onChange={() => toggleSelect(app.id)} className="w-5 h-5 rounded-lg" />
@@ -342,10 +342,10 @@ const JobTracker: React.FC<JobTrackerProps> = ({ applications, careerEvents, onA
 
       {/* SCHEDULE CONFIRMATION MODAL */}
       {isScheduleModalOpen && schedulingApp && (
-        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md flex items-center justify-center z-[1000] p-4">
-           <div className="bg-white w-full max-w-md rounded-[3rem] shadow-2xl p-10 animate-in zoom-in duration-300 relative">
+        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md flex items-center justify-center z-[1000] p-0 sm:p-4">
+           <div className="bg-white w-full max-w-md rounded-[2rem] md:rounded-[3rem] shadow-2xl p-4 sm:p-6 md:p-10 animate-in zoom-in duration-300 relative">
               <button onClick={() => setIsScheduleModalOpen(false)} className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center bg-slate-50 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors z-10"><i className="bi bi-x-lg"></i></button>
-              <div className="text-center mb-8">
+              <div className="text-center mb-4 md:mb-8">
                  <div className="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl shadow-inner">
                     <i className="bi bi-calendar-event"></i>
                  </div>
@@ -354,7 +354,7 @@ const JobTracker: React.FC<JobTrackerProps> = ({ applications, careerEvents, onA
                  <p className="font-black text-indigo-600 text-sm mt-1">{schedulingApp.position} @ {schedulingApp.company}</p>
               </div>
 
-              <div className="space-y-6">
+              <div className="space-y-3 md:space-y-6">
                  <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Pilih Tanggal</label>
@@ -377,8 +377,8 @@ const JobTracker: React.FC<JobTrackerProps> = ({ applications, careerEvents, onA
 
       {/* MODAL FORM: Tambah & Edit */}
       {isFormOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[500] p-4">
-          <div className="bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl p-8 lg:p-10 animate-in zoom-in duration-300 max-h-[90vh] overflow-y-auto no-scrollbar relative">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[500] p-0 sm:p-4">
+          <div className="bg-white w-full max-w-2xl rounded-[1.5rem] md:rounded-[2.5rem] shadow-2xl p-3 md:p-8 lg:p-10 animate-in zoom-in duration-300 max-h-[90vh] overflow-y-auto no-scrollbar relative">
             <button onClick={() => setIsFormOpen(false)} className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center bg-slate-50 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors z-[60]"><i className="bi bi-x-lg"></i></button>
             <JobForm 
               initialData={editingItem}
@@ -424,7 +424,7 @@ const JobForm: React.FC<{ initialData: JobApplication | null; onSubmit: (data: P
   });
 
   return (
-    <div className="space-y-6 lg:space-y-8">
+    <div className="space-y-3 md:space-y-6 lg:space-y-4 md:space-y-8">
       <div>
         <h3 className="text-xl lg:text-2xl font-black text-slate-900 tracking-tight">{initialData ? 'Update Record' : 'Record New Application'}</h3>
         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Lacak journey pencarian kerjamu</p>

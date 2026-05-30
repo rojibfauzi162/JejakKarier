@@ -44,7 +44,7 @@ const TrainingDetail: React.FC<TrainingDetailProps> = ({ id }) => {
                 <i className="bi bi-image text-6xl"></i>
               </div>
             )}
-            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-8 pt-24">
+            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 md:p-8 pt-24">
                <div className="flex gap-3 mb-3">
                  <span className="bg-indigo-600 text-white px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
                    {training.category}
@@ -62,8 +62,8 @@ const TrainingDetail: React.FC<TrainingDetailProps> = ({ id }) => {
             </div>
           </div>
 
-          <div className="p-8 md:p-12 grid grid-cols-1 md:grid-cols-3 gap-12">
-             <div className="md:col-span-2 space-y-8">
+          <div className="p-4 md:p-8 md:p-12 grid grid-cols-1 md:grid-cols-3 gap-12">
+             <div className="md:col-span-2 space-y-4 md:space-y-8">
                 <div>
                   <h3 className="text-xl font-bold text-slate-900 mb-4">About This Training</h3>
                   <p className="text-slate-600 leading-relaxed whitespace-pre-wrap">{training.description}</p>
@@ -81,8 +81,8 @@ const TrainingDetail: React.FC<TrainingDetailProps> = ({ id }) => {
                 </div>
              </div>
 
-             <div className="space-y-6">
-                <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 space-y-4">
+             <div className="space-y-3 md:space-y-6">
+                <div className="bg-slate-50 p-3 md:p-6 rounded-2xl border border-slate-100 space-y-4">
                    <div className="flex items-center gap-4">
                       <div className="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center"><i className="bi bi-calendar-event"></i></div>
                       <div>

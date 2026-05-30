@@ -11,8 +11,8 @@ interface PersonalProjectTrackerProps {
 
 const PersonalProjectTracker: React.FC<PersonalProjectTrackerProps> = ({ projects, onAdd, onUpdate, onDelete }) => {
   return (
-    <div className="space-y-8 animate-in fade-in duration-700 pb-24 lg:pb-20">
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+    <div className="space-y-4 md:space-y-8 animate-in fade-in duration-700 pb-24 lg:pb-20">
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-6">
         <h2 className="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight uppercase">Project Tracker</h2>
         <button className="px-6 py-3.5 bg-blue-600 text-white font-black rounded-2xl shadow-xl uppercase tracking-widest text-xs">+ Proyek Baru</button>
       </header>

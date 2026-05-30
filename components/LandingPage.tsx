@@ -171,7 +171,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
               </>
             )}
           </div>
-          <div className="flex items-center gap-8">
+          <div className="flex items-center gap-4 md:gap-8">
             <button onClick={onLogin} className="hidden md:block text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-indigo-600 transition-colors">Masuk</button>
             <button onClick={onStart} className="px-6 py-3 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:bg-black transition-all active:scale-95">Mulai Sekarang</button>
           </div>
@@ -181,7 +181,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
       {/* HERO SECTION */}
       <section className="pt-32 pb-16 px-6 lg:px-12 max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-          <div className="space-y-8">
+          <div className="space-y-4 md:space-y-8">
             <div className="inline-flex items-center gap-3 px-4 py-2 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-black uppercase tracking-widest border border-indigo-100">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
@@ -196,7 +196,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
               "Karier yang hebat tidak dibangun dalam semalam, tapi melalui setiap kontribusi harian yang tercatat secara cerdas."
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <button onClick={onStart} className="px-8 py-4 bg-indigo-600 text-white font-black rounded-[2rem] uppercase text-[10px] tracking-[0.2em] shadow-2xl shadow-indigo-100 hover:bg-indigo-700 transition-all flex items-center justify-center gap-4 group">
+              <button onClick={onStart} className="px-5 py-3 md:px-8 md:py-4 bg-indigo-600 text-white font-black rounded-[2rem] uppercase text-[10px] tracking-[0.2em] shadow-2xl shadow-indigo-100 hover:bg-indigo-700 transition-all flex items-center justify-center gap-4 group">
                 Buat Portofolio Anda 
                 <span className="group-hover:translate-x-2 transition-transform">→</span>
               </button>
@@ -214,13 +214,13 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
                    <div className="aspect-[4/5] rounded-[2.5rem] overflow-hidden shadow-2xl border-4 border-white bg-slate-100">
                       <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=600&auto=format&fit=crop" className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700" alt="Profesional Indonesia Wanita" />
                    </div>
-                   <div className="aspect-square rounded-[2.5rem] bg-indigo-600 p-6 flex flex-col justify-end text-white shadow-xl shadow-indigo-200">
+                   <div className="aspect-square rounded-[2.5rem] bg-indigo-600 p-3 md:p-6 flex flex-col justify-end text-white shadow-xl shadow-indigo-200">
                       <p className="text-[9px] font-black uppercase tracking-widest opacity-60 mb-1">Success Rate</p>
                       <p className="text-2xl font-black">94% <span className="text-[10px] font-bold block opacity-40">Career Improvement</span></p>
                    </div>
                 </div>
                 <div className="pt-8 space-y-4">
-                   <div className="aspect-square rounded-[2.5rem] bg-slate-900 p-6 flex flex-col justify-center items-center text-center text-white shadow-xl">
+                   <div className="aspect-square rounded-[2.5rem] bg-slate-900 p-3 md:p-6 flex flex-col justify-center items-center text-center text-white shadow-xl">
                       <div className="w-10 h-10 bg-white/10 rounded-2xl flex items-center justify-center text-lg mb-3 italic">✨</div>
                       <p className="text-[8px] font-black uppercase tracking-[0.2em] leading-relaxed italic opacity-80">"Data mengalahkan asumsi."</p>
                    </div>
@@ -238,7 +238,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
       <section className="py-24 bg-slate-50 relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-6 lg:px-12 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           <div className="space-y-12">
-            <div className="space-y-6">
+            <div className="space-y-3 md:space-y-6">
               <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-rose-600">The Struggle is Real</h2>
               <h3 className="text-3xl lg:text-5xl font-black text-slate-900 uppercase tracking-tight leading-tight">
                 Sering Merasa Kerja Sudah Capek, Tapi Karier <span className="text-rose-600">Gitu-Gitu Aja?</span>
@@ -248,7 +248,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
               </p>
             </div>
             
-            <div className="grid grid-cols-1 gap-6">
+            <div className="grid grid-cols-1 gap-3 md:gap-6">
               <PainPointCard 
                 title="Laporan Masih Manual & Berantakan" 
                 desc="Menghabiskan waktu berjam-jam hanya untuk merekap laporan harian, mingguan, hingga bulanan yang data-nya tercerai-berai." 
@@ -284,7 +284,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
                 </div>
              </div>
              {/* Floating Badge */}
-             <div className="absolute -bottom-6 -left-6 bg-white p-6 rounded-3xl shadow-2xl border border-slate-100 max-w-[200px] animate-bounce">
+             <div className="absolute -bottom-6 -left-6 bg-white p-3 md:p-6 rounded-3xl shadow-2xl border border-slate-100 max-w-[200px] animate-bounce">
                 <p className="text-[10px] font-black text-rose-600 uppercase mb-1">Career Alert</p>
                 <p className="text-xs font-bold text-slate-800">74% profesional lupa 60% pencapaian mereka dalam 1 tahun.</p>
              </div>
@@ -294,7 +294,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
 
       {/* INTRO SYSTEM SECTION */}
       <section className="py-32 bg-white text-center space-y-16 relative overflow-hidden">
-        <div className="max-w-4xl mx-auto px-6 space-y-8 relative z-10">
+        <div className="max-w-4xl mx-auto px-6 space-y-4 md:space-y-8 relative z-10">
           <div className="inline-block px-4 py-1.5 bg-slate-900 text-white rounded-xl text-[9px] font-black uppercase tracking-[0.3em]">Kenali Teman Karir Baru Anda</div>
           <h2 className="text-4xl lg:text-6xl font-black text-slate-900 uppercase tracking-tight leading-none">Kenalkan, FokusKarir.</h2>
           <p className="text-lg lg:text-2xl text-slate-600 font-medium leading-relaxed italic px-4">
@@ -342,15 +342,15 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
                  <h3 className="text-2xl lg:text-3xl font-black text-slate-900 uppercase tracking-tight">{cat.name}</h3>
                  <p className="text-sm lg:text-base text-slate-500 font-bold uppercase mt-1 tracking-wide">{cat.desc}</p>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">
                  {cat.features.map((f) => (
-                   <div key={f.id} className="bg-white p-8 lg:p-10 rounded-[3rem] border border-slate-100 shadow-sm hover:shadow-2xl transition-all duration-500 group flex flex-col justify-between hover:-translate-y-2">
+                   <div key={f.id} className="bg-white p-4 md:p-8 lg:p-10 rounded-[3rem] border border-slate-100 shadow-sm hover:shadow-2xl transition-all duration-500 group flex flex-col justify-between hover:-translate-y-2">
                       <div>
-                         <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl mb-8 group-hover:scale-110 transition-transform shadow-inner bg-indigo-50 text-indigo-600 border border-indigo-100">
+                         <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl mb-4 md:mb-8 group-hover:scale-110 transition-transform shadow-inner bg-indigo-50 text-indigo-600 border border-indigo-100">
                             <i className={`bi ${f.icon}`}></i>
                          </div>
                          <h4 className="text-base lg:text-lg font-black text-slate-900 uppercase tracking-tight mb-4 group-hover:text-indigo-600 transition-colors">{f.title}</h4>
-                         <p className="text-sm lg:text-base text-slate-500 font-medium leading-relaxed mb-10 italic">"{f.desc}"</p>
+                         <p className="text-sm lg:text-base text-slate-500 font-medium leading-relaxed mb-6 md:mb-10 italic">"{f.desc}"</p>
                       </div>
                       <button onClick={() => {
                            const url = landingConfig?.videoDemoLinks?.[f.id];
@@ -375,7 +375,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
              <p className="text-slate-500 font-medium italic">Ribuan profesional telah membuktikan bagaimana data merubah perjalanan karir mereka.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
              <TestimonialCard 
                 name="Budi Santoso" 
                 role="Tax Manager" 
@@ -405,7 +405,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
           <h3 className="text-3xl lg:text-4xl font-black tracking-tight text-slate-900 leading-none uppercase">Pilih Paket Masa Depan Anda.</h3>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 items-center">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 lg:gap-4 md:gap-8 items-center">
           {paidProducts.length > 0 ? (
             paidProducts.map((p) => {
               const monthlyPrice = p.durationDays >= 30 ? Math.round(p.price / (p.durationDays / 30)) : null;
@@ -444,9 +444,9 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
         </div>
 
         {/* SECTION: PREMIUM INCLUSIONS */}
-        <div className="mt-24 p-10 lg:p-16 bg-slate-900 rounded-[4rem] text-white shadow-2xl relative overflow-hidden animate-in fade-in duration-1000">
+        <div className="mt-24 p-4 md:p-10 lg:p-16 bg-slate-900 rounded-[4rem] text-white shadow-2xl relative overflow-hidden animate-in fade-in duration-1000">
            <div className="relative z-10">
-              <div className="text-center max-w-3xl mx-auto space-y-6 mb-16">
+              <div className="text-center max-w-3xl mx-auto space-y-3 md:space-y-6 mb-16">
                  <h3 className="text-2xl lg:text-4xl font-black uppercase tracking-tight">Semua Paket Premium Termasuk</h3>
                  <p className="text-slate-400 font-medium italic">Infrastruktur lengkap untuk mengakselerasi kualifikasi profesional Anda tanpa batasan teknis.</p>
               </div>
@@ -471,7 +471,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
       {/* FOOTER */}
       <footer className="py-20 border-t border-slate-100 bg-slate-50/50 px-6 lg:px-12 relative z-20">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-12 lg:gap-20">
-          <div className="md:col-span-4 space-y-6">
+          <div className="md:col-span-4 space-y-3 md:space-y-6">
             <div className="flex items-center gap-3">
               {landingConfig?.logoUrl || landingConfig?.logoDarkUrl ? (
                 <img src={landingConfig.logoUrl || landingConfig.logoDarkUrl} alt="Logo" className="max-h-10 w-auto object-contain" />
@@ -513,7 +513,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
             </div>
           </div>
 
-          <div className="md:col-span-2 space-y-6">
+          <div className="md:col-span-2 space-y-3 md:space-y-6">
             <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Navigasi</h4>
             <ul className="space-y-4">
               <li><button type="button" onClick={onLogin} className="text-sm font-bold text-slate-600 hover:text-indigo-600 transition-colors">Masuk Akun</button></li>
@@ -521,7 +521,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
             </ul>
           </div>
 
-          <div className="md:col-span-2 space-y-6">
+          <div className="md:col-span-2 space-y-3 md:space-y-6">
             <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Legalitas</h4>
             <ul className="space-y-4 relative z-30">
               <li>
@@ -545,7 +545,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
             </ul>
           </div>
 
-          <div className="md:col-span-4 space-y-6">
+          <div className="md:col-span-4 space-y-3 md:space-y-6">
              <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Connect With Us</h4>
              <div className="flex gap-4">
                 <a href={`https://wa.me/${landingConfig?.adminWhatsApp || '62895321367374'}`} target="_blank" rel="noreferrer" className="w-12 h-12 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-xl text-emerald-600 shadow-sm hover:shadow-lg transition-all"><i className="bi bi-whatsapp"></i></a>
@@ -558,9 +558,9 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
       </footer>
 
       {activeVideo && (
-        <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 lg:p-12 animate-in fade-in duration-300">
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center p-0 sm:p-4 lg:p-12 animate-in fade-in duration-300">
            <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-sm" onClick={() => setActiveVideo(null)}></div>
-           <div className="relative w-full max-w-5xl aspect-video bg-black rounded-[3rem] overflow-hidden shadow-2xl animate-in zoom-in duration-300 border-4 border-white/10">
+           <div className="relative w-full max-w-5xl aspect-video bg-black rounded-[2rem] md:rounded-[3rem] overflow-hidden shadow-2xl animate-in zoom-in duration-300 border-4 border-white/10">
               <button onClick={() => setActiveVideo(null)} className="absolute top-6 right-6 w-12 h-12 bg-white/10 hover:bg-white/20 text-white rounded-full flex items-center justify-center z-50 text-xl font-black transition-all backdrop-blur-md">✕</button>
               <iframe src={`${activeVideo}${activeVideo.includes('?') ? '&' : '?'}autoplay=1`} title="Feature Demo Video" className="w-full h-full border-none" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>
            </div>
@@ -572,7 +572,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
 };
 
 const InclusionItem = ({ icon, title, desc }: any) => (
-  <div className="flex gap-6">
+  <div className="flex gap-3 md:gap-6">
     <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-xl text-indigo-400 shrink-0 shadow-inner group hover:scale-110 transition-transform">
       <i className={`bi ${icon}`}></i>
     </div>
@@ -584,7 +584,7 @@ const InclusionItem = ({ icon, title, desc }: any) => (
 );
 
 const PainPointCard = ({ icon, title, desc }: any) => (
-  <div className="bg-white p-8 rounded-[2rem] border border-rose-100 shadow-sm transition-all duration-500 hover:shadow-lg flex flex-col items-start text-left group">
+  <div className="bg-white p-4 md:p-8 rounded-[2rem] border border-rose-100 shadow-sm transition-all duration-500 hover:shadow-lg flex flex-col items-start text-left group">
     <div className="w-12 h-12 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center text-xl mb-6 border border-rose-100 group-hover:scale-110 transition-transform">
       <i className={`bi ${icon}`}></i>
     </div>
@@ -594,7 +594,7 @@ const PainPointCard = ({ icon, title, desc }: any) => (
 );
 
 const TestimonialCard = ({ name, role, quote, avatar }: any) => (
-  <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm transition-all duration-500 hover:shadow-xl hover:-translate-y-2 group">
+  <div className="bg-white p-4 md:p-8 rounded-[2.5rem] border border-slate-100 shadow-sm transition-all duration-500 hover:shadow-xl hover:-translate-y-2 group">
     <div className="flex items-center gap-4 mb-6">
        <img src={avatar} alt={name} className="w-12 h-12 rounded-full object-cover border-2 border-indigo-100" />
        <div>
@@ -607,7 +607,7 @@ const TestimonialCard = ({ name, role, quote, avatar }: any) => (
 );
 
 const PricingCard = ({ title, duration, originalPrice, price, monthlyEquivalent, discount, features, highlight, cta, onPay, limits, moduleCount, label }: any) => (
-  <div className={`p-8 lg:p-10 rounded-[3.5rem] border-2 flex flex-col h-full transition-all duration-700 relative ${highlight ? 'bg-slate-900 text-white border-slate-900 shadow-[0_40px_100px_-20px_rgba(79,70,229,0.3)] scale-105 z-10' : 'bg-white text-slate-900 border-slate-100 hover:border-indigo-100 shadow-sm'}`}>
+  <div className={`p-4 md:p-8 lg:p-10 rounded-[3.5rem] border-2 flex flex-col h-full transition-all duration-700 relative ${highlight ? 'bg-slate-900 text-white border-slate-900 shadow-[0_40px_100px_-20px_rgba(79,70,229,0.3)] scale-105 z-10' : 'bg-white text-slate-900 border-slate-100 hover:border-indigo-100 shadow-sm'}`}>
     {label && (
       <div className={`absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-xl whitespace-nowrap animate-bounce ${label === "Paling Hemat" ? 'bg-emerald-600 text-white' : 'bg-indigo-600 text-white'}`}>
         {label}
@@ -619,7 +619,7 @@ const PricingCard = ({ title, duration, originalPrice, price, monthlyEquivalent,
         <span className={`px-2.5 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ${highlight ? 'bg-indigo-600 text-white' : 'bg-indigo-50 text-indigo-600'}`}>{discount}</span>
       </div>
       <h4 className="text-xl font-black uppercase tracking-tight mb-6 leading-none">{title}</h4>
-      <div className="mb-8">
+      <div className="mb-4 md:mb-8">
         {originalPrice && <p className={`text-sm font-bold line-through mb-1 ${highlight ? 'text-rose-400' : 'text-rose-500'}`}>Rp {originalPrice}</p>}
         <span className="text-4xl font-black tracking-tighter">Rp {price}</span>
         {monthlyEquivalent && (
@@ -632,7 +632,7 @@ const PricingCard = ({ title, duration, originalPrice, price, monthlyEquivalent,
          <p className={`text-[9px] font-black uppercase tracking-widest ${highlight ? 'text-indigo-300' : 'text-indigo-600'}`}>Benefit Unggulan</p>
          <span className={`text-[8px] font-black px-2 py-0.5 rounded-full ${highlight ? 'bg-white/10 text-white' : 'bg-slate-100 text-slate-400'}`}>TOP PRIORITY</span>
       </div>
-      <ul className="space-y-3.5 mb-10">
+      <ul className="space-y-3.5 mb-6 md:mb-10">
         {features.slice(0, 4).map((f: string, i: number) => (
           <li key={i} className="flex items-start gap-3 text-[10px] font-bold tracking-tight">
             <span className={highlight ? 'text-indigo-400' : 'text-indigo-600'}>✓</span>

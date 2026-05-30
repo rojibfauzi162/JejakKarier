@@ -87,9 +87,9 @@ const PublicReportView: React.FC<PublicReportViewProps> = ({ data, contextFilter
 
   return (
     <div className="min-h-screen bg-slate-50 p-4 lg:p-12 font-sans">
-      <div className="max-w-6xl mx-auto space-y-8">
+      <div className="max-w-6xl mx-auto space-y-4 md:space-y-8">
         {/* Public Header Updated with Position and Company */}
-        <header className="bg-white p-8 lg:p-12 rounded-[3rem] shadow-xl border border-white flex flex-col md:flex-row justify-between items-center gap-8 relative overflow-hidden">
+        <header className="bg-white p-4 md:p-8 lg:p-12 rounded-[3rem] shadow-xl border border-white flex flex-col md:flex-row justify-between items-center gap-4 md:gap-8 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full blur-3xl -mr-16 -mt-16"></div>
           <div className="space-y-4 text-center md:text-left">
             <div className="flex items-center justify-center md:justify-start gap-3">
@@ -119,7 +119,7 @@ const PublicReportView: React.FC<PublicReportViewProps> = ({ data, contextFilter
             </div>
           </div>
           {!isInsightView && (
-            <div className="bg-blue-600 text-white p-6 rounded-[2rem] text-center min-w-[180px] shadow-2xl shadow-blue-500/20">
+            <div className="bg-blue-600 text-white p-3 md:p-6 rounded-[2rem] text-center min-w-[180px] shadow-2xl shadow-blue-500/20">
               <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60 mb-2">Total Aktivitas</p>
               <p className="text-4xl font-black tracking-tighter">{filteredReports.length}</p>
             </div>
@@ -134,7 +134,7 @@ const PublicReportView: React.FC<PublicReportViewProps> = ({ data, contextFilter
                  <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">AI sedang menyusun laporan strategis...</p>
               </div>
            ) : insightData ? (
-             <div className="bg-white p-10 lg:p-14 rounded-[4rem] shadow-xl border border-white animate-in zoom-in duration-500 space-y-12">
+             <div className="bg-white p-4 md:p-10 lg:p-14 rounded-[4rem] shadow-xl border border-white animate-in zoom-in duration-500 space-y-12">
                 <div className="space-y-4 text-center md:text-left">
                    <h3 className="text-4xl font-black text-slate-900 tracking-tighter uppercase leading-none break-words">{insightData.title}</h3>
                    <p className="text-lg text-slate-500 italic leading-relaxed">"{insightData.summary}"</p>
@@ -150,7 +150,7 @@ const PublicReportView: React.FC<PublicReportViewProps> = ({ data, contextFilter
                 </div>
 
                 <div className="pt-10 border-t border-slate-50">
-                   <div className="flex flex-wrap gap-8 justify-center md:justify-start">
+                   <div className="flex flex-wrap gap-4 md:gap-8 justify-center md:justify-start">
                       {insightData.metrics.map((m: any, i: number) => (
                         <div key={i} className="text-center md:text-left">
                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">{m.label}</p>
@@ -161,7 +161,7 @@ const PublicReportView: React.FC<PublicReportViewProps> = ({ data, contextFilter
                 </div>
 
                 {sharedAudience === 'self' && (
-                  <div className="bg-slate-950 p-10 rounded-[3rem] text-white">
+                  <div className="bg-slate-950 p-4 md:p-10 rounded-[3rem] text-white">
                      <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-4">Deep Learning Reflection</p>
                      <p className="text-lg font-medium italic opacity-80 leading-relaxed">"{insightData.aiReflection}"</p>
                   </div>
@@ -172,8 +172,8 @@ const PublicReportView: React.FC<PublicReportViewProps> = ({ data, contextFilter
            )
         ) : (
            /* DEFAULT REPORT VIEWS */
-           <div className="space-y-8">
-             <div className="flex flex-col lg:flex-row gap-6 items-start lg:items-center justify-between">
+           <div className="space-y-4 md:space-y-8">
+             <div className="flex flex-col lg:flex-row gap-3 md:gap-6 items-start lg:items-center justify-between">
                 <div className="bg-white p-1 rounded-2xl shadow-sm border border-slate-100 inline-flex">
                   <button onClick={() => setActiveView('table')} className={`px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeView === 'table' ? 'bg-slate-900 text-white shadow-lg' : 'text-slate-400 hover:text-slate-600'}`}>📋 Data Tabel</button>
                   <button onClick={() => setActiveView('chart')} className={`px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeView === 'chart' ? 'bg-slate-900 text-white shadow-lg' : 'text-slate-400 hover:text-slate-600'}`}>📊 Visualisasi Grafik</button>
@@ -210,11 +210,11 @@ const PublicReportView: React.FC<PublicReportViewProps> = ({ data, contextFilter
                   </table>
                 </div>
              ) : (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                  <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 h-64">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8">
+                  <div className="bg-white p-4 md:p-8 rounded-[2.5rem] shadow-sm border border-slate-100 h-64">
                     <ResponsiveContainer width="100%" height="100%"><AreaChart data={filteredReports.slice(-15)}><XAxis dataKey="date" hide /><YAxis hide /><Tooltip /><Area type="monotone" dataKey="metricValue" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.1} /></AreaChart></ResponsiveContainer>
                   </div>
-                  <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 h-64">
+                  <div className="bg-white p-4 md:p-8 rounded-[2.5rem] shadow-sm border border-slate-100 h-64">
                     <ResponsiveContainer width="100%" height="100%"><BarChart data={monthlyStats.slice().reverse()}><XAxis dataKey="month" hide /><YAxis hide /><Tooltip /><Bar dataKey="total" fill="#3b82f6" radius={[8, 8, 0, 0]} /></BarChart></ResponsiveContainer>
                   </div>
                 </div>

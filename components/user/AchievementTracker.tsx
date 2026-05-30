@@ -13,7 +13,7 @@ interface AchievementTrackerProps {
 
 const AchievementTracker: React.FC<AchievementTrackerProps> = ({ achievements, profile, workExperiences, onAdd, onUpdate, onDelete }) => {
   return (
-    <div className="space-y-8 animate-in fade-in duration-500 pb-24 lg:pb-20">
+    <div className="space-y-4 md:space-y-8 animate-in fade-in duration-500 pb-24 lg:pb-20">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <h2 className="text-2xl lg:text-3xl font-extrabold text-slate-900 tracking-tight uppercase">Achievement Tracker</h2>
         <button className="px-6 py-3.5 bg-slate-900 text-white font-black rounded-2xl shadow-lg uppercase tracking-widest text-xs">+ Log Achievement</button>

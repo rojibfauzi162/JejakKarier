@@ -127,8 +127,8 @@ const PerformanceReports: React.FC<PerformanceReportsProps> = ({ data }) => {
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700 pb-20">
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+    <div className="space-y-4 md:space-y-8 animate-in fade-in duration-700 pb-20">
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-6">
         <div className="px-1">
           <div className="flex items-center gap-4">
             <h2 className="text-3xl font-black text-slate-900 tracking-tight uppercase">Performance Reports</h2>
@@ -172,8 +172,8 @@ const PerformanceReports: React.FC<PerformanceReportsProps> = ({ data }) => {
       </div>
 
       {/* FILTER CONTROLS - Context & Date Range */}
-      <div className="bg-white p-6 lg:p-10 rounded-[3rem] shadow-sm border border-slate-100 mx-1 space-y-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-end">
+      <div className="bg-white p-4 md:p-6 lg:p-10 rounded-[3rem] shadow-sm border border-slate-100 mx-1 space-y-4 md:space-y-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-8 items-end">
           <div className="lg:col-span-6 space-y-3">
             <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Pilih Konteks Laporan</label>
             <div className="flex flex-col sm:flex-row gap-2 flex-wrap">
@@ -235,7 +235,7 @@ const PerformanceReports: React.FC<PerformanceReportsProps> = ({ data }) => {
 
       <div className="px-1">
         {viewMode === 'list' && (
-          <div className="space-y-6">
+          <div className="space-y-3 md:space-y-6">
             {/* Desktop Table */}
             <div className="hidden lg:block bg-white rounded-[3rem] shadow-sm border border-slate-100 overflow-hidden overflow-x-auto min-h-[400px]">
               <table className="w-full text-left border-collapse">
@@ -272,7 +272,7 @@ const PerformanceReports: React.FC<PerformanceReportsProps> = ({ data }) => {
             {/* Mobile Card Mode */}
             <div className="lg:hidden space-y-4">
               {filteredReports.slice().reverse().map(log => (
-                <div key={log.id} className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm space-y-3">
+                <div key={log.id} className="bg-white p-3 md:p-6 rounded-[2rem] border border-slate-100 shadow-sm space-y-3">
                   <div className="flex justify-between items-start">
                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{log.date}</span>
                     <span className={`px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-widest border ${
@@ -306,9 +306,9 @@ const PerformanceReports: React.FC<PerformanceReportsProps> = ({ data }) => {
         )}
 
         {viewMode === 'charts' && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-in zoom-in duration-500">
-            <div className="bg-white p-10 rounded-[3rem] shadow-sm border border-slate-100">
-              <h3 className="text-xl font-black text-slate-800 tracking-tight mb-8">Trend Capaian Metrik</h3>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8 animate-in zoom-in duration-500">
+            <div className="bg-white p-4 md:p-10 rounded-[3rem] shadow-sm border border-slate-100">
+              <h3 className="text-xl font-black text-slate-800 tracking-tight mb-4 md:mb-8">Trend Capaian Metrik</h3>
               <div className="h-80">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={chartData}>
@@ -327,8 +327,8 @@ const PerformanceReports: React.FC<PerformanceReportsProps> = ({ data }) => {
                 </ResponsiveContainer>
               </div>
             </div>
-            <div className="bg-white p-10 rounded-[3rem] shadow-sm border border-slate-100">
-              <h3 className="text-xl font-black text-slate-800 tracking-tight mb-8">Distribusi Performa</h3>
+            <div className="bg-white p-4 md:p-10 rounded-[3rem] shadow-sm border border-slate-100">
+              <h3 className="text-xl font-black text-slate-800 tracking-tight mb-4 md:mb-8">Distribusi Performa</h3>
               <div className="h-80">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={chartData}>
@@ -347,17 +347,17 @@ const PerformanceReports: React.FC<PerformanceReportsProps> = ({ data }) => {
 
       {/* Share Modal */}
       {showShareModal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[200] p-4">
-          <div className="bg-white w-full max-w-lg rounded-[3rem] p-8 lg:p-12 shadow-2xl animate-in zoom-in duration-300 relative">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[200] p-0 sm:p-4">
+          <div className="bg-white w-full max-w-lg rounded-[2rem] md:rounded-[3rem] p-4 sm:p-6 md:p-8 lg:p-12 shadow-2xl animate-in zoom-in duration-300 relative">
             <button onClick={() => setShowShareModal(false)} className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center bg-slate-50 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors z-[60]"><i className="bi bi-x-lg"></i></button>
             <div className="mb-6">
               <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Bagikan Laporan</h3>
             </div>
-            <p className="text-sm text-slate-500 mb-8 leading-relaxed font-medium">
+            <p className="text-sm text-slate-500 mb-4 md:mb-8 leading-relaxed font-medium">
               Anda akan membagikan laporan dalam mode <span className="font-black text-indigo-600">Read-Only</span> untuk konteks: 
               <span className="block mt-1 font-black uppercase text-slate-800">{selectedContext === 'all' ? 'Seluruh Aktivitas Pekerjaan' : selectedContext}</span>
             </p>
-            <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100 mb-8 break-all shadow-inner">
+            <div className="bg-slate-50 p-3 md:p-6 rounded-3xl border border-slate-100 mb-4 md:mb-8 break-all shadow-inner">
               <code className="text-[10px] font-bold text-slate-400 select-all leading-tight">{generateShareLink()}</code>
             </div>
             <div className="flex gap-4">
@@ -370,20 +370,20 @@ const PerformanceReports: React.FC<PerformanceReportsProps> = ({ data }) => {
 
       {/* Details Modal */}
       {selectedPeriodLogs && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[200] p-4">
-          <div className="bg-white w-full max-w-4xl max-h-[85vh] rounded-[3rem] shadow-2xl animate-in zoom-in duration-300 flex flex-col overflow-hidden relative">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[200] p-0 sm:p-4">
+          <div className="bg-white w-full max-w-4xl max-h-[85vh] rounded-[2rem] md:rounded-[3rem] shadow-2xl animate-in zoom-in duration-300 flex flex-col overflow-hidden relative">
             <button onClick={() => setSelectedPeriodLogs(null)} className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center bg-slate-50 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors z-[60]"><i className="bi bi-x-lg"></i></button>
-            <div className="p-8 lg:p-10 border-b border-slate-50 flex justify-between items-center bg-slate-50/50 pr-20">
+            <div className="p-4 md:p-8 lg:p-10 border-b border-slate-50 flex justify-between items-center bg-slate-50/50 pr-20">
               <div>
                 <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">{selectedPeriodLogs.title}</h3>
                 <p className="text-slate-500 font-bold text-xs mt-1 uppercase tracking-widest">{selectedPeriodLogs.logs.length} Aktivitas Ditemukan</p>
               </div>
             </div>
             
-            <div className="flex-1 overflow-y-auto p-6 lg:p-10">
+            <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-10">
               <div className="space-y-4">
                 {selectedPeriodLogs.logs.map((log, idx) => (
-                  <div key={log.id} className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-all group">
+                  <div key={log.id} className="bg-white p-3 md:p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-all group">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                       <div className="space-y-1 flex-1">
                         <div className="flex items-center gap-3">
@@ -415,8 +415,8 @@ const PerformanceReports: React.FC<PerformanceReportsProps> = ({ data }) => {
               </div>
             </div>
             
-            <div className="p-8 lg:p-10 border-t border-slate-50 bg-slate-50/30 flex justify-end">
-              <button onClick={() => setSelectedPeriodLogs(null)} className="px-8 py-4 bg-slate-900 text-white font-black uppercase tracking-widest text-[10px] rounded-2xl shadow-xl hover:bg-black transition-all active:scale-95">Tutup Detail</button>
+            <div className="p-4 md:p-8 lg:p-10 border-t border-slate-50 bg-slate-50/30 flex justify-end">
+              <button onClick={() => setSelectedPeriodLogs(null)} className="px-5 py-3 md:px-8 md:py-4 bg-slate-900 text-white font-black uppercase tracking-widest text-[10px] rounded-2xl shadow-xl hover:bg-black transition-all active:scale-95">Tutup Detail</button>
             </div>
           </div>
         </div>
@@ -434,7 +434,7 @@ const StatCard: React.FC<{ label: string; value: string | number; subValue: stri
   };
 
   return (
-    <div className="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-2">
+    <div className="bg-white p-3 md:p-6 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-2">
       <div className="flex items-center justify-between">
         <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{label}</span>
         <span className="text-xl">{icon}</span>

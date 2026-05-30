@@ -900,7 +900,26 @@ const App: React.FC = () => {
       case 'calendar': return withPermission('calendar', <CareerCalendar data={data} onAddEvent={(e) => setData(prev => ({...prev, careerEvents: [...(prev.careerEvents || []), e]}))} onDeleteEvent={(id) => setData(prev => ({...prev, careerEvents: (prev.careerEvents || []).filter(i => i.id !== id)}))} onUpgrade={commonProps.onUpgrade} onUpdateJobStatus={(id, s) => setData(prev => ({...prev, jobApplications: prev.jobApplications.map(j => j.id === id ? {...j, status: s} : j)}))} />);
       case 'skills': return withPermission('skills', <SkillTracker skills={data.skills} trainings={data.trainings} certs={data.certifications} onAddSkill={(s) => setData(prev => ({...prev, skills: [...prev.skills, s]}))} onUpdateSkill={(s) => setData(prev => ({...prev, skills: prev.skills.map(i => i.id === s.id ? s : i)}))} onDeleteSkill={(id) => setData(prev => ({...prev, skills: prev.skills.filter(i => i.id !== id)}))} onAddTraining={(t) => setData(prev => ({...prev, trainings: [...prev.trainings, t]}))} onUpdateTraining={(t) => setData(prev => ({...prev, trainings: prev.trainings.map(i => i.id === t.id ? t : i)}))} onDeleteTraining={(id) => setData(prev => ({...prev, trainings: prev.trainings.filter(i => i.id !== id)}))} onAddCert={(c) => setData(prev => ({...prev, certifications: [...prev.certifications, c]}))} onUpdateCert={(c) => setData(prev => ({...prev, certifications: prev.certifications.map(i => i.id === c.id ? c : i)}))} onDeleteCert={(id) => setData(prev => ({...prev, certifications: prev.certifications.filter(i => i.id !== id)}))} onAddTodo={(t) => setData(prev => ({...prev, todoList: [...prev.todoList, t]}))} onSaveStrategy={(s: AiStrategy) => setData(prev => ({...prev, aiStrategies: [s, ...(prev.aiStrategies || [])]}))} showToast={showToast} data={data} initialSubTab={skillsSubTab as any} onUpgrade={commonProps.onUpgrade} onAddCalendarEvent={commonProps.onAddCalendarEvent} />);
       case 'career': return withPermission('career', <CareerPlanner paths={data.careerPaths} appData={data} onAddPath={(p) => setData(prev => ({...prev, careerPaths: [...prev.careerPaths, p]}))} onUpdatePath={(p) => setData(prev => ({...prev, careerPaths: prev.careerPaths.map(i => i.id === p.id ? p : i)}))} onDeletePath={(id) => setData(prev => ({...prev, careerPaths: prev.careerPaths.filter(i => i.id !== id)}))} onUpgrade={commonProps.onUpgrade} />);
-      case 'networking': return withPermission('networking', <Networking contacts={data.contacts} onAdd={(c) => setData(prev => ({...prev, contacts: [...prev.contacts, c]}))} onUpdate={(c) => setData(prev => ({...prev, contacts: prev.contacts.map(i => i.id === c.id ? c : i)}))} onDelete={(id) => setData(prev => ({...prev, contacts: prev.contacts.filter(i => i.id !== id)}))} appData={data} onUpgrade={commonProps.onUpgrade} />);
+      case 'networking': return withPermission('networking', <Networking 
+        contacts={data.contacts} 
+        relations={data.networkingRelations} 
+        followUpPlans={data.networkingFollowUpPlans}
+        companies={data.networkingCompanies}
+        positions={data.networkingPositions}
+        onAdd={(c) => setData(prev => ({...prev, contacts: [...prev.contacts, c]}))} 
+        onUpdate={(c) => setData(prev => ({...prev, contacts: prev.contacts.map(i => i.id === c.id ? c : i)}))} 
+        onDelete={(id) => setData(prev => ({...prev, contacts: prev.contacts.filter(i => i.id !== id)}))} 
+        onUpdateRelations={(r) => setData(prev => ({...prev, networkingRelations: r}))} 
+        onRenameRelation={(old, next) => setData(prev => ({...prev, networkingRelations: prev.networkingRelations?.map(r => r === old ? next : r) || [], contacts: prev.contacts.map(c => c.relation === old ? {...c, relation: next} : c)}))} 
+        onUpdateFollowUpPlans={(p) => setData(prev => ({...prev, networkingFollowUpPlans: p}))}
+        onRenameFollowUpPlan={(old, next) => setData(prev => ({...prev, networkingFollowUpPlans: prev.networkingFollowUpPlans?.map(p => p === old ? next : p) || [], contacts: prev.contacts.map(c => c.followUpPlan === old ? {...c, followUpPlan: next} : c)}))}
+        onUpdateCompanies={(c) => setData(prev => ({...prev, networkingCompanies: c}))}
+        onRenameCompany={(old, next) => setData(prev => ({...prev, networkingCompanies: prev.networkingCompanies?.map(c => c === old ? next : c) || [], contacts: prev.contacts.map(c => c.company === old ? {...c, company: next} : c)}))}
+        onUpdatePositions={(p) => setData(prev => ({...prev, networkingPositions: p}))}
+        onRenamePosition={(old, next) => setData(prev => ({...prev, networkingPositions: prev.networkingPositions?.map(p => p === old ? next : p) || [], contacts: prev.contacts.map(c => c.position === old ? {...c, position: next} : c)}))}
+        appData={data} 
+        onUpgrade={commonProps.onUpgrade} 
+      />);
       case 'achievements': return withPermission('achievements', <AchievementTracker achievements={data.achievements} profile={data.profile} workExperiences={data.workExperiences} onAdd={(a) => setData(prev => ({...prev, achievements: [...prev.achievements, a]}))} onUpdate={(a) => setData(prev => ({...prev, achievements: prev.achievements.map(i => i.id === a.id ? a : i)}))} onDelete={(id) => setData(prev => ({...prev, achievements: prev.achievements.filter(i => i.id !== id)}))} appData={data} onUpgrade={commonProps.onUpgrade} />);
       case 'loker': return withPermission('loker', <JobTracker applications={data.jobApplications} careerEvents={data.careerEvents || []} onAdd={(j) => setData(prev => ({...prev, jobApplications: [...prev.jobApplications, j]}))} onUpdate={(j) => setData(prev => ({...prev, jobApplications: prev.jobApplications.map(i => i.id === j.id ? j : i)}))} onDelete={(id) => setData(prev => ({...prev, jobApplications: prev.jobApplications.filter(i => i.id !== id)}))} onAddCalendarEvent={commonProps.onAddCalendarEvent} appData={data} onUpgrade={commonProps.onUpgrade} />);
       case 'projects': return withPermission('projects', <PersonalProjectTracker projects={data.personalProjects} onAdd={(p) => setData(prev => ({...prev, personalProjects: [...prev.personalProjects, p]}))} onUpdate={(p) => setData(prev => ({...prev, personalProjects: prev.personalProjects.map(i => i.id === p.id ? p : i)}))} onDelete={(id) => setData(prev => ({...prev, personalProjects: prev.personalProjects.filter(i => i.id !== id)}))} appData={data} onUpgrade={commonProps.onUpgrade} />);
@@ -971,7 +990,7 @@ const App: React.FC = () => {
         isBypassMode={!!localStorage.getItem('local_session_user') || !!localStorage.getItem('admin_demo_mode')}
         logoUrl={landingConfig?.logoUrl || landingConfig?.logoDarkUrl}
       />
-      <main className="flex-1 lg:ml-64">
+      <main className="flex-1 lg:ml-64 min-w-0">
         {!user?.emailVerified && !isAdmin && !hideVerificationReminder && user && (
           <div className="px-6 py-6 lg:px-10 lg:pt-8 animate-in slide-in-from-top-full duration-700 relative z-[200]">
              <div className="bg-[#fffbeb] border border-[#fef3c7] p-8 lg:p-10 rounded-[2.5rem] shadow-sm relative overflow-hidden group">

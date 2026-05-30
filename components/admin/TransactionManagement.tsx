@@ -149,14 +149,14 @@ const TransactionManagement: React.FC<TransactionManagementProps> = ({ users, pr
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
+    <div className="space-y-4 md:space-y-8 animate-in fade-in duration-500">
       <div className="flex justify-between items-center px-4">
         <h3 className="text-xl font-black text-slate-900 uppercase">Manajemen Transaksi</h3>
         <button onClick={() => setShowManualModal(true)} className="px-8 py-3 bg-indigo-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl">+ Transaksi Manual</button>
       </div>
 
       {/* FILTER PANEL */}
-      <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 space-y-6">
+      <div className="bg-white p-4 md:p-8 rounded-[2.5rem] shadow-sm border border-slate-100 space-y-3 md:space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
           <div className="md:col-span-4 space-y-1.5">
             <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Pencarian</label>
@@ -231,22 +231,22 @@ const TransactionManagement: React.FC<TransactionManagementProps> = ({ users, pr
           <table className="w-full text-left">
             <thead>
               <tr className="text-[10px] font-black uppercase text-slate-400 bg-slate-50/50">
-                <th className="px-8 py-4">User / Order ID</th>
-                <th className="px-6 py-4">Metode / Ref</th>
-                <th className="px-6 py-4">Paket / Nominal</th>
-                <th className="px-6 py-4 text-center">Status</th>
-                <th className="px-8 py-4 text-right">Aksi</th>
+                <th className="px-5 py-3 md:px-8 md:py-4">User / Order ID</th>
+                <th className="px-4 py-3 md:px-6 md:py-4">Metode / Ref</th>
+                <th className="px-4 py-3 md:px-6 md:py-4">Paket / Nominal</th>
+                <th className="px-4 py-3 md:px-6 md:py-4 text-center">Status</th>
+                <th className="px-5 py-3 md:px-8 md:py-4 text-right">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
               {paginatedTransactions.map(t => (
                   <tr key={t.id} className="hover:bg-slate-50/50 transition-colors">
-                    <td className="px-8 py-4">
+                    <td className="px-5 py-3 md:px-8 md:py-4">
                       <p className="font-black text-slate-800 text-sm leading-none">{t.userName}</p>
                       <p className="text-[8px] font-bold text-slate-400 mt-1 uppercase tracking-tighter">{t.id}</p>
                       <p className="text-[8px] text-slate-300 mt-0.5">{new Date(t.date).toLocaleString('id-ID')}</p>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-3 md:px-6 md:py-4">
                        <div className="space-y-1">
                           <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase border ${t.paymentMethod === 'Duitku' ? 'bg-indigo-50 text-indigo-600 border-indigo-100' : 'bg-slate-100 text-slate-500 border-slate-200'}`}>
                             {t.paymentMethod || 'Manual'}
@@ -257,11 +257,11 @@ const TransactionManagement: React.FC<TransactionManagementProps> = ({ users, pr
                           )}
                        </div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-3 md:px-6 md:py-4">
                       <p className="text-xs font-black text-slate-700">{t.planTier}</p>
                       <p className="text-[10px] font-bold text-slate-400">Rp {t.amount?.toLocaleString('id-ID')}</p>
                     </td>
-                    <td className="px-6 py-4 text-center">
+                    <td className="px-4 py-3 md:px-6 md:py-4 text-center">
                       <span className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase border inline-block min-w-[80px] ${
                         t.status === PaymentStatus.PAID ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 
                         t.status === PaymentStatus.PENDING ? 'bg-amber-50 text-amber-600 border-amber-100 animate-pulse' :
@@ -270,7 +270,7 @@ const TransactionManagement: React.FC<TransactionManagementProps> = ({ users, pr
                         {t.status}
                       </span>
                     </td>
-                    <td className="px-8 py-4 text-right">
+                    <td className="px-5 py-3 md:px-8 md:py-4 text-right">
                       <div className="flex items-center justify-end gap-3">
                          {t.status === 'Pending' && (
                            <button 
@@ -298,7 +298,7 @@ const TransactionManagement: React.FC<TransactionManagementProps> = ({ users, pr
 
         {/* Pagination Footer */}
         {filteredTransactions.length > itemsPerPage && (
-          <div className="p-6 bg-slate-50/50 border-t flex justify-between items-center">
+          <div className="p-3 md:p-6 bg-slate-50/50 border-t flex justify-between items-center">
              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Showing {paginatedTransactions.length} of {filteredTransactions.length} items</p>
              <div className="flex gap-2">
                 <button disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)} className="px-4 py-2 bg-white border rounded-xl text-[10px] font-black uppercase disabled:opacity-30">Prev</button>
@@ -310,8 +310,8 @@ const TransactionManagement: React.FC<TransactionManagementProps> = ({ users, pr
 
       {/* FOLLOW UP CONFIRM MODAL */}
       {followUpConfirm && (
-        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md flex items-center justify-center z-[5000] p-4">
-           <div className="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl p-10 animate-in zoom-in duration-300 relative">
+        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md flex items-center justify-center z-[5000] p-0 sm:p-4">
+           <div className="bg-white w-full max-w-md rounded-[1.5rem] md:rounded-[2.5rem] shadow-2xl p-4 sm:p-6 md:p-10 animate-in zoom-in duration-300 relative">
               <button onClick={() => setFollowUpConfirm(null)} className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center bg-slate-50 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors z-10"><i className="bi bi-x-lg"></i></button>
               <div className="text-center mb-6">
                  <div className="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-4 text-3xl shadow-inner">
@@ -321,7 +321,7 @@ const TransactionManagement: React.FC<TransactionManagementProps> = ({ users, pr
                  <p className="text-slate-400 text-xs font-bold mt-2 uppercase tracking-tight">Kirim template pengingat ke {followUpConfirm.tx.userName}?</p>
               </div>
 
-              <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 mb-8">
+              <div className="bg-slate-50 p-3 md:p-6 rounded-2xl border border-slate-100 mb-4 md:mb-8">
                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Pratinjau Pesan:</p>
                  <p className="text-xs text-slate-600 leading-relaxed font-medium italic">"{followUpConfirm.text}"</p>
               </div>
@@ -341,14 +341,14 @@ const TransactionManagement: React.FC<TransactionManagementProps> = ({ users, pr
 
       {/* VALIDATION MODAL */}
       {validatingTx && (
-        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md flex items-center justify-center z-[4000] p-4">
-           <div className="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl p-10 animate-in zoom-in duration-300 relative">
+        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md flex items-center justify-center z-[4000] p-0 sm:p-4">
+           <div className="bg-white w-full max-w-md rounded-[1.5rem] md:rounded-[2.5rem] shadow-2xl p-4 sm:p-6 md:p-10 animate-in zoom-in duration-300 relative">
               <button onClick={() => setValidatingTx(null)} className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center bg-slate-50 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors z-10"><i className="bi bi-x-lg"></i></button>
               <div className="text-center mb-6">
                  <h3 className="text-xl font-black text-slate-900 uppercase">Validasi Pembayaran</h3>
                  <p className="text-slate-400 text-xs mt-2 font-bold uppercase">Konfirmasi pembayaran untuk {validatingTx.userName}?</p>
               </div>
-              <div className="bg-slate-50 p-6 rounded-2xl border mb-8 space-y-3">
+              <div className="bg-slate-50 p-3 md:p-6 rounded-2xl border mb-4 md:mb-8 space-y-3">
                  <div className="flex justify-between text-xs font-bold"><span>Order ID</span><span className="font-mono">{validatingTx.id}</span></div>
                  <div className="flex justify-between text-xs font-bold"><span>Metode</span><span className="font-black text-indigo-600">{validatingTx.paymentMethod || 'Manual'}</span></div>
                  <div className="flex justify-between text-xs font-bold"><span>Paket</span><span className="font-black">{validatingTx.planTier}</span></div>

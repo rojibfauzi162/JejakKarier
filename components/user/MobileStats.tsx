@@ -48,15 +48,15 @@ const MobileStats: React.FC<MobileStatsProps> = ({ data }) => {
   ];
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700 pb-20">
+    <div className="space-y-4 md:space-y-8 animate-in fade-in duration-700 pb-20">
       <header className="px-1">
         <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Data Statistik</h2>
         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Ringkasan statistik Anda hari ini.</p>
       </header>
 
-      <div className="grid grid-cols-1 gap-6">
+      <div className="grid grid-cols-1 gap-3 md:gap-6">
         {stats.map((s, i) => (
-          <div key={i} className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 flex items-center gap-6 group">
+          <div key={i} className="bg-white p-4 md:p-8 rounded-[2.5rem] shadow-sm border border-slate-100 flex items-center gap-3 md:gap-6 group">
             <div className={`w-16 h-16 rounded-2xl flex items-center justify-center text-3xl shadow-inner ${s.color}`}>
               <i className={`bi ${s.icon}`}></i>
             </div>
@@ -69,7 +69,7 @@ const MobileStats: React.FC<MobileStatsProps> = ({ data }) => {
         ))}
       </div>
 
-      <div className="bg-slate-900 p-10 rounded-[3rem] text-white shadow-2xl relative overflow-hidden">
+      <div className="bg-slate-900 p-4 md:p-10 rounded-[3rem] text-white shadow-2xl relative overflow-hidden">
          <div className="relative z-10">
             <h4 className="text-xs font-black uppercase text-indigo-400 tracking-[0.3em] mb-4">Tips Pro</h4>
             <p className="text-sm font-medium leading-relaxed opacity-80">"Lengkapi seluruh data harian Anda untuk mendapatkan analisis grafik yang lebih akurat pada fitur Performance Reports di Desktop."</p>

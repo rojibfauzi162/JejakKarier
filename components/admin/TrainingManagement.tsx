@@ -208,7 +208,7 @@ const TrainingManagement: React.FC<TrainingManagementProps> = ({ onToast }) => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3 md:space-y-6">
       <div className="flex justify-between items-center">
         <h3 className="text-xl font-bold text-slate-800">Training Management</h3>
         <button onClick={handleAdd} className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
@@ -219,9 +219,9 @@ const TrainingManagement: React.FC<TrainingManagementProps> = ({ onToast }) => {
       {loading ? (
         <div className="text-center py-10">Loading...</div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
           {trainings.map(training => (
-            <div key={training.id} className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+            <div key={training.id} className="bg-white p-3 md:p-6 rounded-xl shadow-sm border border-slate-100">
               <div className="flex justify-between items-start mb-4">
                 <span className={`px-2 py-1 text-xs rounded-full ${
                   training.status === 'upcoming' ? 'bg-blue-100 text-blue-700' :
@@ -261,8 +261,8 @@ const TrainingManagement: React.FC<TrainingManagementProps> = ({ onToast }) => {
       )}
 
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 relative">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-0 sm:p-4">
+          <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-3 md:p-6 relative">
             <button type="button" onClick={() => setIsModalOpen(false)} className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center bg-slate-50 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors z-10"><i className="bi bi-x-lg"></i></button>
             <h3 className="text-xl font-bold mb-6">{editingTraining ? 'Edit Training' : 'Add New Training'}</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

@@ -36,7 +36,7 @@ const ProductForm = ({ initialData, onCancel, onSubmit, onDelete }: any) => {
     { id: 'work_reflection', label: 'Refleksi Kerja (Work Reflection)' },
     { id: 'reports', label: 'Laporan Pekerjaan (Performance Reports)' },
     { id: 'ai_insights', label: 'AI Activity Insights' },
-    { id: 'todo_list', label: 'Langkah Pengembangan (Checklist)' },
+    { id: 'todo_list', label: 'To Do List (Checklist)' },
     { id: 'calendar', label: 'Career Calendar' },
     { id: 'skills', label: 'Skill Matrix & Learning' },
     { id: 'career', label: 'Career Path Planner' },
@@ -92,16 +92,16 @@ const ProductForm = ({ initialData, onCancel, onSubmit, onDelete }: any) => {
   return (
     <form onSubmit={(e) => { e.preventDefault(); onSubmit(form); }} className="space-y-12">
       {/* 01: IDENTITAS PAKET */}
-      <section className="space-y-6">
+      <section className="space-y-3 md:space-y-6">
         <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] border-b pb-4">01. Identitas Paket</h4>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6">
           <div className="space-y-2">
             <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Nama Paket Langganan</label>
-            <input className="w-full px-6 py-4 rounded-2xl border border-slate-200 bg-slate-50 font-bold text-sm outline-none focus:border-indigo-500 transition-all" value={form.name || ''} onChange={e => setForm({...form, name: e.target.value})} placeholder="Misal: Elite Pro Yearly" required />
+            <input className="w-full px-4 py-3 md:px-6 md:py-4 rounded-2xl border border-slate-200 bg-slate-50 font-bold text-sm outline-none focus:border-indigo-500 transition-all" value={form.name || ''} onChange={e => setForm({...form, name: e.target.value})} placeholder="Misal: Elite Pro Yearly" required />
           </div>
           <div className="space-y-2">
             <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Kategori Tier</label>
-            <select className="w-full px-6 py-4 rounded-2xl border border-slate-200 bg-white font-bold text-sm outline-none cursor-pointer" value={form.tier || ''} onChange={e => setForm({...form, tier: e.target.value as SubscriptionPlan})}>
+            <select className="w-full px-4 py-3 md:px-6 md:py-4 rounded-2xl border border-slate-200 bg-white font-bold text-sm outline-none cursor-pointer" value={form.tier || ''} onChange={e => setForm({...form, tier: e.target.value as SubscriptionPlan})}>
               {Object.values(SubscriptionPlan).map(t => <option key={t} value={t}>{t}</option>)}
             </select>
           </div>
@@ -109,28 +109,28 @@ const ProductForm = ({ initialData, onCancel, onSubmit, onDelete }: any) => {
       </section>
 
       {/* 02: HARGA & MONETISASI */}
-      <section className="space-y-6">
+      <section className="space-y-3 md:space-y-6">
         <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] border-b pb-4">02. Strategi Harga</h4>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-6">
           <div className="space-y-2">
             <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Harga Jual (Rp)</label>
-            <input type="number" className="w-full px-6 py-4 rounded-2xl border border-indigo-100 bg-indigo-50/30 font-black text-sm text-indigo-600 outline-none" value={form.price === 0 ? 0 : (form.price || '')} onChange={e => handlePriceChange(Number(e.target.value))} required />
+            <input type="number" className="w-full px-4 py-3 md:px-6 md:py-4 rounded-2xl border border-indigo-100 bg-indigo-50/30 font-black text-sm text-indigo-600 outline-none" value={form.price === 0 ? 0 : (form.price || '')} onChange={e => handlePriceChange(Number(e.target.value))} required />
           </div>
           <div className="space-y-2">
             <label className="text-[10px] font-black text-indigo-500 uppercase tracking-widest ml-1">Set Diskon (%)</label>
-            <input type="number" min="0" max="99" className="w-full px-6 py-4 rounded-2xl border border-slate-200 bg-white font-bold text-sm outline-none" value={discountPercent || ''} onChange={e => handleDiscountChange(Number(e.target.value))} />
+            <input type="number" min="0" max="99" className="w-full px-4 py-3 md:px-6 md:py-4 rounded-2xl border border-slate-200 bg-white font-bold text-sm outline-none" value={discountPercent || ''} onChange={e => handleDiscountChange(Number(e.target.value))} />
           </div>
           <div className="space-y-2">
             <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 italic">Harga Coret (Otomatis)</label>
-            <input className="w-full px-6 py-4 rounded-2xl border border-slate-200 bg-slate-100 font-bold text-sm text-rose-400 outline-none" value={form.originalPrice || 0} readOnly />
+            <input className="w-full px-4 py-3 md:px-6 md:py-4 rounded-2xl border border-slate-200 bg-slate-100 font-bold text-sm text-rose-400 outline-none" value={form.originalPrice || 0} readOnly />
           </div>
           <div className="space-y-2">
             <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Durasi Akses (Hari)</label>
-            <input type="number" className="w-full px-6 py-4 rounded-2xl border border-slate-200 bg-slate-50 font-bold text-sm outline-none" value={form.durationDays || ''} onChange={e => setForm({...form, durationDays: Number(e.target.value)})} required />
+            <input type="number" className="w-full px-4 py-3 md:px-6 md:py-4 rounded-2xl border border-slate-200 bg-slate-50 font-bold text-sm outline-none" value={form.durationDays || ''} onChange={e => setForm({...form, durationDays: Number(e.target.value)})} required />
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-8 p-6 bg-slate-50 rounded-3xl border border-slate-200">
+        <div className="flex flex-wrap gap-4 md:gap-8 p-3 md:p-6 bg-slate-50 rounded-3xl border border-slate-200">
            <label className="flex items-center gap-3 cursor-pointer group">
               <input type="checkbox" className="w-6 h-6 rounded-lg text-indigo-600 focus:ring-indigo-500 border-slate-300" checked={form.isActive !== false} onChange={e => setForm({...form, isActive: e.target.checked})} />
               <span className="text-xs font-black text-slate-700 uppercase tracking-tight group-hover:text-indigo-600">Paket Aktif</span>
@@ -147,9 +147,9 @@ const ProductForm = ({ initialData, onCancel, onSubmit, onDelete }: any) => {
       </section>
 
       {/* 03. LIMITASI DATA */}
-      <section className="space-y-6">
+      <section className="space-y-3 md:space-y-6">
         <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] border-b pb-4">03. Limitasi Database (0 = Tanpa Batas)</h4>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
           {LIMIT_KEYS.map(key => {
             const currentVal = (form.limits as any)?.[key];
             const displayVal = currentVal === 'unlimited' ? 0 : (currentVal ?? 0);
@@ -174,7 +174,7 @@ const ProductForm = ({ initialData, onCancel, onSubmit, onDelete }: any) => {
       </section>
 
       {/* 04. PERMISSIONS */}
-      <section className="space-y-6">
+      <section className="space-y-3 md:space-y-6">
         <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] border-b pb-4">04. Hak Akses Modul Aplikasi</h4>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
           {APP_MODULES.map(m => (

@@ -18,7 +18,7 @@ const AdminStatCard: React.FC<AdminStatCardProps> = ({ title, value, sub, icon, 
     rose: 'bg-rose-50 text-rose-600 border-rose-100'
   };
   return (
-    <div className={`p-8 rounded-[2.5rem] border flex flex-col justify-center items-center text-center shadow-sm ${colorMap[color]}`}>
+    <div className={`p-4 md:p-8 rounded-[2.5rem] border flex flex-col justify-center items-center text-center shadow-sm ${colorMap[color]}`}>
       <div className="text-xl mb-1">{icon}</div>
       <p className="text-[8px] font-black uppercase tracking-widest opacity-60 mb-1">{title}</p>
       <p className="text-2xl font-black">{value}</p>

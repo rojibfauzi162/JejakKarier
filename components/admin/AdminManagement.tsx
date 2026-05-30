@@ -99,10 +99,10 @@ const AdminManagement: React.FC<AdminManagementProps> = ({ users, onUpdateMetada
   }, [users]);
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
+    <div className="space-y-4 md:space-y-8 animate-in fade-in duration-500">
       {/* Pending Approvals */}
       {isPrimaryAdmin && pendingApprovals.length > 0 && (
-        <div className="bg-amber-50 p-8 rounded-[2.5rem] border border-amber-100 shadow-sm">
+        <div className="bg-amber-50 p-4 md:p-8 rounded-[2.5rem] border border-amber-100 shadow-sm">
            <div className="flex items-center gap-4 mb-6">
               <div className="w-12 h-12 bg-amber-500 text-white rounded-2xl flex items-center justify-center text-xl shadow-lg">
                 <i className="bi bi-shield-check"></i>
@@ -111,7 +111,7 @@ const AdminManagement: React.FC<AdminManagementProps> = ({ users, onUpdateMetada
            </div>
            <div className="space-y-4">
               {pendingApprovals.map(u => (
-                <div key={u.uid} className="bg-white p-6 rounded-3xl border border-amber-100 flex items-center justify-between">
+                <div key={u.uid} className="bg-white p-3 md:p-6 rounded-3xl border border-amber-100 flex items-center justify-between">
                    <div className="flex items-center gap-4">
                       <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center text-slate-400 font-black uppercase">
                         {u.profile?.name?.charAt(0)}
@@ -137,8 +137,8 @@ const AdminManagement: React.FC<AdminManagementProps> = ({ users, onUpdateMetada
       )}
 
       {/* Search & Promote Section */}
-      <div className="bg-white p-8 lg:p-10 rounded-[2.5rem] border border-slate-100 shadow-sm">
-        <div className="flex items-center gap-6 mb-8">
+      <div className="bg-white p-4 md:p-8 lg:p-10 rounded-[2.5rem] border border-slate-100 shadow-sm">
+        <div className="flex items-center gap-3 md:gap-6 mb-4 md:mb-8">
           <div className="w-14 h-14 bg-indigo-600 text-white rounded-2xl flex items-center justify-center text-2xl shadow-xl">
             <i className="bi bi-person-plus-fill"></i>
           </div>
@@ -157,7 +157,7 @@ const AdminManagement: React.FC<AdminManagementProps> = ({ users, onUpdateMetada
             onChange={e => setSearchEmail(e.target.value)}
           />
           {candidate && (
-            <div className="p-6 bg-indigo-50 border border-indigo-100 rounded-3xl flex items-center justify-between animate-in zoom-in duration-300">
+            <div className="p-3 md:p-6 bg-indigo-50 border border-indigo-100 rounded-3xl flex items-center justify-between animate-in zoom-in duration-300">
               <div>
                 <p className="text-sm font-black text-slate-800">{candidate.profile?.name}</p>
                 <p className="text-[10px] font-bold text-slate-400">{candidate.profile?.email}</p>
@@ -176,7 +176,7 @@ const AdminManagement: React.FC<AdminManagementProps> = ({ users, onUpdateMetada
 
       {/* Admin List Table / Cards */}
       <div className="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden">
-        <div className="p-8 border-b border-slate-50 flex justify-between items-center">
+        <div className="p-4 md:p-8 border-b border-slate-50 flex justify-between items-center">
           <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight">Daftar Super Admin</h3>
           <span className="px-4 py-1.5 bg-slate-100 rounded-full text-[9px] font-black text-slate-500 uppercase tracking-widest">
             {admins.length} Pengelola
@@ -237,7 +237,7 @@ const AdminManagement: React.FC<AdminManagementProps> = ({ users, onUpdateMetada
         {/* MOBILE CARD VIEW */}
         <div className="lg:hidden p-4 space-y-4">
            {admins.map(admin => (
-             <div key={admin.uid} className="bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100 space-y-4">
+             <div key={admin.uid} className="bg-slate-50/50 p-3 md:p-6 rounded-[2rem] border border-slate-100 space-y-4">
                 <div className="flex justify-between items-start">
                    <div className="flex items-center gap-3">
                       <div className="w-10 h-10 bg-slate-900 text-white rounded-xl flex items-center justify-center font-black text-xs">

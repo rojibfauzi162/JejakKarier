@@ -264,7 +264,7 @@ const SkillTracker: React.FC<SkillTrackerProps> = ({
         source: 'AI'
       };
       onAddTodo(newTask);
-      alert(`Tugas "${actionText}" telah ditambahkan ke Langkah Pengembangan.`);
+      alert(`Tugas "${actionText}" telah ditambahkan ke To Do List.`);
     }
   };
 
@@ -383,8 +383,8 @@ const SkillTracker: React.FC<SkillTrackerProps> = ({
   const prevScore = data?.aiStrategies && data.aiStrategies.length > 1 ? data.aiStrategies[1].readinessScore : null;
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700 pb-16">
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+    <div className="space-y-4 md:space-y-8 animate-in fade-in duration-700 pb-16">
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-6">
         <div className="w-full">
           <h2 className="text-3xl font-black text-slate-900 tracking-tight">Growth & Intelligence</h2>
           <div className="relative mt-5">
@@ -400,7 +400,7 @@ const SkillTracker: React.FC<SkillTrackerProps> = ({
         {activeSubTab !== 'ai' && (
           <button 
             onClick={openAddForm}
-            className="group flex items-center justify-center gap-2 px-6 py-4 bg-slate-900 text-white font-bold rounded-2xl shadow-xl transition-all hover:bg-black hover:scale-[1.02] active:scale-[0.98] w-full md:w-auto"
+            className="group flex items-center justify-center gap-2 px-4 py-3 md:px-6 md:py-4 bg-slate-900 text-white font-bold rounded-2xl shadow-xl transition-all hover:bg-black hover:scale-[1.02] active:scale-[0.98] w-full md:w-auto"
           >
             <span className="text-xl">+</span>
             <span className="text-xs uppercase tracking-widest">Add {activeSubTab === 'skills' ? 'Skill' : activeSubTab === 'learning' ? 'Course' : 'Cert'}</span>
@@ -409,7 +409,7 @@ const SkillTracker: React.FC<SkillTrackerProps> = ({
       </header>
 
       {activeSubTab === 'learning' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-in slide-in-from-top duration-500">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 animate-in slide-in-from-top duration-500">
           <StatWidget title="Total Course" value={totalCourses} icon="📚" color="blue" />
           <StatWidget title="In Progress" value={onProcessCount} icon="⏳" color="amber" />
           <StatWidget title="Achievement" value={`${percentage}%`} icon="🔥" color="emerald" />
@@ -418,7 +418,7 @@ const SkillTracker: React.FC<SkillTrackerProps> = ({
       )}
 
       {activeSubTab === 'certs' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-in slide-in-from-top duration-500">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 animate-in slide-in-from-top duration-500">
           <StatWidget title="Total Certs" value={certCount} icon="📜" color="blue" />
           <StatWidget title="Planned" value={certPlannedCount} icon="📅" color="amber" />
           <StatWidget title="On Process" value={certOnProcessCount} icon="⏳" color="indigo" />
@@ -427,8 +427,8 @@ const SkillTracker: React.FC<SkillTrackerProps> = ({
       )}
 
       {isFormOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[110] p-4">
-          <div className="bg-white w-full max-w-xl rounded-[2.5rem] shadow-2xl p-8 lg:p-12 animate-in zoom-in duration-300 overflow-y-auto max-h-[90vh] relative">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[110] p-0 sm:p-4">
+          <div className="bg-white w-full max-w-xl rounded-[1.5rem] md:rounded-[2.5rem] shadow-2xl p-4 sm:p-6 md:p-8 lg:p-12 animate-in zoom-in duration-300 overflow-y-auto max-h-[90vh] relative">
             <button onClick={() => setIsFormOpen(false)} className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center bg-slate-50 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors z-[60]"><i className="bi bi-x-lg"></i></button>
             {activeSubTab === 'skills' && <SkillForm initialData={editingItem} onSubmit={(d) => { editingItem ? onUpdateSkill(d as Skill) : onAddSkill({ ...d, id: Math.random().toString() } as Skill); setIsFormOpen(false); }} onCancel={() => setIsFormOpen(false)} />}
             {activeSubTab === 'learning' && <TrainingForm initialData={editingItem} onSubmit={(d) => { editingItem ? onUpdateTraining(d as Training) : onAddTraining({ ...d, id: Math.random().toString() } as Training); setIsFormOpen(false); }} onCancel={() => setIsFormOpen(false)} />}
@@ -438,10 +438,10 @@ const SkillTracker: React.FC<SkillTrackerProps> = ({
       )}
 
       {isDetailOpen && viewingItem && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[120] p-4">
-          <div className="bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl p-8 lg:p-12 animate-in zoom-in duration-300 overflow-y-auto max-h-[90vh] relative">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[120] p-0 sm:p-4">
+          <div className="bg-white w-full max-w-2xl rounded-[2rem] md:rounded-[3rem] shadow-2xl p-4 sm:p-6 md:p-8 lg:p-12 animate-in zoom-in duration-300 overflow-y-auto max-h-[90vh] relative">
              <button onClick={() => setIsDetailOpen(false)} className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center bg-slate-50 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors z-[60]"><i className="bi bi-x-lg"></i></button>
-             <div className="flex justify-between items-start mb-8">
+             <div className="flex justify-between items-start mb-4 md:mb-8">
                 <div>
                    <h3 className="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight uppercase">Record Detail</h3>
                    <p className="text-slate-400 font-bold text-[10px] tracking-widest mt-1 uppercase">Comprehensive view of your {viewingItem.type === 'training' ? 'learning history' : 'credential'}</p>
@@ -449,8 +449,8 @@ const SkillTracker: React.FC<SkillTrackerProps> = ({
              </div>
              
              {viewingItem.type === 'training' ? (
-               <div className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+               <div className="space-y-3 md:space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6">
                      <DetailGroup label="Course Title" val={viewingItem.data.name} />
                      <DetailGroup label="Academy / Provider" val={viewingItem.data.provider} />
                      <DetailGroup label="Topic" val={viewingItem.data.topic} />
@@ -458,7 +458,7 @@ const SkillTracker: React.FC<SkillTrackerProps> = ({
                      <DetailGroup label="Investment" val={`Rp ${viewingItem.data.cost?.toLocaleString()}`} />
                      <DetailGroup label="Priority" val={viewingItem.data.priority} />
                   </div>
-                  <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
+                  <div className="bg-slate-50 p-3 md:p-6 rounded-3xl border border-slate-100">
                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Notes & Reflection</p>
                      <p className="text-sm font-medium text-slate-600 italic leading-relaxed">"{viewingItem.data.notes || 'No notes available.'}"</p>
                   </div>
@@ -475,8 +475,8 @@ const SkillTracker: React.FC<SkillTrackerProps> = ({
                   )}
                </div>
              ) : (
-               <div className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+               <div className="space-y-3 md:space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6">
                      <DetailGroup label="Credential Name" val={viewingItem.data.name} />
                      <DetailGroup label="Issuer" val={viewingItem.data.issuer} />
                      <DetailGroup label="Cert Number" val={viewingItem.data.certNumber || '-'} />
@@ -503,7 +503,7 @@ const SkillTracker: React.FC<SkillTrackerProps> = ({
 
       {/* Pop-up Image Preview Modal */}
       {certPreviewUrl && (
-        <div className="fixed inset-0 bg-slate-900/90 backdrop-blur-xl flex items-center justify-center z-[200] p-4" onClick={() => setCertPreviewUrl(null)}>
+        <div className="fixed inset-0 bg-slate-900/90 backdrop-blur-xl flex items-center justify-center z-[200] p-0 sm:p-4" onClick={() => setCertPreviewUrl(null)}>
           <div className="relative max-w-4xl w-full bg-white rounded-3xl overflow-hidden shadow-2xl animate-in zoom-in duration-300" onClick={e => e.stopPropagation()}>
             <div className="absolute top-4 right-4 flex gap-2">
               <a href={certPreviewUrl} target="_blank" rel="noreferrer" className="w-10 h-10 bg-white/20 backdrop-blur-md text-white rounded-full flex items-center justify-center hover:bg-blue-600 transition-all shadow-xl">
@@ -521,11 +521,11 @@ const SkillTracker: React.FC<SkillTrackerProps> = ({
                {certPreviewUrl.startsWith('data:image') || certPreviewUrl.match(/\.(jpeg|jpg|gif|png|webp)$/) ? (
                  <img src={certPreviewUrl} alt="Certificate Preview" className="max-w-full max-h-[80vh] object-contain shadow-2xl" />
                ) : (
-                 <div className="p-20 text-center space-y-6">
+                 <div className="p-20 text-center space-y-3 md:space-y-6">
                     <div className="text-6xl">📄</div>
                     <p className="font-black text-slate-800 uppercase tracking-tight">Dokumen Eksternal / PDF</p>
                     <p className="text-slate-400 text-xs font-medium max-w-xs mx-auto">Pratinjau langsung tidak tersedia untuk format ini. Silakan buka di tab baru.</p>
-                    <a href={certPreviewUrl} target="_blank" rel="noreferrer" className="inline-block px-8 py-4 bg-blue-600 text-white font-black rounded-2xl uppercase text-[10px] tracking-widest shadow-xl hover:bg-blue-700 transition-all">
+                    <a href={certPreviewUrl} target="_blank" rel="noreferrer" className="inline-block px-5 py-3 md:px-8 md:py-4 bg-blue-600 text-white font-black rounded-2xl uppercase text-[10px] tracking-widest shadow-xl hover:bg-blue-700 transition-all">
                       Buka Dokumen Penuh ↗
                     </a>
                  </div>
@@ -536,11 +536,11 @@ const SkillTracker: React.FC<SkillTrackerProps> = ({
       )}
 
       {activeSubTab === 'ai' && (
-        <div className="space-y-10 animate-in fade-in duration-700">
+        <div className="space-y-3 md:space-y-6 md:space-y-10 animate-in fade-in duration-700">
           {/* Main Control Panel */}
-          <div className="bg-slate-950 p-8 lg:p-12 rounded-[3.5rem] text-white relative overflow-hidden shadow-[0_40px_100px_-20px_rgba(0,0,0,0.4)]">
+          <div className="bg-slate-950 p-4 md:p-8 lg:p-12 rounded-[3.5rem] text-white relative overflow-hidden shadow-[0_40px_100px_-20px_rgba(0,0,0,0.4)]">
             <div className="relative z-10">
-              <div className="flex justify-between items-start mb-10">
+              <div className="flex justify-between items-start mb-6 md:mb-10">
                 <div className="w-20 h-20 bg-indigo-600 rounded-[2.5rem] flex items-center justify-center text-4xl shadow-[0_0_50px_rgba(79,70,229,0.4)]">🧠</div>
                 <div className="flex gap-2 bg-white/5 p-1.5 rounded-2xl border border-white/10 backdrop-blur-md">
                   <button onClick={() => setAiLang('id')} className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${aiLang === 'id' ? 'bg-white text-slate-900 shadow-xl' : 'text-slate-400 hover:text-white'}`}>ID</button>
@@ -553,7 +553,7 @@ const SkillTracker: React.FC<SkillTrackerProps> = ({
               </p>
 
               {isAiAnalyzing && (
-                <div className="mt-10 space-y-6 animate-in slide-in-from-top-4">
+                <div className="mt-6 md:mt-10 space-y-3 md:space-y-6 animate-in slide-in-from-top-4">
                    <div className="flex justify-between items-end mb-2">
                       <p className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-400 animate-pulse">{aiStatusMessage}</p>
                       <p className="text-2xl font-black text-white tracking-tighter">{Math.round(aiProgress)}%</p>
@@ -567,7 +567,7 @@ const SkillTracker: React.FC<SkillTrackerProps> = ({
                 </div>
               )}
 
-              <div className="flex flex-wrap gap-4 mt-10">
+              <div className="flex flex-wrap gap-4 mt-6 md:mt-10">
                 <button 
                   onClick={handleRunAiStrategist}
                   disabled={isAiAnalyzing}
@@ -610,11 +610,11 @@ const SkillTracker: React.FC<SkillTrackerProps> = ({
               const scoreDiff = prevScoreVal !== null ? currentScore - prevScoreVal : 0;
               
               return (
-                <div className="space-y-10 animate-in zoom-in duration-700">
+                <div className="space-y-3 md:space-y-6 md:space-y-10 animate-in zoom-in duration-700">
                   {/* TOP ROW: READINESS & SUMMARY */}
-                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                    <div className="lg:col-span-4 bg-white p-10 lg:p-12 rounded-[3.5rem] shadow-[0_10px_40px_rgba(0,0,0,0.03)] border border-slate-100 relative overflow-hidden flex flex-col items-center text-center self-start">
-                       <div className="relative mb-8 flex items-center justify-center">
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-8 items-start">
+                    <div className="lg:col-span-4 bg-white p-4 md:p-10 lg:p-12 rounded-[3.5rem] shadow-[0_10px_40px_rgba(0,0,0,0.03)] border border-slate-100 relative overflow-hidden flex flex-col items-center text-center self-start">
+                       <div className="relative mb-4 md:mb-8 flex items-center justify-center">
                           <div className="w-48 h-48 rounded-full border-[14px] border-slate-50 flex flex-col items-center justify-center relative shadow-inner bg-slate-50/20">
                              <p className="text-6xl font-black text-slate-900 tracking-tighter leading-none">{currentScore}</p>
                              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2">/ 100</p>
@@ -648,13 +648,13 @@ const SkillTracker: React.FC<SkillTrackerProps> = ({
                        </div>
                     </div>
 
-                    <div className="lg:col-span-8 bg-white p-10 lg:p-12 rounded-[3.5rem] shadow-[0_10px_40px_rgba(0,0,0,0.03)] border border-slate-100 flex flex-col justify-center min-h-full">
+                    <div className="lg:col-span-8 bg-white p-4 md:p-10 lg:p-12 rounded-[3.5rem] shadow-[0_10px_40px_rgba(0,0,0,0.03)] border border-slate-100 flex flex-col justify-center min-h-full">
                        <SectionLabel label={aiLang === 'id' ? 'ANALISIS EKSEKUTIF' : 'EXECUTIVE ANALYSIS'} color="indigo" />
                        <div className="text-sm lg:text-[15px] text-slate-600 leading-relaxed font-medium italic relative space-y-4 whitespace-pre-line">
                           <span className="text-6xl text-slate-100 absolute -top-8 -left-4 font-serif pointer-events-none select-none">"</span>
                           {(aiResults.scoreExplanation || '').split('\n').map((para, i) => para.trim() ? <p key={i} className="relative z-10">{para}</p> : null)}
                        </div>
-                       <div className="mt-10 p-6 bg-indigo-50 rounded-[2rem] border border-indigo-100 flex items-center gap-6">
+                       <div className="mt-6 md:mt-10 p-3 md:p-6 bg-indigo-50 rounded-[2rem] border border-indigo-100 flex items-center gap-3 md:gap-6">
                           <div className="text-3xl animate-bounce">✨</div>
                           <p className="text-sm font-black text-indigo-900 italic leading-tight opacity-80">
                             "{aiResults.motivation || '--'}"
@@ -664,11 +664,11 @@ const SkillTracker: React.FC<SkillTrackerProps> = ({
                   </div>
 
                   {/* NEXT SMALL ACTIONS (MICRO ACTIONS) */}
-                  <div className="bg-white p-10 lg:p-14 rounded-[4rem] shadow-[0_10px_40px_rgba(0,0,0,0.03)] border border-slate-100">
+                  <div className="bg-white p-4 md:p-10 lg:p-14 rounded-[4rem] shadow-[0_10px_40px_rgba(0,0,0,0.03)] border border-slate-100">
                     <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.4em] mb-12 text-center">
                       {aiLang === 'id' ? 'LANGKAH MIKRO BERIKUTNYA (MICRO ACTIONS)' : 'NEXT SMALL ACTIONS'}
                     </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
                        <ActionCard timeframe={aiLang === 'id' ? 'MINGGU INI' : 'THIS WEEK'} action={aiResults.immediateActions?.weekly} color="rose" icon="🗓️" onPlan={() => handleAddActionToTodo(aiResults.immediateActions?.weekly, 'WEEK')} />
                        <ActionCard timeframe={aiLang === 'id' ? 'BULAN INI' : 'THIS MONTH'} action={aiResults.immediateActions?.monthly} color="indigo" icon="🗓️" onPlan={() => handleAddActionToTodo(aiResults.immediateActions?.monthly, 'MONTH')} />
                        <ActionCard timeframe={aiLang === 'id' ? 'BULAN DEPAN' : 'NEXT MONTH'} action={aiResults.immediateActions?.nextMonth} color="emerald" icon="🚀" onPlan={() => handleAddActionToTodo(aiResults.immediateActions?.nextMonth, 'NEXT')} />
@@ -676,13 +676,13 @@ const SkillTracker: React.FC<SkillTrackerProps> = ({
                   </div>
 
                   {/* EXPERIENCE ROADMAP PREREQUISITES */}
-                  <div className="bg-white p-10 lg:p-14 rounded-[4rem] shadow-sm border border-slate-100">
+                  <div className="bg-white p-4 md:p-10 lg:p-14 rounded-[4rem] shadow-sm border border-slate-100">
                     <SectionLabel label={aiLang === 'id' ? 'PRASYARAT JALUR PENGALAMAN' : 'EXPERIENCE PATHWAY PREREQUISITES'} color="indigo" />
                     <div className="relative">
                       {/* Timeline Line */}
                       <div className="absolute left-[19px] top-6 bottom-6 w-0.5 bg-slate-100 lg:hidden"></div>
                       
-                      <div className="space-y-10 lg:space-y-0 lg:grid lg:grid-cols-3 lg:gap-12 relative">
+                      <div className="space-y-3 md:space-y-6 md:space-y-10 lg:space-y-0 lg:grid lg:grid-cols-3 lg:gap-12 relative">
                         {aiResults.experienceRoadmap?.map((step, i) => (
                           <div key={i} className="relative pl-14 lg:pl-0 flex flex-col group">
                             {/* Dot / Indicator */}
@@ -715,13 +715,13 @@ const SkillTracker: React.FC<SkillTrackerProps> = ({
                   </div>
 
                   {/* GAPS & RECOMMENDATIONS */}
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 md:gap-10">
                     {/* Critical Gaps Section */}
-                    <div className="bg-white p-10 rounded-[3.5rem] shadow-sm border border-slate-100 flex flex-col h-full">
+                    <div className="bg-white p-4 md:p-10 rounded-[3.5rem] shadow-sm border border-slate-100 flex flex-col h-full">
                       <SectionLabel label={aiLang === 'id' ? 'GAP SKILL KRITIS' : 'CRUCIAL SKILL GAPS'} color="rose" />
-                      <div className="space-y-6 flex-1">
+                      <div className="space-y-3 md:space-y-6 flex-1">
                         {(aiResults.criticalGaps?.length || 0) > 0 ? aiResults.criticalGaps?.map((gap: any, i: number) => (
-                          <div key={i} className="p-6 bg-rose-50/40 rounded-[2.5rem] border border-rose-100 group hover:bg-rose-50 transition-all duration-500">
+                          <div key={i} className="p-3 md:p-6 bg-rose-50/40 rounded-[2.5rem] border border-rose-100 group hover:bg-rose-50 transition-all duration-500">
                             <div className="flex justify-between items-center mb-3">
                               <p className="font-black text-slate-800 text-sm uppercase tracking-tight">{gap.skill}</p>
                               <span className={`px-3 py-1 text-white text-[8px] font-black rounded-full uppercase tracking-widest shadow-sm ${gap.priority?.includes('CRITICAL') ? 'bg-rose-600' : 'bg-rose-400'}`}>{gap.priority}</span>
@@ -729,7 +729,7 @@ const SkillTracker: React.FC<SkillTrackerProps> = ({
                             <p className="text-[12px] text-slate-600 leading-relaxed font-bold italic opacity-70">"{gap.why}"</p>
                           </div>
                         )) : (
-                          <div className="p-10 text-center bg-slate-50 rounded-3xl border border-dashed border-slate-200">
+                          <div className="p-4 md:p-10 text-center bg-slate-50 rounded-3xl border border-dashed border-slate-200">
                              <p className="text-slate-400 font-bold text-xs uppercase tracking-widest">No Critical Gaps Detected</p>
                           </div>
                         )}
@@ -737,9 +737,9 @@ const SkillTracker: React.FC<SkillTrackerProps> = ({
                     </div>
 
                     {/* Recommendations Section */}
-                    <div className="bg-white p-10 rounded-[3.5rem] shadow-sm border border-slate-100">
+                    <div className="bg-white p-4 md:p-10 rounded-[3.5rem] shadow-sm border border-slate-100">
                       <SectionLabel label={aiLang === 'id' ? 'REKOMENDASI STRATEGIS' : 'STRATEGIC RECOMMENDATIONS'} color="indigo" />
-                      <div className="space-y-8">
+                      <div className="space-y-4 md:space-y-8">
                          <div>
                             <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
                                <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full"></span>
@@ -767,7 +767,7 @@ const SkillTracker: React.FC<SkillTrackerProps> = ({
                 </div>
 
                 {/* DETAILED ROADMAP STEPS */}
-                <div className="bg-white p-10 lg:p-14 rounded-[4rem] shadow-sm border border-slate-100">
+                <div className="bg-white p-4 md:p-10 lg:p-14 rounded-[4rem] shadow-sm border border-slate-100">
                   <SectionLabel label={aiLang === 'id' ? 'ROADMAP DETAILED STEPS' : 'DETAILED ROADMAP STEPS'} color="slate" />
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-12 relative">
                      {(aiResults.roadmapSteps?.length || 0) > 0 ? aiResults.roadmapSteps?.map((step: any, i: number) => (
@@ -785,10 +785,10 @@ const SkillTracker: React.FC<SkillTrackerProps> = ({
                 </div>
 
                 {/* SUMMARY FOOTER */}
-                <div className="bg-slate-950 p-10 lg:p-14 rounded-[4rem] border border-white/10 text-white/90 relative overflow-hidden">
+                <div className="bg-slate-950 p-4 md:p-10 lg:p-14 rounded-[4rem] border border-white/10 text-white/90 relative overflow-hidden">
                   <div className="relative z-10">
                     <SectionLabel label="SUMMARY CONCLUSION" color="white" />
-                    <div className="text-base lg:text-lg text-slate-300 leading-relaxed font-medium space-y-6 first-letter:text-5xl first-letter:font-black first-letter:text-indigo-500 first-letter:float-left first-letter:mr-4 first-letter:mt-1 whitespace-pre-line">
+                    <div className="text-base lg:text-lg text-slate-300 leading-relaxed font-medium space-y-3 md:space-y-6 first-letter:text-5xl first-letter:font-black first-letter:text-indigo-500 first-letter:float-left first-letter:mr-4 first-letter:mt-1 whitespace-pre-line">
                       {(aiResults.executiveSummary || '').split('\n').map((para, i) => para.trim() ? <p key={i}>{para}</p> : null)}
                     </div>
                   </div>
@@ -799,7 +799,7 @@ const SkillTracker: React.FC<SkillTrackerProps> = ({
           })())}
 
           {!aiResults && !isAiAnalyzing && (
-            <div className="py-32 text-center space-y-6 bg-slate-50/50 rounded-[4rem] border-4 border-dashed border-slate-100 animate-in fade-in duration-1000">
+            <div className="py-32 text-center space-y-3 md:space-y-6 bg-slate-50/50 rounded-[4rem] border-4 border-dashed border-slate-100 animate-in fade-in duration-1000">
                <div className="text-6xl mb-6 opacity-30">🕯️</div>
                <p className="text-slate-400 font-black uppercase tracking-[0.4em] text-xs">
                  {aiLang === 'id' ? 'BELUM ADA STRATEGI TERDETEKSI' : 'NO STRATEGY DETECTED'}
@@ -872,7 +872,7 @@ const SkillTracker: React.FC<SkillTrackerProps> = ({
 
           <div className="lg:hidden p-4 grid grid-cols-1 gap-4">
             {skills.map(skill => (
-              <div key={skill.id} className="p-6 bg-slate-50/50 rounded-3xl border border-slate-100 snap-start">
+              <div key={skill.id} className="p-3 md:p-6 bg-slate-50/50 rounded-3xl border border-slate-100 snap-start">
                 <div className="flex justify-between items-start mb-4">
                   <div>
                     <h4 className="font-black text-slate-800 text-lg leading-tight">{skill.name}</h4>
@@ -898,7 +898,7 @@ const SkillTracker: React.FC<SkillTrackerProps> = ({
 
       {/* Training History Tab Content */}
       {activeSubTab === 'learning' && (
-        <div className="space-y-6">
+        <div className="space-y-3 md:space-y-6">
           <div className="bg-white p-5 lg:p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-wrap gap-4 items-end animate-in slide-in-from-top-4 duration-500">
             <div className="flex-1 min-w-[150px]">
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Priority</label>
@@ -1017,7 +1017,7 @@ const SkillTracker: React.FC<SkillTrackerProps> = ({
 
             <div className="lg:hidden p-4 grid grid-cols-1 gap-4">
                {paginatedTrainings.map(t => (
-                 <div key={t.id} className={`p-6 bg-white rounded-3xl border border-slate-100 transition-all snap-start ${t.status === TrainingStatus.COMPLETED ? 'opacity-80' : ''}`}>
+                 <div key={t.id} className={`p-3 md:p-6 bg-white rounded-3xl border border-slate-100 transition-all snap-start ${t.status === TrainingStatus.COMPLETED ? 'opacity-80' : ''}`}>
                     <div className="flex justify-between items-start mb-4">
                        <div className="flex-1 mr-4">
                           <h4 className={`font-black text-slate-800 leading-tight text-lg ${t.status === TrainingStatus.COMPLETED ? 'line-through decoration-slate-400' : ''}`}>{t.name}</h4>
@@ -1068,7 +1068,7 @@ const SkillTracker: React.FC<SkillTrackerProps> = ({
           </div>
 
           {totalTrainPages > 1 && (
-            <div className="flex items-center justify-between bg-white px-6 lg:px-8 py-4 rounded-[2rem] border border-slate-100 shadow-sm animate-in slide-in-from-bottom-4">
+            <div className="flex items-center justify-between bg-white px-6 lg:px-5 py-3 md:px-8 md:py-4 rounded-[2rem] border border-slate-100 shadow-sm animate-in slide-in-from-bottom-4">
               <button disabled={trainPage === 1} onClick={() => setTrainPage(p => p - 1)} className="px-4 py-2 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-blue-600 disabled:opacity-30 transition-colors">← Prev</button>
               <div className="flex gap-2">
                 {[...Array(totalTrainPages)].map((_, i) => (
@@ -1082,7 +1082,7 @@ const SkillTracker: React.FC<SkillTrackerProps> = ({
       )}
 
       {activeSubTab === 'certs' && (
-        <div className="space-y-6">
+        <div className="space-y-3 md:space-y-6">
           <div className="bg-white p-5 lg:p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-wrap gap-4 items-end animate-in slide-in-from-top-4 duration-500">
             <div className="flex-1 min-w-[150px]">
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Status</label>
@@ -1197,7 +1197,7 @@ const SkillTracker: React.FC<SkillTrackerProps> = ({
               {paginatedCerts.map(c => {
                 const overdue = isCertOverdue(c);
                 return (
-                  <div key={c.id} className="bg-white p-6 rounded-[2.5rem] shadow-sm border border-slate-100 group transition-all">
+                  <div key={c.id} className="bg-white p-3 md:p-6 rounded-[2.5rem] shadow-sm border border-slate-100 group transition-all">
                     <div className="flex justify-between items-start mb-4">
                       <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-2xl shadow-inner">📜</div>
                       <div className="flex gap-2">
@@ -1233,7 +1233,7 @@ const SkillTracker: React.FC<SkillTrackerProps> = ({
           </div>
 
           {totalCertPages > 1 && (
-            <div className="flex items-center justify-between bg-white px-6 lg:px-8 py-4 rounded-[2rem] border border-slate-100 shadow-sm">
+            <div className="flex items-center justify-between bg-white px-6 lg:px-5 py-3 md:px-8 md:py-4 rounded-[2rem] border border-slate-100 shadow-sm">
               <button disabled={certPage === 1} onClick={() => setCertPage(p => p - 1)} className="px-4 py-2 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-blue-600 disabled:opacity-30 transition-colors">← Prev</button>
               <div className="flex gap-2">
                 {[...Array(totalCertPages)].map((_, i) => (
@@ -1266,7 +1266,7 @@ const SectionLabel: React.FC<{ label: string; color: string }> = ({ label, color
     white: 'text-white/50'
   };
   return (
-    <h4 className={`text-[10px] font-black uppercase tracking-[0.4em] mb-8 ${colorMap[color]}`}>{label}</h4>
+    <h4 className={`text-[10px] font-black uppercase tracking-[0.4em] mb-4 md:mb-8 ${colorMap[color]}`}>{label}</h4>
   );
 };
 
@@ -1282,10 +1282,10 @@ const ActionCard: React.FC<{ timeframe: string; action: string; color: string; i
     emerald: 'bg-emerald-600 hover:bg-emerald-700'
   };
   return (
-    <div className={`p-8 rounded-[3rem] border-2 group hover:shadow-2xl transition-all duration-700 hover:-translate-y-2 flex flex-col items-center text-center ${colorMap[color]}`}>
+    <div className={`p-4 md:p-8 rounded-[3rem] border-2 group hover:shadow-2xl transition-all duration-700 hover:-translate-y-2 flex flex-col items-center text-center ${colorMap[color]}`}>
        <div className="w-14 h-14 rounded-2xl bg-white/50 flex items-center justify-center text-2xl shadow-inner mb-6 group-hover:scale-110 transition-transform">{icon}</div>
        <p className="text-[10px] font-black uppercase tracking-[0.3em] mb-4 opacity-70">{timeframe}</p>
-       <p className="text-xs font-bold leading-relaxed text-slate-800 flex-1 mb-8">
+       <p className="text-xs font-bold leading-relaxed text-slate-800 flex-1 mb-4 md:mb-8">
          {action || "Langkah strategis sedang diproses..."}
        </p>
        <button 
@@ -1309,7 +1309,7 @@ const RecommendationCard: React.FC<{ item: AiRecommendation; type: string; onPla
     : 'TAMBAHKAN KE PLAN CERTIFICATION';
 
   return (
-    <div className={`p-6 rounded-[2.5rem] border group hover:shadow-lg transition-all duration-500 flex flex-col ${colorMap[color]}`}>
+    <div className={`p-3 md:p-6 rounded-[2.5rem] border group hover:shadow-lg transition-all duration-500 flex flex-col ${colorMap[color]}`}>
       <div className="flex-1 mb-4">
           <p className="text-xs font-black text-slate-800 uppercase tracking-tight leading-snug">{item.name}</p>
           <div className="flex flex-wrap gap-4 mt-3">
@@ -1336,7 +1336,7 @@ const StatWidget: React.FC<{ title: string; value: string | number; icon: string
     indigo: 'bg-indigo-50 text-indigo-600 border-indigo-100'
   };
   return (
-    <div className="bg-white p-7 rounded-[2rem] shadow-sm border border-slate-100 flex items-center gap-6 group hover:shadow-md transition-all">
+    <div className="bg-white p-7 rounded-[2rem] shadow-sm border border-slate-100 flex items-center gap-3 md:gap-6 group hover:shadow-md transition-all">
       <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shadow-inner border ${colorMap[color]}`}>{icon}</div>
       <div>
         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{title}</p>
@@ -1361,7 +1361,7 @@ const SubTabButton: React.FC<{ active: boolean; onClick: () => void; label: stri
 const SkillForm: React.FC<{ initialData?: Skill; onSubmit: (data: Partial<Skill>) => void; onCancel: () => void }> = ({ initialData, onSubmit, onCancel }) => {
   const [formData, setFormData] = useState<Partial<Skill>>(initialData || { name: '', category: SkillCategory.HARD, currentLevel: 3, requiredLevel: 5, status: SkillStatus.GAP, priority: SkillPriority.MEDIUM, actionPlan: '', lastUsed: new Date().getFullYear().toString() });
   return (
-    <div className="space-y-8">
+    <div className="space-y-4 md:space-y-8">
       <div>
         <h3 className="text-2xl font-black text-slate-900 tracking-tight">Expertise Detail</h3>
         <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Define your competency benchmarks</p>
@@ -1432,7 +1432,7 @@ const TrainingForm: React.FC<{ initialData?: Training; onSubmit: (data: Partial<
   }, [startDate, endDate, isRange]);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4 md:space-y-8">
       <div>
         <h3 className="text-2xl font-black text-slate-900 tracking-tight">Learning Record</h3>
         <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Track your educational growth</p>
@@ -1539,7 +1539,7 @@ const CertForm: React.FC<{ skills: Skill[], initialData?: Certification; onSubmi
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4 md:space-y-8">
       <div>
         <h3 className="text-2xl font-black text-slate-900 tracking-tight">Professional Credential</h3>
         <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Formalize your expertise</p>

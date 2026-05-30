@@ -76,10 +76,10 @@ const TrackingSettings: React.FC<TrackingSettingsProps> = ({ onToast }) => {
   if (loading) return <div className="p-20 text-center text-slate-400 font-black uppercase text-[10px] tracking-widest animate-pulse">Memuat Data Tracking...</div>;
 
   return (
-    <div className="max-w-4xl space-y-8 animate-in fade-in duration-500">
-       <div className="bg-white p-8 lg:p-14 rounded-[3.5rem] shadow-sm border border-slate-100">
-          <div className="flex items-center justify-between mb-10 pb-8 border-b border-slate-50">
-             <div className="flex items-center gap-6">
+    <div className="max-w-4xl space-y-4 md:space-y-8 animate-in fade-in duration-500">
+       <div className="bg-white p-4 md:p-8 lg:p-14 rounded-[3.5rem] shadow-sm border border-slate-100">
+          <div className="flex items-center justify-between mb-6 md:mb-10 pb-8 border-b border-slate-50">
+             <div className="flex items-center gap-3 md:gap-6">
                 <div className="w-16 h-16 bg-indigo-600 text-white rounded-[1.75rem] flex items-center justify-center text-3xl shadow-xl">
                    <i className="bi bi-bar-chart-steps"></i>
                 </div>
@@ -108,8 +108,8 @@ const TrackingSettings: React.FC<TrackingSettingsProps> = ({ onToast }) => {
              </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-10">
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <form onSubmit={handleSubmit} className="space-y-3 md:space-y-6 md:space-y-10">
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
                 {/* Meta Pixel & Conversion API */}
                 <div className="space-y-4">
                    <div className="flex items-center gap-3">
@@ -117,7 +117,7 @@ const TrackingSettings: React.FC<TrackingSettingsProps> = ({ onToast }) => {
                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Meta Pixel ID</label>
                    </div>
                    <input 
-                    className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none font-bold text-xs focus:border-indigo-400 transition-all"
+                    className="w-full px-4 py-3 md:px-6 md:py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none font-bold text-xs focus:border-indigo-400 transition-all"
                     placeholder="1234567890..."
                     value={config.metaPixelId || ''}
                     onChange={e => setConfig({...config, metaPixelId: e.target.value.trim()})}
@@ -128,7 +128,7 @@ const TrackingSettings: React.FC<TrackingSettingsProps> = ({ onToast }) => {
                          <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Conversion API Access Token</label>
                       </div>
                       <textarea 
-                       className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none font-bold text-[10px] focus:border-indigo-400 transition-all min-h-[100px]"
+                       className="w-full px-4 py-3 md:px-6 md:py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none font-bold text-[10px] focus:border-indigo-400 transition-all min-h-[100px]"
                        placeholder="EAAB..."
                        value={config.metaConversionAccessToken || ''}
                        onChange={e => setConfig({...config, metaConversionAccessToken: e.target.value.trim()})}
@@ -138,7 +138,7 @@ const TrackingSettings: React.FC<TrackingSettingsProps> = ({ onToast }) => {
                          <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Test Event Code (Optional)</label>
                       </div>
                       <input 
-                       className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none font-bold text-xs focus:border-indigo-400 transition-all"
+                       className="w-full px-4 py-3 md:px-6 md:py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none font-bold text-xs focus:border-indigo-400 transition-all"
                        placeholder="TEST12345"
                        value={config.metaTestCode || ''}
                        onChange={e => setConfig({...config, metaTestCode: e.target.value.trim()})}
@@ -155,7 +155,7 @@ const TrackingSettings: React.FC<TrackingSettingsProps> = ({ onToast }) => {
                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">GA4 Measurement ID</label>
                    </div>
                    <input 
-                    className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none font-bold text-xs focus:border-indigo-400 transition-all"
+                    className="w-full px-4 py-3 md:px-6 md:py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none font-bold text-xs focus:border-indigo-400 transition-all"
                     placeholder="G-XXXXXXX"
                     value={config.googleAnalyticsId || ''}
                     onChange={e => setConfig({...config, googleAnalyticsId: e.target.value.trim()})}
@@ -170,7 +170,7 @@ const TrackingSettings: React.FC<TrackingSettingsProps> = ({ onToast }) => {
                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">TikTok Pixel ID</label>
                    </div>
                    <input 
-                    className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none font-bold text-xs focus:border-indigo-400 transition-all"
+                    className="w-full px-4 py-3 md:px-6 md:py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none font-bold text-xs focus:border-indigo-400 transition-all"
                     placeholder="CXXXXXXXXXXXX"
                     value={config.tiktokPixelId || ''}
                     onChange={e => setConfig({...config, tiktokPixelId: e.target.value.trim()})}
@@ -182,7 +182,7 @@ const TrackingSettings: React.FC<TrackingSettingsProps> = ({ onToast }) => {
              {/* Event Mapping section removed to use default settings */}
 
 
-             <div className="p-8 bg-blue-50/50 rounded-[2.5rem] border border-blue-100">
+             <div className="p-4 md:p-8 bg-blue-50/50 rounded-[2.5rem] border border-blue-100">
                 <h4 className="text-[11px] font-black text-blue-900 uppercase tracking-widest mb-4 flex items-center gap-2">
                    <i className="bi bi-info-circle-fill"></i> Panduan Integrasi
                 </h4>

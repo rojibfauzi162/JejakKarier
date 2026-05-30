@@ -13,7 +13,7 @@ interface CareerPlannerProps {
 
 const CareerPlanner: React.FC<CareerPlannerProps> = ({ paths, appData, onAddPath, onUpdatePath, onDeletePath }) => {
   return (
-    <div className="space-y-8 animate-in slide-in-from-right duration-500 pb-20">
+    <div className="space-y-4 md:space-y-8 animate-in slide-in-from-right duration-500 pb-20">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">Career Path Planner</h2>

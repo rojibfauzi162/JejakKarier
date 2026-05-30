@@ -121,9 +121,9 @@ const DuitkuSetup: React.FC<DuitkuSetupProps> = ({ onToast }) => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
+    <div className="max-w-4xl mx-auto p-3 md:p-6">
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-6 text-white flex justify-between items-center">
+        <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-3 md:p-6 text-white flex justify-between items-center">
           <div>
             <div className="flex items-center gap-3 mb-2">
               <ShieldCheck className="w-8 h-8" />
@@ -153,8 +153,8 @@ const DuitkuSetup: React.FC<DuitkuSetupProps> = ({ onToast }) => {
           </div>
         )}
 
-        <form onSubmit={handleSave} className="p-8 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <form onSubmit={handleSave} className="p-4 md:p-8 space-y-3 md:space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6">
             <div className="space-y-2">
               <label className="text-sm font-semibold text-gray-700">Merchant Code</label>
               <input
@@ -276,7 +276,7 @@ const DuitkuSetup: React.FC<DuitkuSetupProps> = ({ onToast }) => {
               href={config.environment === 'production' ? 'https://dashboard.duitku.com/' : 'https://sandbox.duitku.com/'}
               target="_blank"
               rel="noopener noreferrer"
-              className="px-6 py-4 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition-all flex items-center gap-2"
+              className="px-4 py-3 md:px-6 md:py-4 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition-all flex items-center gap-2"
             >
               <ExternalLink className="w-5 h-5" />
               Buka Dashboard Duitku
@@ -285,18 +285,18 @@ const DuitkuSetup: React.FC<DuitkuSetupProps> = ({ onToast }) => {
         </form>
       </div>
 
-      <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+      <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-6">
+        <div className="bg-white p-3 md:p-6 rounded-2xl border border-gray-100 shadow-sm">
           <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 mb-4 font-bold">1</div>
           <h3 className="font-bold text-gray-900 mb-2">Dapatkan API Key</h3>
           <p className="text-sm text-gray-500">Login ke Duitku, buka Project Settings, dan salin Merchant Code serta Merchant Key Anda.</p>
         </div>
-        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+        <div className="bg-white p-3 md:p-6 rounded-2xl border border-gray-100 shadow-sm">
           <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 mb-4 font-bold">2</div>
           <h3 className="font-bold text-gray-900 mb-2">Simpan di Sini</h3>
           <p className="text-sm text-gray-500">Masukkan data tersebut ke form di atas dan klik simpan. Pilih Sandbox untuk percobaan.</p>
         </div>
-        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+        <div className="bg-white p-3 md:p-6 rounded-2xl border border-gray-100 shadow-sm">
           <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 mb-4 font-bold">3</div>
           <h3 className="font-bold text-gray-900 mb-2">Set Callback</h3>
           <p className="text-sm text-gray-500">Salin Callback URL di atas dan tempelkan ke kolom 'Url Callback' di dashboard Duitku.</p>

@@ -12,7 +12,7 @@ interface ReviewsProps {
 
 const Reviews: React.FC<ReviewsProps> = ({ reviews, onAdd, onDelete }) => {
   return (
-    <div className="space-y-8 animate-in slide-in-from-bottom duration-500">
+    <div className="space-y-4 md:space-y-8 animate-in slide-in-from-bottom duration-500">
       <header>
         <h2 className="text-3xl font-bold text-slate-900 uppercase">Monthly Reviews</h2>
         <p className="text-slate-500">Evaluasi berkala rekam jejak pertumbuhan Anda.</p>

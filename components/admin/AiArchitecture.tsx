@@ -24,8 +24,8 @@ const AiArchitecture: React.FC<AiArchitectureProps> = ({
   handleModelSelect, dropdownRef 
 }) => {
   return (
-    <div className="bg-white p-8 lg:p-12 rounded-[3.5rem] border border-slate-100 shadow-sm max-w-5xl">
-       <div className="flex items-center gap-8 mb-10 pb-8 border-b border-slate-50">
+    <div className="bg-white p-4 md:p-8 lg:p-12 rounded-[3.5rem] border border-slate-100 shadow-sm max-w-5xl">
+       <div className="flex items-center gap-4 md:gap-8 mb-6 md:mb-10 pb-8 border-b border-slate-50">
           <div className="w-20 h-20 bg-indigo-600 text-white rounded-[2rem] flex items-center justify-center text-4xl shadow-xl">🧠</div>
           <div>
             <h3 className="text-2xl font-black text-slate-900 uppercase">Pusat Kontrol AI</h3>
@@ -33,8 +33,8 @@ const AiArchitecture: React.FC<AiArchitectureProps> = ({
           </div>
        </div>
 
-       <form onSubmit={handleSaveAiConfig} className="space-y-10">
-          <div className="space-y-6">
+       <form onSubmit={handleSaveAiConfig} className="space-y-3 md:space-y-6 md:space-y-10">
+          <div className="space-y-3 md:space-y-6">
             <div className="space-y-2">
                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">OpenRouter API Key</label>
                <input 
@@ -46,7 +46,7 @@ const AiArchitecture: React.FC<AiArchitectureProps> = ({
                />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative" ref={dropdownRef}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 relative" ref={dropdownRef}>
                <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Pilih Model</label>
                   <div 
@@ -63,7 +63,7 @@ const AiArchitecture: React.FC<AiArchitectureProps> = ({
                          <input placeholder="Cari model..." className="w-full px-4 py-2 border rounded-xl text-xs font-bold" value={modelSearchTerm || ''} onChange={e => setModelSearchTerm(e.target.value)} />
                       </div>
                       {filteredOpenRouterModels.map(m => (
-                        <div key={m.id} onClick={() => handleModelSelect(m)} className="px-6 py-4 hover:bg-indigo-50 cursor-pointer border-b border-slate-50">
+                        <div key={m.id} onClick={() => handleModelSelect(m)} className="px-4 py-3 md:px-6 md:py-4 hover:bg-indigo-50 cursor-pointer border-b border-slate-50">
                            <p className="text-xs font-black text-slate-800">{m.name}</p>
                            <p className="text-[9px] text-slate-400 uppercase">{m.id}</p>
                         </div>

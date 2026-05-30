@@ -81,7 +81,7 @@ const PublicLegalView: React.FC<PublicLegalViewProps> = ({ type, onBack }) => {
 
       {/* Konten Utama */}
       <main className="max-w-4xl mx-auto px-6 pt-12 lg:pt-20">
-        <div className="bg-white p-8 lg:p-20 rounded-[3rem] shadow-xl shadow-slate-200/50 border border-slate-100">
+        <div className="bg-white p-4 md:p-8 lg:p-20 rounded-[3rem] shadow-xl shadow-slate-200/50 border border-slate-100">
            <header className="mb-12 pb-12 border-b border-slate-50">
               <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-[9px] font-black uppercase tracking-widest mb-6">
                 Official Release
@@ -109,7 +109,7 @@ const PublicLegalView: React.FC<PublicLegalViewProps> = ({ type, onBack }) => {
               </div>
            </article>
 
-           <div className="mt-20 pt-10 border-t border-slate-50 flex flex-col md:flex-row justify-between items-center gap-6">
+           <div className="mt-20 pt-10 border-t border-slate-50 flex flex-col md:flex-row justify-between items-center gap-3 md:gap-6">
               <div className="flex items-center gap-3">
                  <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center">
                     <i className="bi bi-shield-lock"></i>

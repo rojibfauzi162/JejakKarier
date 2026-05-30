@@ -38,15 +38,15 @@ const Reviews: React.FC<ReviewsProps> = ({ reviews, onAdd, onDelete }) => {
   };
 
   return (
-    <div className="space-y-8 animate-in slide-in-from-bottom duration-500">
+    <div className="space-y-4 md:space-y-8 animate-in slide-in-from-bottom duration-500">
       <header>
         <h2 className="text-3xl font-bold text-slate-900">Monthly Reviews</h2>
         <p className="text-slate-500">Reflect on your growth and plan the month ahead.</p>
       </header>
 
-      <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-2 gap-6">
+      <div className="bg-white p-4 md:p-8 rounded-3xl shadow-sm border border-slate-100">
+        <form onSubmit={handleSubmit} className="space-y-3 md:space-y-6">
+          <div className="grid grid-cols-2 gap-3 md:gap-6">
             <div className="space-y-2">
               <label className="text-xs font-bold text-slate-400 uppercase">Month</label>
               <select 
@@ -67,7 +67,7 @@ const Reviews: React.FC<ReviewsProps> = ({ reviews, onAdd, onDelete }) => {
               />
             </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6">
             <ReviewField label="What went well?" value={formData.positives || ''} onChange={v => setFormData({ ...formData, positives: v })} />
             <ReviewField label="What to improve?" value={formData.improvements || ''} onChange={v => setFormData({ ...formData, improvements: v })} />
             <ReviewField label="Key obstacles" value={formData.obstacles || ''} onChange={v => setFormData({ ...formData, obstacles: v })} />
@@ -82,14 +82,14 @@ const Reviews: React.FC<ReviewsProps> = ({ reviews, onAdd, onDelete }) => {
         </form>
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-3 md:space-y-6">
         {reviews.slice().reverse().map(review => (
-          <div key={review.id} className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 group">
+          <div key={review.id} className="bg-white p-4 md:p-8 rounded-3xl shadow-sm border border-slate-100 group">
              <div className="flex justify-between mb-6">
                <h3 className="text-xl font-bold text-slate-800">{review.month} {review.year}</h3>
                <button onClick={() => onDelete(review.id)} className="opacity-0 group-hover:opacity-100 text-slate-300 hover:text-red-500">✕</button>
              </div>
-             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8">
                <div className="space-y-4">
                  <div>
                    <h4 className="text-xs font-bold text-slate-400 uppercase mb-1">Review Highlights</h4>
@@ -98,7 +98,7 @@ const Reviews: React.FC<ReviewsProps> = ({ reviews, onAdd, onDelete }) => {
                  </div>
                </div>
                {review.aiSummary && (
-                 <div className="bg-indigo-50 p-6 rounded-2xl relative overflow-hidden">
+                 <div className="bg-indigo-50 p-3 md:p-6 rounded-2xl relative overflow-hidden">
                    <div className="relative z-10">
                      <h4 className="text-xs font-bold text-indigo-400 uppercase mb-2">AI Summary & Action Items</h4>
                      <p className="text-sm text-indigo-900 leading-relaxed whitespace-pre-wrap">{review.aiSummary}</p>

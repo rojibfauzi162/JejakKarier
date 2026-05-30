@@ -231,13 +231,13 @@ const ProfileView: React.FC<ProfileViewProps> = ({
       </header>
 
       {/* 01: Identitas Diri */}
-      <section className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100">
-        <div className="flex items-center gap-3 mb-8">
+      <section className="bg-white p-4 md:p-8 rounded-[2.5rem] shadow-sm border border-slate-100">
+        <div className="flex items-center gap-3 mb-4 md:mb-8">
           <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center font-bold">01</div>
           <h3 className="text-xl font-bold text-slate-800">Identitas Diri</h3>
         </div>
-        <form onSubmit={handleProfileSubmit} className="space-y-8">
-          <div className="flex flex-col md:flex-row gap-10">
+        <form onSubmit={handleProfileSubmit} className="space-y-4 md:space-y-8">
+          <div className="flex flex-col md:flex-row gap-5 md:gap-10">
             {/* Photo Section */}
             <div className="flex flex-col items-center gap-4">
                <div 
@@ -263,7 +263,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({
                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Foto Formal 1:1</p>
             </div>
 
-            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-3 md:gap-6">
               <div className="md:col-span-2">
                 <InputGroup label="Nama Lengkap" value={formData.name} onChange={v => setFormData({ ...formData, name: v })} placeholder="e.g. Alex Johnson" />
               </div>
@@ -321,8 +321,8 @@ const ProfileView: React.FC<ProfileViewProps> = ({
       </section>
 
       {/* 02: Work Experience */}
-      <section className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100">
-        <div className="flex items-center justify-between mb-8">
+      <section className="bg-white p-4 md:p-8 rounded-[2.5rem] shadow-sm border border-slate-100">
+        <div className="flex items-center justify-between mb-4 md:mb-8">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center font-bold">02</div>
             <h3 className="text-xl font-bold text-slate-800">Riwayat Pekerjaan</h3>
@@ -335,11 +335,11 @@ const ProfileView: React.FC<ProfileViewProps> = ({
           </button>
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-3 md:space-y-6">
           {workExperiences.map(work => (
-            <div key={work.id} className="p-6 rounded-2xl bg-slate-50 border border-slate-100 relative group">
+            <div key={work.id} className="p-3 md:p-6 rounded-2xl bg-slate-50 border border-slate-100 relative group">
               {isEditingWork === work.id ? (
-                <div className="space-y-6">
+                <div className="space-y-3 md:space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <input 
                       placeholder="Posisi" 
@@ -433,8 +433,8 @@ const ProfileView: React.FC<ProfileViewProps> = ({
       </section>
 
       {/* 03: Education */}
-      <section className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100">
-        <div className="flex items-center justify-between mb-8">
+      <section className="bg-white p-4 md:p-8 rounded-[2.5rem] shadow-sm border border-slate-100">
+        <div className="flex items-center justify-between mb-4 md:mb-8">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center font-bold">03</div>
             <h3 className="text-xl font-bold text-slate-800">Pendidikan</h3>
@@ -447,9 +447,9 @@ const ProfileView: React.FC<ProfileViewProps> = ({
           </button>
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-3 md:space-y-6">
           {educations.map((edu, idx) => (
-            <div key={edu.id} className="p-6 rounded-2xl bg-slate-50 border border-slate-100 relative group">
+            <div key={edu.id} className="p-3 md:p-6 rounded-2xl bg-slate-50 border border-slate-100 relative group">
               {isEditingEdu === edu.id ? (
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -532,13 +532,13 @@ const ProfileView: React.FC<ProfileViewProps> = ({
       </section>
 
       {/* 04: Future Vision */}
-      <section className="bg-slate-900 p-8 rounded-[2.5rem] text-white shadow-xl relative overflow-hidden">
+      <section className="bg-slate-900 p-4 md:p-8 rounded-[2.5rem] text-white shadow-xl relative overflow-hidden">
         <div className="relative z-10">
-          <div className="flex items-center gap-3 mb-8">
+          <div className="flex items-center gap-3 mb-4 md:mb-8">
             <div className="w-10 h-10 bg-white/10 text-white rounded-xl flex items-center justify-center font-bold">04</div>
             <h3 className="text-xl font-bold">Visi Karir</h3>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
             <div className="space-y-2">
               <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block ml-1">Target Jangka Pendek (1-2 thn)</label>
               <input 

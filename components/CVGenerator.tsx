@@ -102,7 +102,7 @@ const CVGenerator: React.FC<CVGeneratorProps> = ({ data }) => {
         
         {/* TEMPLATE 1: Corporate Classic */}
         {selectedTemplate === 't1' && (
-          <div className="space-y-8">
+          <div className="space-y-4 md:space-y-8">
             <div className="absolute top-0 left-0 w-full h-4 bg-blue-600"></div>
             <header className="flex justify-between items-start">
               <div>
@@ -113,7 +113,7 @@ const CVGenerator: React.FC<CVGeneratorProps> = ({ data }) => {
               <ProfilePhoto className="w-28 h-28" />
             </header>
             <div className="text-sm text-slate-600 italic border-l-4 border-blue-600 pl-4">{data.profile.description}</div>
-            <div className="grid grid-cols-1 gap-8">
+            <div className="grid grid-cols-1 gap-4 md:gap-8">
                <CVContent filteredData={filteredData} visibleSections={visibleSections} SectionHeader={SectionHeader} />
             </div>
           </div>
@@ -122,12 +122,12 @@ const CVGenerator: React.FC<CVGeneratorProps> = ({ data }) => {
         {/* TEMPLATE 2: Modern Split (Sidebar) */}
         {selectedTemplate === 't2' && (
           <>
-            <div className="w-1/3 bg-slate-900 text-white p-10 flex flex-col items-center">
+            <div className="w-1/3 bg-slate-900 text-white p-4 md:p-10 flex flex-col items-center">
               <ProfilePhoto className="w-32 h-32 rounded-full border-4 border-slate-800" />
               <h1 className="text-2xl font-black text-center mt-6 tracking-tight leading-tight">{data.profile.name}</h1>
               <p className="text-blue-400 text-[10px] font-bold uppercase tracking-widest mt-2 text-center">{data.profile.currentPosition}</p>
               
-              <div className="w-full mt-10 space-y-8">
+              <div className="w-full mt-6 md:mt-10 space-y-4 md:space-y-8">
                 <div>
                    <h3 className="text-[10px] font-black uppercase text-blue-400 border-b border-white/10 pb-2 mb-4">Contact</h3>
                    <div className="space-y-3 text-[10px] opacity-70">
@@ -148,7 +148,7 @@ const CVGenerator: React.FC<CVGeneratorProps> = ({ data }) => {
                 )}
               </div>
             </div>
-            <div className="flex-1 p-12 bg-white space-y-10">
+            <div className="flex-1 p-12 bg-white space-y-3 md:space-y-6 md:space-y-10">
               <div className="text-sm text-slate-600 leading-relaxed italic">"{data.profile.description}"</div>
               <CVContent filteredData={filteredData} visibleSections={visibleSections} SectionHeader={SectionHeader} hideSections={['skills']} />
             </div>
@@ -157,14 +157,14 @@ const CVGenerator: React.FC<CVGeneratorProps> = ({ data }) => {
 
         {/* TEMPLATE 4: Executive Serif */}
         {selectedTemplate === 't4' && (
-          <div className="space-y-10">
+          <div className="space-y-3 md:space-y-6 md:space-y-10">
             <header className="border-b-2 border-slate-900 pb-8">
                <h1 className="text-5xl font-serif italic text-slate-900">{data.profile.name}</h1>
                <p className="text-lg text-slate-500 uppercase tracking-widest mt-2">{data.profile.currentPosition}</p>
                <div className="flex justify-center mt-4"><ContactInfo /></div>
             </header>
             <div className="max-w-xl mx-auto text-base text-slate-700 leading-loose italic">{data.profile.description}</div>
-            <div className="text-left grid grid-cols-1 gap-10">
+            <div className="text-left grid grid-cols-1 gap-5 md:gap-10">
                <CVContent filteredData={filteredData} visibleSections={visibleSections} SectionHeader={SectionHeader} />
             </div>
           </div>
@@ -172,20 +172,20 @@ const CVGenerator: React.FC<CVGeneratorProps> = ({ data }) => {
 
         {/* TEMPLATE 6: Tech Grid */}
         {selectedTemplate === 't6' && (
-          <div className="space-y-10">
-            <div className="border-4 border-slate-900 p-8 flex justify-between items-center bg-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+          <div className="space-y-3 md:space-y-6 md:space-y-10">
+            <div className="border-4 border-slate-900 p-4 md:p-8 flex justify-between items-center bg-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
                <div>
                   <h1 className="text-4xl font-black tracking-tighter">&gt; {data.profile.name}</h1>
                   <p className="text-blue-600 font-bold mt-1">// {data.profile.currentPosition}</p>
                </div>
                <ProfilePhoto className="w-24 h-24 rounded-none border-4 border-slate-900" />
             </div>
-            <div className="grid grid-cols-12 gap-10">
-               <div className="col-span-8 space-y-10">
+            <div className="grid grid-cols-12 gap-5 md:gap-10">
+               <div className="col-span-8 space-y-3 md:space-y-6 md:space-y-10">
                   <CVContent filteredData={filteredData} visibleSections={visibleSections} SectionHeader={SectionHeader} hideSections={['skills', 'certs']} />
                </div>
-               <div className="col-span-4 bg-white border-2 border-slate-900 p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                  <div className="space-y-8">
+               <div className="col-span-4 bg-white border-2 border-slate-900 p-3 md:p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                  <div className="space-y-4 md:space-y-8">
                      <SectionHeader title="Stack" colorClass="text-slate-900" />
                      <div className="flex flex-col gap-3">
                         {filteredData.skills.map(s => (
@@ -203,9 +203,9 @@ const CVGenerator: React.FC<CVGeneratorProps> = ({ data }) => {
 
         {/* TEMPLATE 10: Modern UI Gradient */}
         {selectedTemplate === 't10' && (
-          <div className="space-y-10">
+          <div className="space-y-3 md:space-y-6 md:space-y-10">
             <header className="bg-gradient-to-r from-indigo-600 to-blue-500 p-12 -m-12 mb-12 text-white flex justify-between items-center">
-               <div className="flex items-center gap-8">
+               <div className="flex items-center gap-4 md:gap-8">
                  <ProfilePhoto className="w-32 h-32 rounded-3xl border-4 border-white/20 shadow-2xl" />
                  <div>
                     <h1 className="text-4xl font-black tracking-tight">{data.profile.name}</h1>
@@ -217,7 +217,7 @@ const CVGenerator: React.FC<CVGeneratorProps> = ({ data }) => {
                  </div>
                </div>
             </header>
-            <div className="bg-blue-50/50 p-6 rounded-3xl border border-blue-100 text-slate-700 italic leading-relaxed text-sm">
+            <div className="bg-blue-50/50 p-3 md:p-6 rounded-3xl border border-blue-100 text-slate-700 italic leading-relaxed text-sm">
                "{data.profile.description}"
             </div>
             <div className="grid grid-cols-2 gap-12">
@@ -228,7 +228,7 @@ const CVGenerator: React.FC<CVGeneratorProps> = ({ data }) => {
 
         {/* DEFAULT Fallback for other templates (T3, T5, T7, T8, T9) */}
         {!['t1', 't2', 't4', 't6', 't10'].includes(selectedTemplate) && (
-          <div className="space-y-8">
+          <div className="space-y-4 md:space-y-8">
              <header className="flex flex-col items-center text-center">
                <ProfilePhoto className="w-32 h-32 rounded-full mb-6" />
                <h1 className="text-4xl font-black text-slate-900">{data.profile.name}</h1>
@@ -251,14 +251,14 @@ const CVGenerator: React.FC<CVGeneratorProps> = ({ data }) => {
   ];
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700 pb-20">
-      <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+    <div className="space-y-4 md:space-y-8 animate-in fade-in duration-700 pb-20">
+      <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 md:gap-6">
         <div>
           <h2 className="text-3xl font-black text-slate-900 tracking-tight">AI CV Intelligence Builder</h2>
           <p className="text-slate-500 font-medium">Langkah {step} dari 3: {steps.find(s => s.id === step)?.label}</p>
         </div>
         {step === 3 && (
-          <button onClick={() => window.print()} className="px-8 py-4 bg-slate-900 text-white font-black rounded-2xl shadow-xl hover:bg-black transition-all text-xs uppercase tracking-widest flex items-center gap-3">
+          <button onClick={() => window.print()} className="px-5 py-3 md:px-8 md:py-4 bg-slate-900 text-white font-black rounded-2xl shadow-xl hover:bg-black transition-all text-xs uppercase tracking-widest flex items-center gap-3">
             <span>📥</span> Download PDF
           </button>
         )}
@@ -282,11 +282,11 @@ const CVGenerator: React.FC<CVGeneratorProps> = ({ data }) => {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-10">
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 md:gap-10">
         {/* Left Action Area */}
-        <div className="xl:col-span-4 space-y-6">
+        <div className="xl:col-span-4 space-y-3 md:space-y-6">
           {step === 1 && (
-            <section className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 animate-in slide-in-from-left-4 duration-500">
+            <section className="bg-white p-4 md:p-8 rounded-[2.5rem] shadow-sm border border-slate-100 animate-in slide-in-from-left-4 duration-500">
               <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-6 flex items-center gap-2">
                 <span className="w-6 h-6 bg-slate-900 text-white rounded-lg flex items-center justify-center text-[10px]">1</span>
                 Pilih Template Modern
@@ -309,12 +309,12 @@ const CVGenerator: React.FC<CVGeneratorProps> = ({ data }) => {
           )}
 
           {step === 2 && (
-            <section className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 animate-in slide-in-from-left-4 duration-500">
+            <section className="bg-white p-4 md:p-8 rounded-[2.5rem] shadow-sm border border-slate-100 animate-in slide-in-from-left-4 duration-500">
               <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-6 flex items-center gap-2">
                 <span className="w-6 h-6 bg-slate-900 text-white rounded-lg flex items-center justify-center text-[10px]">2</span>
                 Filter Data Experience
               </h3>
-              <div className="space-y-6 max-h-[60vh] overflow-y-auto no-scrollbar pr-2">
+              <div className="space-y-3 md:space-y-6 max-h-[60vh] overflow-y-auto no-scrollbar pr-2">
                 <SelectionSection title="Riwayat Pekerjaan" active={visibleSections.has('work')} onToggle={() => toggleSection('work')} items={data.workExperiences.map(i => ({ id: i.id, label: i.position, sub: i.company }))} selectedIds={selectedItems.work} onToggleItem={(id) => toggleItem('work', id)} />
                 <SelectionSection title="Pendidikan" active={visibleSections.has('education')} onToggle={() => toggleSection('education')} items={data.educations.map(i => ({ id: i.id, label: i.degree, sub: i.institution }))} selectedIds={selectedItems.education} onToggleItem={(id) => toggleItem('education', id)} />
                 <SelectionSection title="Keahlian (Skills)" active={visibleSections.has('skills')} onToggle={() => toggleSection('skills')} items={data.skills.map(i => ({ id: i.id, label: i.name, sub: i.category }))} selectedIds={selectedItems.skills} onToggleItem={(id) => toggleItem('skills', id)} />
@@ -324,10 +324,10 @@ const CVGenerator: React.FC<CVGeneratorProps> = ({ data }) => {
           )}
 
           {step === 3 && (
-            <section className="bg-slate-900 p-8 rounded-[2.5rem] shadow-xl text-white animate-in slide-in-from-left-4 duration-500">
+            <section className="bg-slate-900 p-4 md:p-8 rounded-[2.5rem] shadow-xl text-white animate-in slide-in-from-left-4 duration-500">
                <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-2xl mb-6">🚀</div>
                <h3 className="text-xl font-black tracking-tight mb-2">Siap untuk Dilamar?</h3>
-               <p className="text-slate-400 text-sm leading-relaxed mb-8">Tinjau kembali data Anda di pratinjau samping. Jika sudah sesuai, klik download untuk mendapatkan file PDF profesional Anda.</p>
+               <p className="text-slate-400 text-sm leading-relaxed mb-4 md:mb-8">Tinjau kembali data Anda di pratinjau samping. Jika sudah sesuai, klik download untuk mendapatkan file PDF profesional Anda.</p>
                <div className="space-y-4">
                   <div className="bg-white/5 p-4 rounded-2xl border border-white/10 flex justify-between items-center">
                      <span className="text-[10px] font-bold uppercase text-slate-500">Template</span>
@@ -391,7 +391,7 @@ const CVContent = ({ filteredData, visibleSections, SectionHeader, hideSections 
       {isSectionVisible('work') && filteredData.work.length > 0 && (
         <div>
           <SectionHeader title="Experience" />
-          <div className="space-y-6">
+          <div className="space-y-3 md:space-y-6">
             {filteredData.work.map((w: WorkExperience) => (
               <div key={w.id}>
                 <div className="flex justify-between items-start mb-1">

@@ -215,10 +215,10 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard', user
   if (loading) return <div className="h-full flex flex-col items-center justify-center p-20"><div className="w-10 h-10 border-4 border-slate-900 border-t-transparent rounded-full animate-spin"></div></div>;
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700 pb-20 px-4 lg:px-0">
+    <div className="space-y-4 md:space-y-8 animate-in fade-in duration-700 pb-20 px-4 lg:px-0">
       {adminToast && (
         <div className="fixed top-10 right-10 z-[3000] animate-in slide-in-from-right-4">
-           <div className={`px-8 py-4 rounded-2xl shadow-2xl border flex items-center gap-4 ${adminToast.type === 'success' ? 'bg-emerald-600 border-emerald-50 text-white' : adminToast.type === 'info' ? 'bg-blue-600 border-blue-50 text-white' : 'bg-rose-600 border-rose-500 text-white'}`}>
+           <div className={`px-5 py-3 md:px-8 md:py-4 rounded-2xl shadow-2xl border flex items-center gap-4 ${adminToast.type === 'success' ? 'bg-emerald-600 border-emerald-50 text-white' : adminToast.type === 'info' ? 'bg-blue-600 border-blue-50 text-white' : 'bg-rose-600 border-rose-500 text-white'}`}>
              <span className="font-black text-[10px] uppercase tracking-widest">{adminToast.message}</span>
            </div>
         </div>
@@ -247,14 +247,14 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard', user
 
       {/* USER MANAGEMENT MODAL */}
       {isUserModalOpen && editingUser && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[2000] p-4">
-          <div className="bg-white w-full max-w-xl rounded-[2.5rem] shadow-2xl p-8 lg:p-12 animate-in zoom-in duration-300 relative">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[2000] p-0 sm:p-4">
+          <div className="bg-white w-full max-w-xl rounded-[1.5rem] md:rounded-[2.5rem] shadow-2xl p-4 sm:p-6 md:p-8 lg:p-12 animate-in zoom-in duration-300 relative">
              <button onClick={() => setIsUserModalOpen(false)} className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center bg-slate-50 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors z-10"><i className="bi bi-x-lg"></i></button>
-             <div className="mb-8">
+             <div className="mb-4 md:mb-8">
                 <h3 className="text-2xl font-black text-slate-900 uppercase">Kelola User</h3>
              </div>
-             <div className="space-y-6">
-                <div className="p-6 bg-slate-50 rounded-2xl border">
+             <div className="space-y-3 md:space-y-6">
+                <div className="p-3 md:p-6 bg-slate-50 rounded-2xl border">
                   <p className="font-black text-slate-800">{editingUser.profile?.name}</p>
                   <p className="text-xs font-bold text-slate-400">{editingUser.profile?.email}</p>
                   <p className="text-[8px] font-mono text-slate-300 mt-2 uppercase">UID: {editingUser.uid}</p>
@@ -290,10 +290,10 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard', user
 
       {/* PRODUCT MANAGEMENT MODAL */}
       {isProductModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[2000] p-4">
-          <div className="bg-white w-full max-w-5xl rounded-[3rem] shadow-2xl p-8 lg:p-14 animate-in zoom-in duration-300 overflow-y-auto max-h-[95vh] no-scrollbar relative">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[2000] p-0 sm:p-4">
+          <div className="bg-white w-full max-w-5xl rounded-[2rem] md:rounded-[3rem] shadow-2xl p-4 sm:p-6 md:p-8 lg:p-14 animate-in zoom-in duration-300 overflow-y-auto max-h-[95vh] no-scrollbar relative">
             <button onClick={() => setIsProductModalOpen(false)} className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center bg-slate-50 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors z-10"><i className="bi bi-x-lg"></i></button>
-            <div className="mb-8">
+            <div className="mb-4 md:mb-8">
               <h3 className="text-3xl font-black text-slate-900 uppercase tracking-tighter leading-none">
                 {editingProduct ? 'Edit Konfigurasi Paket' : 'Tambah Paket Langganan'}
               </h3>

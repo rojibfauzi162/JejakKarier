@@ -281,7 +281,7 @@ export interface Contact {
   email: string;
   company: string;
   position: string;
-  relation: 'mentor' | 'peer' | 'superior' | 'client' | 'HR';
+  relation: string;
   lastInteractionNote: string;
   followUpPlan: string;
   lastInteractionDate: string;
@@ -712,6 +712,10 @@ export interface AppData {
   personalProjects: PersonalProject[];
   todoList: ToDoTask[];
   todoCategories: string[];
+  networkingRelations?: string[];
+  networkingFollowUpPlans?: string[];
+  networkingCompanies?: string[];
+  networkingPositions?: string[];
   careerEvents: CareerEvent[]; // NEW ARRAY FOR CALENDAR
   aiInsights?: AiInsightRecord[];
   affirmations: string[];

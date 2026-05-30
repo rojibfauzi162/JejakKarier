@@ -104,16 +104,16 @@ const CertificationModule: React.FC<CertificationProps> = ({ certs, skills, onAd
   };
 
   return (
-    <div className="space-y-8">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white p-7 rounded-[2rem] shadow-sm border border-slate-100 flex items-center gap-6">
+    <div className="space-y-4 md:space-y-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6">
+        <div className="bg-white p-7 rounded-[2rem] shadow-sm border border-slate-100 flex items-center gap-3 md:gap-6">
           <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-3xl shadow-inner">📜</div>
           <div>
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Target Sertifikasi</p>
             <p className="text-2xl font-black text-slate-900">{stats.total}</p>
           </div>
         </div>
-        <div className="bg-white p-7 rounded-[2rem] shadow-sm border border-slate-100 flex items-center gap-6">
+        <div className="bg-white p-7 rounded-[2rem] shadow-sm border border-slate-100 flex items-center gap-3 md:gap-6">
           <div className="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center text-3xl shadow-inner">🏆</div>
           <div>
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Berhasil Diraih</p>
@@ -205,7 +205,7 @@ const CertificationModule: React.FC<CertificationProps> = ({ certs, skills, onAd
              const overdue = isOverdue(c);
              const isSchedulable = c.status === TrainingStatus.PLANNED && !c.calendarEventId;
              return (
-               <div key={c.id} className="bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100 space-y-4">
+               <div key={c.id} className="bg-slate-50/50 p-3 md:p-6 rounded-[2rem] border border-slate-100 space-y-4">
                   <div className="flex justify-between items-start">
                      <div className="flex-1 mr-4">
                         <h4 className="font-black text-slate-800 text-base leading-tight">{c.name}</h4>
@@ -260,8 +260,8 @@ const CertificationModule: React.FC<CertificationProps> = ({ certs, skills, onAd
 
       {/* CERTIFICATE MODAL */}
       {certModalOpen && selectedCert && (
-        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md flex items-center justify-center z-[3000] p-4">
-           <div className="bg-white w-full max-w-3xl rounded-[3rem] shadow-2xl p-8 animate-in zoom-in duration-300 flex flex-col max-h-[90vh] relative">
+        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md flex items-center justify-center z-[3000] p-0 sm:p-4">
+           <div className="bg-white w-full max-w-3xl rounded-[2rem] md:rounded-[3rem] shadow-2xl p-4 sm:p-6 md:p-8 animate-in zoom-in duration-300 flex flex-col max-h-[90vh] relative">
               <button onClick={closeCertModal} className="absolute top-6 right-6 w-10 h-10 flex items-center justify-center bg-slate-100 text-slate-500 rounded-full hover:bg-slate-200 transition-all z-10"><i className="bi bi-x-lg"></i></button>
               <div className="mb-6">
                  <div>
@@ -310,10 +310,10 @@ const CertificationModule: React.FC<CertificationProps> = ({ certs, skills, onAd
 
       {/* SCHEDULE CONFIRMATION MODAL */}
       {isScheduleModalOpen && schedulingItem && (
-        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md flex items-center justify-center z-[2000] p-4">
-           <div className="bg-white w-full max-w-md rounded-[3rem] shadow-2xl p-10 animate-in zoom-in duration-300 relative">
+        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md flex items-center justify-center z-[2000] p-0 sm:p-4">
+           <div className="bg-white w-full max-w-md rounded-[2rem] md:rounded-[3rem] shadow-2xl p-4 sm:p-6 md:p-10 animate-in zoom-in duration-300 relative">
               <button onClick={() => setIsScheduleModalOpen(false)} className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center bg-slate-50 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors z-10"><i className="bi bi-x-lg"></i></button>
-              <div className="text-center mb-8">
+              <div className="text-center mb-4 md:mb-8">
                  <div className="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl shadow-inner">
                     <i className="bi bi-calendar-event"></i>
                  </div>
@@ -322,7 +322,7 @@ const CertificationModule: React.FC<CertificationProps> = ({ certs, skills, onAd
                  <p className="font-black text-indigo-600 text-sm mt-1">{schedulingItem.name}</p>
               </div>
 
-              <div className="space-y-6">
+              <div className="space-y-3 md:space-y-6">
                  <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Pilih Tanggal</label>
@@ -344,10 +344,10 @@ const CertificationModule: React.FC<CertificationProps> = ({ certs, skills, onAd
       )}
 
       {isFormOpen && (
-        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md flex items-center justify-center z-[1000] p-4">
-          <div className="bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl p-10 lg:p-12 animate-in zoom-in duration-300 overflow-y-auto max-h-[90vh] relative">
+        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md flex items-center justify-center z-[1000] p-0 sm:p-4">
+          <div className="bg-white w-full max-w-2xl rounded-[2rem] md:rounded-[3rem] shadow-2xl p-5 md:p-4 sm:p-6 md:p-8 lg:p-12 animate-in zoom-in duration-300 overflow-y-auto max-h-[90vh] relative">
              <button onClick={() => setIsFormOpen(false)} className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center bg-slate-50 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors z-[60]"><i className="bi bi-x-lg"></i></button>
-             <h3 className="text-2xl font-black text-slate-900 uppercase mb-8">{editingItem ? 'Ubah Data Sertifikasi' : 'Tambah Sertifikasi Baru'}</h3>
+             <h3 className="text-2xl font-black text-slate-900 uppercase mb-4 md:mb-8">{editingItem ? 'Ubah Data Sertifikasi' : 'Tambah Sertifikasi Baru'}</h3>
              <CertForm 
                initialData={editingItem} 
                onSubmit={(data: any) => {
@@ -474,7 +474,7 @@ const CertForm = ({ initialData, onSubmit, onCancel }: any) => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3 md:space-y-6">
       <div className="space-y-1.5">
         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nama Sertifikasi</label>
         <input className="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-slate-50 font-bold text-xs" value={form.name || ''} onChange={e => setForm({...form, name: e.target.value})} required />
@@ -553,7 +553,7 @@ const CertForm = ({ initialData, onSubmit, onCancel }: any) => {
                    Hapus
                  </button>
                )}
-               <label className="px-6 py-4 bg-slate-900 text-white font-black rounded-2xl text-[10px] uppercase cursor-pointer hover:bg-black transition-all flex items-center justify-center min-w-[100px]">
+               <label className="px-4 py-3 md:px-6 md:py-4 bg-slate-900 text-white font-black rounded-2xl text-[10px] uppercase cursor-pointer hover:bg-black transition-all flex items-center justify-center min-w-[100px]">
                  {form.fileLink?.startsWith('data:') ? 'Ganti' : 'Upload'}
                  <input type="file" className="hidden" accept="image/*,.pdf" onChange={handleFileUpload} />
                </label>

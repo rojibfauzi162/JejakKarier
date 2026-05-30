@@ -41,8 +41,8 @@ const PersonalProjectTracker: React.FC<PersonalProjectTrackerProps> = ({ project
   );
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700 pb-24 lg:pb-20">
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+    <div className="space-y-4 md:space-y-8 animate-in fade-in duration-700 pb-24 lg:pb-20">
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-6">
         <div>
           <h2 className="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight">Personal Project Tracker</h2>
           <p className="text-slate-500 mt-1 text-xs lg:text-sm">Lacak proyek freelance, kerja sampingan, dan riset mandiri Anda.</p>
@@ -54,7 +54,7 @@ const PersonalProjectTracker: React.FC<PersonalProjectTrackerProps> = ({ project
 
       {/* INFO KUOTA (QUOTA BANNER) - HIDDEN FOR PRO USERS */}
       {appData?.plan === SubscriptionPlan.FREE && (
-        <div className="bg-indigo-50 border border-indigo-100 p-5 rounded-[2rem] flex flex-col sm:flex-row justify-between items-center gap-6 mx-1 shadow-sm">
+        <div className="bg-indigo-50 border border-indigo-100 p-5 rounded-[2rem] flex flex-col sm:flex-row justify-between items-center gap-3 md:gap-6 mx-1 shadow-sm">
            <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-indigo-600 text-white rounded-2xl flex items-center justify-center text-xl shadow-lg shadow-indigo-200">
                  <i className="bi bi-tools"></i>
@@ -77,7 +77,7 @@ const PersonalProjectTracker: React.FC<PersonalProjectTrackerProps> = ({ project
 
       {/* LIMIT ALERT BAR - HANYA UNTUK USER FREE */}
       {isLimitReached && appData?.plan === SubscriptionPlan.FREE && (
-        <div className="bg-rose-50 border-2 border-rose-100 p-6 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm mx-1 animate-in slide-in-from-top-2 duration-500">
+        <div className="bg-rose-50 border-2 border-rose-100 p-3 md:p-6 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-3 md:gap-6 shadow-sm mx-1 animate-in slide-in-from-top-2 duration-500">
            <div className="flex items-center gap-4 text-center md:text-left">
               <span className="text-3xl">⚠️</span>
               <div>
@@ -110,12 +110,12 @@ const PersonalProjectTracker: React.FC<PersonalProjectTrackerProps> = ({ project
           <thead>
             <tr className="bg-emerald-500 text-white text-[11px] font-black uppercase tracking-widest">
               <th className="px-4 py-4 border-r border-white/20 text-center w-16 bg-blue-600">NO <FilterIcon /></th>
-              <th className="px-6 py-4 border-r border-white/20 w-64">NAMA PROYEK <FilterIcon /></th>
-              <th className="px-6 py-4 border-r border-white/20 w-52">TANGGAL <FilterIcon /></th>
-              <th className="px-6 py-4 border-r border-white/20">SKILL YANG DIGUNAKAN <FilterIcon /></th>
-              <th className="px-6 py-4 border-r border-white/20 w-44">LINK <FilterIcon /></th>
-              <th className="px-6 py-4 border-r border-white/20 w-32 text-center">STATUS <FilterIcon /></th>
-              <th className="px-6 py-4">DESKRIPSI <FilterIcon /></th>
+              <th className="px-4 py-3 md:px-6 md:py-4 border-r border-white/20 w-64">NAMA PROYEK <FilterIcon /></th>
+              <th className="px-4 py-3 md:px-6 md:py-4 border-r border-white/20 w-52">TANGGAL <FilterIcon /></th>
+              <th className="px-4 py-3 md:px-6 md:py-4 border-r border-white/20">SKILL YANG DIGUNAKAN <FilterIcon /></th>
+              <th className="px-4 py-3 md:px-6 md:py-4 border-r border-white/20 w-44">LINK <FilterIcon /></th>
+              <th className="px-4 py-3 md:px-6 md:py-4 border-r border-white/20 w-32 text-center">STATUS <FilterIcon /></th>
+              <th className="px-4 py-3 md:px-6 md:py-4">DESKRIPSI <FilterIcon /></th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-200">
@@ -155,7 +155,7 @@ const PersonalProjectTracker: React.FC<PersonalProjectTrackerProps> = ({ project
       {/* Mobile Project Cards */}
       <div className="lg:hidden space-y-4">
         {projects.map((proj, index) => (
-          <div key={proj.id} className="bg-white rounded-[2rem] p-6 border border-slate-100 shadow-sm relative overflow-hidden group">
+          <div key={proj.id} className="bg-white rounded-[2rem] p-3 md:p-6 border border-slate-100 shadow-sm relative overflow-hidden group">
             <div className="flex justify-between items-start mb-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center font-black text-xs">#{index + 1}</div>
@@ -200,10 +200,10 @@ const PersonalProjectTracker: React.FC<PersonalProjectTrackerProps> = ({ project
 
       {/* Form Modal */}
       {isFormOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[100] p-4">
-          <div className="bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl p-6 lg:p-10 animate-in zoom-in duration-300 max-h-[90vh] overflow-y-auto no-scrollbar relative">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[100] p-0 sm:p-4">
+          <div className="bg-white w-full max-w-2xl rounded-[1.5rem] md:rounded-[2.5rem] shadow-2xl p-5 md:p-4 md:p-6 lg:p-10 animate-in zoom-in duration-300 max-h-[90vh] overflow-y-auto no-scrollbar relative">
             <button onClick={() => setIsFormOpen(false)} className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center bg-slate-50 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors z-[60]"><i className="bi bi-x-lg"></i></button>
-            <h3 className="text-xl lg:text-2xl font-black text-slate-900 tracking-tight mb-8">
+            <h3 className="text-xl lg:text-2xl font-black text-slate-900 tracking-tight mb-4 md:mb-8">
               {editingItem ? 'Update Project' : 'New Project'}
             </h3>
             <ProjectForm 
@@ -252,8 +252,8 @@ const ProjectForm: React.FC<{ initialData: PersonalProject | null; onSubmit: (da
   }, [startDate, endDate, isRange]);
 
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
+    <div className="space-y-3 md:space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-3 md:gap-6">
         <div className="md:col-span-2">
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block ml-1">Nama Proyek</label>
           <input className="w-full px-5 py-3 lg:py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold text-xs" value={formData.name || ''} onChange={e => setFormData({ ...formData, name: e.target.value })} placeholder="Portfolio..." required />

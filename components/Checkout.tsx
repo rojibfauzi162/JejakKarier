@@ -219,8 +219,8 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
 
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 lg:p-8 font-sans text-slate-900">
-      <div className="max-w-5xl w-full grid grid-cols-1 lg:grid-cols-2 bg-white rounded-[3rem] shadow-2xl overflow-hidden border border-slate-100 animate-in zoom-in duration-500">
-        <div className="bg-slate-900 p-8 lg:p-14 text-white space-y-12 relative overflow-hidden">
+      <div className="max-w-5xl w-full grid grid-cols-1 lg:grid-cols-2 bg-white rounded-[2rem] md:rounded-[3rem] shadow-2xl overflow-hidden border border-slate-100 animate-in zoom-in duration-500">
+        <div className="bg-slate-900 p-4 md:p-8 lg:p-14 text-white space-y-12 relative overflow-hidden">
           <div className="relative z-10">
             <button onClick={onBack} className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors text-[10px] font-black uppercase tracking-widest mb-12">
                <i className="bi bi-arrow-left"></i> Kembali Pilih Paket
@@ -229,7 +229,7 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
               <h2 className="text-3xl lg:text-4xl font-black tracking-tighter uppercase leading-none">Checkout Pembayaran</h2>
               <p className="text-slate-400 font-medium">Gateway pembayaran aman untuk akses instan.</p>
             </div>
-            <div className="mt-12 bg-white/5 border border-white/10 rounded-[2.5rem] p-8 space-y-8">
+            <div className="mt-12 bg-white/5 border border-white/10 rounded-[2.5rem] p-4 md:p-8 space-y-4 md:space-y-8">
                <div className="flex justify-between items-start">
                   <div><h3 className="text-xl font-black uppercase tracking-tight">{plan.name}</h3><p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mt-1">{plan.durationDays} Hari Akses</p></div>
                   <span className="px-3 py-1 bg-indigo-600 text-white text-[8px] font-black uppercase rounded-lg">PREMIUM</span>
@@ -240,11 +240,11 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
           <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-indigo-600/20 rounded-full blur-3xl"></div>
         </div>
 
-        <div className="p-8 lg:p-14 bg-white flex flex-col justify-center overflow-y-auto no-scrollbar max-h-[90vh]">
+        <div className="p-4 md:p-8 lg:p-14 bg-white flex flex-col justify-center overflow-y-auto no-scrollbar max-h-[90vh]">
           {user ? (
-            <div className="text-center space-y-10">
+            <div className="text-center space-y-3 md:space-y-6 md:space-y-10">
               {error && (
-                <div className="p-6 bg-rose-50 text-rose-600 text-xs font-bold rounded-[2rem] border border-rose-100 flex items-start gap-4 text-left animate-in slide-in-from-top-2">
+                <div className="p-3 md:p-6 bg-rose-50 text-rose-600 text-xs font-bold rounded-[2rem] border border-rose-100 flex items-start gap-4 text-left animate-in slide-in-from-top-2">
                   <i className="bi bi-exclamation-triangle-fill text-xl"></i>
                   <div className="space-y-1">
                     <p className="uppercase tracking-widest font-black text-[10px]">Kesalahan Transaksi</p>
@@ -272,7 +272,7 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
                   </div>
                 </>
               ) : (
-                <div className="space-y-6">
+                <div className="space-y-3 md:space-y-6">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-xl font-black text-slate-900 uppercase">Pilih Bank / E-Wallet</h3>
                     <button onClick={() => setShowMethods(false)} className="text-[10px] font-black text-rose-500 uppercase tracking-widest">Batal</button>
@@ -292,7 +292,7 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
               )}
             </div>
           ) : (
-            <div className="space-y-10">
+            <div className="space-y-3 md:space-y-6 md:space-y-10">
               <div className="space-y-2"><h3 className="text-2xl font-black text-slate-900 uppercase">Identitas Akun</h3><p className="text-slate-400 text-sm">Lengkapi data untuk membuat invoice.</p></div>
               <div className="flex bg-slate-50 p-1 rounded-2xl">
                 <button onClick={() => { setIsLogin(false); setError(''); setSuccessMsg(''); }} className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase transition-all ${!isLogin ? 'bg-white text-slate-900 shadow-md' : 'text-slate-400'}`}>Daftar</button>
@@ -314,12 +314,12 @@ const Checkout: React.FC<CheckoutProps> = ({ plan, user, onBack }) => {
       </div>
 
       {showManualSuccess && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[2000] flex items-center justify-center p-6">
-           <div className="bg-white max-w-md w-full rounded-[3.5rem] p-10 text-center border border-slate-100 shadow-2xl animate-in zoom-in relative">
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[2000] flex items-center justify-center p-2 sm:p-6">
+           <div className="bg-white max-w-md w-full rounded-[2rem] md:rounded-[3.5rem] p-4 md:p-10 text-center border border-slate-100 shadow-2xl animate-in zoom-in relative">
               <button onClick={() => setShowManualSuccess(false)} className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center bg-slate-50 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors z-10"><i className="bi bi-x-lg"></i></button>
-              <div className="w-20 h-20 bg-emerald-50 text-emerald-600 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-inner"><i className="bi bi-check-circle-fill text-4xl"></i></div>
+              <div className="w-20 h-20 bg-emerald-50 text-emerald-600 rounded-3xl flex items-center justify-center mx-auto mb-4 md:mb-8 shadow-inner"><i className="bi bi-check-circle-fill text-4xl"></i></div>
               <h3 className="text-2xl font-black text-slate-900 uppercase mb-4">Data Tersimpan</h3>
-              <p className="text-slate-500 font-bold text-xs uppercase leading-relaxed mb-10">Admin akan segera menghubungi Anda. Anda akan dialihkan ke WhatsApp...</p>
+              <p className="text-slate-500 font-bold text-xs uppercase leading-relaxed mb-6 md:mb-10">Admin akan segera menghubungi Anda. Anda akan dialihkan ke WhatsApp...</p>
               <button onClick={() => setShowManualSuccess(false)} className="w-full py-4 bg-slate-900 text-white font-black rounded-2xl text-[10px] tracking-widest">Tutup</button>
            </div>
         </div>

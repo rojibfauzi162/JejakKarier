@@ -61,8 +61,8 @@ const DuitkuIntegration: React.FC<DuitkuIntegrationProps> = ({ initialConfig, on
   };
 
   return (
-    <div className="bg-white p-8 lg:p-12 rounded-[3.5rem] border border-slate-100 shadow-sm max-w-4xl animate-in fade-in duration-500">
-       <div className="flex items-center gap-6 mb-10 pb-8 border-b border-slate-50">
+    <div className="bg-white p-4 md:p-8 lg:p-12 rounded-[3.5rem] border border-slate-100 shadow-sm max-w-4xl animate-in fade-in duration-500">
+       <div className="flex items-center gap-3 md:gap-6 mb-6 md:mb-10 pb-8 border-b border-slate-50">
           <div className="w-16 h-16 bg-indigo-600 text-white rounded-[1.75rem] flex items-center justify-center text-3xl shadow-xl">
              <i className="bi bi-credit-card-2-front-fill"></i>
           </div>
@@ -91,13 +91,13 @@ const DuitkuIntegration: React.FC<DuitkuIntegrationProps> = ({ initialConfig, on
        </div>
 
        {testResult && (
-         <div className={`mb-8 p-4 rounded-2xl border flex items-center gap-3 animate-in slide-in-from-top-2 ${testResult.success ? 'bg-emerald-50 border-emerald-100 text-emerald-700' : 'bg-rose-50 border-rose-100 text-rose-700'}`}>
+         <div className={`mb-4 md:mb-8 p-4 rounded-2xl border flex items-center gap-3 animate-in slide-in-from-top-2 ${testResult.success ? 'bg-emerald-50 border-emerald-100 text-emerald-700' : 'bg-rose-50 border-rose-100 text-rose-700'}`}>
            <i className={`bi ${testResult.success ? 'bi-check-circle-fill' : 'bi-exclamation-octagon-fill'} text-lg`}></i>
            <p className="text-xs font-bold">{testResult.message}</p>
          </div>
        )}
 
-       <form onSubmit={handleSubmit} className="space-y-8">
+       <form onSubmit={handleSubmit} className="space-y-4 md:space-y-8">
           {/* Warning Alert */}
           <div className={`p-4 rounded-2xl border flex items-start gap-3 ${form.environment === 'sandbox' ? 'bg-amber-50 border-amber-100 text-amber-700' : 'bg-blue-50 border-blue-100 text-blue-700'}`}>
             <i className={`bi ${form.environment === 'sandbox' ? 'bi-exclamation-triangle-fill' : 'bi-info-circle-fill'} text-lg`}></i>
@@ -110,11 +110,11 @@ const DuitkuIntegration: React.FC<DuitkuIntegrationProps> = ({ initialConfig, on
               </p>
             </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
              <div className="space-y-2">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Merchant Code</label>
                 <input 
-                  className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none font-bold text-sm focus:border-indigo-400 transition-all" 
+                  className="w-full px-4 py-3 md:px-6 md:py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none font-bold text-sm focus:border-indigo-400 transition-all" 
                   value={form.merchantCode || ''}
                   onChange={e => setForm({...form, merchantCode: e.target.value})}
                   placeholder="DXXXXX"
@@ -125,7 +125,7 @@ const DuitkuIntegration: React.FC<DuitkuIntegrationProps> = ({ initialConfig, on
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">API Key (Merchant Key)</label>
                 <input 
                   type="password"
-                  className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none font-bold text-sm focus:border-indigo-400 transition-all" 
+                  className="w-full px-4 py-3 md:px-6 md:py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none font-bold text-sm focus:border-indigo-400 transition-all" 
                   value={form.apiKey || ''}
                   onChange={e => setForm({...form, apiKey: e.target.value})}
                   placeholder="Karakter API Key Anda..."
@@ -154,7 +154,7 @@ const DuitkuIntegration: React.FC<DuitkuIntegrationProps> = ({ initialConfig, on
              </div>
           </div>
 
-          <div className="p-8 bg-blue-50/50 rounded-[2.5rem] border border-blue-100 space-y-6">
+          <div className="p-4 md:p-8 bg-blue-50/50 rounded-[2.5rem] border border-blue-100 space-y-3 md:space-y-6">
              <h4 className="text-[11px] font-black text-blue-900 uppercase tracking-widest flex items-center gap-2">
                 <i className="bi bi-info-circle-fill"></i> Callback Configuration
              </h4>

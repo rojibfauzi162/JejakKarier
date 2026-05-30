@@ -41,7 +41,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout, is
       label: 'Aktivitas Harian',
       items: [
         { id: 'daily_root', label: 'Daily Work', icon: <i className="bi bi-pencil-square"></i>, hasSub: true, type: 'daily' },
-        { id: 'todo_list', label: 'Langkah Pengembangan', icon: <i className="bi bi-check2-square"></i> },
+        { id: 'todo_list', label: 'To Do List', icon: <i className="bi bi-check2-square"></i> },
         { id: 'calendar', label: 'Career Calendar', icon: <i className="bi bi-calendar3"></i> }, 
       ]
     },
@@ -84,8 +84,8 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout, is
         </button>
 
         {/* Header Branding */}
-        <div className="p-8 pt-10">
-          <div className="flex items-center gap-3 mb-10 group cursor-pointer" onClick={() => { setActiveTab('dashboard'); onClose?.(); }}>
+        <div className="p-4 md:p-8 pt-10">
+          <div className="flex items-center gap-3 mb-6 md:mb-10 group cursor-pointer" onClick={() => { setActiveTab('dashboard'); onClose?.(); }}>
             {logoUrl ? (
               <img src={logoUrl} alt="Logo" className="max-h-12 w-auto object-contain group-hover:scale-105 transition-transform duration-300" />
             ) : (
@@ -282,7 +282,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout, is
           )}
         </div>
         
-        <div className="p-6 border-t border-white/5 bg-slate-950/50 backdrop-blur-md space-y-3">
+        <div className="p-3 md:p-6 border-t border-white/5 bg-slate-950/50 backdrop-blur-md space-y-3">
           {isBypassMode && (
             <button 
               onClick={onLogout}
@@ -305,11 +305,11 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout, is
       </nav>
 
       {showLogoutModal && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-0 sm:p-4">
           <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm" onClick={() => setShowLogoutModal(false)}></div>
-          <div className="relative bg-white w-full max-w-sm rounded-[2.5rem] p-8 lg:p-10 shadow-2xl animate-in zoom-in duration-300">
+          <div className="relative bg-white w-full max-w-sm rounded-[1.5rem] md:rounded-[2.5rem] p-3 md:p-8 lg:p-10 shadow-2xl animate-in zoom-in duration-300">
             <button onClick={() => setShowLogoutModal(false)} className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center bg-slate-50 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors z-10"><i className="bi bi-x-lg"></i></button>
-            <div className="text-center mb-8">
+            <div className="text-center mb-4 md:mb-8">
               <div className="w-16 h-16 bg-rose-50 text-rose-500 rounded-3xl flex items-center justify-center mx-auto mb-4 text-2xl shadow-inner">
                 <i className="bi bi-door-open-fill"></i>
               </div>

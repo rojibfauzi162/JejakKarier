@@ -75,7 +75,7 @@ const ToDoList: React.FC<ToDoListProps> = ({
     // VALIDASI LIMIT DATABASE PAKET FREE
     const limit = appData?.planLimits?.todoList || 10;
     if (appData?.plan === SubscriptionPlan.FREE && limit !== 'unlimited' && tasks.length >= Number(limit)) {
-      alert(`Batas langkah pengembangan tercapai (${limit}). Silakan upgrade paket untuk perencanaan tanpa batas.`);
+      alert(`Batas To Do List tercapai (${limit}). Silakan upgrade paket untuk perencanaan tanpa batas.`);
       onUpgrade?.();
       return;
     }
@@ -119,7 +119,7 @@ const ToDoList: React.FC<ToDoListProps> = ({
   };
 
   const handleDeleteCategory = (cat: string) => {
-    if (window.confirm(`Hapus kategori "${cat}"? Langkah pengembangan dengan kategori ini tidak akan terhapus, namun kategorinya mungkin hilang.`)) {
+    if (window.confirm(`Hapus kategori "${cat}"? To Do List dengan kategori ini tidak akan terhapus, namun kategorinya mungkin hilang.`)) {
       onDeleteCategory?.(cat);
     }
   };
@@ -149,7 +149,7 @@ const ToDoList: React.FC<ToDoListProps> = ({
     // VALIDASI LIMIT DATABASE PAKET FREE UNTUK DUPLIKAT
     const limit = appData?.planLimits?.todoList || 10;
     if (appData?.plan === SubscriptionPlan.FREE && limit !== 'unlimited' && tasks.length >= Number(limit)) {
-      alert(`Batas langkah pengembangan tercapai (${limit}). Tidak bisa menduplikat.`);
+      alert(`Batas To Do List tercapai (${limit}). Tidak bisa menduplikat.`);
       onUpgrade?.();
       return;
     }
@@ -320,10 +320,10 @@ const ToDoList: React.FC<ToDoListProps> = ({
   const limit = appData?.planLimits?.todoList || 10;
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700 pb-20">
-      <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+    <div className="space-y-4 md:space-y-8 animate-in fade-in duration-700 pb-20">
+      <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 md:gap-6">
         <div>
-          <h2 className="text-3xl font-black text-slate-900 tracking-tight uppercase">Langkah Pengembangan</h2>
+          <h2 className="text-3xl font-black text-slate-900 tracking-tight uppercase">To Do List</h2>
           <p className="text-slate-500 font-medium italic">"Kelola langkah-langkah kecil menuju target besar Anda."</p>
         </div>
         <div className="flex bg-white p-1 rounded-2xl shadow-sm border border-slate-100">
@@ -334,7 +334,7 @@ const ToDoList: React.FC<ToDoListProps> = ({
 
       {/* INFO KUOTA (QUOTA BANNER) - HIDDEN FOR PAID PLANS */}
       {appData?.plan === SubscriptionPlan.FREE && (
-        <div className="bg-indigo-50 border border-indigo-100 p-5 rounded-[2rem] flex flex-col sm:flex-row justify-between items-center gap-6 mx-1 shadow-sm">
+        <div className="bg-indigo-50 border border-indigo-100 p-5 rounded-[2rem] flex flex-col sm:flex-row justify-between items-center gap-3 md:gap-6 mx-1 shadow-sm">
            <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-indigo-600 text-white rounded-2xl flex items-center justify-center text-xl shadow-lg shadow-indigo-200">
                  <i className="bi bi-list-check"></i>
@@ -356,14 +356,14 @@ const ToDoList: React.FC<ToDoListProps> = ({
       )}
 
       {activeView === 'checklist' ? (
-        <div className="space-y-6">
-          <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100">
-            <form onSubmit={handleAddTask} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-3 md:space-y-6">
+          <div className="bg-white p-4 md:p-8 rounded-[2.5rem] shadow-sm border border-slate-100">
+            <form onSubmit={handleAddTask} className="space-y-3 md:space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6">
                  <div className="space-y-1.5">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Pilih Bidang Pengembangan</label>
                     <select 
-                      className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-sm focus:ring-4 focus:ring-blue-500/5 transition-all cursor-pointer"
+                      className="w-full px-4 py-3 md:px-6 md:py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-sm focus:ring-4 focus:ring-blue-500/5 transition-all cursor-pointer"
                       value={selectedCategory || ''}
                       onChange={(e) => setSelectedCategory(e.target.value)}
                     >
@@ -375,19 +375,19 @@ const ToDoList: React.FC<ToDoListProps> = ({
                     <input 
                       type="text"
                       placeholder="Ketik langkah baru untuk hari ini..."
-                      className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-sm focus:ring-4 focus:ring-blue-500/5 transition-all"
+                      className="w-full px-4 py-3 md:px-6 md:py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-sm focus:ring-4 focus:ring-blue-500/5 transition-all"
                       value={newTaskText || ''}
                       onChange={(e) => setNewTaskText(e.target.value)}
                     />
                  </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-6">
                  <div className="md:col-span-2 space-y-1.5">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Keterangan Detil (Opsional)</label>
                     <input 
                       type="text"
                       placeholder="Berikan deskripsi atau catatan tambahan..."
-                      className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-sm focus:ring-4 focus:ring-blue-500/5 transition-all"
+                      className="w-full px-4 py-3 md:px-6 md:py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-sm focus:ring-4 focus:ring-blue-500/5 transition-all"
                       value={newTaskDesc || ''}
                       onChange={(e) => setNewTaskDesc(e.target.value)}
                     />
@@ -396,7 +396,7 @@ const ToDoList: React.FC<ToDoListProps> = ({
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tanggal Target</label>
                     <input 
                       type="date"
-                      className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-sm focus:ring-4 focus:ring-blue-500/5 transition-all"
+                      className="w-full px-4 py-3 md:px-6 md:py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-sm focus:ring-4 focus:ring-blue-500/5 transition-all"
                       value={newTaskDate || ''}
                       onChange={(e) => setNewTaskDate(e.target.value)}
                     />
@@ -406,7 +406,7 @@ const ToDoList: React.FC<ToDoListProps> = ({
                 <button 
                   type="button"
                   onClick={() => setIsFilterVisible(!isFilterVisible)}
-                  className={`px-6 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all flex items-center gap-3 ${isFilterVisible ? 'bg-indigo-50 text-indigo-600 border border-indigo-100' : 'bg-slate-50 text-slate-400 border border-slate-100 hover:bg-slate-100'}`}
+                  className={`px-4 py-3 md:px-6 md:py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all flex items-center gap-3 ${isFilterVisible ? 'bg-indigo-50 text-indigo-600 border border-indigo-100' : 'bg-slate-50 text-slate-400 border border-slate-100 hover:bg-slate-100'}`}
                 >
                   <i className={`bi ${isFilterVisible ? 'bi-funnel-fill' : 'bi-funnel'}`}></i>
                   {isFilterVisible ? 'Sembunyikan Filter' : 'Opsi Filter'}
@@ -417,7 +417,7 @@ const ToDoList: React.FC<ToDoListProps> = ({
               </div>
 
               {isFilterVisible && (
-                <div className="pt-8 border-t border-slate-50 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-in slide-in-from-top-2">
+                <div className="pt-8 border-t border-slate-50 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 animate-in slide-in-from-top-2">
                    <div className="space-y-1.5">
                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Cari Langkah</label>
                       <div className="relative">
@@ -513,10 +513,10 @@ const ToDoList: React.FC<ToDoListProps> = ({
             </form>
           </div>
 
-          <div className="space-y-6">
+          <div className="space-y-3 md:space-y-6">
             {currentDayGroup ? (
               <div className="bg-white rounded-[3rem] shadow-sm border border-slate-100 overflow-hidden">
-                <div className="p-8 border-b border-slate-50 bg-slate-50/50 flex justify-between items-center">
+                <div className="p-4 md:p-8 border-b border-slate-50 bg-slate-50/50 flex justify-between items-center">
                   <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight">Checklist Tanggal {new Date(currentDayGroup.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</h3>
                   <div className="flex gap-2">
                     <button disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)} className="w-10 h-10 flex items-center justify-center bg-white border rounded-xl text-slate-400 hover:text-indigo-600 disabled:opacity-30">←</button>
@@ -526,7 +526,7 @@ const ToDoList: React.FC<ToDoListProps> = ({
                 </div>
                 <div className="divide-y divide-slate-50">
                    {currentDayGroup.list.map(task => (
-                      <div key={task.id} className={`p-6 flex items-center gap-6 group transition-all ${task.status === 'Completed' ? 'bg-slate-50/30' : ''}`}>
+                      <div key={task.id} className={`p-3 md:p-6 flex items-center gap-3 md:gap-6 group transition-all ${task.status === 'Completed' ? 'bg-slate-50/30' : ''}`}>
                          <button onClick={() => toggleStatus(task)} className={`w-8 h-8 rounded-lg border-2 flex items-center justify-center transition-all ${task.status === 'Completed' ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg' : 'bg-white border-slate-200 text-transparent hover:border-indigo-400'}`}>
                            <i className="bi bi-check-lg text-lg"></i>
                          </button>
@@ -554,21 +554,21 @@ const ToDoList: React.FC<ToDoListProps> = ({
               </div>
             ) : (
               <div className="py-20 text-center bg-white rounded-[3rem] border border-dashed border-slate-200">
-                <p className="text-slate-400 italic">Belum ada langkah pengembangan.</p>
+                <p className="text-slate-400 italic">Belum ada To Do List.</p>
               </div>
             )}
           </div>
         </div>
       ) : (
-        <div className="space-y-8">
-          <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100">
-            <div className="flex flex-col md:flex-row gap-6 items-end">
+        <div className="space-y-4 md:space-y-8">
+          <div className="bg-white p-4 md:p-8 rounded-[2.5rem] shadow-sm border border-slate-100">
+            <div className="flex flex-col md:flex-row gap-3 md:gap-6 items-end">
               <div className="flex-1 space-y-1.5 w-full">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tambah Kategori Baru</label>
                 <input 
                   type="text"
                   placeholder="Nama kategori..."
-                  className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-sm focus:ring-4 focus:ring-blue-500/5 transition-all"
+                  className="w-full px-4 py-3 md:px-6 md:py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-sm focus:ring-4 focus:ring-blue-500/5 transition-all"
                   value={newCatName || ''}
                   onChange={(e) => setNewCatName(e.target.value)}
                 />
@@ -576,16 +576,16 @@ const ToDoList: React.FC<ToDoListProps> = ({
               <button 
                 onClick={handleAddCategory}
                 disabled={!newCatName.trim()}
-                className="px-8 py-4 bg-indigo-600 text-white font-black rounded-2xl uppercase text-[10px] tracking-widest shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-5 py-3 md:px-8 md:py-4 bg-indigo-600 text-white font-black rounded-2xl uppercase text-[10px] tracking-widest shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 + Tambah
               </button>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
             {categories.map((cat, idx) => (
-              <div key={idx} className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm flex items-center justify-between group hover:border-indigo-100 transition-all">
+              <div key={idx} className="bg-white p-3 md:p-6 rounded-[2rem] border border-slate-100 shadow-sm flex items-center justify-between group hover:border-indigo-100 transition-all">
                 {editingCat?.old === cat ? (
                   <div className="flex items-center gap-2 w-full">
                     <input 

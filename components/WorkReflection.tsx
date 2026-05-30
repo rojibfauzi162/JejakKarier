@@ -280,7 +280,7 @@ const WorkReflectionView: React.FC<WorkReflectionProps> = ({ reflections, skills
   // VIEW BARU: HALAMAN LAPORAN AI PENUH
   if (showFullAiReport && aiInsight) {
     return (
-      <div className="animate-in slide-in-from-right duration-700 space-y-8 pb-20">
+      <div className="animate-in slide-in-from-right duration-700 space-y-4 md:space-y-8 pb-20">
          <div className="flex items-center justify-between">
             <button onClick={() => setShowFullAiReport(false)} className="flex items-center gap-3 group">
                <div className="w-10 h-10 bg-slate-900 text-white rounded-xl flex items-center justify-center font-black transition-transform group-hover:-translate-x-1"><i className="bi bi-arrow-left"></i></div>
@@ -296,19 +296,19 @@ const WorkReflectionView: React.FC<WorkReflectionProps> = ({ reflections, skills
             <div className="relative z-10 space-y-16">
                <div className="max-w-3xl">
                   <SectionLabel label="AI EXECUTIVE SUMMARY" color="white" />
-                  <h3 className="text-3xl lg:text-5xl font-black tracking-tighter leading-[0.9] mt-6 mb-8 uppercase italic">"Laporan Strategis Refleksi Anda"</h3>
+                  <h3 className="text-3xl lg:text-5xl font-black tracking-tighter leading-[0.9] mt-6 mb-4 md:mb-8 uppercase italic">"Laporan Strategis Refleksi Anda"</h3>
                   <p className="text-xl lg:text-2xl font-medium leading-relaxed opacity-90 border-l-4 border-indigo-400 pl-8 italic">"{aiInsight.executiveSummary}"</p>
                </div>
 
                <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
-                  <div className="space-y-6">
+                  <div className="space-y-3 md:space-y-6">
                      <div className="flex items-center gap-4">
                         <span className="text-3xl">📉</span>
                         <h5 className="text-xs font-black uppercase text-indigo-300 tracking-[0.3em]">Productivity Pattern</h5>
                      </div>
                      <p className="text-base text-slate-300 leading-relaxed font-bold">{aiInsight.productivityPattern}</p>
                   </div>
-                  <div className="space-y-6">
+                  <div className="space-y-3 md:space-y-6">
                      <div className="flex items-center gap-4">
                         <span className="text-3xl">🧘</span>
                         <h5 className="text-xs font-black uppercase text-indigo-300 tracking-[0.3em]">Mental Fitness & Mood</h5>
@@ -318,27 +318,27 @@ const WorkReflectionView: React.FC<WorkReflectionProps> = ({ reflections, skills
                </div>
 
                <div className="pt-12 border-t border-white/10 grid grid-cols-1 lg:grid-cols-12 gap-12">
-                  <div className="lg:col-span-7 space-y-8">
+                  <div className="lg:col-span-7 space-y-4 md:space-y-8">
                      <h5 className="text-xs font-black uppercase text-emerald-400 tracking-[0.3em] flex items-center gap-3">
                         <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
                         Golden Contributions (Evidence Ready)
                      </h5>
                      <div className="space-y-4">
                         {aiInsight.goldenContributions.map((gc: string, i: number) => (
-                          <div key={i} className="flex gap-6 items-start bg-white/5 p-6 rounded-[2rem] border border-white/5 hover:bg-white/10 transition-colors">
+                          <div key={i} className="flex gap-3 md:gap-6 items-start bg-white/5 p-3 md:p-6 rounded-[2rem] border border-white/5 hover:bg-white/10 transition-colors">
                              <span className="text-emerald-400 text-2xl font-black">0{i+1}</span>
                              <p className="text-sm font-bold leading-relaxed">{gc}</p>
                           </div>
                         ))}
                      </div>
                   </div>
-                  <div className="lg:col-span-5 space-y-8">
+                  <div className="lg:col-span-5 space-y-4 md:space-y-8">
                      <h5 className="text-xs font-black uppercase text-indigo-300 tracking-[0.3em]">Career Readiness Roadmap</h5>
-                     <div className="bg-white/5 p-8 rounded-[3rem] border border-white/10">
-                        <p className="text-sm font-medium leading-relaxed opacity-80 mb-8 italic">"{aiInsight.careerReadiness}"</p>
+                     <div className="bg-white/5 p-4 md:p-8 rounded-[3rem] border border-white/10">
+                        <p className="text-sm font-medium leading-relaxed opacity-80 mb-4 md:mb-8 italic">"{aiInsight.careerReadiness}"</p>
                         <div className="space-y-4">
                            {aiInsight.suggestedConnections.map((conn: any, i: number) => (
-                              <button key={i} onClick={() => handleConnectAction(conn)} className="w-full p-6 bg-white rounded-[2rem] text-left border-b-4 border-slate-200 hover:border-indigo-500 hover:-translate-y-1 transition-all group shadow-xl shadow-black/20">
+                              <button key={i} onClick={() => handleConnectAction(conn)} className="w-full p-3 md:p-6 bg-white rounded-[2rem] text-left border-b-4 border-slate-200 hover:border-indigo-500 hover:-translate-y-1 transition-all group shadow-xl shadow-black/20">
                                  <div className="flex justify-between items-center mb-1">
                                     <span className="text-[9px] font-black text-indigo-600 uppercase tracking-widest bg-indigo-50 px-3 py-1 rounded-full">{conn.type}</span>
                                     <span className="text-xs opacity-0 group-hover:opacity-100 transition-opacity">🔗</span>
@@ -356,7 +356,7 @@ const WorkReflectionView: React.FC<WorkReflectionProps> = ({ reflections, skills
             <div className="absolute top-0 right-0 w-96 h-96 bg-blue-600/10 rounded-full blur-[120px] -mr-48 -mt-48"></div>
          </div>
          
-         <div className="flex flex-col items-center gap-6 py-10">
+         <div className="flex flex-col items-center gap-3 md:gap-6 py-10">
             <button onClick={() => window.print()} className="px-12 py-5 bg-white border-2 border-slate-900 text-slate-900 font-black rounded-2xl uppercase tracking-[0.3em] text-[10px] shadow-xl hover:bg-slate-50 transition-all">Download Laporan (.PDF)</button>
             <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest">© 2025 FokusKarir Intelligent Performance System</p>
          </div>
@@ -365,7 +365,7 @@ const WorkReflectionView: React.FC<WorkReflectionProps> = ({ reflections, skills
   }
 
   return (
-    <div className="space-y-8 animate-in slide-in-from-bottom duration-700 pb-20">
+    <div className="space-y-4 md:space-y-8 animate-in slide-in-from-bottom duration-700 pb-20">
       
       {/* 0. NAVIGATION TABS */}
       <div className="flex justify-between items-center">
@@ -388,7 +388,7 @@ const WorkReflectionView: React.FC<WorkReflectionProps> = ({ reflections, skills
       {activeTab === 'journal' ? (
         <>
           {/* BARU: SECTION MOTIVASI & PENJELASAN */}
-          <div className="bg-indigo-50 border-2 border-indigo-100 p-8 lg:p-12 rounded-[3.5rem] flex flex-col lg:flex-row items-center gap-10 animate-in fade-in duration-1000">
+          <div className="bg-indigo-50 border-2 border-indigo-100 p-4 md:p-8 lg:p-12 rounded-[3.5rem] flex flex-col lg:flex-row items-center gap-5 md:gap-10 animate-in fade-in duration-1000">
              <div className="w-24 h-24 lg:w-32 lg:h-32 bg-white rounded-[2.5rem] flex items-center justify-center text-4xl lg:text-5xl shadow-xl shadow-indigo-100 shrink-0">📈</div>
              <div className="space-y-4 text-center lg:text-left flex-1">
                 <h3 className="text-xl lg:text-2xl font-black text-indigo-900 uppercase tracking-tighter">Kenapa Harus Refleksi?</h3>
@@ -406,9 +406,9 @@ const WorkReflectionView: React.FC<WorkReflectionProps> = ({ reflections, skills
           {/* 1. HEADER & FORM SECTION */}
           {!todayReflection ? (
             <>
-              <div className="bg-gradient-to-br from-slate-900 to-indigo-950 p-10 lg:p-14 rounded-[3.5rem] text-white relative overflow-hidden shadow-2xl">
+              <div className="bg-gradient-to-br from-slate-900 to-indigo-950 p-4 md:p-10 lg:p-14 rounded-[3.5rem] text-white relative overflow-hidden shadow-2xl">
                  <div className="relative z-10">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-6 mb-4 md:mb-8">
                        <div>
                           <p className="text-[10px] font-black uppercase tracking-[0.4em] opacity-60 mb-2">Check-in Hari Ini</p>
                           <h2 className="text-4xl font-black tracking-tighter leading-none">
@@ -427,12 +427,12 @@ const WorkReflectionView: React.FC<WorkReflectionProps> = ({ reflections, skills
                  <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-600/10 rounded-full blur-[100px] -mr-32 -mt-32"></div>
               </div>
 
-              <form onSubmit={handleSubmit} className="space-y-8">
+              <form onSubmit={handleSubmit} className="space-y-4 md:space-y-8">
                 {/* 2. KONDISI KERJA */}
-                <div className="bg-white p-10 lg:p-14 rounded-[3.5rem] shadow-sm border border-slate-100">
-                   <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] mb-10">Kondisi Kerja & Kesejahteraan</h4>
+                <div className="bg-white p-4 md:p-10 lg:p-14 rounded-[3.5rem] shadow-sm border border-slate-100">
+                   <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] mb-6 md:mb-10">Kondisi Kerja & Kesejahteraan</h4>
                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 lg:gap-20">
-                      <div className="space-y-6">
+                      <div className="space-y-3 md:space-y-6">
                          <p className="text-xs font-black text-slate-700 uppercase tracking-widest ml-1">Mood Kerja</p>
                          <div className="flex justify-between items-center gap-2">
                             {[1,2,3,4,5].map(m => (
@@ -440,7 +440,7 @@ const WorkReflectionView: React.FC<WorkReflectionProps> = ({ reflections, skills
                             ))}
                          </div>
                       </div>
-                      <div className="space-y-6">
+                      <div className="space-y-3 md:space-y-6">
                          <p className="text-xs font-black text-slate-700 uppercase tracking-widest ml-1">Tingkat Energi</p>
                          <div className="flex gap-2">
                             {['Low', 'Medium', 'High'].map(e => (
@@ -448,7 +448,7 @@ const WorkReflectionView: React.FC<WorkReflectionProps> = ({ reflections, skills
                             ))}
                          </div>
                       </div>
-                      <div className="space-y-6">
+                      <div className="space-y-3 md:space-y-6">
                          <p className="text-xs font-black text-slate-700 uppercase tracking-widest ml-1">Beban Kerja</p>
                          <div className="flex gap-2">
                             {['Light', 'Normal', 'Heavy'].map(w => (
@@ -460,17 +460,17 @@ const WorkReflectionView: React.FC<WorkReflectionProps> = ({ reflections, skills
                 </div>
 
                 {/* 3. KONTRIBUSI UTAMA */}
-                <div className="bg-indigo-600 p-10 lg:p-14 rounded-[3.5rem] shadow-2xl text-white">
-                   <div className="flex items-center gap-4 mb-8"><span className="text-3xl">⭐</span><h4 className="text-[10px] font-black text-white/60 uppercase tracking-[0.4em]">Kontribusi Paling Berharga</h4></div>
+                <div className="bg-indigo-600 p-4 md:p-10 lg:p-14 rounded-[3.5rem] shadow-2xl text-white">
+                   <div className="flex items-center gap-4 mb-4 md:mb-8"><span className="text-3xl">⭐</span><h4 className="text-[10px] font-black text-white/60 uppercase tracking-[0.4em]">Kontribusi Paling Berharga</h4></div>
                    <div className="space-y-4">
                       <p className="text-lg lg:text-xl font-bold tracking-tight">"Hal paling bernilai yang aku lakukan hari ini adalah..."</p>
-                      <textarea className="w-full bg-white/10 border-2 border-white/20 rounded-[2rem] p-8 outline-none focus:bg-white/15 focus:border-white/40 transition-all font-bold text-base lg:text-lg placeholder:text-white/20 min-h-[150px] resize-none" placeholder="Misal: Menyelesaikan bug kritikal..." value={formData.mainContribution || ''} onChange={e => setFormData({...formData, mainContribution: e.target.value})} required />
+                      <textarea className="w-full bg-white/10 border-2 border-white/20 rounded-[2rem] p-4 md:p-8 outline-none focus:bg-white/15 focus:border-white/40 transition-all font-bold text-base lg:text-lg placeholder:text-white/20 min-h-[150px] resize-none" placeholder="Misal: Menyelesaikan bug kritikal..." value={formData.mainContribution || ''} onChange={e => setFormData({...formData, mainContribution: e.target.value})} required />
                    </div>
                 </div>
 
                 {/* 4. MICRO WINS */}
-                <div className="bg-white p-10 lg:p-14 rounded-[3.5rem] shadow-sm border border-slate-100">
-                   <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] mb-10">Micro Win Tracker</h4>
+                <div className="bg-white p-4 md:p-10 lg:p-14 rounded-[3.5rem] shadow-sm border border-slate-100">
+                   <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] mb-6 md:mb-10">Micro Win Tracker</h4>
                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                       {MICRO_WINS.map(win => {
                         const active = (formData.microWins || []).includes(win);
@@ -482,9 +482,9 @@ const WorkReflectionView: React.FC<WorkReflectionProps> = ({ reflections, skills
                 </div>
 
                 {/* 5. SKILL INTEGRATION */}
-                <div className="bg-white p-10 lg:p-14 rounded-[4rem] shadow-sm border border-slate-100 space-y-10">
+                <div className="bg-white p-4 md:p-10 lg:p-14 rounded-[4rem] shadow-sm border border-slate-100 space-y-3 md:space-y-6 md:space-y-10">
                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">Skills yang Terpakai Hari Ini</h4>
-                   <div className="space-y-6">
+                   <div className="space-y-3 md:space-y-6">
                       <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest ml-1">Database Portofolio Anda</p>
                       <div className="flex flex-wrap gap-2">
                          {skills.map(skill => {
@@ -493,7 +493,7 @@ const WorkReflectionView: React.FC<WorkReflectionProps> = ({ reflections, skills
                          })}
                       </div>
                    </div>
-                   <div className="pt-8 border-t border-slate-50 space-y-6">
+                   <div className="pt-8 border-t border-slate-50 space-y-3 md:space-y-6">
                       <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest ml-1">Skill Baru yang Dipraktekkan (Maks. 2)</p>
                       <div className="flex flex-wrap gap-2">
                          {(formData.suggestedSkills || []).map(skill => (
@@ -506,40 +506,40 @@ const WorkReflectionView: React.FC<WorkReflectionProps> = ({ reflections, skills
                    </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                   <div className="bg-white p-10 lg:p-14 rounded-[3.5rem] shadow-sm border border-slate-100"><h4 className="text-[10px] font-black text-rose-500 uppercase tracking-[0.4em] mb-8">Energy Drain</h4><textarea className="w-full bg-slate-50 border border-slate-100 rounded-[1.5rem] p-6 text-sm font-bold text-slate-600 resize-none min-h-[100px]" placeholder="Apa yang melelahkan hari ini?" value={formData.energyDrain || ''} onChange={e => setFormData({...formData, energyDrain: e.target.value})} /></div>
-                   <div className="bg-white p-10 lg:p-14 rounded-[3.5rem] shadow-sm border border-slate-100"><h4 className="text-[10px] font-black text-blue-500 uppercase tracking-[0.4em] mb-8">Fokus Besok</h4><textarea className="w-full bg-slate-50 border border-slate-100 rounded-[1.5rem] p-6 text-sm font-bold text-slate-600 resize-none min-h-[100px]" placeholder="Target kecil besok pagi..." value={formData.focusTomorrow || ''} onChange={e => setFormData({...formData, focusTomorrow: e.target.value})} /></div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8">
+                   <div className="bg-white p-4 md:p-10 lg:p-14 rounded-[3.5rem] shadow-sm border border-slate-100"><h4 className="text-[10px] font-black text-rose-500 uppercase tracking-[0.4em] mb-4 md:mb-8">Energy Drain</h4><textarea className="w-full bg-slate-50 border border-slate-100 rounded-[1.5rem] p-3 md:p-6 text-sm font-bold text-slate-600 resize-none min-h-[100px]" placeholder="Apa yang melelahkan hari ini?" value={formData.energyDrain || ''} onChange={e => setFormData({...formData, energyDrain: e.target.value})} /></div>
+                   <div className="bg-white p-4 md:p-10 lg:p-14 rounded-[3.5rem] shadow-sm border border-slate-100"><h4 className="text-[10px] font-black text-blue-500 uppercase tracking-[0.4em] mb-4 md:mb-8">Fokus Besok</h4><textarea className="w-full bg-slate-50 border border-slate-100 rounded-[1.5rem] p-3 md:p-6 text-sm font-bold text-slate-600 resize-none min-h-[100px]" placeholder="Target kecil besok pagi..." value={formData.focusTomorrow || ''} onChange={e => setFormData({...formData, focusTomorrow: e.target.value})} /></div>
                 </div>
 
-                <div className="bg-amber-50 p-10 lg:p-14 rounded-[4rem] border border-amber-100 shadow-sm"><p className="text-xl lg:text-2xl font-black text-slate-800 tracking-tight mb-6">"{questionOfTheDay}"</p><textarea className="w-full bg-white border border-amber-100 rounded-[2rem] p-8 font-bold text-slate-700 min-h-[150px] resize-none" placeholder="Tulis jawabanmu..." value={formData.rotatingAnswer || ''} onChange={e => setFormData({...formData, rotatingAnswer: e.target.value})} /></div>
+                <div className="bg-amber-50 p-4 md:p-10 lg:p-14 rounded-[4rem] border border-amber-100 shadow-sm"><p className="text-xl lg:text-2xl font-black text-slate-800 tracking-tight mb-6">"{questionOfTheDay}"</p><textarea className="w-full bg-white border border-amber-100 rounded-[2rem] p-4 md:p-8 font-bold text-slate-700 min-h-[150px] resize-none" placeholder="Tulis jawabanmu..." value={formData.rotatingAnswer || ''} onChange={e => setFormData({...formData, rotatingAnswer: e.target.value})} /></div>
 
-                <div className="pt-10 flex flex-col items-center gap-6"><button type="submit" className="w-full max-w-xl py-6 bg-slate-900 text-white font-black rounded-[2.5rem] shadow-2xl hover:bg-black transition-all uppercase text-xs tracking-[0.3em]">🚀 Simpan Refleksi Harian</button></div>
+                <div className="pt-10 flex flex-col items-center gap-3 md:gap-6"><button type="submit" className="w-full max-w-xl py-6 bg-slate-900 text-white font-black rounded-[1.5rem] md:rounded-[2.5rem] shadow-2xl hover:bg-black transition-all uppercase text-xs tracking-[0.3em]">🚀 Simpan Refleksi Harian</button></div>
               </form>
             </>
           ) : (
-            <div className="bg-white p-10 lg:p-14 rounded-[3.5rem] shadow-sm border border-slate-100 text-center animate-in zoom-in duration-500">
+            <div className="bg-white p-4 md:p-10 lg:p-14 rounded-[3.5rem] shadow-sm border border-slate-100 text-center animate-in zoom-in duration-500">
                <div className="text-6xl mb-6">✅</div>
                <h3 className="text-3xl font-black text-slate-900 uppercase tracking-tighter mb-4">Refleksi Hari Ini Selesai</h3>
                <p className="text-slate-500 font-medium max-w-md mx-auto leading-relaxed italic">"Terima kasih telah meluangkan waktu sejenak untuk menghargai usaha Anda hari ini. Data Anda aman dan tersimpan untuk analisis karier."</p>
-               <div className="mt-10 flex justify-center gap-4">
-                   <div className="bg-indigo-50 px-6 py-4 rounded-3xl border border-indigo-100"><p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1">STREAK</p><p className="text-2xl font-black text-indigo-600">{streak} Hari 🔥</p></div>
-                   <div className="bg-emerald-50 px-6 py-4 rounded-3xl border border-emerald-100"><p className="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-1">MOOD</p><p className="text-2xl font-black text-emerald-600">{getMoodEmoji(todayReflection.mood)}</p></div>
+               <div className="mt-6 md:mt-10 flex justify-center gap-4">
+                   <div className="bg-indigo-50 px-4 py-3 md:px-6 md:py-4 rounded-3xl border border-indigo-100"><p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1">STREAK</p><p className="text-2xl font-black text-indigo-600">{streak} Hari 🔥</p></div>
+                   <div className="bg-emerald-50 px-4 py-3 md:px-6 md:py-4 rounded-3xl border border-emerald-100"><p className="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-1">MOOD</p><p className="text-2xl font-black text-emerald-600">{getMoodEmoji(todayReflection.mood)}</p></div>
                </div>
             </div>
           )}
 
           {/* 6. HISTORY LIST WITH FILTER & PAGINATION */}
-          <div className="mt-16 space-y-10">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 px-2">
+          <div className="mt-16 space-y-3 md:space-y-6 md:space-y-10">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-6 px-2">
               <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.4em]">Journal History</h3>
               <TimeFilterControls />
             </div>
             
             <div className="space-y-4">
               {paginatedItems.map(ref => (
-                <div key={ref.id} className="bg-white p-6 lg:p-8 rounded-[2.5rem] border border-slate-100 shadow-sm group hover:shadow-md transition-all">
-                  <div className="flex flex-col md:flex-row justify-between gap-6">
-                    <div className="flex items-center gap-6">
+                <div key={ref.id} className="bg-white p-3 md:p-6 lg:p-8 rounded-[2.5rem] border border-slate-100 shadow-sm group hover:shadow-md transition-all">
+                  <div className="flex flex-col md:flex-row justify-between gap-3 md:gap-6">
+                    <div className="flex items-center gap-3 md:gap-6">
                       <div className="text-center shrink-0">
                         <p className="text-[8px] font-black text-slate-300 uppercase mb-1 tracking-widest">MOOD</p>
                         <div className="text-3xl">{getMoodEmoji(ref.mood)}</div>
@@ -582,9 +582,9 @@ const WorkReflectionView: React.FC<WorkReflectionProps> = ({ reflections, skills
         </>
       ) : (
         /* ANALYSIS DASHBOARD VIEW */
-        <div className="animate-in fade-in duration-700 space-y-10">
+        <div className="animate-in fade-in duration-700 space-y-3 md:space-y-6 md:space-y-10">
            {/* ANALYSIS HEADER FILTER */}
-           <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 flex flex-col md:flex-row justify-between items-center gap-6">
+           <div className="bg-white p-3 md:p-6 rounded-[2rem] shadow-sm border border-slate-100 flex flex-col md:flex-row justify-between items-center gap-3 md:gap-6">
               <div className="space-y-1">
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Rentang Analisis Data</p>
                 <TimeFilterControls />
@@ -603,15 +603,15 @@ const WorkReflectionView: React.FC<WorkReflectionProps> = ({ reflections, skills
              <>
                {/* AI Deep Insight Result Section */}
                {aiInsight && (
-                 <div className="bg-gradient-to-br from-indigo-900 to-slate-900 p-10 lg:p-14 rounded-[4rem] text-white shadow-2xl animate-in zoom-in duration-500 space-y-10 relative overflow-hidden">
+                 <div className="bg-gradient-to-br from-indigo-900 to-slate-900 p-4 md:p-10 lg:p-14 rounded-[4rem] text-white shadow-2xl animate-in zoom-in duration-500 space-y-3 md:space-y-6 md:space-y-10 relative overflow-hidden">
                     <div className="relative z-10 flex flex-col lg:flex-row gap-12">
-                       <div className="lg:w-2/3 space-y-8">
+                       <div className="lg:w-2/3 space-y-4 md:space-y-8">
                           <div>
                              <SectionLabel label="AI EXECUTIVE SUMMARY" color="white" />
                              <p className="text-lg lg:text-xl font-medium leading-relaxed italic opacity-90 border-l-4 border-indigo-400 pl-8">"{aiInsight.executiveSummary}"</p>
                           </div>
                           
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
                              <div className="space-y-3">
                                 <h5 className="text-[10px] font-black uppercase text-indigo-300 tracking-widest">Productivity Pulse</h5>
                                 <p className="text-sm font-medium text-slate-300 leading-relaxed">{aiInsight.productivityPattern}</p>
@@ -623,16 +623,16 @@ const WorkReflectionView: React.FC<WorkReflectionProps> = ({ reflections, skills
                           </div>
                        </div>
 
-                       <div className="lg:w-1/3 bg-white/5 backdrop-blur-md p-8 rounded-[3rem] border border-white/10 flex flex-col justify-between">
+                       <div className="lg:w-1/3 bg-white/5 backdrop-blur-md p-4 md:p-8 rounded-[3rem] border border-white/10 flex flex-col justify-between">
                           <div>
                             <SectionLabel label="ACTIONABLE SUGGESTIONS" color="white" />
                             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-6">Opsi Strategis:</p>
                             <div className="space-y-4">
-                               <button onClick={() => setShowFullAiReport(true)} className="w-full p-6 bg-blue-600 text-white rounded-[2rem] text-center font-black uppercase text-[10px] tracking-[0.2em] shadow-2xl shadow-blue-500/20 hover:bg-blue-700 transition-all">Buka Laporan Penuh ↗</button>
+                               <button onClick={() => setShowFullAiReport(true)} className="w-full p-3 md:p-6 bg-blue-600 text-white rounded-[2rem] text-center font-black uppercase text-[10px] tracking-[0.2em] shadow-2xl shadow-blue-500/20 hover:bg-blue-700 transition-all">Buka Laporan Penuh ↗</button>
                                <p className="text-[9px] text-center opacity-60 italic mt-3">Laporan ini memetakan masa depan kualifikasi Anda.</p>
                             </div>
                           </div>
-                          <div className="mt-10 pt-6 border-t border-white/5 text-center">
+                          <div className="mt-6 md:mt-10 pt-6 border-t border-white/5 text-center">
                              <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Powered by Deep Reflection Engine</p>
                           </div>
                        </div>
@@ -642,9 +642,9 @@ const WorkReflectionView: React.FC<WorkReflectionProps> = ({ reflections, skills
                )}
 
                {/* Top Insights Panel Charts */}
-               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                  <div className="lg:col-span-8 bg-white p-10 lg:p-12 rounded-[3.5rem] shadow-sm border border-slate-100">
-                     <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.4em] mb-10">Trend Visual ({timeFilter})</h3>
+               <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-8">
+                  <div className="lg:col-span-8 bg-white p-4 md:p-10 lg:p-12 rounded-[3.5rem] shadow-sm border border-slate-100">
+                     <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.4em] mb-6 md:mb-10">Trend Visual ({timeFilter})</h3>
                      <div className="h-72 w-full">
                         <ResponsiveContainer width="100%" height="100%">
                            <AreaChart data={stats.moodTrend}>
@@ -663,8 +663,8 @@ const WorkReflectionView: React.FC<WorkReflectionProps> = ({ reflections, skills
                         </ResponsiveContainer>
                      </div>
                   </div>
-                  <div className="lg:col-span-4 space-y-6">
-                     <div className="bg-slate-900 p-10 rounded-[3rem] text-white h-full flex flex-col justify-between shadow-2xl relative overflow-hidden group">
+                  <div className="lg:col-span-4 space-y-3 md:space-y-6">
+                     <div className="bg-slate-900 p-4 md:p-10 rounded-[3rem] text-white h-full flex flex-col justify-between shadow-2xl relative overflow-hidden group">
                         <div className="relative z-10">
                            <p className="text-[10px] font-black uppercase text-indigo-400 tracking-[0.3em] mb-4">Manual Sentiment Summary</p>
                            <h4 className="text-4xl font-black tracking-tighter leading-none mb-6">Periode {timeFilter}</h4>
@@ -682,10 +682,10 @@ const WorkReflectionView: React.FC<WorkReflectionProps> = ({ reflections, skills
                </div>
 
                {/* Skill Matrix & Micro Wins Distribution */}
-               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                  <div className="bg-white p-10 lg:p-12 rounded-[3.5rem] shadow-sm border border-slate-100">
-                     <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] mb-8">Dominant Skills Matrix ({timeFilter})</h4>
-                     <div className="space-y-6">
+               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8">
+                  <div className="bg-white p-4 md:p-10 lg:p-12 rounded-[3.5rem] shadow-sm border border-slate-100">
+                     <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] mb-4 md:mb-8">Dominant Skills Matrix ({timeFilter})</h4>
+                     <div className="space-y-3 md:space-y-6">
                         {stats.topSkills.map((s, i) => (
                            <div key={s.name} className="space-y-2">
                               <div className="flex justify-between items-end px-1">
@@ -699,8 +699,8 @@ const WorkReflectionView: React.FC<WorkReflectionProps> = ({ reflections, skills
                         ))}
                      </div>
                   </div>
-                  <div className="bg-white p-10 lg:p-12 rounded-[3.5rem] shadow-sm border border-slate-100">
-                     <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] mb-8">Energy Distribution Analysis</h4>
+                  <div className="bg-white p-4 md:p-10 lg:p-12 rounded-[3.5rem] shadow-sm border border-slate-100">
+                     <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] mb-4 md:mb-8">Energy Distribution Analysis</h4>
                      <div className="h-64 w-full">
                         <ResponsiveContainer width="100%" height="100%">
                            <PieChart>
@@ -718,9 +718,9 @@ const WorkReflectionView: React.FC<WorkReflectionProps> = ({ reflections, skills
                </div>
 
                {/* PROFESSIONAL TIMELINE INSIGHTS GRID */}
-               <div className="space-y-8">
+               <div className="space-y-4 md:space-y-8">
                   <h4 className="text-xs font-black text-slate-400 uppercase tracking-[0.4em] px-2">Timeline Based Professional Insights</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
                      <InsightGridCard duration="1 WEEK" title="Pola Produktivitas" content={reflections.length >= 7 ? "Produktivitas memuncak di awal minggu. Fokus esok hari sering berfokus pada penyelesaian tugas administratif." : "Menunggu data 1 minggu..."} status={reflections.length >= 7} />
                      <InsightGridCard duration="1 MONTH" title="Matriks Skill Dominan" content={reflections.length >= 20 ? "Kombinasi skill teknis dan manajerial meningkat. Beban kerja berat tertangani dengan mood stabil." : "Menunggu data 1 bulan..."} status={reflections.length >= 20} />
                      <InsightGridCard duration="3 MONTHS" title="Bukti Kontribusi" content={reflections.length >= 60 ? `Tercatat ${reflections.filter(r => r.workload === 'Heavy').length} periode intensif dengan kontribusi bernilai tinggi.` : "Menunggu data 3 bulan..."} status={reflections.length >= 60} />
@@ -734,16 +734,16 @@ const WorkReflectionView: React.FC<WorkReflectionProps> = ({ reflections, skills
 
       {/* DETAIL MODAL OVERLAY */}
       {selectedEntry && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[2000] flex items-center justify-center p-6" onClick={() => setSelectedEntry(null)}>
-           <div className="bg-white max-w-2xl w-full rounded-[3.5rem] border border-slate-100 shadow-2xl animate-in zoom-in duration-300 overflow-hidden relative" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[2000] flex items-center justify-center p-2 sm:p-6" onClick={() => setSelectedEntry(null)}>
+           <div className="bg-white max-w-2xl w-full rounded-[2rem] md:rounded-[3.5rem] border border-slate-100 shadow-2xl animate-in zoom-in duration-300 overflow-hidden relative" onClick={e => e.stopPropagation()}>
               <button onClick={() => setSelectedEntry(null)} className="absolute top-8 right-8 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-400 hover:text-slate-900 z-10">✕</button>
-              <div className="bg-slate-50 p-10 border-b border-slate-100 flex justify-between items-start">
+              <div className="bg-slate-50 p-4 md:p-10 border-b border-slate-100 flex justify-between items-start">
                  <div>
                     <SectionLabel label="Detailed Record" color="indigo" />
                     <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tighter mt-4">{new Date(selectedEntry.date).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</h3>
                  </div>
               </div>
-              <div className="p-10 space-y-10 max-h-[60vh] overflow-y-auto no-scrollbar">
+              <div className="p-4 md:p-10 space-y-3 md:space-y-6 md:space-y-10 max-h-[60vh] overflow-y-auto no-scrollbar">
                  <div className="grid grid-cols-3 gap-4">
                     <ModalStat label="Mood" val={getMoodEmoji(selectedEntry.mood)} />
                     <ModalStat label="Energy" val={selectedEntry.energy} />
@@ -753,7 +753,7 @@ const WorkReflectionView: React.FC<WorkReflectionProps> = ({ reflections, skills
                     <SectionLabel label="Kontribusi Utama" color="indigo" />
                     <p className="text-lg font-bold text-slate-800 italic border-l-4 border-indigo-600 pl-6 leading-relaxed">"{selectedEntry.mainContribution}"</p>
                  </div>
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-6 border-t border-slate-50">
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 pt-6 border-t border-slate-50">
                     <div className="space-y-4">
                        <SectionLabel label="Micro Wins" color="slate" />
                        <div className="flex flex-wrap gap-2">
@@ -767,11 +767,11 @@ const WorkReflectionView: React.FC<WorkReflectionProps> = ({ reflections, skills
                        </div>
                     </div>
                  </div>
-                 <div className="p-8 bg-amber-50 rounded-[2.5rem] border border-amber-100">
+                 <div className="p-4 md:p-8 bg-amber-50 rounded-[2.5rem] border border-amber-100">
                     <p className="text-[10px] font-black text-amber-600 uppercase tracking-widest mb-3">{selectedEntry.rotatingQuestion}</p>
                     <p className="text-sm font-bold text-slate-700 leading-relaxed italic">"{selectedEntry.rotatingAnswer}"</p>
                  </div>
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
                     <div className="space-y-3"><p className="text-[9px] font-black text-rose-500 uppercase tracking-widest">Energy Drain</p><p className="text-xs font-bold text-slate-500 leading-relaxed">"{selectedEntry.energyDrain || '-'}"</p></div>
                     <div className="space-y-3"><p className="text-[9px] font-black text-blue-500 uppercase tracking-widest">Focus Tomorrow</p><p className="text-xs font-bold text-slate-500 leading-relaxed">"{selectedEntry.focusTomorrow || '-'}"</p></div>
                  </div>
@@ -785,7 +785,7 @@ const WorkReflectionView: React.FC<WorkReflectionProps> = ({ reflections, skills
 
 // UI Components for Analysis
 const InsightGridCard = ({ duration, title, content, status }: any) => (
-  <div className={`p-8 rounded-[2.5rem] border-2 flex flex-col justify-between transition-all group ${status ? 'bg-white border-slate-100 shadow-sm hover:shadow-xl hover:border-indigo-100' : 'bg-slate-50 border-slate-100 opacity-60'}`}>
+  <div className={`p-4 md:p-8 rounded-[2.5rem] border-2 flex flex-col justify-between transition-all group ${status ? 'bg-white border-slate-100 shadow-sm hover:shadow-xl hover:border-indigo-100' : 'bg-slate-50 border-slate-100 opacity-60'}`}>
      <div>
         <span className={`text-[8px] font-black uppercase tracking-widest mb-4 inline-block px-2 py-0.5 rounded ${status ? 'bg-indigo-600 text-white' : 'bg-slate-300 text-slate-500'}`}>{duration}</span>
         <h4 className="text-sm font-black text-slate-800 uppercase tracking-tight mb-4 group-hover:text-indigo-600 transition-colors">{title}</h4>

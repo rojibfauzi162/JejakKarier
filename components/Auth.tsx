@@ -153,7 +153,7 @@ const Auth: React.FC<AuthProps> = ({ onBack, logoUrl, logoDarkUrl }) => {
         <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-emerald-600/20 rounded-full blur-[120px]"></div>
       </div>
 
-      <div className="w-full max-w-md bg-white/10 backdrop-blur-xl border border-white/10 p-8 lg:p-12 rounded-[3rem] shadow-2xl relative z-10 animate-in zoom-in duration-500">
+      <div className="w-full max-w-md bg-white/10 backdrop-blur-xl border border-white/10 p-4 sm:p-6 md:p-8 lg:p-12 rounded-[2rem] md:rounded-[3rem] shadow-2xl relative z-10 animate-in zoom-in duration-500">
         
         {onBack && !isForgotPassword && !isStandalone && (
           <button 
@@ -175,7 +175,7 @@ const Auth: React.FC<AuthProps> = ({ onBack, logoUrl, logoDarkUrl }) => {
           </button>
         )}
 
-        <div className="text-center mb-10 mt-6">
+        <div className="text-center mb-6 md:mb-10 mt-6">
           {logoDarkUrl || logoUrl ? (
             <img src={logoDarkUrl || logoUrl} alt="Logo" className="h-16 mx-auto mb-6 object-contain drop-shadow-xl" />
           ) : (
@@ -188,14 +188,14 @@ const Auth: React.FC<AuthProps> = ({ onBack, logoUrl, logoDarkUrl }) => {
         </div>
 
         {!isForgotPassword && (
-          <div className="flex bg-white/5 p-1 rounded-2xl mb-8">
+          <div className="flex bg-white/5 p-1 rounded-2xl mb-4 md:mb-8">
             <button onClick={() => { setIsLogin(true); setError(''); setSuccessMsg(''); }} className={`flex-1 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${isLogin ? 'bg-white text-slate-900 shadow-lg' : 'text-slate-400 hover:text-white'}`}>Login</button>
             <button onClick={() => { setIsLogin(false); setError(''); setSuccessMsg(''); }} className={`flex-1 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${!isLogin ? 'bg-white text-slate-900 shadow-lg' : 'text-slate-400 hover:text-white'}`}>Register</button>
           </div>
         )}
 
         {isForgotPassword && (
-          <div className="text-center mb-8">
+          <div className="text-center mb-4 md:mb-8">
              <h2 className="text-xl font-black text-white uppercase tracking-tight">Reset Password</h2>
              <p className="text-slate-400 text-xs mt-2 font-bold leading-relaxed uppercase tracking-widest">Masukkan email Anda untuk menerima instruksi pemulihan.</p>
           </div>
@@ -253,7 +253,7 @@ const Auth: React.FC<AuthProps> = ({ onBack, logoUrl, logoDarkUrl }) => {
         )}
 
         {isForgotPassword ? (
-          <form onSubmit={handleForgotPassword} className="space-y-6">
+          <form onSubmit={handleForgotPassword} className="space-y-3 md:space-y-6">
             <div className="space-y-1.5">
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Email Address</label>
               <input type="email" required className="w-full px-5 py-4 rounded-2xl bg-white/5 border border-white/10 text-white outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-bold placeholder:text-slate-600" placeholder="alex@fokuskarir.com" value={email || ''} onChange={(e) => setEmail(e.target.value)} />

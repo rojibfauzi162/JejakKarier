@@ -88,14 +88,14 @@ const AccountSettings: React.FC<AccountSettingsProps> = ({ role, reminderConfig,
   };
 
   return (
-    <div className="max-w-4xl space-y-8 animate-in fade-in duration-700 pb-20">
+    <div className="max-w-4xl space-y-4 md:space-y-8 animate-in fade-in duration-700 pb-20">
       <header>
         <h2 className="text-3xl font-black text-slate-900 tracking-tight uppercase">Pengaturan Akun</h2>
         <p className="text-slate-500 font-medium italic">"Kelola profil dan protokol pengingat cerdas Anda."</p>
       </header>
 
       {message && (
-        <div className={`p-6 rounded-[2rem] text-[10px] font-black uppercase tracking-widest animate-in slide-in-from-top-2 border flex items-center gap-4 ${
+        <div className={`p-3 md:p-6 rounded-[2rem] text-[10px] font-black uppercase tracking-widest animate-in slide-in-from-top-2 border flex items-center gap-4 ${
           message.type === 'success' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-rose-50 text-rose-600 border-rose-100'
         }`}>
           <span className="text-lg">
@@ -109,9 +109,9 @@ const AccountSettings: React.FC<AccountSettingsProps> = ({ role, reminderConfig,
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
         {/* Informasi Dasar */}
-        <section className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 space-y-8">
+        <section className="bg-white p-4 md:p-8 rounded-[2.5rem] shadow-sm border border-slate-100 space-y-4 md:space-y-8">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
@@ -140,7 +140,7 @@ const AccountSettings: React.FC<AccountSettingsProps> = ({ role, reminderConfig,
         </section>
 
         {/* Intelligence Reminders Protocol */}
-        <section className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 space-y-8">
+        <section className="bg-white p-4 md:p-8 rounded-[2.5rem] shadow-sm border border-slate-100 space-y-4 md:space-y-8">
            <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center">
                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
@@ -148,7 +148,7 @@ const AccountSettings: React.FC<AccountSettingsProps> = ({ role, reminderConfig,
               <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight">Protokol Pengingat</h3>
            </div>
 
-           <div className="space-y-6">
+           <div className="space-y-3 md:space-y-6">
               <ReminderTimeSelector 
                 label="Check-in Aktivitas Kerja" 
                 sub="Ingatkan jika log harian kosong setelah jam ini."
@@ -176,7 +176,7 @@ const AccountSettings: React.FC<AccountSettingsProps> = ({ role, reminderConfig,
 
         {/* Super Admin: Legal Management */}
         {isSuperadmin && (
-          <section className="md:col-span-2 bg-white p-8 lg:p-12 rounded-[3.5rem] shadow-sm border-2 border-indigo-100 space-y-8 animate-in zoom-in duration-500">
+          <section className="md:col-span-2 bg-white p-4 md:p-8 lg:p-12 rounded-[3.5rem] shadow-sm border-2 border-indigo-100 space-y-4 md:space-y-8 animate-in zoom-in duration-500">
              <div className="flex items-center gap-4">
                 <div className="w-12 h-12 bg-slate-900 text-white rounded-2xl flex items-center justify-center">
                    <i className="bi bi-file-earmark-lock-fill text-xl"></i>
@@ -187,11 +187,11 @@ const AccountSettings: React.FC<AccountSettingsProps> = ({ role, reminderConfig,
                 </div>
              </div>
 
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
                 <div className="space-y-3">
                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Privacy Policy</label>
                    <textarea 
-                    className="w-full px-6 py-4 rounded-[2rem] border border-slate-200 outline-none bg-slate-50 font-medium text-xs leading-relaxed min-h-[300px] resize-none focus:border-indigo-400 transition-all"
+                    className="w-full px-4 py-3 md:px-6 md:py-4 rounded-[2rem] border border-slate-200 outline-none bg-slate-50 font-medium text-xs leading-relaxed min-h-[300px] resize-none focus:border-indigo-400 transition-all"
                     value={legalConfig.privacyPolicy || ''}
                     onChange={e => setLegalConfig({...legalConfig, privacyPolicy: e.target.value})}
                     placeholder="Masukkan konten kebijakan privasi..."
@@ -200,7 +200,7 @@ const AccountSettings: React.FC<AccountSettingsProps> = ({ role, reminderConfig,
                 <div className="space-y-3">
                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Terms of Service</label>
                    <textarea 
-                    className="w-full px-6 py-4 rounded-[2rem] border border-slate-200 outline-none bg-slate-50 font-medium text-xs leading-relaxed min-h-[300px] resize-none focus:border-indigo-400 transition-all"
+                    className="w-full px-4 py-3 md:px-6 md:py-4 rounded-[2rem] border border-slate-200 outline-none bg-slate-50 font-medium text-xs leading-relaxed min-h-[300px] resize-none focus:border-indigo-400 transition-all"
                     value={legalConfig.termsOfService || ''}
                     onChange={e => setLegalConfig({...legalConfig, termsOfService: e.target.value})}
                     placeholder="Masukkan konten syarat layanan..."
@@ -221,7 +221,7 @@ const AccountSettings: React.FC<AccountSettingsProps> = ({ role, reminderConfig,
         )}
 
         {/* Keamanan Akun */}
-        <section className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 space-y-8">
+        <section className="bg-white p-4 md:p-8 rounded-[2.5rem] shadow-sm border border-slate-100 space-y-4 md:space-y-8">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
@@ -242,8 +242,8 @@ const AccountSettings: React.FC<AccountSettingsProps> = ({ role, reminderConfig,
         </section>
 
         {/* Info Akun Tambahan */}
-        <section className="md:col-span-1 bg-slate-900 p-10 rounded-[3rem] text-white">
-           <div className="flex flex-col justify-between h-full gap-8">
+        <section className="md:col-span-1 bg-slate-900 p-4 md:p-10 rounded-[3rem] text-white">
+           <div className="flex flex-col justify-between h-full gap-4 md:gap-8">
               <div className="text-center md:text-left">
                  <h4 className="text-xs font-black text-indigo-400 uppercase tracking-[0.3em] mb-2">Informasi Akun</h4>
                  <p className="text-[10px] text-slate-500 uppercase font-bold">Terdaftar Pada: <span className="text-white ml-2">{user?.metadata.creationTime}</span></p>
@@ -255,10 +255,10 @@ const AccountSettings: React.FC<AccountSettingsProps> = ({ role, reminderConfig,
 
       {/* Modal Konfirmasi Logout Settings */}
       {showLogoutModal && (
-        <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center p-0 sm:p-4">
           <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" onClick={() => setShowLogoutModal(false)}></div>
-          <div className="relative bg-white w-full max-w-sm rounded-[2.5rem] p-8 lg:p-10 shadow-2xl animate-in zoom-in duration-300">
-            <div className="text-center mb-8">
+          <div className="relative bg-white w-full max-w-sm rounded-[1.5rem] md:rounded-[2.5rem] p-3 md:p-8 lg:p-10 shadow-2xl animate-in zoom-in duration-300">
+            <div className="text-center mb-4 md:mb-8">
               <div className="w-16 h-16 bg-rose-50 text-rose-500 rounded-3xl flex items-center justify-center mx-auto mb-4 text-2xl shadow-inner">
                 <i className="bi bi-door-open-fill"></i>
               </div>

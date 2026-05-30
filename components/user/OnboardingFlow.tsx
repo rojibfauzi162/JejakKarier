@@ -227,8 +227,8 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ data, onComplete }) => 
   ];
 
   return (
-    <div className="fixed inset-0 z-[1000] bg-slate-50 flex items-center justify-center p-4 overflow-y-auto">
-      <div className="max-w-4xl w-full bg-white rounded-[3rem] shadow-2xl border border-slate-100 overflow-hidden flex flex-col min-h-[80vh] relative">
+    <div className="fixed inset-0 z-[1000] bg-slate-50 flex items-center justify-center p-0 sm:p-4 overflow-y-auto">
+      <div className="max-w-4xl w-full bg-white rounded-[2rem] md:rounded-[3rem] shadow-2xl border border-slate-100 overflow-hidden flex flex-col min-h-[80vh] relative">
         
         {/* Close Button to Skip All */}
         <button 
@@ -252,9 +252,9 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ data, onComplete }) => 
           ))}
         </div>
 
-        <div className="p-8 lg:p-12 flex-1 flex flex-col">
+        <div className="p-4 md:p-8 lg:p-12 flex-1 flex flex-col">
           {/* Logo & Tagline */}
-          <div className="text-center mb-8">
+          <div className="text-center mb-4 md:mb-8">
             <div className="inline-flex items-center gap-3 mb-2">
               <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-200">
                 <i className="bi bi-rocket-takeoff-fill text-xl"></i>
@@ -271,7 +271,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ data, onComplete }) => 
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
-                className="space-y-8"
+                className="space-y-4 md:space-y-8"
               >
                 <div className="space-y-2">
                   <div className="flex justify-between items-start">
@@ -281,14 +281,14 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ data, onComplete }) => 
                   <p className="text-slate-500 font-medium">Lengkapi data diri Anda agar AI dapat melakukan analisis tahap awal.</p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6">
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Nama Lengkap</label>
                     <input 
                       type="text" 
                       value={profile.name || ''} 
                       onChange={e => setProfile({...profile, name: e.target.value})}
-                      className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-600 font-bold text-slate-900"
+                      className="w-full px-4 py-3 md:px-6 md:py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-600 font-bold text-slate-900"
                       placeholder="Contoh: Budi Santoso"
                     />
                   </div>
@@ -298,7 +298,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ data, onComplete }) => 
                       type="text" 
                       value={profile.phone || ''} 
                       onChange={e => setProfile({...profile, phone: e.target.value})}
-                      className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-600 font-bold text-slate-900"
+                      className="w-full px-4 py-3 md:px-6 md:py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-600 font-bold text-slate-900"
                       placeholder="Contoh: 08123456789"
                     />
                   </div>
@@ -308,7 +308,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ data, onComplete }) => 
                       type="text" 
                       value={profile.birthPlace || ''} 
                       onChange={e => setProfile({...profile, birthPlace: e.target.value})}
-                      className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-600 font-bold text-slate-900"
+                      className="w-full px-4 py-3 md:px-6 md:py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-600 font-bold text-slate-900"
                       placeholder="Contoh: Jakarta"
                     />
                   </div>
@@ -318,7 +318,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ data, onComplete }) => 
                       type="date" 
                       value={profile.birthDate || ''} 
                       onChange={e => setProfile({...profile, birthDate: e.target.value})}
-                      className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-600 font-bold text-slate-900"
+                      className="w-full px-4 py-3 md:px-6 md:py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-600 font-bold text-slate-900"
                     />
                   </div>
                   <div className="space-y-2">
@@ -327,7 +327,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ data, onComplete }) => 
                       type="text" 
                       value={profile.maritalStatus || ''} 
                       onChange={e => setProfile({...profile, maritalStatus: e.target.value})}
-                      className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-600 font-bold text-slate-900"
+                      className="w-full px-4 py-3 md:px-6 md:py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-600 font-bold text-slate-900"
                       placeholder="Contoh: Lajang / Menikah"
                     />
                   </div>
@@ -337,7 +337,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ data, onComplete }) => 
                       type="text" 
                       value={profile.domicile || ''} 
                       onChange={e => setProfile({...profile, domicile: e.target.value})}
-                      className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-600 font-bold text-slate-900"
+                      className="w-full px-4 py-3 md:px-6 md:py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-600 font-bold text-slate-900"
                       placeholder="Contoh: Jakarta Selatan"
                     />
                   </div>
@@ -346,7 +346,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ data, onComplete }) => 
                     <select 
                       value={profile.jobCategory || ''} 
                       onChange={e => setProfile({...profile, jobCategory: e.target.value})}
-                      className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-600 font-bold text-slate-900"
+                      className="w-full px-4 py-3 md:px-6 md:py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-600 font-bold text-slate-900"
                     >
                       <option value="">Pilih Kategori...</option>
                       {JOB_CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
@@ -354,7 +354,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ data, onComplete }) => 
                   </div>
                 </div>
 
-                <div className="pt-8 space-y-6">
+                <div className="pt-8 space-y-3 md:space-y-6">
                   <button 
                     onClick={handleSaveProfile}
                     className="w-full py-5 bg-indigo-600 text-white font-black rounded-[2rem] uppercase tracking-widest shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95"
@@ -377,7 +377,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ data, onComplete }) => 
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
-                className="space-y-8"
+                className="space-y-4 md:space-y-8"
               >
                 <div className="space-y-2">
                   <div className="flex justify-between items-start">
@@ -387,14 +387,14 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ data, onComplete }) => 
                   <p className="text-slate-500 font-medium">Informasi ini penting untuk analisis gap karir tahap awal.</p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6">
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Perusahaan Saat Ini</label>
                     <input 
                       type="text" 
                       value={profile.currentCompany || ''} 
                       onChange={e => setProfile({...profile, currentCompany: e.target.value})}
-                      className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-600 font-bold text-slate-900"
+                      className="w-full px-4 py-3 md:px-6 md:py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-600 font-bold text-slate-900"
                       placeholder="Contoh: PT Teknologi Maju"
                     />
                   </div>
@@ -404,7 +404,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ data, onComplete }) => 
                       type="text" 
                       value={profile.currentPosition || ''} 
                       onChange={e => setProfile({...profile, currentPosition: e.target.value})}
-                      className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-600 font-bold text-slate-900"
+                      className="w-full px-4 py-3 md:px-6 md:py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-600 font-bold text-slate-900"
                       placeholder="Contoh: Junior Developer"
                     />
                   </div>
@@ -414,7 +414,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ data, onComplete }) => 
                       type="text" 
                       value={profile.shortTermTarget || ''} 
                       onChange={e => setProfile({...profile, shortTermTarget: e.target.value})}
-                      className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-600 font-bold text-slate-900"
+                      className="w-full px-4 py-3 md:px-6 md:py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-600 font-bold text-slate-900"
                       placeholder="Contoh: Senior Product Manager"
                     />
                   </div>
@@ -424,13 +424,13 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ data, onComplete }) => 
                       type="text" 
                       value={profile.longTermTarget || ''} 
                       onChange={e => setProfile({...profile, longTermTarget: e.target.value})}
-                      className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-600 font-bold text-slate-900"
+                      className="w-full px-4 py-3 md:px-6 md:py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-600 font-bold text-slate-900"
                       placeholder="Contoh: Chief Product Officer"
                     />
                   </div>
                 </div>
 
-                <div className="pt-8 space-y-6">
+                <div className="pt-8 space-y-3 md:space-y-6">
                   <div className="flex gap-4">
                     <button 
                       onClick={prevStep}
@@ -461,7 +461,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ data, onComplete }) => 
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
-                className="space-y-8"
+                className="space-y-4 md:space-y-8"
               >
                 <div className="space-y-2">
                   <div className="flex justify-between items-start">
@@ -478,7 +478,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ data, onComplete }) => 
                   </div>
                   <div className="space-y-4">
                     {workExp.map((w, i) => (
-                      <div key={w.id} className="p-6 bg-slate-50 rounded-3xl space-y-4">
+                      <div key={w.id} className="p-3 md:p-6 bg-slate-50 rounded-3xl space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <input 
                             placeholder="Posisi" 
@@ -506,7 +506,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ data, onComplete }) => 
                   </div>
                 </div>
 
-                <div className="pt-8 space-y-6">
+                <div className="pt-8 space-y-3 md:space-y-6">
                   <div className="flex gap-4">
                     <button 
                       onClick={prevStep}
@@ -537,7 +537,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ data, onComplete }) => 
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
-                className="space-y-8"
+                className="space-y-4 md:space-y-8"
               >
                 <div className="space-y-2">
                   <div className="flex justify-between items-start">
@@ -554,7 +554,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ data, onComplete }) => 
                   </div>
                   <div className="space-y-4">
                     {edu.map((e, i) => (
-                      <div key={e.id} className="p-6 bg-slate-50 rounded-3xl space-y-4">
+                      <div key={e.id} className="p-3 md:p-6 bg-slate-50 rounded-3xl space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <input 
                             placeholder="Gelar / Bidang" 
@@ -582,7 +582,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ data, onComplete }) => 
                   </div>
                 </div>
 
-                <div className="pt-8 space-y-6">
+                <div className="pt-8 space-y-3 md:space-y-6">
                   <div className="flex gap-4">
                     <button 
                       onClick={prevStep}
@@ -613,7 +613,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ data, onComplete }) => 
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
-                className="space-y-8"
+                className="space-y-4 md:space-y-8"
               >
                 <div className="space-y-2">
                   <div className="flex justify-between items-start">
@@ -630,7 +630,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ data, onComplete }) => 
                   </div>
                   <div className="space-y-4">
                     {skills.map((s, i) => (
-                      <div key={s.id} className="p-6 bg-slate-50 rounded-3xl flex gap-4 items-center">
+                      <div key={s.id} className="p-3 md:p-6 bg-slate-50 rounded-3xl flex gap-4 items-center">
                         <input 
                           placeholder="Nama Skill (Contoh: React.js)" 
                           value={s.name || ''} 
@@ -657,7 +657,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ data, onComplete }) => 
                   </div>
                 </div>
 
-                <div className="pt-8 space-y-6">
+                <div className="pt-8 space-y-3 md:space-y-6">
                   <div className="flex gap-4">
                     <button 
                       onClick={prevStep}
@@ -688,7 +688,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ data, onComplete }) => 
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
-                className="space-y-8"
+                className="space-y-4 md:space-y-8"
               >
                 <div className="space-y-2">
                   <div className="flex justify-between items-start">
@@ -699,13 +699,13 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ data, onComplete }) => 
                 </div>
 
                 {loading ? (
-                  <div className="py-20 flex flex-col items-center justify-center space-y-6">
+                  <div className="py-20 flex flex-col items-center justify-center space-y-3 md:space-y-6">
                     <div className="w-16 h-16 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
                     <p className="text-slate-400 font-black uppercase tracking-widest text-[10px]">AI sedang menganalisis data Anda...</p>
                   </div>
                 ) : aiInsight ? (
-                  <div className="space-y-6">
-                    <div className="p-8 bg-indigo-50 rounded-[2.5rem] border border-indigo-100">
+                  <div className="space-y-3 md:space-y-6">
+                    <div className="p-4 md:p-8 bg-indigo-50 rounded-[2.5rem] border border-indigo-100">
                       <div className="flex items-center gap-4 mb-4">
                         <div className="w-12 h-12 bg-indigo-600 text-white rounded-2xl flex items-center justify-center text-xl shadow-lg shadow-indigo-100">
                           <i className="bi bi-stars"></i>
@@ -715,13 +715,13 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ data, onComplete }) => 
                       <p className="text-indigo-900/70 font-medium leading-relaxed">{aiInsight.executiveSummary}</p>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="p-8 bg-white border border-slate-100 rounded-[2.5rem] shadow-sm">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6">
+                      <div className="p-4 md:p-8 bg-white border border-slate-100 rounded-[2.5rem] shadow-sm">
                         <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Kesiapan Karir</h4>
                         <div className="text-4xl font-black text-slate-900 mb-2">{aiInsight.readinessScore}%</div>
                         <p className="text-xs text-slate-500 font-medium">{aiInsight.scoreExplanation}</p>
                       </div>
-                      <div className="p-8 bg-white border border-slate-100 rounded-[2.5rem] shadow-sm">
+                      <div className="p-4 md:p-8 bg-white border border-slate-100 rounded-[2.5rem] shadow-sm">
                         <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Gap Kritis</h4>
                         <div className="space-y-2">
                           {aiInsight.criticalGaps.slice(0, 2).map((g, i) => (
@@ -756,7 +756,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ data, onComplete }) => 
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
-                className="space-y-8"
+                className="space-y-4 md:space-y-8"
               >
                 <div className="space-y-2">
                   <div className="flex justify-between items-start">
@@ -766,18 +766,18 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ data, onComplete }) => 
                   <p className="text-slate-500 font-medium italic">"Catatan kecil hari ini bisa membantu Anda melihat perkembangan karir ke depan."</p>
                 </div>
 
-                <div className="p-8 bg-emerald-50 rounded-[2.5rem] border border-emerald-100">
+                <div className="p-4 md:p-8 bg-emerald-50 rounded-[2.5rem] border border-emerald-100">
                   <p className="text-emerald-900/70 font-medium text-center">"Hanya butuh 1 menit untuk mencatat aktivitas hari ini."</p>
                 </div>
 
-                <div className="space-y-6">
+                <div className="space-y-3 md:space-y-6">
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Apa aktivitas utama hari ini?</label>
                     <input 
                       type="text" 
                       value={dailyPlan.activity || ''} 
                       onChange={e => setDailyPlan({...dailyPlan, activity: e.target.value})}
-                      className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-600 font-bold text-slate-900"
+                      className="w-full px-4 py-3 md:px-6 md:py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-600 font-bold text-slate-900"
                       placeholder="Contoh: Belajar React.js Dasar"
                     />
                   </div>
@@ -786,7 +786,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ data, onComplete }) => 
                     <textarea 
                       value={dailyPlan.output || ''} 
                       onChange={e => setDailyPlan({...dailyPlan, output: e.target.value})}
-                      className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-600 font-bold text-slate-900 min-h-[100px]"
+                      className="w-full px-4 py-3 md:px-6 md:py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-600 font-bold text-slate-900 min-h-[100px]"
                       placeholder="Contoh: Menyelesaikan modul 1 dan membuat project kecil"
                     />
                   </div>

@@ -16,8 +16,8 @@ const FollowUpManager: React.FC<FollowUpManagerProps> = ({ initialConfig, onSave
   };
 
   return (
-    <div className="bg-white p-8 lg:p-12 rounded-[3.5rem] border border-slate-100 shadow-sm max-w-4xl">
-       <div className="flex items-center gap-6 mb-10 pb-8 border-b border-slate-50">
+    <div className="bg-white p-4 md:p-8 lg:p-12 rounded-[3.5rem] border border-slate-100 shadow-sm max-w-4xl">
+       <div className="flex items-center gap-3 md:gap-6 mb-6 md:mb-10 pb-8 border-b border-slate-50">
           <div className="w-16 h-16 bg-rose-600 text-white rounded-[1.75rem] flex items-center justify-center text-3xl shadow-xl">
              <i className="bi bi-chat-left-dots-fill"></i>
           </div>
@@ -27,8 +27,8 @@ const FollowUpManager: React.FC<FollowUpManagerProps> = ({ initialConfig, onSave
           </div>
        </div>
 
-       <form onSubmit={handleSubmit} className="space-y-10">
-          <div className="space-y-6">
+       <form onSubmit={handleSubmit} className="space-y-3 md:space-y-6 md:space-y-10">
+          <div className="space-y-3 md:space-y-6">
              <div className="space-y-2">
                 <div className="flex justify-between items-center mb-1">
                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Template: Pembayaran Pending</label>
@@ -72,7 +72,7 @@ const FollowUpManager: React.FC<FollowUpManagerProps> = ({ initialConfig, onSave
              </div>
           </div>
 
-          <div className="p-8 bg-blue-50/50 rounded-[2.5rem] border border-blue-100">
+          <div className="p-4 md:p-8 bg-blue-50/50 rounded-[2.5rem] border border-blue-100">
              <h4 className="text-[11px] font-black text-blue-900 uppercase tracking-widest mb-4 flex items-center gap-2">
                 <i className="bi bi-info-circle-fill"></i> Panduan Variabel
              </h4>

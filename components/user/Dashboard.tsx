@@ -87,7 +87,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenNotif }) 
   const allMenuItems = [
     { id: 'daily', label: 'Daily Work', icon: 'bi-pencil-square' },
     { id: 'work_reflection', label: 'Refleksi Kerja', icon: 'bi-chat-quote' },
-    { id: 'todo_list', label: 'Langkah Pengembangan', icon: 'bi-check2-square' },
+    { id: 'todo_list', label: 'To Do List', icon: 'bi-check2-square' },
     { id: 'mobile_stats', label: 'Performa Data', icon: 'bi-bar-chart-line' },
     { id: 'skills', label: 'Skills & Learning', icon: 'bi-mortarboard' },
     { id: 'career', label: 'Career Path', icon: 'bi-rocket-takeoff' },
@@ -123,14 +123,14 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenNotif }) 
   const visibleItems = isMenuExpanded ? allMenuItems : pinnedItems;
 
   return (
-    <div className="space-y-6 lg:space-y-10 animate-in fade-in duration-700 pb-20 overflow-x-hidden">
+    <div className="space-y-3 md:space-y-6 lg:space-y-3 md:space-y-6 md:space-y-10 animate-in fade-in duration-700 pb-20 overflow-x-hidden">
       
       {/* DASHBOARD ALERT REMINDERS BAR */}
       {reminders.length > 0 && (
         <div className="px-4 lg:px-0 space-y-3">
           {reminders.map(alert => (
-            <div key={alert.id} className={`flex flex-col md:flex-row items-center justify-between p-6 lg:px-10 rounded-[2.5rem] border-2 shadow-xl animate-in slide-in-from-top-4 duration-700 bg-white border-${alert.color}-100`}>
-              <div className="flex items-center gap-6 text-center md:text-left mb-4 md:mb-0">
+            <div key={alert.id} className={`flex flex-col md:flex-row items-center justify-between p-3 md:p-6 lg:px-10 rounded-[2.5rem] border-2 shadow-xl animate-in slide-in-from-top-4 duration-700 bg-white border-${alert.color}-100`}>
+              <div className="flex items-center gap-3 md:gap-6 text-center md:text-left mb-4 md:mb-0">
                 <span className="text-3xl lg:text-4xl">{alert.icon}</span>
                 <div>
                    <p className={`text-[10px] font-black uppercase tracking-widest text-${alert.color}-400 mb-1`}>Reminder: Selesaikan Segera</p>
@@ -149,7 +149,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenNotif }) 
       )}
 
       {/* MOBILE APP INTERFACE */}
-      <div className="block lg:hidden space-y-6 bg-white min-h-screen">
+      <div className="block lg:hidden space-y-3 md:space-y-6 bg-white min-h-screen">
         <header className="px-6 pt-0 flex items-center justify-between">
            <div className="flex items-center gap-4">
               <div className="w-14 h-14 rounded-full border-4 border-slate-50 overflow-hidden shadow-md">
@@ -191,7 +191,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenNotif }) 
         {/* RENEWAL ALERT BANNER (MOBILE) */}
         {isExpiringSoon && showRenewalAlert && (
           <div className="px-6 animate-in slide-in-from-top-4 duration-500">
-             <div className="bg-gradient-to-br from-amber-600 to-orange-500 p-6 rounded-[2.5rem] shadow-xl shadow-amber-200 text-white relative overflow-hidden">
+             <div className="bg-gradient-to-br from-amber-600 to-orange-500 p-3 md:p-6 rounded-[2.5rem] shadow-xl shadow-amber-200 text-white relative overflow-hidden">
                 <button onClick={() => setShowRenewalAlert(false)} className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-full text-white/60 transition-all font-black text-xs">✕</button>
                 <div className="flex gap-5">
                    <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center text-2xl shrink-0 shadow-inner"><i className="bi bi-hourglass-split"></i></div>
@@ -209,7 +209,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenNotif }) 
         )}
 
         <div className="px-6">
-           <div className="bg-gradient-to-br from-indigo-600 to-blue-500 p-8 rounded-[2.5rem] shadow-2xl shadow-indigo-200 text-white relative overflow-hidden group">
+           <div className="bg-gradient-to-br from-indigo-600 to-blue-500 p-4 md:p-8 rounded-[2.5rem] shadow-2xl shadow-indigo-200 text-white relative overflow-hidden group">
               <div className="relative z-10">
                  <p className="text-4xl font-black tracking-tighter mb-2">{progressPercent}% <span className="text-sm font-bold uppercase tracking-widest opacity-80 block">Skill Readiness Score</span></p>
                  <p className="text-xs font-medium opacity-90 leading-relaxed max-w-[200px]">"{currentAffirmation}"</p>
@@ -218,7 +218,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenNotif }) 
            </div>
         </div>
 
-        <div className="px-6 space-y-6 pb-6">
+        <div className="px-6 space-y-3 md:space-y-6 pb-6">
            <div className="flex justify-between items-center px-1">
               <h3 className="text-base font-black text-slate-900 uppercase tracking-tight">Main Hub</h3>
               <div className="flex gap-2">
@@ -276,31 +276,31 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenNotif }) 
       </div>
 
       {/* DESKTOP ANALYTICAL DASHBOARD */}
-      <div className="hidden lg:block space-y-10 animate-in fade-in duration-700 pb-20">
-        <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+      <div className="hidden lg:block space-y-3 md:space-y-6 md:space-y-10 animate-in fade-in duration-700 pb-20">
+        <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 md:gap-8">
           <div className="space-y-2">
             <h2 className="text-3xl font-black text-slate-900 tracking-tight">Selamat Datang, {data.profile?.name || 'User'}!</h2>
             <div className="flex items-center gap-4">
                <p className="text-slate-400 font-bold text-sm uppercase tracking-widest flex items-center gap-2">Target Utama: <span className="text-indigo-600 border-b-2 border-indigo-600/30">{data.profile?.mainCareer || 'Belum diatur'}</span></p>
             </div>
           </div>
-          <div className="bg-indigo-600 p-8 rounded-[2.5rem] shadow-[0_20px_40px_rgba(79,70,229,0.15)] text-white flex items-center gap-6 max-w-lg group hover:-translate-y-1 transition-all duration-500 cursor-default">
+          <div className="bg-indigo-600 p-4 md:p-8 rounded-[2.5rem] shadow-[0_20px_40px_rgba(79,70,229,0.15)] text-white flex items-center gap-3 md:gap-6 max-w-lg group hover:-translate-y-1 transition-all duration-500 cursor-default">
             <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"></path><path d="M5 3v4"></path><path d="M19 17v4"></path><path d="M3 5h4"></path><path d="M17 19h4"></path></svg></div>
             <div><p className="text-[10px] text-white/50 uppercase font-black tracking-[0.2em] mb-1">Inspirasi Hari Ini</p><p className="text-base italic font-semibold leading-tight">"{currentAffirmation}"</p></div>
           </div>
         </header>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 lg:gap-4 md:gap-8">
           <MetricCard title="Produktivitas" value={dailyReports.length > 0 ? dailyReports[dailyReports.length - 1].metricValue : 0} subtitle={`${dailyReports.length > 0 ? dailyReports[dailyReports.length - 1].metricLabel : 'Belum ada data'}`} icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>} color="indigo" />
           <MetricCard title="Progress Skill" value={`${progressPercent}%`} subtitle={`${achievedSkills} / ${skillCount} Skill tercapai`} icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>} color="emerald" />
           <MetricCard title="Status Akun" value={data.plan} subtitle={data.expiryDate ? `Sisa ${Math.ceil((new Date(data.expiryDate).getTime() - new Date().getTime()) / (1000 * 3600 * 24))} Hari` : 'Aktif Selamanya'} icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>} color="slate" />
           <MetricCard title="Pencapaian" value={(data.achievements || []).length} subtitle="Milestone tervalidasi" icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"></path></svg>} color="amber" />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-          <div className="lg:col-span-2 space-y-10">
-            <div className="bg-white p-10 rounded-[3rem] shadow-[0_2px_40px_rgba(0,0,0,0.02)] border border-slate-100">
-              <div className="flex items-center justify-between mb-10">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 md:gap-10">
+          <div className="lg:col-span-2 space-y-3 md:space-y-6 md:space-y-10">
+            <div className="bg-white p-4 md:p-10 rounded-[3rem] shadow-[0_2px_40px_rgba(0,0,0,0.02)] border border-slate-100">
+              <div className="flex items-center justify-between mb-6 md:mb-10">
                 <div><h3 className="text-2xl font-black text-slate-800 tracking-tight">Analisis Performa</h3><p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.3em] mt-1">7 Hari Terakhir</p></div>
                 <div className="flex gap-2"><div className="w-3 h-3 rounded-full bg-indigo-500"></div><span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Poin Metrik</span></div>
               </div>
@@ -308,15 +308,15 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenNotif }) 
             </div>
           </div>
 
-          <div className="space-y-10">
-            <div className="bg-slate-900 p-10 rounded-[3rem] shadow-2xl text-white relative overflow-hidden group">
-              <h3 className="text-xl font-black tracking-tight mb-10 flex items-center justify-between">Target Selanjutnya<span className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg></span></h3>
-              <div className="space-y-10">
+          <div className="space-y-3 md:space-y-6 md:space-y-10">
+            <div className="bg-slate-900 p-4 md:p-10 rounded-[3rem] shadow-2xl text-white relative overflow-hidden group">
+              <h3 className="text-xl font-black tracking-tight mb-6 md:mb-10 flex items-center justify-between">Target Selanjutnya<span className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg></span></h3>
+              <div className="space-y-3 md:space-y-6 md:space-y-10">
                 {(data.careerPaths || []).filter(p => p.status !== 'tercapai').length > 0 ? (
                   (() => {
                     const nextGoal = (data.careerPaths || []).filter(p => p.status !== 'tercapai')[0];
                     return (
-                      <div className="space-y-10">
+                      <div className="space-y-3 md:space-y-6 md:space-y-10">
                         <div className="space-y-2">
                           <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30 mb-2">Jabatan Target</p>
                           <p className="text-2xl font-black tracking-tight leading-none">{nextGoal.targetPosition}</p>
@@ -349,7 +349,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenNotif }) 
                 ) : (<div className="text-center py-10"><p className="text-indigo-400 font-black uppercase tracking-[0.2em]">Target Tercapai! 🚀</p><p className="text-[10px] text-white/30 mt-3 font-bold uppercase tracking-widest leading-relaxed">Waktunya menentukan langkah hebat berikutnya.</p></div>)}
               </div>
             </div>
-            <div className="bg-white p-10 rounded-[3rem] shadow-[0_2px_40px_rgba(0,0,0,0.02)] border border-slate-100 flex flex-col items-center text-center group"><div className="w-24 h-24 bg-slate-50 rounded-3xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-500 shadow-inner text-4xl text-amber-500"><i className="bi bi-trophy"></i></div><h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400 mb-2">Total Pencapaian</h3><p className="text-4xl font-black text-slate-900 tracking-tight">{(data.achievements || []).length}</p><p className="text-[11px] font-bold text-slate-500 mt-4 uppercase tracking-widest">Milestone Tervalidasi</p></div>
+            <div className="bg-white p-4 md:p-10 rounded-[3rem] shadow-[0_2px_40px_rgba(0,0,0,0.02)] border border-slate-100 flex flex-col items-center text-center group"><div className="w-24 h-24 bg-slate-50 rounded-3xl flex items-center justify-center mb-4 md:mb-8 group-hover:scale-110 transition-transform duration-500 shadow-inner text-4xl text-amber-500"><i className="bi bi-trophy"></i></div><h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400 mb-2">Total Pencapaian</h3><p className="text-4xl font-black text-slate-900 tracking-tight">{(data.achievements || []).length}</p><p className="text-[11px] font-bold text-slate-500 mt-4 uppercase tracking-widest">Milestone Tervalidasi</p></div>
           </div>
         </div>
       </div>
@@ -360,7 +360,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenNotif }) 
 const MetricCard: React.FC<{ title: string; value: number | string; subtitle: string; icon: React.ReactNode; color: string }> = ({ title, value, subtitle, icon, color }) => {
   const colors: Record<string, string> = { indigo: 'bg-indigo-50 text-indigo-600', emerald: 'bg-emerald-50 text-emerald-600', slate: 'bg-slate-100 text-slate-900', amber: 'bg-amber-50 text-amber-600' };
   return (
-    <div className="bg-white p-10 rounded-[3rem] shadow-[0_2px_40px_rgba(0,0,0,0.02)] border border-slate-100 transition-all duration-500 hover:shadow-[0_20px_60px_rgba(0,0,0,0.05)] hover:-translate-y-2 group"><div className={`w-14 h-14 ${colors[color]} rounded-2xl flex items-center justify-center mb-8 shadow-inner group-hover:scale-110 transition-transform duration-500 text-2xl`}>{icon}</div><p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.3em] mb-2">{title}</p><h4 className="text-2xl font-black text-slate-900 tracking-tight leading-none">{value}</h4><p className="text-[10px] text-slate-500 mt-5 font-black uppercase tracking-widest opacity-60 italic">{subtitle}</p></div>
+    <div className="bg-white p-4 md:p-10 rounded-[3rem] shadow-[0_2px_40px_rgba(0,0,0,0.02)] border border-slate-100 transition-all duration-500 hover:shadow-[0_20px_60px_rgba(0,0,0,0.05)] hover:-translate-y-2 group"><div className={`w-14 h-14 ${colors[color]} rounded-2xl flex items-center justify-center mb-4 md:mb-8 shadow-inner group-hover:scale-110 transition-transform duration-500 text-2xl`}>{icon}</div><p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.3em] mb-2">{title}</p><h4 className="text-2xl font-black text-slate-900 tracking-tight leading-none">{value}</h4><p className="text-[10px] text-slate-500 mt-5 font-black uppercase tracking-widest opacity-60 italic">{subtitle}</p></div>
   );
 };
 

@@ -49,7 +49,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ users, searchQuery, set
 
   return (
     <div className="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden">
-       <div className="p-8 border-b border-slate-50">
+       <div className="p-4 md:p-8 border-b border-slate-50">
           <input 
             type="text" 
             placeholder="Cari user (nama/email)..." 
@@ -64,11 +64,11 @@ const UserManagement: React.FC<UserManagementProps> = ({ users, searchQuery, set
           <table className="w-full text-left">
             <thead>
               <tr className="text-[10px] font-black uppercase text-slate-400 bg-slate-50/50">
-                <th className="px-8 py-4">Identitas</th>
-                <th className="px-6 py-4 text-center">Paket</th>
-                <th className="px-6 py-4 text-center">Masa Aktif</th>
-                <th className="px-6 py-4 text-center">Status</th>
-                <th className="px-8 py-4 text-right">Aksi</th>
+                <th className="px-5 py-3 md:px-8 md:py-4">Identitas</th>
+                <th className="px-4 py-3 md:px-6 md:py-4 text-center">Paket</th>
+                <th className="px-4 py-3 md:px-6 md:py-4 text-center">Masa Aktif</th>
+                <th className="px-4 py-3 md:px-6 md:py-4 text-center">Status</th>
+                <th className="px-5 py-3 md:px-8 md:py-4 text-right">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
@@ -90,16 +90,16 @@ const UserManagement: React.FC<UserManagementProps> = ({ users, searchQuery, set
 
                 return (
                   <tr key={u.uid} className="hover:bg-slate-50/50 transition-colors">
-                    <td className="px-8 py-4">
+                    <td className="px-5 py-3 md:px-8 md:py-4">
                       <p className={`font-black text-sm ${isAdmin ? 'text-indigo-600' : 'text-slate-800'}`}>{u.profile?.name || 'User'}</p>
                       <p className="text-[10px] font-bold text-slate-400">{u.profile?.email}</p>
                     </td>
-                    <td className="px-6 py-4 text-center">
+                    <td className="px-4 py-3 md:px-6 md:py-4 text-center">
                       <span className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase ${isAdmin ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600'}`}>
                         {u.plan}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-center">
+                    <td className="px-4 py-3 md:px-6 md:py-4 text-center">
                       {isAdmin ? (
                         <div className="flex flex-col items-center">
                            <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">PERMANEN / UNLIMITED</span>
@@ -118,10 +118,10 @@ const UserManagement: React.FC<UserManagementProps> = ({ users, searchQuery, set
                         <span className="text-[10px] font-bold text-slate-300 uppercase">Free Trial</span>
                       )}
                     </td>
-                    <td className="px-6 py-4 text-center">
+                    <td className="px-4 py-3 md:px-6 md:py-4 text-center">
                       <span className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase ${u.status === 'Active' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>{u.status}</span>
                     </td>
-                    <td className="px-8 py-4 text-right">
+                    <td className="px-5 py-3 md:px-8 md:py-4 text-right">
                       <div className="flex items-center justify-end gap-3">
                          {isCloseToExpiry && (
                            <button 
@@ -160,7 +160,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ users, searchQuery, set
              const isCloseToExpiry = !isAdmin && expiryDate !== null && daysLeft <= 7 && daysLeft > 0;
 
              return (
-               <div key={u.uid} className="bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100 space-y-4">
+               <div key={u.uid} className="bg-slate-50/50 p-3 md:p-6 rounded-[2rem] border border-slate-100 space-y-4">
                   <div className="flex justify-between items-start">
                      <div>
                         <h4 className={`font-black text-base leading-tight ${isAdmin ? 'text-indigo-600' : 'text-slate-800'}`}>{u.profile?.name || 'User'}</h4>
@@ -199,8 +199,8 @@ const UserManagement: React.FC<UserManagementProps> = ({ users, searchQuery, set
 
        {/* Confirmation Modal */}
        {confirmModal && (
-         <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md flex items-center justify-center z-[3000] p-4">
-           <div className="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl p-8 lg:p-10 animate-in zoom-in duration-300 relative">
+         <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md flex items-center justify-center z-[3000] p-0 sm:p-4">
+           <div className="bg-white w-full max-w-md rounded-[1.5rem] md:rounded-[2.5rem] shadow-2xl p-3 md:p-8 lg:p-10 animate-in zoom-in duration-300 relative">
               <button onClick={() => setConfirmModal(null)} className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center bg-slate-50 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors z-10"><i className="bi bi-x-lg"></i></button>
               <div className="text-center mb-6">
                  <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl shadow-inner ${confirmModal.scriptType === 'expired' ? 'bg-rose-50 text-rose-600' : 'bg-emerald-50 text-emerald-600'}`}>
@@ -210,7 +210,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ users, searchQuery, set
                  <p className="text-slate-400 text-xs font-bold mt-2 uppercase">Kirim pesan WhatsApp ke {confirmModal.user.profile?.name || 'User'}?</p>
               </div>
 
-              <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100 mb-8">
+              <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100 mb-4 md:mb-8">
                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Pratinjau Pesan:</p>
                  <p className="text-xs text-slate-600 leading-relaxed font-medium italic">"{confirmModal.text}"</p>
               </div>

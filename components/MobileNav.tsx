@@ -24,7 +24,7 @@ const MobileNav: React.FC<MobileNavProps> = ({ activeTab, setActiveTab, onLogout
   const userItems: NavItem[] = [
     { id: 'dashboard', label: 'Home', icon: 'bi-house-door' },
     { id: 'daily_toggle', label: 'Daily', icon: 'bi-journal-text', isSpecial: true },
-    { id: 'todo_list', label: 'Langkah', icon: 'bi-check2-square' },
+    { id: 'todo_list', label: 'To Do List', icon: 'bi-check2-square' },
     { id: 'calendar', label: 'Calendar', icon: 'bi-calendar3' }, 
     { id: 'others', label: 'Lainnya', icon: 'bi-grid-fill' }, // Triggers Sidebar
   ];
@@ -132,11 +132,11 @@ const MobileNav: React.FC<MobileNavProps> = ({ activeTab, setActiveTab, onLogout
       </div>
 
       {showLogoutModal && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 overflow-y-auto">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-0 sm:p-4 overflow-y-auto">
           <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm" onClick={() => setShowLogoutModal(false)}></div>
-          <div className="relative bg-white w-full max-w-sm rounded-[2.5rem] p-8 lg:p-10 shadow-2xl animate-in zoom-in duration-300">
+          <div className="relative bg-white w-full max-w-sm rounded-[1.5rem] md:rounded-[2.5rem] p-3 md:p-8 lg:p-10 shadow-2xl animate-in zoom-in duration-300">
             <button onClick={() => setShowLogoutModal(false)} className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center bg-slate-50 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors z-10"><i className="bi bi-x-lg"></i></button>
-            <div className="text-center mb-8">
+            <div className="text-center mb-4 md:mb-8">
               <div className="w-16 h-16 bg-rose-50 text-rose-500 rounded-3xl flex items-center justify-center mx-auto mb-4 text-2xl shadow-inner">
                 <i className="bi bi-door-open-fill"></i>
               </div>

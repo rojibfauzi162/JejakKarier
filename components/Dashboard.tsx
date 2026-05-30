@@ -193,7 +193,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenOnboardin
     { id: 'work_reflection', label: 'Refleksi Kerja', icon: 'bi-chat-quote' },
     { id: 'reports', label: 'Laporan pekerjaan', icon: 'bi-graph-up' },
     { id: 'mobile_stats', label: 'Data Statistik', icon: 'bi-bar-chart-line' },
-    { id: 'todo_list', label: 'Langkah Pengembangan', icon: 'bi-check2-square' },
+    { id: 'todo_list', label: 'To Do List', icon: 'bi-check2-square' },
     { id: 'skills', label: 'Skills & Learning', icon: 'bi-mortarboard' },
     { id: 'career', label: 'Career Path', icon: 'bi-rocket-takeoff' },
     { id: 'achievements', label: 'Achievements', icon: 'bi-trophy' },
@@ -331,10 +331,10 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenOnboardin
   const visibleItems = isMenuExpanded ? allMenuItems : pinnedItems;
 
   return (
-    <div className="space-y-6 lg:space-y-10 animate-in fade-in duration-700 pb-20 overflow-x-hidden">
+    <div className="space-y-3 md:space-y-6 lg:space-y-3 md:space-y-6 md:space-y-10 animate-in fade-in duration-700 pb-20 overflow-x-hidden">
       
       {/* MOBILE APP INTERFACE */}
-      <div className="block lg:hidden space-y-6 bg-white min-h-screen">
+      <div className="block lg:hidden space-y-3 md:space-y-6 bg-white min-h-screen">
         {/* MODIFIED HEADER */}
         <header className="px-6 pt-2 pb-4 flex items-center justify-between">
            <div className="flex items-center gap-4">
@@ -351,7 +351,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenOnboardin
         {/* TRIAL JOURNEY WIDGET (NEW) */}
         {trialMessage && (
           <div className="px-6">
-            <div className={`p-6 rounded-[2.5rem] shadow-xl animate-in slide-in-from-top-4 duration-700 ${
+            <div className={`p-3 md:p-6 rounded-[2.5rem] shadow-xl animate-in slide-in-from-top-4 duration-700 ${
               trialMessage.type === 'urgent' ? 'bg-rose-600 text-white' : 
               trialMessage.type === 'warning' ? 'bg-amber-500 text-white' : 'bg-slate-900 text-white'
             }`}>
@@ -393,7 +393,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenOnboardin
 
         <div className="px-6 space-y-4">
            {/* Skill Readiness Card */}
-           <div className="bg-gradient-to-br from-indigo-600 to-blue-500 p-8 rounded-[2.5rem] shadow-2xl shadow-indigo-200 text-white relative overflow-hidden group">
+           <div className="bg-gradient-to-br from-indigo-600 to-blue-500 p-4 md:p-8 rounded-[2.5rem] shadow-2xl shadow-indigo-200 text-white relative overflow-hidden group">
               <div className="relative z-10">
                  <p className="text-4xl font-black tracking-tighter mb-2">{progressPercent}% <span className="text-sm font-bold uppercase tracking-widest opacity-80 block">Skill Readiness Score</span></p>
                  <p className="text-xs font-medium opacity-90 leading-relaxed max-w-[200px]">"{currentAffirmation}"</p>
@@ -402,7 +402,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenOnboardin
            </div>
            
            {/* Account Completion Card */}
-           <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm flex items-center justify-between">
+           <div className="bg-white p-3 md:p-6 rounded-[2rem] border border-slate-100 shadow-sm flex items-center justify-between">
               <div className="flex items-center gap-4">
                  <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center text-xl"><i className="bi bi-person-check"></i></div>
                  <div>
@@ -414,7 +414,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenOnboardin
            </div>
         </div>
 
-        <div className="px-6 space-y-6 pb-6">
+        <div className="px-6 space-y-3 md:space-y-6 pb-6">
            <div className="flex justify-between items-center px-1">
               <h3 className="text-base font-black text-slate-900 uppercase tracking-tight">Main Hub</h3>
               <div className="flex gap-2">
@@ -472,7 +472,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenOnboardin
       </div>
 
       {/* DESKTOP ANALYTICAL DASHBOARD */}
-      <div className="hidden lg:block space-y-8 animate-in fade-in duration-700 pb-20">
+      <div className="hidden lg:block space-y-4 md:space-y-8 animate-in fade-in duration-700 pb-20">
         <header className="flex items-center justify-between">
           <div>
             <h2 className="text-3xl font-black text-slate-900 tracking-tight">Dashboard Overview</h2>
@@ -513,7 +513,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenOnboardin
         </header>
 
         {/* ROW 1: METRICS */}
-        <div className="grid grid-cols-4 gap-6">
+        <div className="grid grid-cols-4 gap-3 md:gap-6">
            {/* 1. Total Daily Work */}
            <MetricCard 
              title="Total Aktivitas" 
@@ -533,7 +533,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenOnboardin
            />
 
            {/* 4. Weekly Summary (Now Filtered Summary) */}
-           <div className="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col justify-center">
+           <div className="bg-white p-3 md:p-6 rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col justify-center">
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Ringkasan Periode</p>
               <div className="flex items-center justify-between mb-2">
                  <span className="text-sm font-bold text-slate-600">Logs</span>
@@ -546,7 +546,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenOnboardin
            </div>
 
            {/* 7. Nearest Event */}
-           <div className="bg-slate-900 p-6 rounded-[2.5rem] text-white shadow-lg flex flex-col justify-center relative overflow-hidden">
+           <div className="bg-slate-900 p-3 md:p-6 rounded-[2.5rem] text-white shadow-lg flex flex-col justify-center relative overflow-hidden">
               <div className="absolute top-0 right-0 p-4 opacity-10 text-5xl"><i className="bi bi-calendar-event"></i></div>
               <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-2">Agenda Terdekat</p>
               {nearestEvent ? (
@@ -561,9 +561,9 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenOnboardin
         </div>
 
         {/* ROW 2: CHARTS */}
-        <div className="grid grid-cols-3 gap-6">
+        <div className="grid grid-cols-3 gap-3 md:gap-6">
            {/* 3. Line Chart (Daily Activity) */}
-           <div className="col-span-2 bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
+           <div className="col-span-2 bg-white p-4 md:p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
               <div className="flex justify-between items-center mb-6">
                  <h3 className="text-lg font-black text-slate-800">Aktivitas Harian</h3>
                  <span className="text-xs font-bold text-slate-400 uppercase">{dashboardFilter === 'all' ? 'Semua Waktu' : 'Periode Terpilih'}</span>
@@ -588,7 +588,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenOnboardin
            </div>
 
            {/* 5. Skill Gap Radar */}
-           <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
+           <div className="bg-white p-4 md:p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
               <h3 className="text-lg font-black text-slate-800 mb-6">Skill Radar (Current)</h3>
               <div className="h-64">
                  <ResponsiveContainer width="100%" height="100%">
@@ -606,9 +606,9 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenOnboardin
         </div>
 
         {/* ROW 3: LISTS */}
-        <div className="grid grid-cols-3 gap-6">
+        <div className="grid grid-cols-3 gap-3 md:gap-6">
            {/* 8. Latest Activities */}
-           <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
+           <div className="bg-white p-4 md:p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
               <h3 className="text-lg font-black text-slate-800 mb-6">Aktivitas Terakhir</h3>
               <div className="space-y-4">
                  {recentActivities.map((log, i) => (
@@ -625,7 +625,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenOnboardin
            </div>
 
            {/* 9. Pending Todos */}
-           <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
+           <div className="bg-white p-4 md:p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
               <h3 className="text-lg font-black text-slate-800 mb-6">To-Do Pending</h3>
               <div className="space-y-4">
                  {pendingTodos.map((todo, i) => (
@@ -642,7 +642,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenOnboardin
            </div>
 
            {/* 6. Achievements */}
-           <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
+           <div className="bg-white p-4 md:p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
               <h3 className="text-lg font-black text-slate-800 mb-6">Pencapaian</h3>
               <div className="space-y-4">
                  {filteredAchievements.slice(0, 3).map((ach, i) => (
@@ -666,7 +666,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenOnboardin
 const MetricCard: React.FC<{ title: string; value: number | string; subtitle: string; icon: React.ReactNode; color: string }> = ({ title, value, subtitle, icon, color }) => {
   const colors: Record<string, string> = { indigo: 'bg-indigo-50 text-indigo-600', emerald: 'bg-emerald-50 text-emerald-600', slate: 'bg-slate-100 text-slate-900', amber: 'bg-amber-50 text-amber-600', blue: 'bg-blue-50 text-blue-600' };
   return (
-    <div className="bg-white p-10 rounded-[3rem] shadow-[0_2px_40px_rgba(0,0,0,0.02)] border border-slate-100 transition-all duration-500 hover:shadow-[0_20px_60px_rgba(0,0,0,0.05)] hover:-translate-y-2 group"><div className={`w-14 h-14 ${colors[color]} rounded-2xl flex items-center justify-center mb-8 shadow-inner group-hover:scale-110 transition-transform duration-500 text-2xl`}>{icon}</div><p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.3em] mb-2">{title}</p><h4 className="text-2xl font-black text-slate-900 tracking-tight leading-none">{value}</h4><p className="text-[10px] text-slate-500 mt-5 font-black uppercase tracking-widest opacity-60 italic">{subtitle}</p></div>
+    <div className="bg-white p-4 md:p-10 rounded-[3rem] shadow-[0_2px_40px_rgba(0,0,0,0.02)] border border-slate-100 transition-all duration-500 hover:shadow-[0_20px_60px_rgba(0,0,0,0.05)] hover:-translate-y-2 group"><div className={`w-14 h-14 ${colors[color]} rounded-2xl flex items-center justify-center mb-4 md:mb-8 shadow-inner group-hover:scale-110 transition-transform duration-500 text-2xl`}>{icon}</div><p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.3em] mb-2">{title}</p><h4 className="text-2xl font-black text-slate-900 tracking-tight leading-none">{value}</h4><p className="text-[10px] text-slate-500 mt-5 font-black uppercase tracking-widest opacity-60 italic">{subtitle}</p></div>
   );
 };
 

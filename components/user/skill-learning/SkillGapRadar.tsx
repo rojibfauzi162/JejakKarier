@@ -129,11 +129,11 @@ const SkillGapRadar: React.FC<SkillGapRadarProps> = ({ data, onSwitchTab, onAddS
   };
 
   return (
-    <div className="space-y-10 animate-in fade-in duration-700">
+    <div className="space-y-3 md:space-y-6 md:space-y-10 animate-in fade-in duration-700">
       {/* HEADER */}
-      <div className="bg-slate-900 p-10 rounded-[3rem] text-white relative overflow-hidden shadow-2xl">
+      <div className="bg-slate-900 p-4 md:p-10 rounded-[3rem] text-white relative overflow-hidden shadow-2xl">
         <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl -mr-20 -mt-20"></div>
-        <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-3 md:gap-6">
           <div className="space-y-2">
             <div className="flex items-center gap-3">
               <span className="px-3 py-1 bg-indigo-500 text-xs font-black uppercase tracking-widest rounded-full">Analisis Pintar</span>
@@ -144,7 +144,7 @@ const SkillGapRadar: React.FC<SkillGapRadarProps> = ({ data, onSwitchTab, onAddS
           <button 
             onClick={handleGenerateInsight}
             disabled={isAnalyzing}
-            className="px-8 py-4 bg-white text-slate-900 font-black rounded-2xl uppercase text-[10px] tracking-widest shadow-xl hover:bg-indigo-50 transition-all active:scale-95 disabled:opacity-50"
+            className="px-5 py-3 md:px-8 md:py-4 bg-white text-slate-900 font-black rounded-2xl uppercase text-[10px] tracking-widest shadow-xl hover:bg-indigo-50 transition-all active:scale-95 disabled:opacity-50"
           >
             {isAnalyzing ? 'Menganalisis...' : 'Generate AI Insight ✨'}
           </button>
@@ -152,7 +152,7 @@ const SkillGapRadar: React.FC<SkillGapRadarProps> = ({ data, onSwitchTab, onAddS
       </div>
 
       {aiInsight && (
-        <div className="bg-indigo-50 border-2 border-indigo-100 p-8 rounded-[2.5rem] animate-in slide-in-from-top-4 duration-500">
+        <div className="bg-indigo-50 border-2 border-indigo-100 p-4 md:p-8 rounded-[2.5rem] animate-in slide-in-from-top-4 duration-500">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-200">
               <i className="bi bi-cpu-fill"></i>
@@ -163,9 +163,9 @@ const SkillGapRadar: React.FC<SkillGapRadarProps> = ({ data, onSwitchTab, onAddS
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-8">
         {/* RADAR A: UTILIZATION */}
-        <div className="lg:col-span-6 bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-8">
+        <div className="lg:col-span-6 bg-white p-4 md:p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-4 md:space-y-8">
           <div className="flex justify-between items-center">
             <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest">A. Radar Penggunaan Skill</h3>
             <span className="text-xs font-bold text-slate-400">90 Hari Terakhir</span>
@@ -213,12 +213,12 @@ const SkillGapRadar: React.FC<SkillGapRadarProps> = ({ data, onSwitchTab, onAddS
         </div>
 
         {/* RADAR B: BENCHMARK GAP */}
-        <div className="lg:col-span-6 bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-8">
+        <div className="lg:col-span-6 bg-white p-4 md:p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-4 md:space-y-8">
           <div className="flex justify-between items-center">
             <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest">B. Cek Kesiapan Naik Level</h3>
             <span className="text-xs font-bold text-indigo-500 uppercase tracking-widest">Target: {currentRole} Lead</span>
           </div>
-          <div className="space-y-6">
+          <div className="space-y-3 md:space-y-6">
             {skillGaps.map((g, i) => (
               <div key={i} className="space-y-3">
                 <div className="flex justify-between items-center">
@@ -242,11 +242,11 @@ const SkillGapRadar: React.FC<SkillGapRadarProps> = ({ data, onSwitchTab, onAddS
         </div>
 
         {/* RADAR C: OPPORTUNITY MULTIPLIER */}
-        <div className="lg:col-span-8 bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-8">
+        <div className="lg:col-span-8 bg-white p-4 md:p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-4 md:space-y-8">
           <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest">C. Skill Pembuka Peluang</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6">
             {leverageSkills.map((m, i) => (
-              <div key={i} className="p-6 bg-slate-50 rounded-3xl border border-slate-100 space-y-4 hover:border-indigo-300 transition-all group">
+              <div key={i} className="p-3 md:p-6 bg-slate-50 rounded-3xl border border-slate-100 space-y-4 hover:border-indigo-300 transition-all group">
                 <div className="flex justify-between items-start">
                   <div>
                     <h4 className="text-lg font-black text-slate-900 uppercase tracking-tight">{m.skill}</h4>
@@ -270,7 +270,7 @@ const SkillGapRadar: React.FC<SkillGapRadarProps> = ({ data, onSwitchTab, onAddS
         </div>
 
         {/* RADAR D: STAGNATION RISK */}
-        <div className="lg:col-span-4 bg-slate-950 p-8 rounded-[2.5rem] text-white flex flex-col justify-between space-y-8 shadow-xl">
+        <div className="lg:col-span-4 bg-slate-950 p-4 md:p-8 rounded-[2.5rem] text-white flex flex-col justify-between space-y-4 md:space-y-8 shadow-xl">
           <h3 className="text-sm font-black text-indigo-400 uppercase tracking-widest">D. Indikator Risiko Karir</h3>
           <div className="text-center space-y-4">
             <div className="relative inline-block">
@@ -319,7 +319,7 @@ const SkillGapRadar: React.FC<SkillGapRadarProps> = ({ data, onSwitchTab, onAddS
       </div>
 
       {/* OUTPUT SUMMARY */}
-      <div className="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm space-y-10">
+      <div className="bg-white p-4 md:p-10 rounded-[3rem] border border-slate-100 shadow-sm space-y-3 md:space-y-6 md:space-y-10">
         <div className="text-center space-y-4 max-w-2xl mx-auto">
           <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">Prioritas Pengembangan Ter-Leverage</h3>
           <p className="text-xs font-bold text-slate-500 leading-relaxed uppercase tracking-widest">
@@ -329,9 +329,9 @@ const SkillGapRadar: React.FC<SkillGapRadarProps> = ({ data, onSwitchTab, onAddS
           </p>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
           {leverageSkills.slice(0, 3).map((s, i) => (
-            <div key={i} className="relative p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100 space-y-4 overflow-hidden">
+            <div key={i} className="relative p-4 md:p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100 space-y-4 overflow-hidden">
               <div className="absolute -top-4 -right-4 w-20 h-20 bg-indigo-600/5 rounded-full flex items-center justify-center text-4xl font-black text-indigo-600/10">{i + 1}</div>
               <h4 className="text-lg font-black text-slate-800 uppercase tracking-tight">{s.skill}</h4>
               <div className="space-y-2">
@@ -356,8 +356,8 @@ const SkillGapRadar: React.FC<SkillGapRadarProps> = ({ data, onSwitchTab, onAddS
 
       {/* CONFIRMATION MODAL */}
       {confirmSkill && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
-          <div className="bg-white w-full max-w-md rounded-[2.5rem] p-10 shadow-2xl space-y-8 animate-in zoom-in-95 duration-300 relative">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-white w-full max-w-md rounded-[1.5rem] md:rounded-[2.5rem] p-4 md:p-10 shadow-2xl space-y-4 md:space-y-8 animate-in zoom-in-95 duration-300 relative">
             <button onClick={() => setConfirmSkill(null)} className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center bg-slate-50 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors z-10"><i className="bi bi-x-lg"></i></button>
             <div className="text-center space-y-4">
               <div className="w-20 h-20 bg-indigo-50 text-indigo-600 rounded-3xl flex items-center justify-center text-4xl mx-auto shadow-sm">
@@ -369,7 +369,7 @@ const SkillGapRadar: React.FC<SkillGapRadarProps> = ({ data, onSwitchTab, onAddS
               </p>
             </div>
 
-            <div className="bg-slate-50 p-6 rounded-2xl space-y-4 border border-slate-100">
+            <div className="bg-slate-50 p-3 md:p-6 rounded-2xl space-y-4 border border-slate-100">
               <div className="flex justify-between items-center">
                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Skill Name</span>
                 <span className="text-xs font-black text-slate-700 uppercase">{confirmSkill.skill}</span>

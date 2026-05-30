@@ -17,21 +17,21 @@ const ProductMatrix: React.FC<ProductMatrixProps> = ({ products, setEditingProdu
   ];
 
   return (
-    <div className="space-y-10 animate-in fade-in duration-500">
-       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 px-4">
+    <div className="space-y-3 md:space-y-6 md:space-y-10 animate-in fade-in duration-500">
+       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 md:gap-6 px-4">
           <div className="space-y-1">
              <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Katalog Paket & Lisensi</h3>
              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Kontrol akses fitur, limitasi data, dan strategi harga.</p>
           </div>
           <button 
             onClick={() => { setEditingProduct(null); setIsProductModalOpen(true); }} 
-            className="w-full md:w-auto px-8 py-4 bg-indigo-600 text-white font-black rounded-2xl text-[10px] uppercase tracking-widest shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95"
+            className="w-full md:w-auto px-5 py-3 md:px-8 md:py-4 bg-indigo-600 text-white font-black rounded-2xl text-[10px] uppercase tracking-widest shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95"
           >
             <i className="bi bi-plus-lg mr-2"></i> Buat Paket Baru
           </button>
        </div>
        
-       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-2">
+       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8 px-2">
           {products.map(p => (
             <div 
               key={p.id} 
@@ -39,7 +39,7 @@ const ProductMatrix: React.FC<ProductMatrixProps> = ({ products, setEditingProdu
               className="bg-white rounded-[3rem] border border-slate-100 shadow-sm hover:shadow-2xl transition-all relative group overflow-hidden flex flex-col h-full cursor-pointer hover:-translate-y-1 active:scale-95"
             >
                {/* Product Header Status */}
-               <div className="p-8 pb-0">
+               <div className="p-4 md:p-8 pb-0">
                   <div className="flex justify-between items-start mb-6">
                      <div className="space-y-2">
                         <div className="flex items-center gap-2">
@@ -65,7 +65,7 @@ const ProductMatrix: React.FC<ProductMatrixProps> = ({ products, setEditingProdu
                      </div>
                   </div>
 
-                  <div className="flex items-baseline gap-2 mb-8">
+                  <div className="flex items-baseline gap-2 mb-4 md:mb-8">
                      <p className="text-3xl font-black text-slate-900 tracking-tighter">Rp {p.price.toLocaleString('id-ID')}</p>
                      {p.originalPrice && p.originalPrice > p.price && (
                         <p className="text-sm font-bold text-rose-400 line-through">Rp {p.originalPrice.toLocaleString('id-ID')}</p>
@@ -73,7 +73,7 @@ const ProductMatrix: React.FC<ProductMatrixProps> = ({ products, setEditingProdu
                   </div>
                </div>
                
-               <div className="flex-1 p-8 pt-0 space-y-6">
+               <div className="flex-1 p-4 md:p-8 pt-0 space-y-3 md:space-y-6">
                   {/* LIMITS GRID - UPDATED TO SHOW ALL KEYS CONSISTENTLY */}
                   <div className="space-y-3">
                     <p className="text-[9px] font-black uppercase text-slate-400 tracking-widest">Limitasi Database</p>

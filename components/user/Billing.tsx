@@ -22,16 +22,16 @@ const Billing: React.FC<BillingProps> = ({ data, products }) => {
   };
 
   return (
-    <div className="space-y-10 animate-in fade-in duration-700 pb-20 px-4 lg:px-0">
+    <div className="space-y-3 md:space-y-6 md:space-y-10 animate-in fade-in duration-700 pb-20 px-4 lg:px-0">
       <header>
         <h2 className="text-3xl font-black text-slate-900 tracking-tight uppercase">Billing & Subscription</h2>
         <p className="text-slate-500 font-medium italic">"Kelola akses dan upgrade kualifikasi profesional Anda melalui aktivasi manual."</p>
       </header>
 
       {/* CURRENT SUBSCRIPTION CARD */}
-      <div className="bg-white p-8 lg:p-12 rounded-[3.5rem] shadow-sm border border-slate-100 relative overflow-hidden">
-         <div className="relative z-10 flex flex-col md:flex-row justify-between gap-8">
-            <div className="space-y-6">
+      <div className="bg-white p-4 md:p-8 lg:p-12 rounded-[3.5rem] shadow-sm border border-slate-100 relative overflow-hidden">
+         <div className="relative z-10 flex flex-col md:flex-row justify-between gap-4 md:gap-8">
+            <div className="space-y-3 md:space-y-6">
                <div className="flex items-center gap-4">
                   <div className="w-14 h-14 bg-indigo-600 text-white rounded-2xl flex items-center justify-center text-2xl shadow-xl shadow-indigo-100">
                      <i className="bi bi-gem"></i>
@@ -58,7 +58,7 @@ const Billing: React.FC<BillingProps> = ({ data, products }) => {
                </div>
             </div>
 
-            <div className="md:w-72 bg-indigo-50 p-8 rounded-[2.5rem] border border-indigo-100 flex flex-col justify-center items-center text-center">
+            <div className="md:w-72 bg-indigo-50 p-4 md:p-8 rounded-[2.5rem] border border-indigo-100 flex flex-col justify-center items-center text-center">
                <p className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em] mb-4">Sisa Masa Aktif</p>
                <p className="text-5xl font-black text-indigo-600 tracking-tighter">
                   {daysRemaining === Infinity ? '∞' : Math.max(0, daysRemaining)}
@@ -70,7 +70,7 @@ const Billing: React.FC<BillingProps> = ({ data, products }) => {
       </div>
 
       {/* UPGRADE OPTIONS */}
-      <div className="space-y-8">
+      <div className="space-y-4 md:space-y-8">
          <div className="flex flex-col md:flex-row justify-between items-end gap-4 px-2">
             <div>
                <h3 className="text-xl font-black text-slate-900 uppercase">Pilihan Paket Masa Depan</h3>
@@ -82,10 +82,10 @@ const Billing: React.FC<BillingProps> = ({ data, products }) => {
             </p>
          </div>
 
-         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">
             {products.filter(p => p.price > 0).map(p => (
-              <div key={p.id} className="bg-white p-8 rounded-[3.5rem] border border-slate-100 shadow-sm hover:shadow-xl transition-all flex flex-col group relative overflow-hidden">
-                 <div className="flex-1 space-y-8">
+              <div key={p.id} className="bg-white p-4 md:p-8 rounded-[3.5rem] border border-slate-100 shadow-sm hover:shadow-xl transition-all flex flex-col group relative overflow-hidden">
+                 <div className="flex-1 space-y-4 md:space-y-8">
                     <div>
                        <div className="flex justify-between items-start mb-4">
                           <h4 className="text-xl font-black text-slate-900 tracking-tight">{p.name}</h4>
@@ -116,7 +116,7 @@ const Billing: React.FC<BillingProps> = ({ data, products }) => {
 
                  <button 
                   onClick={() => handlePay(p.name, p.price)}
-                  className="w-full mt-10 py-4 bg-slate-900 text-white font-black rounded-2xl uppercase text-[10px] tracking-widest shadow-xl hover:bg-black transition-all active:scale-95 z-10"
+                  className="w-full mt-6 md:mt-10 py-4 bg-slate-900 text-white font-black rounded-2xl uppercase text-[10px] tracking-widest shadow-xl hover:bg-black transition-all active:scale-95 z-10"
                  >
                     {data.plan === p.tier ? 'Perpanjang via Admin' : 'Pilih & Hubungi Admin →'}
                  </button>
@@ -128,13 +128,13 @@ const Billing: React.FC<BillingProps> = ({ data, products }) => {
       </div>
 
       {/* HELP SECTION */}
-      <div className="bg-slate-900 p-10 rounded-[3rem] text-white flex flex-col md:flex-row items-center gap-8 shadow-2xl">
+      <div className="bg-slate-900 p-4 md:p-10 rounded-[3rem] text-white flex flex-col md:flex-row items-center gap-4 md:gap-8 shadow-2xl">
          <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center text-3xl shrink-0"><i className="bi bi-chat-dots-fill"></i></div>
          <div className="flex-1 text-center md:text-left">
             <h4 className="text-xl font-black uppercase tracking-tight mb-1">Butuh Bantuan Aktivasi?</h4>
             <p className="text-xs text-slate-400 leading-relaxed font-medium">Sistem kami menggunakan verifikasi manual untuk keamanan tambahan. Silakan kirimkan bukti transaksi untuk mendapatkan akses premium Anda.</p>
          </div>
-         <button onClick={() => window.open('https://wa.me/628123456789', '_blank')} className="px-8 py-4 bg-white text-slate-900 font-black rounded-2xl uppercase text-[10px] tracking-widest shadow-xl hover:bg-slate-100 transition-all">WhatsApp Support</button>
+         <button onClick={() => window.open('https://wa.me/628123456789', '_blank')} className="px-5 py-3 md:px-8 md:py-4 bg-white text-slate-900 font-black rounded-2xl uppercase text-[10px] tracking-widest shadow-xl hover:bg-slate-100 transition-all">WhatsApp Support</button>
       </div>
     </div>
   );

@@ -16,11 +16,11 @@ interface ToDoListProps {
 
 const ToDoList: React.FC<ToDoListProps> = ({ tasks, categories, onAdd, onUpdate, onDelete, onAddCategory, onUpdateCategory, onDeleteCategory, targetDate }) => {
   return (
-    <div className="space-y-8 animate-in fade-in duration-700 pb-20">
+    <div className="space-y-4 md:space-y-8 animate-in fade-in duration-700 pb-20">
       <header>
         <h2 className="text-3xl font-black text-slate-900 tracking-tight uppercase">Growth Checklist</h2>
       </header>
-      <div className="bg-white p-20 rounded-[2.5rem] shadow-sm border border-slate-100 text-center text-slate-400 italic">Langkah-langkah strategis pengembangan diri Anda.</div>
+      <div className="bg-white p-20 rounded-[2.5rem] shadow-sm border border-slate-100 text-center text-slate-400 italic">Daftar To Do List strategis Anda.</div>
     </div>
   );
 };

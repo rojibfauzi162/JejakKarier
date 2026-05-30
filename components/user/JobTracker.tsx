@@ -23,8 +23,8 @@ const JobTracker: React.FC<JobTrackerProps> = ({ applications, onAdd, onUpdate, 
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-700 pb-24 lg:pb-16">
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+    <div className="space-y-3 md:space-y-6 animate-in fade-in duration-700 pb-24 lg:pb-16">
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-6">
         <h2 className="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight uppercase">Loker Tracker</h2>
         <button onClick={() => setIsFormOpen(true)} className="px-6 py-3.5 bg-emerald-600 text-white font-black rounded-2xl shadow-xl hover:bg-emerald-700 transition-all text-xs uppercase tracking-widest">+ Log Lamaran Baru</button>
       </header>

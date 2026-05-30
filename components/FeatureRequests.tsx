@@ -90,7 +90,7 @@ const FeatureRequests: React.FC = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in duration-500 pb-20">
+    <div className="max-w-4xl mx-auto space-y-4 md:space-y-8 animate-in fade-in duration-500 pb-20">
       {toast && (
         <div className="fixed top-10 right-10 z-[3000] animate-in slide-in-from-right-4">
            <div className={`px-6 py-3 rounded-xl shadow-xl border flex items-center gap-3 ${toast.type === 'success' ? 'bg-emerald-600 border-emerald-50 text-white' : 'bg-rose-600 border-rose-500 text-white'}`}>
@@ -99,7 +99,7 @@ const FeatureRequests: React.FC = () => {
         </div>
       )}
 
-      <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm">
+      <div className="bg-white p-4 md:p-8 rounded-[2rem] border border-slate-100 shadow-sm">
         <div className="flex items-center gap-4 mb-6">
           <div className="w-12 h-12 bg-indigo-600 text-white rounded-2xl flex items-center justify-center text-xl shadow-lg">
             <i className="bi bi-lightbulb-fill"></i>
@@ -175,7 +175,7 @@ const FeatureRequests: React.FC = () => {
         </form>
       </div>
 
-      <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm">
+      <div className="bg-white p-4 md:p-8 rounded-[2rem] border border-slate-100 shadow-sm">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
           <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight">Daftar Request</h3>
           <div className="flex bg-slate-100 p-1 rounded-xl">
@@ -207,7 +207,7 @@ const FeatureRequests: React.FC = () => {
         ) : (
           <div className="space-y-4">
             {sortedRequests.map(request => (
-              <div key={request.id} className="p-6 bg-slate-50 rounded-2xl border border-slate-100 flex gap-6 items-start">
+              <div key={request.id} className="p-3 md:p-6 bg-slate-50 rounded-2xl border border-slate-100 flex gap-3 md:gap-6 items-start">
                 <div className="flex flex-col items-center gap-2">
                   <button 
                     onClick={() => handleVote(request.id!)}

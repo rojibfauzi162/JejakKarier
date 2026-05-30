@@ -174,8 +174,8 @@ const CareerCalendar: React.FC<CareerCalendarProps> = ({ data, onAddEvent, onDel
   const hoursArray = Array.from({ length: 24 }, (_, i) => i);
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-700 pb-20">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+    <div className="space-y-3 md:space-y-6 animate-in fade-in duration-700 pb-20">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 md:gap-6">
         <div>
           <h2 className="text-3xl font-black text-slate-900 tracking-tight uppercase leading-none">Career Calendar</h2>
           <p className="text-slate-400 font-bold text-xs mt-2 italic">"Visualisasikan jadwal krusial perjalanan profesional Anda."</p>
@@ -193,9 +193,9 @@ const CareerCalendar: React.FC<CareerCalendarProps> = ({ data, onAddEvent, onDel
         </div>
       </div>
 
-      <div className="bg-white p-6 rounded-[2.5rem] shadow-sm border border-slate-100 space-y-6">
+      <div className="bg-white p-3 md:p-6 rounded-[2.5rem] shadow-sm border border-slate-100 space-y-3 md:space-y-6">
         <div className="flex items-center justify-between px-2">
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-3 md:gap-6">
              <button onClick={handlePrev} className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all">←</button>
              <h3 className="text-lg font-black text-slate-900 uppercase tracking-[0.2em] w-52 text-center">
                {viewMode === 'TAHUNAN' ? currentDate.getFullYear() : currentDate.toLocaleString('id-ID', { month: 'long', year: 'numeric' })}
@@ -253,7 +253,7 @@ const CareerCalendar: React.FC<CareerCalendarProps> = ({ data, onAddEvent, onDel
                 const isCurrentMonth = day.getMonth() === currentDate.getMonth();
                 const dayEvents = data.careerEvents.filter(e => e.date === dayStr);
                 return (
-                  <div key={dayStr} onClick={() => { setSelectedDay(dayStr); setIsModalOpen(true); }} className={`border-r border-slate-50 p-6 cursor-pointer hover:bg-indigo-50/20 transition-all relative group ${isToday ? 'bg-indigo-50/10' : ''}`}>
+                  <div key={dayStr} onClick={() => { setSelectedDay(dayStr); setIsModalOpen(true); }} className={`border-r border-slate-50 p-3 md:p-6 cursor-pointer hover:bg-indigo-50/20 transition-all relative group ${isToday ? 'bg-indigo-50/10' : ''}`}>
                     <div className="text-center mb-6">
                       <span className={`text-2xl font-black ${isToday ? 'text-indigo-600' : isCurrentMonth ? 'text-slate-900' : 'text-slate-300'}`}>{day.getDate()}</span>
                     </div>
@@ -265,7 +265,7 @@ const CareerCalendar: React.FC<CareerCalendarProps> = ({ data, onAddEvent, onDel
                 );
               })}
             </div>
-            <div className="p-8 bg-slate-50/50 border-t border-slate-100 flex justify-center gap-3">
+            <div className="p-4 md:p-8 bg-slate-50/50 border-t border-slate-100 flex justify-center gap-3">
               {Array.from({ length: weeksInMonth }).map((_, i) => (
                 <button 
                   key={i} 
@@ -330,7 +330,7 @@ const CareerCalendar: React.FC<CareerCalendarProps> = ({ data, onAddEvent, onDel
                   <i className="bi bi-plus-lg"></i>
                </button>
             </div>
-            <div className="p-6 bg-slate-50 border-t border-slate-100 flex justify-center gap-2 overflow-x-auto no-scrollbar scroll-smooth">
+            <div className="p-3 md:p-6 bg-slate-50 border-t border-slate-100 flex justify-center gap-2 overflow-x-auto no-scrollbar scroll-smooth">
               {Array.from({ length: daysInCurrentMonthCount }).map((_, i) => {
                 const dayNum = i + 1;
                 const isActive = currentDate.getDate() === dayNum;
@@ -355,7 +355,7 @@ const CareerCalendar: React.FC<CareerCalendarProps> = ({ data, onAddEvent, onDel
               const monthPrefix = `${currentDate.getFullYear()}-${String(idx + 1).padStart(2, '0')}`;
               const monthEvents = data.careerEvents.filter(e => e.date.startsWith(monthPrefix));
               return (
-                <div key={idx} className="h-64 border-r border-b border-slate-100 p-6 bg-white flex flex-col group">
+                <div key={idx} className="h-64 border-r border-b border-slate-100 p-3 md:p-6 bg-white flex flex-col group">
                   <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest mb-4">{monthLabel}</h4>
                   <div className="flex-1 space-y-2 overflow-y-auto no-scrollbar">
                      {monthEvents.map(e => (
@@ -383,16 +383,16 @@ const CareerCalendar: React.FC<CareerCalendarProps> = ({ data, onAddEvent, onDel
       </div>
 
       {isDetailModalOpen && viewingEvent && (
-        <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-md z-[2000] flex items-center justify-center p-6">
-           <div className="bg-white max-w-md w-full rounded-[3.5rem] p-10 border border-slate-100 shadow-2xl animate-in zoom-in duration-300">
-              <div className="flex justify-between items-start mb-8">
+        <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-md z-[2000] flex items-center justify-center p-2 sm:p-6">
+           <div className="bg-white max-w-md w-full rounded-[2rem] md:rounded-[3.5rem] p-4 md:p-10 border border-slate-100 shadow-2xl animate-in zoom-in duration-300">
+              <div className="flex justify-between items-start mb-4 md:mb-8">
                  <div>
                     <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase text-white shadow-lg ${getTypeColor(viewingEvent.type)}`}>{viewingEvent.type}</span>
                     <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight mt-4">{viewingEvent.title}</h3>
                  </div>
                  <button onClick={() => setIsDetailModalOpen(false)} className="w-10 h-10 bg-slate-50 text-slate-400 rounded-full flex items-center justify-center hover:bg-rose-50 hover:text-rose-500 transition-colors">✕</button>
               </div>
-              <div className="space-y-6">
+              <div className="space-y-3 md:space-y-6">
                  <div className="flex items-center gap-4 text-xs font-black text-slate-500 uppercase tracking-widest">
                     <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-lg"><i className="bi bi-calendar3"></i></div>
                     <span>{new Date(viewingEvent.date).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</span>
@@ -420,37 +420,37 @@ const CareerCalendar: React.FC<CareerCalendarProps> = ({ data, onAddEvent, onDel
       )}
 
       {isModalOpen && selectedDay && (
-        <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-md z-[1000] flex items-center justify-center p-6">
-          <div className="bg-white w-full max-w-xl rounded-[3.5rem] p-10 lg:p-14 border border-slate-100 shadow-2xl animate-in zoom-in duration-300 overflow-y-auto max-h-[95vh] no-scrollbar">
-            <h3 className="text-3xl font-black text-slate-900 uppercase tracking-tight mb-8">Tambah Agenda Baru</h3>
-            <form onSubmit={handleAddEvent} className="space-y-6">
+        <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-md z-[1000] flex items-center justify-center p-2 sm:p-6">
+          <div className="bg-white w-full max-w-xl rounded-[2rem] md:rounded-[3.5rem] p-4 sm:p-6 md:p-8 lg:p-14 border border-slate-100 shadow-2xl animate-in zoom-in duration-300 overflow-y-auto max-h-[95vh] no-scrollbar">
+            <h3 className="text-3xl font-black text-slate-900 uppercase tracking-tight mb-4 md:mb-8">Tambah Agenda Baru</h3>
+            <form onSubmit={handleAddEvent} className="space-y-3 md:space-y-6">
               <div className="space-y-2">
                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Judul Agenda</label>
-                 <input className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-sm focus:border-indigo-400 transition-all shadow-inner" value={form.title || ''} onChange={e => setForm({...form, title: e.target.value})} placeholder="Misal: Interview PT ABC" required />
+                 <input className="w-full px-4 py-3 md:px-6 md:py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-sm focus:border-indigo-400 transition-all shadow-inner" value={form.title || ''} onChange={e => setForm({...form, title: e.target.value})} placeholder="Misal: Interview PT ABC" required />
               </div>
               <div className="grid grid-cols-2 gap-4">
                  <div className="space-y-2">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Kategori</label>
-                    <select className="w-full px-6 py-4 rounded-2xl bg-white border border-slate-200 outline-none font-bold text-sm cursor-pointer" value={form.type || ''} onChange={e => setForm({...form, type: e.target.value as EventType})}>{Object.values(EventType).map(t => <option key={t} value={t}>{t}</option>)}</select>
+                    <select className="w-full px-4 py-3 md:px-6 md:py-4 rounded-2xl bg-white border border-slate-200 outline-none font-bold text-sm cursor-pointer" value={form.type || ''} onChange={e => setForm({...form, type: e.target.value as EventType})}>{Object.values(EventType).map(t => <option key={t} value={t}>{t}</option>)}</select>
                  </div>
                  <div className="space-y-2">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Prioritas</label>
-                    <select className="w-full px-6 py-4 rounded-2xl bg-white border border-slate-200 outline-none font-bold text-sm cursor-pointer" value={form.importance || ''} onChange={e => setForm({...form, importance: e.target.value as ImportanceLevel})}>{Object.values(ImportanceLevel).map(i => <option key={i} value={i}>{i}</option>)}</select>
+                    <select className="w-full px-4 py-3 md:px-6 md:py-4 rounded-2xl bg-white border border-slate-200 outline-none font-bold text-sm cursor-pointer" value={form.importance || ''} onChange={e => setForm({...form, importance: e.target.value as ImportanceLevel})}>{Object.values(ImportanceLevel).map(i => <option key={i} value={i}>{i}</option>)}</select>
                  </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                  <div className="space-y-2">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Waktu</label>
-                    <input type="time" className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-sm" value={form.time || ''} onChange={e => setForm({...form, time: e.target.value})} />
+                    <input type="time" className="w-full px-4 py-3 md:px-6 md:py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-sm" value={form.time || ''} onChange={e => setForm({...form, time: e.target.value})} />
                  </div>
                  <div className="space-y-2">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Lokasi (Opsional)</label>
-                    <input className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-sm" value={form.location || ''} onChange={e => setForm({...form, location: e.target.value})} placeholder="Online / Kantor" />
+                    <input className="w-full px-4 py-3 md:px-6 md:py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-bold text-sm" value={form.location || ''} onChange={e => setForm({...form, location: e.target.value})} placeholder="Online / Kantor" />
                  </div>
               </div>
               <div className="space-y-2">
                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Catatan</label>
-                 <textarea rows={3} className="w-full px-6 py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold resize-none shadow-inner" value={form.notes || ''} onChange={e => setForm({...form, notes: e.target.value})} placeholder="Detail agenda..." />
+                 <textarea rows={3} className="w-full px-4 py-3 md:px-6 md:py-4 rounded-2xl border border-slate-200 outline-none bg-slate-50/50 font-bold resize-none shadow-inner" value={form.notes || ''} onChange={e => setForm({...form, notes: e.target.value})} placeholder="Detail agenda..." />
               </div>
               <div className="flex gap-4 pt-4">
                 <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-5 bg-slate-100 text-slate-400 font-black rounded-3xl uppercase text-[11px] tracking-widest">Batal</button>

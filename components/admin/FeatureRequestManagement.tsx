@@ -64,7 +64,7 @@ const FeatureRequestManagement: React.FC = () => {
   });
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
+    <div className="space-y-4 md:space-y-8 animate-in fade-in duration-500">
       {toast && (
         <div className="fixed top-10 right-10 z-[3000] animate-in slide-in-from-right-4">
            <div className={`px-6 py-3 rounded-xl shadow-xl border flex items-center gap-3 ${toast.type === 'success' ? 'bg-emerald-600 border-emerald-50 text-white' : 'bg-rose-600 border-rose-500 text-white'}`}>
@@ -73,7 +73,7 @@ const FeatureRequestManagement: React.FC = () => {
         </div>
       )}
 
-      <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm">
+      <div className="bg-white p-4 md:p-8 rounded-[2rem] border border-slate-100 shadow-sm">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-indigo-600 text-white rounded-2xl flex items-center justify-center text-xl shadow-lg">
@@ -114,17 +114,17 @@ const FeatureRequestManagement: React.FC = () => {
             <table className="w-full text-left">
               <thead>
                 <tr className="text-[10px] font-black uppercase text-slate-400 bg-slate-50/50">
-                  <th className="px-6 py-4">Request</th>
-                  <th className="px-6 py-4 text-center">Vote</th>
-                  <th className="px-6 py-4 text-center">Status</th>
-                  <th className="px-6 py-4 text-center">Visibilitas</th>
-                  <th className="px-6 py-4 text-right">Aksi</th>
+                  <th className="px-4 py-3 md:px-6 md:py-4">Request</th>
+                  <th className="px-4 py-3 md:px-6 md:py-4 text-center">Vote</th>
+                  <th className="px-4 py-3 md:px-6 md:py-4 text-center">Status</th>
+                  <th className="px-4 py-3 md:px-6 md:py-4 text-center">Visibilitas</th>
+                  <th className="px-4 py-3 md:px-6 md:py-4 text-right">Aksi</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
                 {sortedRequests.map(request => (
                   <tr key={request.id} className="hover:bg-slate-50/50 transition-colors">
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-3 md:px-6 md:py-4">
                       <div className="flex items-center gap-2 mb-1">
                         {request.type === 'bugfix' ? (
                           <span className="px-2 py-0.5 bg-rose-100 text-rose-600 rounded text-[9px] font-black uppercase tracking-widest">Perbaikan</span>
@@ -143,12 +143,12 @@ const FeatureRequestManagement: React.FC = () => {
                         <span>{new Date(request.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-center">
+                    <td className="px-4 py-3 md:px-6 md:py-4 text-center">
                       <span className="inline-flex items-center justify-center w-8 h-8 bg-indigo-50 text-indigo-600 rounded-lg font-black text-sm">
                         {request.voteCount}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-center">
+                    <td className="px-4 py-3 md:px-6 md:py-4 text-center">
                       <select 
                         value={request.status}
                         onChange={(e) => handleStatusChange(request.id!, e.target.value as FeatureRequestStatus)}
@@ -162,7 +162,7 @@ const FeatureRequestManagement: React.FC = () => {
                         <option value={FeatureRequestStatus.REJECTED}>Rejected</option>
                       </select>
                     </td>
-                    <td className="px-6 py-4 text-center">
+                    <td className="px-4 py-3 md:px-6 md:py-4 text-center">
                       <button 
                         onClick={() => handleToggleVisibility(request.id!, request.isHidden)}
                         className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all ${request.isHidden ? 'bg-rose-50 text-rose-600 border border-rose-100' : 'bg-emerald-50 text-emerald-600 border border-emerald-100'}`}
@@ -170,7 +170,7 @@ const FeatureRequestManagement: React.FC = () => {
                         {request.isHidden ? 'Hidden' : 'Visible'}
                       </button>
                     </td>
-                    <td className="px-6 py-4 text-right">
+                    <td className="px-4 py-3 md:px-6 md:py-4 text-right">
                       <button 
                         onClick={() => handleDelete(request.id!)}
                         className="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 border border-rose-100 flex items-center justify-center hover:bg-rose-600 hover:text-white transition-all shadow-sm ml-auto"

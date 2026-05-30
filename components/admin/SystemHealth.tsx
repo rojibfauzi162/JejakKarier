@@ -10,8 +10,8 @@ interface SystemHealthProps {
 
 const SystemHealth: React.FC<SystemHealthProps> = ({ keyInfo, fetchingKeyInfo, aiConfig, totalTokens }) => {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="bg-white p-10 rounded-[3rem] shadow-sm border border-slate-100 space-y-8">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8">
+        <div className="bg-white p-4 md:p-10 rounded-[3rem] shadow-sm border border-slate-100 space-y-4 md:space-y-8">
            <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                  <div className="w-14 h-14 bg-indigo-600 text-white rounded-2xl flex items-center justify-center text-2xl shadow-xl"><i className="bi bi-cloud-check"></i></div>
@@ -21,7 +21,7 @@ const SystemHealth: React.FC<SystemHealthProps> = ({ keyInfo, fetchingKeyInfo, a
            </div>
 
            {keyInfo ? (
-             <div className="space-y-6">
+             <div className="space-y-3 md:space-y-6">
                 <div className="grid grid-cols-2 gap-4">
                    <div className="p-5 bg-slate-50 rounded-2xl border">
                       <p className="text-[8px] font-black text-slate-400 uppercase">Terpakai</p>
@@ -32,7 +32,7 @@ const SystemHealth: React.FC<SystemHealthProps> = ({ keyInfo, fetchingKeyInfo, a
                       <p className="text-2xl font-black">{keyInfo.limit === null ? '∞' : `$${keyInfo.limit.toFixed(2)}`}</p>
                    </div>
                 </div>
-                <div className="p-6 bg-slate-50 rounded-3xl border text-center">
+                <div className="p-3 md:p-6 bg-slate-50 rounded-3xl border text-center">
                     <p className="text-[9px] font-black uppercase text-slate-400 mb-1">Status Keaktifan</p>
                     <span className={`text-sm font-black uppercase ${keyInfo.is_active ? 'text-emerald-500' : 'text-rose-500'}`}>{keyInfo.is_active ? 'AKTIF (ON)' : 'ERROR / EXPIRED'}</span>
                 </div>
@@ -45,7 +45,7 @@ const SystemHealth: React.FC<SystemHealthProps> = ({ keyInfo, fetchingKeyInfo, a
              </div>
            )}
         </div>
-        <div className="bg-white p-10 rounded-[3rem] shadow-sm border border-slate-100 flex flex-col justify-center text-center">
+        <div className="bg-white p-4 md:p-10 rounded-[3rem] shadow-sm border border-slate-100 flex flex-col justify-center text-center">
             <p className="text-[10px] font-black text-slate-400 uppercase mb-2">Total Token Lokal</p>
             <p className="text-5xl font-black text-slate-900 tracking-tighter">{totalTokens.toLocaleString()}</p>
             <p className="text-[9px] font-bold text-emerald-600 uppercase mt-4">Statistik Akumulasi Sistem</p>

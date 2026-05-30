@@ -6,6 +6,7 @@ import express from "express";
 import cors from "cors";
 import crypto from "crypto";
 import axios from "axios";
+import { google } from 'googleapis';
 import { createServer as createViteServer } from "vite";
 import { initializeApp } from "firebase/app";
 import { getFirestore, doc, setDoc, getDoc, collection, getDocs } from "firebase/firestore";
@@ -463,6 +464,95 @@ async function startServer() {
     } catch (error: any) {
       log(`Error in /api/tracking/meta-capi: ${error.message}`);
       res.status(500).json({ error: error.message });
+    }
+  });
+
+  // --- GOOGLE CONTACTS INTEGRATION ---
+  apiRouter.get("/contacts", async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      log("GET /api/contacts: Missing authorization header");
+      return res.status(401).json({ success: false, error: "Missing authorization" });
+    }
+    
+    const accessToken = authHeader.split(' ')[1];
+    const oauth2Client = new google.auth.OAuth2();
+    oauth2Client.setCredentials({ access_token: accessToken });
+    
+    const people = google.people({ version: 'v1', auth: oauth2Client });
+    try {
+      log("GET /api/contacts: Fetching connections from Google People API");
+      const response = await people.people.connections.list({
+        resourceName: 'people/me',
+        personFields: 'names,emailAddresses,phoneNumbers,organizations,occupations',
+        pageSize: 1000
+      });
+      
+      const connections = response.data.connections || [];
+      const contacts = connections.map(c => ({
+        id: c.resourceName?.split('/')[1] || Math.random().toString(36).substr(2, 9),
+        name: c.names?.[0]?.displayName || 'Unknown',
+        email: c.emailAddresses?.[0]?.value || '',
+        phone: c.phoneNumbers?.[0]?.value || '',
+        company: c.organizations?.[0]?.name || '',
+        position: c.occupations?.[0]?.value || c.organizations?.[0]?.title || '',
+        relation: 'peer',
+        lastInteractionDate: new Date().toISOString().split('T')[0],
+        lastInteractionNote: 'Imported from Google Contacts',
+        followUpPlan: ''
+      }));
+      
+      log(`GET /api/contacts: Successfully fetched ${contacts.length} contacts`);
+      res.json({ success: true, contacts });
+    } catch (error: any) {
+      log(`GET /api/contacts error: ${error.message}`);
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  apiRouter.post("/contacts/export", async (req, res) => {
+    const authHeader = req.headers.authorization;
+    const { contacts } = req.body;
+    if (!authHeader) {
+      log("POST /api/contacts/export: Missing authorization header");
+      return res.status(401).json({ success: false, error: "Missing authorization" });
+    }
+    
+    if (!contacts || !Array.isArray(contacts)) {
+      return res.status(400).json({ success: false, error: "Missing contacts array" });
+    }
+
+    const accessToken = authHeader.split(' ')[1];
+    const oauth2Client = new google.auth.OAuth2();
+    oauth2Client.setCredentials({ access_token: accessToken });
+    
+    const people = google.people({ version: 'v1', auth: oauth2Client });
+    
+    try {
+      log(`POST /api/contacts/export: Exporting ${contacts.length} contacts to Google`);
+      const results = [];
+      // Export one by one (could be optimized with batch if needed, but People API batch is for reading mostly)
+      for (const contact of contacts) {
+        try {
+          await people.people.createContact({
+            requestBody: {
+              names: [{ givenName: contact.name }],
+              emailAddresses: [{ value: contact.email }],
+              phoneNumbers: [{ value: contact.phone }],
+              organizations: [{ name: contact.company, title: contact.position }],
+              biographies: [{ value: contact.lastInteractionNote || contact.followUpPlan || '' }]
+            }
+          });
+          results.push({ name: contact.name, success: true });
+        } catch (err: any) {
+          log(`Error exporting contact ${contact.name}: ${err.message}`);
+          results.push({ name: contact.name, success: false, error: err.message });
+        }
+      }
+      res.json({ success: true, results });
+    } catch (error: any) {
+      log(`POST /api/contacts/export error: ${error.message}`);
+      res.status(500).json({ success: false, error: error.message });
     }
   });
 
