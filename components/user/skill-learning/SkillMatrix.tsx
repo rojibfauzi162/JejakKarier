@@ -287,7 +287,8 @@ const SkillMatrix: React.FC<SkillMatrixProps> = ({ skills, trainings = [], certi
 
       {isFormOpen && (
         <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md flex items-center justify-center z-[1000] p-4">
-          <div className="bg-white w-full max-w-xl rounded-[3rem] shadow-2xl p-10 animate-in zoom-in duration-300 overflow-y-auto max-h-[90vh]">
+          <div className="bg-white w-full max-w-xl rounded-[3rem] shadow-2xl p-10 animate-in zoom-in duration-300 overflow-y-auto max-h-[90vh] relative">
+             <button onClick={() => setIsFormOpen(false)} className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center bg-slate-50 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors z-[60]"><i className="bi bi-x-lg"></i></button>
              <h3 className="text-2xl font-black text-slate-900 uppercase mb-8">{editingItem ? 'Edit Skill' : 'Tambah Skill Baru'}</h3>
              <SkillForm 
                initialData={editingItem} 

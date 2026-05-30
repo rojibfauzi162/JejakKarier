@@ -176,8 +176,8 @@ const Auth: React.FC<AuthProps> = ({ onBack, logoUrl, logoDarkUrl }) => {
         )}
 
         <div className="text-center mb-10 mt-6">
-          {logoUrl ? (
-            <img src={logoUrl} alt="Logo" className="h-16 mx-auto mb-6 object-contain drop-shadow-xl" />
+          {logoDarkUrl || logoUrl ? (
+            <img src={logoDarkUrl || logoUrl} alt="Logo" className="h-16 mx-auto mb-6 object-contain drop-shadow-xl" />
           ) : (
             <>
               <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 text-white text-2xl font-black rounded-2xl shadow-xl shadow-blue-500/20 mb-6">F</div>

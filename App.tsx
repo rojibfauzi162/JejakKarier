@@ -969,7 +969,7 @@ const App: React.FC = () => {
         isOpen={isSidebarOpen} 
         onClose={() => setIsSidebarOpen(false)} 
         isBypassMode={!!localStorage.getItem('local_session_user') || !!localStorage.getItem('admin_demo_mode')}
-        logoUrl={landingConfig?.logoUrl}
+        logoUrl={landingConfig?.logoUrl || landingConfig?.logoDarkUrl}
       />
       <main className="flex-1 lg:ml-64">
         {!user?.emailVerified && !isAdmin && !hideVerificationReminder && user && (
@@ -991,7 +991,7 @@ const App: React.FC = () => {
         )}
 
         <div className={`${!isAdmin ? 'pt-0' : 'p-4 lg:p-8 pt-2'}`}>
-          {!isAdmin && user && <MobileHeader profile={data.profile} notificationCount={activeAlerts.length} onNavigate={handleNavigate} activeTab={activeTab} alerts={activeAlerts} logoDarkUrl={landingConfig?.logoDarkUrl} />}
+          {!isAdmin && user && <MobileHeader profile={data.profile} notificationCount={activeAlerts.length} onNavigate={handleNavigate} activeTab={activeTab} alerts={activeAlerts} logoDarkUrl={landingConfig?.logoUrl || landingConfig?.logoDarkUrl} />}
           <div className={`${!isAdmin ? 'p-2 lg:p-8 pt-6' : 'pt-0'}`}>
             {isUpgradeModalOpen && (
               <UpgradeModal 

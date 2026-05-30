@@ -201,7 +201,8 @@ const PersonalProjectTracker: React.FC<PersonalProjectTrackerProps> = ({ project
       {/* Form Modal */}
       {isFormOpen && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[100] p-4">
-          <div className="bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl p-6 lg:p-10 animate-in zoom-in duration-300 max-h-[90vh] overflow-y-auto no-scrollbar">
+          <div className="bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl p-6 lg:p-10 animate-in zoom-in duration-300 max-h-[90vh] overflow-y-auto no-scrollbar relative">
+            <button onClick={() => setIsFormOpen(false)} className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center bg-slate-50 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors z-[60]"><i className="bi bi-x-lg"></i></button>
             <h3 className="text-xl lg:text-2xl font-black text-slate-900 tracking-tight mb-8">
               {editingItem ? 'Update Project' : 'New Project'}
             </h3>

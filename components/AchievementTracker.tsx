@@ -298,10 +298,10 @@ const AchievementTracker: React.FC<AchievementTrackerProps> = ({ achievements, p
       {/* FORM MODAL (ADD/EDIT) */}
       {isFormOpen && (
         <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md z-[200] flex items-center justify-center p-6">
-          <div className="bg-white max-w-2xl w-full rounded-[3.5rem] p-10 border border-slate-100 shadow-2xl animate-in zoom-in duration-300 overflow-y-auto max-h-[90vh] no-scrollbar">
-            <div className="flex justify-between items-center mb-8">
+          <div className="bg-white max-w-2xl w-full rounded-[3.5rem] p-10 border border-slate-100 shadow-2xl animate-in zoom-in duration-300 overflow-y-auto max-h-[90vh] no-scrollbar relative">
+            <button onClick={() => setIsFormOpen(false)} className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center bg-slate-50 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors z-[60]"><i className="bi bi-x-lg"></i></button>
+            <div className="mb-8">
                <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">{editingItem ? 'Ubah Data Prestasi' : 'Log New Achievement'}</h3>
-               <button onClick={() => setIsFormOpen(false)} className="text-slate-400 hover:text-slate-900 transition-colors">✕</button>
             </div>
             
             <form onSubmit={handleSubmit} className="space-y-6">

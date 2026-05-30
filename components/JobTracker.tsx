@@ -343,7 +343,8 @@ const JobTracker: React.FC<JobTrackerProps> = ({ applications, careerEvents, onA
       {/* SCHEDULE CONFIRMATION MODAL */}
       {isScheduleModalOpen && schedulingApp && (
         <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md flex items-center justify-center z-[1000] p-4">
-           <div className="bg-white w-full max-w-md rounded-[3rem] shadow-2xl p-10 animate-in zoom-in duration-300">
+           <div className="bg-white w-full max-w-md rounded-[3rem] shadow-2xl p-10 animate-in zoom-in duration-300 relative">
+              <button onClick={() => setIsScheduleModalOpen(false)} className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center bg-slate-50 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors z-10"><i className="bi bi-x-lg"></i></button>
               <div className="text-center mb-8">
                  <div className="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl shadow-inner">
                     <i className="bi bi-calendar-event"></i>
@@ -377,7 +378,8 @@ const JobTracker: React.FC<JobTrackerProps> = ({ applications, careerEvents, onA
       {/* MODAL FORM: Tambah & Edit */}
       {isFormOpen && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[500] p-4">
-          <div className="bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl p-8 lg:p-10 animate-in zoom-in duration-300 max-h-[90vh] overflow-y-auto no-scrollbar">
+          <div className="bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl p-8 lg:p-10 animate-in zoom-in duration-300 max-h-[90vh] overflow-y-auto no-scrollbar relative">
+            <button onClick={() => setIsFormOpen(false)} className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center bg-slate-50 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors z-[60]"><i className="bi bi-x-lg"></i></button>
             <JobForm 
               initialData={editingItem}
               onSubmit={(data) => {

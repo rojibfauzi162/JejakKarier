@@ -628,13 +628,13 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
       {/* MULTI-ACTIVITY MODAL */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-xl flex items-center justify-center z-[200] p-4">
-          <div className="bg-white w-full max-w-5xl rounded-[3.5rem] shadow-2xl p-8 lg:p-14 animate-in zoom-in duration-300 overflow-y-auto max-h-[95vh] no-scrollbar">
-            <div className="flex justify-between items-start mb-10">
+          <div className="bg-white w-full max-w-5xl rounded-[3.5rem] shadow-2xl p-8 lg:p-14 animate-in zoom-in duration-300 overflow-y-auto max-h-[95vh] no-scrollbar relative">
+            <button type="button" onClick={() => setIsModalOpen(false)} className="absolute top-6 right-6 w-10 h-10 flex items-center justify-center bg-slate-50 text-slate-400 hover:text-rose-600 hover:bg-slate-100 rounded-full transition-colors font-black z-10"><i className="bi bi-x-lg"></i></button>
+            <div className="mb-10">
               <div className="space-y-1">
                 <h3 className="text-3xl lg:text-4xl font-black text-slate-900 tracking-tighter uppercase leading-none">{editingLogId ? 'Ubah Catatan' : 'Catat Pekerjaan Baru'}</h3>
                 <p className="text-slate-400 font-bold uppercase text-[10px] tracking-[0.3em]">Log Aktivitas Produktivitas v2.0</p>
               </div>
-              <button onClick={() => setIsModalOpen(false)} className="w-12 h-12 flex items-center justify-center bg-slate-50 text-slate-400 hover:text-rose-600 rounded-full transition-colors text-xl font-black">✕</button>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-10">

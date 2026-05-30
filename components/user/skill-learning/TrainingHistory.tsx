@@ -279,7 +279,8 @@ const TrainingHistory: React.FC<TrainingHistoryProps> = ({ trainings, onAddTrain
       {/* SCHEDULE CONFIRMATION MODAL */}
       {isScheduleModalOpen && schedulingItem && (
         <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md flex items-center justify-center z-[2000] p-4">
-           <div className="bg-white w-full max-w-md rounded-[3rem] shadow-2xl p-10 animate-in zoom-in duration-300">
+           <div className="bg-white w-full max-w-md rounded-[3rem] shadow-2xl p-10 animate-in zoom-in duration-300 relative">
+              <button onClick={() => setIsScheduleModalOpen(false)} className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center bg-slate-50 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors z-10"><i className="bi bi-x-lg"></i></button>
               <div className="text-center mb-8">
                  <div className="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl shadow-inner">
                     <i className="bi bi-calendar-event"></i>
@@ -313,15 +314,13 @@ const TrainingHistory: React.FC<TrainingHistoryProps> = ({ trainings, onAddTrain
       {/* CERTIFICATE MODAL */}
       {certModalOpen && selectedCert && (
         <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md flex items-center justify-center z-[3000] p-4">
-           <div className="bg-white w-full max-w-3xl rounded-[3rem] shadow-2xl p-8 animate-in zoom-in duration-300 flex flex-col max-h-[90vh]">
-              <div className="flex justify-between items-center mb-6">
+           <div className="bg-white w-full max-w-3xl rounded-[3rem] shadow-2xl p-8 animate-in zoom-in duration-300 flex flex-col max-h-[90vh] relative">
+              <button onClick={closeCertModal} className="absolute top-6 right-6 w-10 h-10 flex items-center justify-center bg-slate-100 text-slate-500 rounded-full hover:bg-slate-200 transition-all z-10"><i className="bi bi-x-lg"></i></button>
+              <div className="mb-6">
                  <div>
                     <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">Sertifikat Pelatihan</h3>
                     <p className="text-slate-500 text-xs font-bold mt-1">{selectedCert.name}</p>
                  </div>
-                 <button onClick={closeCertModal} className="w-10 h-10 flex items-center justify-center bg-slate-100 text-slate-500 rounded-full hover:bg-slate-200 transition-all">
-                    <i className="bi bi-x-lg"></i>
-                 </button>
               </div>
 
               <div className="flex-1 overflow-auto bg-slate-50 rounded-2xl border border-slate-100 p-4 flex items-center justify-center min-h-[300px]">
@@ -364,7 +363,8 @@ const TrainingHistory: React.FC<TrainingHistoryProps> = ({ trainings, onAddTrain
 
       {isFormOpen && (
         <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md flex items-center justify-center z-[1000] p-4">
-          <div className="bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl p-10 lg:p-12 animate-in zoom-in duration-300 overflow-y-auto max-h-[90vh]">
+          <div className="bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl p-10 lg:p-12 animate-in zoom-in duration-300 overflow-y-auto max-h-[90vh] relative">
+             <button onClick={() => setIsFormOpen(false)} className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center bg-slate-50 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors z-[60]"><i className="bi bi-x-lg"></i></button>
              <h3 className="text-2xl font-black text-slate-900 uppercase mb-8">{editingItem ? 'Ubah Rencana Belajar' : 'Tambah Pelatihan Baru'}</h3>
              <TrainingForm 
                initialData={editingItem} 

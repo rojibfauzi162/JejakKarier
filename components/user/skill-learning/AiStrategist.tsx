@@ -107,7 +107,8 @@ const AiStrategist: React.FC<AiStrategistProps> = ({
     <div className="space-y-10">
       {confirmation && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[2000] flex items-center justify-center p-6">
-           <div className="bg-white max-w-md w-full rounded-[3.5rem] p-10 border border-slate-100 shadow-2xl animate-in zoom-in duration-300">
+           <div className="bg-white max-w-md w-full rounded-[3.5rem] p-10 border border-slate-100 shadow-2xl animate-in zoom-in duration-300 relative">
+              <button onClick={() => setConfirmation(null)} className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center bg-slate-50 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors z-10"><i className="bi bi-x-lg"></i></button>
               <div className="text-center">
                  <div className="w-20 h-20 bg-indigo-50 text-indigo-600 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-inner"><i className="bi bi-question-lg text-3xl"></i></div>
                  <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight mb-4">Konfirmasi</h3>

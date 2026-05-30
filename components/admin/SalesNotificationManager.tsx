@@ -228,7 +228,8 @@ const SalesNotificationManager: React.FC = () => {
 
       {isEditing && (
         <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-slate-950/50 backdrop-blur-sm">
-          <div className="bg-white w-full max-w-lg rounded-[3rem] p-8 shadow-2xl">
+          <div className="bg-white w-full max-w-lg rounded-[3rem] p-8 shadow-2xl relative">
+            <button type="button" onClick={() => setIsEditing(false)} className="absolute top-6 right-6 w-10 h-10 flex items-center justify-center bg-slate-50 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors z-10"><i className="bi bi-x-lg"></i></button>
             <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight mb-6">
               {currentNotif.id ? 'Edit Data Manual' : 'Tambah Data Manual'}
             </h3>

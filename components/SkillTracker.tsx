@@ -428,7 +428,8 @@ const SkillTracker: React.FC<SkillTrackerProps> = ({
 
       {isFormOpen && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[110] p-4">
-          <div className="bg-white w-full max-w-xl rounded-[2.5rem] shadow-2xl p-8 lg:p-12 animate-in zoom-in duration-300 overflow-y-auto max-h-[90vh]">
+          <div className="bg-white w-full max-w-xl rounded-[2.5rem] shadow-2xl p-8 lg:p-12 animate-in zoom-in duration-300 overflow-y-auto max-h-[90vh] relative">
+            <button onClick={() => setIsFormOpen(false)} className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center bg-slate-50 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors z-[60]"><i className="bi bi-x-lg"></i></button>
             {activeSubTab === 'skills' && <SkillForm initialData={editingItem} onSubmit={(d) => { editingItem ? onUpdateSkill(d as Skill) : onAddSkill({ ...d, id: Math.random().toString() } as Skill); setIsFormOpen(false); }} onCancel={() => setIsFormOpen(false)} />}
             {activeSubTab === 'learning' && <TrainingForm initialData={editingItem} onSubmit={(d) => { editingItem ? onUpdateTraining(d as Training) : onAddTraining({ ...d, id: Math.random().toString() } as Training); setIsFormOpen(false); }} onCancel={() => setIsFormOpen(false)} />}
             {activeSubTab === 'certs' && <CertForm skills={skills} initialData={editingItem} onSubmit={(d) => { editingItem ? onUpdateCert(d as Certification) : onAddCert({ ...d, id: Math.random().toString() } as Certification); setIsFormOpen(false); }} onCancel={() => setIsFormOpen(false)} />}
@@ -438,13 +439,13 @@ const SkillTracker: React.FC<SkillTrackerProps> = ({
 
       {isDetailOpen && viewingItem && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[120] p-4">
-          <div className="bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl p-8 lg:p-12 animate-in zoom-in duration-300 overflow-y-auto max-h-[90vh]">
+          <div className="bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl p-8 lg:p-12 animate-in zoom-in duration-300 overflow-y-auto max-h-[90vh] relative">
+             <button onClick={() => setIsDetailOpen(false)} className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center bg-slate-50 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors z-[60]"><i className="bi bi-x-lg"></i></button>
              <div className="flex justify-between items-start mb-8">
                 <div>
                    <h3 className="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight uppercase">Record Detail</h3>
                    <p className="text-slate-400 font-bold text-[10px] tracking-widest mt-1 uppercase">Comprehensive view of your {viewingItem.type === 'training' ? 'learning history' : 'credential'}</p>
                 </div>
-                <button onClick={() => setIsDetailOpen(false)} className="w-10 h-10 flex items-center justify-center bg-slate-50 text-slate-400 hover:text-slate-900 rounded-full transition-colors font-black">✕</button>
              </div>
              
              {viewingItem.type === 'training' ? (

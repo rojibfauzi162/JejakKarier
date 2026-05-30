@@ -262,7 +262,8 @@ const TrainingManagement: React.FC<TrainingManagementProps> = ({ onToast }) => {
 
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6">
+          <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 relative">
+            <button type="button" onClick={() => setIsModalOpen(false)} className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center bg-slate-50 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors z-10"><i className="bi bi-x-lg"></i></button>
             <h3 className="text-xl font-bold mb-6">{editingTraining ? 'Edit Training' : 'Add New Training'}</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="col-span-2">

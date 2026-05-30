@@ -311,7 +311,8 @@ const TransactionManagement: React.FC<TransactionManagementProps> = ({ users, pr
       {/* FOLLOW UP CONFIRM MODAL */}
       {followUpConfirm && (
         <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md flex items-center justify-center z-[5000] p-4">
-           <div className="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl p-10 animate-in zoom-in duration-300">
+           <div className="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl p-10 animate-in zoom-in duration-300 relative">
+              <button onClick={() => setFollowUpConfirm(null)} className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center bg-slate-50 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors z-10"><i className="bi bi-x-lg"></i></button>
               <div className="text-center mb-6">
                  <div className="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-4 text-3xl shadow-inner">
                     <i className="bi bi-whatsapp"></i>
@@ -341,7 +342,8 @@ const TransactionManagement: React.FC<TransactionManagementProps> = ({ users, pr
       {/* VALIDATION MODAL */}
       {validatingTx && (
         <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md flex items-center justify-center z-[4000] p-4">
-           <div className="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl p-10 animate-in zoom-in duration-300">
+           <div className="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl p-10 animate-in zoom-in duration-300 relative">
+              <button onClick={() => setValidatingTx(null)} className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center bg-slate-50 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors z-10"><i className="bi bi-x-lg"></i></button>
               <div className="text-center mb-6">
                  <h3 className="text-xl font-black text-slate-900 uppercase">Validasi Pembayaran</h3>
                  <p className="text-slate-400 text-xs mt-2 font-bold uppercase">Konfirmasi pembayaran untuk {validatingTx.userName}?</p>

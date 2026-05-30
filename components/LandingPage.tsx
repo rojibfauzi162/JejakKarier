@@ -162,8 +162,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
       <nav className="fixed top-0 left-0 right-0 z-[100] bg-white/80 backdrop-blur-xl border-b border-slate-100">
         <div className="max-w-7xl mx-auto px-6 lg:px-12 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            {landingConfig?.logoDarkUrl ? (
-              <img src={landingConfig.logoDarkUrl} alt="Logo" className="max-h-10 w-auto object-contain" />
+            {landingConfig?.logoUrl || landingConfig?.logoDarkUrl ? (
+              <img src={landingConfig.logoUrl || landingConfig.logoDarkUrl} alt="Logo" className="max-h-10 w-auto object-contain" />
             ) : (
               <>
                 <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-black shadow-lg shadow-indigo-200">F</div>
@@ -473,8 +473,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onShowLegal
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-12 lg:gap-20">
           <div className="md:col-span-4 space-y-6">
             <div className="flex items-center gap-3">
-              {landingConfig?.logoDarkUrl ? (
-                <img src={landingConfig.logoDarkUrl} alt="Logo" className="max-h-10 w-auto object-contain" />
+              {landingConfig?.logoUrl || landingConfig?.logoDarkUrl ? (
+                <img src={landingConfig.logoUrl || landingConfig.logoDarkUrl} alt="Logo" className="max-h-10 w-auto object-contain" />
               ) : (
                 <>
                   <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-black shadow-lg">F</div>

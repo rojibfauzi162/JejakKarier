@@ -314,18 +314,13 @@ const CareerPlanner: React.FC<CareerPlannerProps> = ({ paths, appData, onAddPath
       {/* Skill Gap Detail Modal */}
       {selectedPathForGap && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[110] p-4">
-          <div className="bg-white w-full max-w-3xl rounded-[2.5rem] shadow-2xl p-8 animate-in zoom-in duration-300 max-h-[90vh] overflow-y-auto no-scrollbar">
-            <div className="flex justify-between items-center mb-8">
+          <div className="bg-white w-full max-w-3xl rounded-[2.5rem] shadow-2xl p-8 animate-in zoom-in duration-300 max-h-[90vh] overflow-y-auto no-scrollbar relative">
+            <button onClick={() => setSelectedPathForGap(null)} className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center bg-slate-50 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors z-[60]"><i className="bi bi-x-lg"></i></button>
+            <div className="mb-8">
               <div>
                 <h3 className="text-2xl font-black text-slate-900 tracking-tight">Detail Skill Gap</h3>
                 <p className="text-sm text-slate-500 font-bold uppercase tracking-widest mt-1">{selectedPathForGap.targetPosition}</p>
               </div>
-              <button 
-                onClick={() => setSelectedPathForGap(null)}
-                className="w-10 h-10 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all"
-              >
-                ✕
-              </button>
             </div>
 
             <div className="overflow-hidden rounded-2xl border border-slate-100">
@@ -403,7 +398,8 @@ const CareerPlanner: React.FC<CareerPlannerProps> = ({ paths, appData, onAddPath
       {/* Form Modal */}
       {isFormOpen && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[100] p-4">
-          <div className="bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl p-10 animate-in zoom-in duration-300 max-h-[90vh] overflow-y-auto no-scrollbar">
+          <div className="bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl p-10 animate-in zoom-in duration-300 max-h-[90vh] overflow-y-auto no-scrollbar relative">
+            <button onClick={() => setIsFormOpen(false)} className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center bg-slate-50 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors z-[60]"><i className="bi bi-x-lg"></i></button>
             <h3 className="text-3xl font-black text-slate-900 tracking-tight mb-8">
               {editingPath ? 'Update Target Karir' : 'Target Karir Baru'}
             </h3>

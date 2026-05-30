@@ -248,10 +248,10 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard', user
       {/* USER MANAGEMENT MODAL */}
       {isUserModalOpen && editingUser && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[2000] p-4">
-          <div className="bg-white w-full max-w-xl rounded-[2.5rem] shadow-2xl p-8 lg:p-12 animate-in zoom-in duration-300">
-             <div className="flex justify-between items-start mb-8">
+          <div className="bg-white w-full max-w-xl rounded-[2.5rem] shadow-2xl p-8 lg:p-12 animate-in zoom-in duration-300 relative">
+             <button onClick={() => setIsUserModalOpen(false)} className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center bg-slate-50 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors z-10"><i className="bi bi-x-lg"></i></button>
+             <div className="mb-8">
                 <h3 className="text-2xl font-black text-slate-900 uppercase">Kelola User</h3>
-                <button onClick={() => setIsUserModalOpen(false)} className="w-10 h-10 rounded-full bg-slate-50 text-slate-400 flex items-center justify-center font-black">✕</button>
              </div>
              <div className="space-y-6">
                 <div className="p-6 bg-slate-50 rounded-2xl border">
@@ -291,12 +291,12 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialMode = 'dashboard', user
       {/* PRODUCT MANAGEMENT MODAL */}
       {isProductModalOpen && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[2000] p-4">
-          <div className="bg-white w-full max-w-5xl rounded-[3rem] shadow-2xl p-8 lg:p-14 animate-in zoom-in duration-300 overflow-y-auto max-h-[95vh] no-scrollbar">
-            <div className="flex justify-between items-start mb-8">
+          <div className="bg-white w-full max-w-5xl rounded-[3rem] shadow-2xl p-8 lg:p-14 animate-in zoom-in duration-300 overflow-y-auto max-h-[95vh] no-scrollbar relative">
+            <button onClick={() => setIsProductModalOpen(false)} className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center bg-slate-50 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors z-10"><i className="bi bi-x-lg"></i></button>
+            <div className="mb-8">
               <h3 className="text-3xl font-black text-slate-900 uppercase tracking-tighter leading-none">
                 {editingProduct ? 'Edit Konfigurasi Paket' : 'Tambah Paket Langganan'}
               </h3>
-              <button onClick={() => setIsProductModalOpen(false)} className="w-10 h-10 rounded-full bg-slate-50 text-slate-400 flex items-center justify-center font-black">✕</button>
             </div>
             
             <ProductForm 

@@ -348,10 +348,10 @@ const PerformanceReports: React.FC<PerformanceReportsProps> = ({ data }) => {
       {/* Share Modal */}
       {showShareModal && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[200] p-4">
-          <div className="bg-white w-full max-w-lg rounded-[3rem] p-8 lg:p-12 shadow-2xl animate-in zoom-in duration-300">
-            <div className="flex justify-between items-center mb-6">
+          <div className="bg-white w-full max-w-lg rounded-[3rem] p-8 lg:p-12 shadow-2xl animate-in zoom-in duration-300 relative">
+            <button onClick={() => setShowShareModal(false)} className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center bg-slate-50 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors z-[60]"><i className="bi bi-x-lg"></i></button>
+            <div className="mb-6">
               <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Bagikan Laporan</h3>
-              <button onClick={() => setShowShareModal(false)} className="w-10 h-10 flex items-center justify-center text-slate-300 hover:text-slate-900 font-bold transition-colors">✕</button>
             </div>
             <p className="text-sm text-slate-500 mb-8 leading-relaxed font-medium">
               Anda akan membagikan laporan dalam mode <span className="font-black text-indigo-600">Read-Only</span> untuk konteks: 
@@ -371,13 +371,13 @@ const PerformanceReports: React.FC<PerformanceReportsProps> = ({ data }) => {
       {/* Details Modal */}
       {selectedPeriodLogs && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[200] p-4">
-          <div className="bg-white w-full max-w-4xl max-h-[85vh] rounded-[3rem] shadow-2xl animate-in zoom-in duration-300 flex flex-col overflow-hidden">
-            <div className="p-8 lg:p-10 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
+          <div className="bg-white w-full max-w-4xl max-h-[85vh] rounded-[3rem] shadow-2xl animate-in zoom-in duration-300 flex flex-col overflow-hidden relative">
+            <button onClick={() => setSelectedPeriodLogs(null)} className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center bg-slate-50 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors z-[60]"><i className="bi bi-x-lg"></i></button>
+            <div className="p-8 lg:p-10 border-b border-slate-50 flex justify-between items-center bg-slate-50/50 pr-20">
               <div>
                 <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">{selectedPeriodLogs.title}</h3>
                 <p className="text-slate-500 font-bold text-xs mt-1 uppercase tracking-widest">{selectedPeriodLogs.logs.length} Aktivitas Ditemukan</p>
               </div>
-              <button onClick={() => setSelectedPeriodLogs(null)} className="w-12 h-12 flex items-center justify-center bg-white rounded-2xl shadow-sm border border-slate-100 text-slate-400 hover:text-slate-900 transition-all active:scale-90">✕</button>
             </div>
             
             <div className="flex-1 overflow-y-auto p-6 lg:p-10">

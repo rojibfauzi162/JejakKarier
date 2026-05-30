@@ -735,13 +735,13 @@ const WorkReflectionView: React.FC<WorkReflectionProps> = ({ reflections, skills
       {/* DETAIL MODAL OVERLAY */}
       {selectedEntry && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[2000] flex items-center justify-center p-6" onClick={() => setSelectedEntry(null)}>
-           <div className="bg-white max-w-2xl w-full rounded-[3.5rem] border border-slate-100 shadow-2xl animate-in zoom-in duration-300 overflow-hidden" onClick={e => e.stopPropagation()}>
+           <div className="bg-white max-w-2xl w-full rounded-[3.5rem] border border-slate-100 shadow-2xl animate-in zoom-in duration-300 overflow-hidden relative" onClick={e => e.stopPropagation()}>
+              <button onClick={() => setSelectedEntry(null)} className="absolute top-8 right-8 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-400 hover:text-slate-900 z-10">✕</button>
               <div className="bg-slate-50 p-10 border-b border-slate-100 flex justify-between items-start">
                  <div>
                     <SectionLabel label="Detailed Record" color="indigo" />
                     <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tighter mt-4">{new Date(selectedEntry.date).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</h3>
                  </div>
-                 <button onClick={() => setSelectedEntry(null)} className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-400 hover:text-slate-900">✕</button>
               </div>
               <div className="p-10 space-y-10 max-h-[60vh] overflow-y-auto no-scrollbar">
                  <div className="grid grid-cols-3 gap-4">
