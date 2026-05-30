@@ -208,7 +208,7 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
         metricLabel: log.metricLabel,
         metricOption: metricChoices.includes(log.metricLabel) ? log.metricLabel : 'Custom',
         customMetricLabel: metricChoices.includes(log.metricLabel) ? '' : log.metricLabel,
-        isPlan: (log.isPlan ?? false),
+        isPlan: false, // Diganti ke false agar memunculkan tab selesai/output sesuai instruksi edit tugas
         useCustomOutput: log.output !== log.activity && !!log.output
       }]);
     } else {
@@ -811,7 +811,13 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
                 </div>
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Identitas Instansi</label>
-                  <input placeholder="Nama Perusahaan" className="w-full px-4 py-3 md:px-6 md:py-4 rounded-2xl border border-slate-200 bg-white font-black text-sm shadow-sm" value={headerData.companyName || ''} onChange={e => setHeaderData({ ...headerData, companyName: e.target.value })} />
+                  <input 
+                    placeholder="Nama Perusahaan" 
+                    className={`w-full px-4 py-3 md:px-6 md:py-4 rounded-2xl border border-slate-200 bg-white font-black text-sm shadow-sm ${headerData.context === 'Perusahaan' ? 'bg-slate-50 text-slate-400' : ''}`} 
+                    value={headerData.companyName || ''} 
+                    onChange={e => setHeaderData({ ...headerData, companyName: e.target.value })} 
+                    disabled={headerData.context === 'Perusahaan'}
+                  />
                 </div>
               </div>
 
@@ -839,7 +845,10 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
                                <button type="button" onClick={() => setShowHistoryFor(showHistoryFor === line.tempId ? null : line.tempId)} className="px-3 py-1.5 bg-indigo-50 border border-indigo-100 rounded-xl text-[9px] font-black text-indigo-600 hover:bg-indigo-600 hover:text-white transition-all shadow-sm">🕒 RIWAYAT</button>
                              </div>
                              <div className="relative">
-                               <textarea placeholder="Ketik apa yang Anda kerjakan..." rows={3} className="w-full px-4 py-3 md:px-6 md:py-4 rounded-2xl border border-slate-200 bg-white font-black text-sm focus:ring-4 focus:ring-blue-500/5 transition-all shadow-sm resize-none" value={line.activity || ''} onChange={e => updateLine(line.tempId, { activity: e.target.value })}></textarea>
+                               <textarea placeholder="Ketik apa yang Anda kerjakan..." rows={3} className={`w-full px-4 py-3 md:px-6 md:py-4 rounded-2xl border border-slate-200 bg-white font-black text-sm focus:ring-4 focus:ring-blue-500/5 transition-all shadow-sm resize-none ${!line.isPlan ? 'bg-slate-50 text-slate-400' : ''}`} value={line.activity || ''} 
+                                  onChange={e => updateLine(line.tempId, { activity: e.target.value })}
+                                  disabled={!line.isPlan}
+                                ></textarea>
 
                                {showHistoryFor === line.tempId && (
                                  <div className="absolute top-[calc(100%+8px)] left-0 right-0 bg-white border border-slate-200 rounded-[1.5rem] shadow-2xl z-[100] p-4 max-h-[350px] overflow-hidden animate-in slide-in-from-top-2 flex flex-col">
@@ -887,31 +896,33 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
                              />
                           </div>
                           
-                          <div className="space-y-2">
-                             <div className="flex items-center justify-between">
-                               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Output / Realita</label>
-                               <div className="flex items-center gap-2">
-                                 <input 
-                                   type="checkbox" 
-                                   id={`custom-output-${line.tempId}`}
-                                   checked={line.useCustomOutput} 
-                                   onChange={e => updateLine(line.tempId, { useCustomOutput: e.target.checked })}
-                                   className="w-3 h-3 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
-                                 />
-                                 <label htmlFor={`custom-output-${line.tempId}`} className="text-[9px] font-black text-slate-400 uppercase cursor-pointer tracking-tighter">Gunakan Output Kustom</label>
+                          {!line.isPlan && (
+                            <div className="space-y-2">
+                               <div className="flex items-center justify-between">
+                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Output / Realita</label>
+                                 <div className="flex items-center gap-2">
+                                   <input 
+                                     type="checkbox" 
+                                     id={`custom-output-${line.tempId}`}
+                                     checked={line.useCustomOutput} 
+                                     onChange={e => updateLine(line.tempId, { useCustomOutput: e.target.checked })}
+                                     className="w-3 h-3 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                                   />
+                                   <label htmlFor={`custom-output-${line.tempId}`} className="text-[9px] font-black text-slate-400 uppercase cursor-pointer tracking-tighter">Gunakan Output Kustom</label>
+                                 </div>
                                </div>
-                             </div>
-                             <input 
-                               placeholder={line.useCustomOutput ? "Masukkan hasil kustom..." : "Otomatis menggunakan nama aktivitas"} 
-                               className={`w-full px-4 py-3 md:px-6 md:py-4 rounded-2xl border border-slate-200 bg-white font-black text-sm focus:ring-4 focus:ring-blue-500/5 transition-all shadow-sm ${!line.useCustomOutput ? 'bg-slate-50 text-slate-400' : 'text-indigo-600'}`}
-                               value={line.useCustomOutput ? line.output : (line.isPlan ? '' : line.activity)}
-                               disabled={!line.useCustomOutput}
-                               onChange={e => updateLine(line.tempId, { output: e.target.value })}
-                             />
-                             {!line.useCustomOutput && !line.isPlan && (
-                               <p className="text-[9px] font-bold text-slate-400 italic ml-1">* Output akan disamakan dengan nama aktivitas jika tidak dikustomisasi.</p>
-                             )}
-                          </div>
+                               <input 
+                                 placeholder={line.useCustomOutput ? "Masukkan hasil kustom..." : "Otomatis menggunakan nama aktivitas"} 
+                                 className={`w-full px-4 py-3 md:px-6 md:py-4 rounded-2xl border border-slate-200 bg-white font-black text-sm focus:ring-4 focus:ring-blue-500/5 transition-all shadow-sm ${!line.useCustomOutput ? 'bg-slate-50 text-slate-400' : 'text-indigo-600'}`}
+                                 value={line.useCustomOutput ? line.output : (line.isPlan ? '' : line.activity)}
+                                 disabled={!line.useCustomOutput}
+                                 onChange={e => updateLine(line.tempId, { output: e.target.value })}
+                                />
+                                {!line.useCustomOutput && !line.isPlan && (
+                                  <p className="text-[9px] font-bold text-slate-400 italic ml-1">* Output akan disamakan dengan nama aktivitas jika tidak dikustomisasi.</p>
+                                )}
+                            </div>
+                          )}
 
                         </div>
 
@@ -948,8 +959,12 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
                           )}
 
                           <div className="flex gap-3 bg-slate-50 p-1.5 rounded-2xl">
-                             <button type="button" onClick={() => updateLine(line.tempId, { isPlan: true })} className={`flex-1 py-3 rounded-xl font-black text-[10px] uppercase transition-all ${line.isPlan ? 'bg-white text-slate-900 shadow-md' : 'text-slate-400'}`}>Rencana</button>
-                             <button type="button" onClick={() => updateLine(line.tempId, { isPlan: false })} className={`flex-1 py-3 rounded-xl font-black text-[10px] uppercase transition-all ${!line.isPlan ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-400'}`}>Selesai</button>
+                             {(!editingLogId && !isExecutingPlan) && (
+                               <button type="button" onClick={() => updateLine(line.tempId, { isPlan: true })} className={`flex-1 py-3 rounded-xl font-black text-[10px] uppercase transition-all ${line.isPlan ? 'bg-white text-slate-900 shadow-md' : 'text-slate-400'}`}>Rencana</button>
+                             )}
+                             {(editingLogId || isExecutingPlan) && (
+                               <button type="button" onClick={() => updateLine(line.tempId, { isPlan: false })} className={`flex-1 py-3 rounded-xl font-black text-[10px] uppercase transition-all ${!line.isPlan ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-400'}`}>Selesai</button>
+                             )}
                           </div>
                         </div>
                       </div>
