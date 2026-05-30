@@ -66,8 +66,8 @@ const SkillTracker: React.FC<SkillTrackerProps> = ({
   // Pagination States
   const [trainPage, setTrainPage] = useState(1);
   const [certPage, setCertPage] = useState(1);
-  const trainPerPage = 5;
-  const certPerPage = 5;
+  const [trainPerPage, setTrainPerPage] = useState(10);
+  const [certPerPage, setCertPerPage] = useState(10);
 
   const openAddForm = () => {
     setEditingItem(null);
@@ -366,8 +366,8 @@ const SkillTracker: React.FC<SkillTrackerProps> = ({
   const totalCertPages = Math.ceil(filteredCerts.length / certPerPage);
   const paginatedCerts = filteredCerts.slice((certPage - 1) * certPerPage, certPage * certPerPage);
 
-  useEffect(() => { setTrainPage(1); }, [fPriority, fStatus, fPlatform, fTime]);
-  useEffect(() => { setCertPage(1); }, [fCertStatus, fCertSkill, fCertTime]);
+  useEffect(() => { setTrainPage(1); }, [fPriority, fStatus, fPlatform, fTime, trainPerPage]);
+  useEffect(() => { setCertPage(1); }, [fCertStatus, fCertSkill, fCertTime, certPerPage]);
 
   const totalCourses = trainings.length;
   const onProcessCount = trainings.filter(t => t.status === TrainingStatus.ON_PROCESS).length;
@@ -959,23 +959,26 @@ const SkillTracker: React.FC<SkillTrackerProps> = ({
                     <th className="px-8 py-5 text-right w-40">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-50">
-                  {paginatedTrainings.map(t => (
-                    <tr key={t.id} className="group hover:bg-slate-50/50 transition-colors">
-                      <td className="px-8 py-6">
-                        <div className="flex flex-col">
-                          <div className="flex items-center gap-2">
-                            <span className={`font-bold text-slate-800 text-sm truncate ${t.status === TrainingStatus.COMPLETED ? 'line-through opacity-40' : ''}`}>{t.name}</span>
-                            {t.certLink && (
-                              <button onClick={() => setCertPreviewUrl(t.certLink || null)} className="text-indigo-600 hover:scale-110 transition-transform" title="Lihat Sertifikat">
-                                📜
-                              </button>
-                            )}
+                  <tbody className="divide-y divide-slate-50">
+                    {paginatedTrainings.map((t, index) => (
+                      <tr key={t.id} className="group hover:bg-slate-50/50 transition-colors">
+                        <td className="px-8 py-6">
+                          <div className="flex items-center gap-3">
+                            <span className="text-[10px] font-black text-slate-300 w-6">{(trainPage - 1) * trainPerPage + index + 1}</span>
+                            <div className="flex flex-col">
+                              <div className="flex items-center gap-2">
+                                <span className={`font-bold text-slate-800 text-sm truncate ${t.status === TrainingStatus.COMPLETED ? 'line-through opacity-40' : ''}`}>{t.name}</span>
+                                {t.certLink && (
+                                  <button onClick={() => setCertPreviewUrl(t.certLink || null)} className="text-indigo-600 hover:scale-110 transition-transform" title="Lihat Sertifikat">
+                                    📜
+                                  </button>
+                                )}
+                              </div>
+                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t.topic} • {t.date}</span>
+                              {t.deadline && <span className="text-[9px] font-black text-rose-500 uppercase mt-1">Deadline: {t.deadline}</span>}
+                            </div>
                           </div>
-                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t.topic} • {t.date}</span>
-                          {t.deadline && <span className="text-[9px] font-black text-rose-500 uppercase mt-1">Deadline: {t.deadline}</span>}
-                        </div>
-                      </td>
+                        </td>
                       <td className="px-6 py-6 text-center">
                          <span className={`px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest border ${getPriorityStyle(t.priority || SkillPriority.MEDIUM)}`}>
                            {t.priority || SkillPriority.MEDIUM}
@@ -1067,17 +1070,63 @@ const SkillTracker: React.FC<SkillTrackerProps> = ({
             </div>
           </div>
 
-          {totalTrainPages > 1 && (
-            <div className="flex items-center justify-between bg-white px-6 lg:px-5 py-3 md:px-8 md:py-4 rounded-[2rem] border border-slate-100 shadow-sm animate-in slide-in-from-bottom-4">
-              <button disabled={trainPage === 1} onClick={() => setTrainPage(p => p - 1)} className="px-4 py-2 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-blue-600 disabled:opacity-30 transition-colors">← Prev</button>
-              <div className="flex gap-2">
-                {[...Array(totalTrainPages)].map((_, i) => (
-                  <button key={i} onClick={() => setTrainPage(i + 1)} className={`w-8 h-8 rounded-xl text-[10px] font-black transition-all ${trainPage === i + 1 ? 'bg-blue-600 text-white shadow-lg' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}>{i + 1}</button>
-                ))}
-              </div>
-              <button disabled={trainPage === totalCertPages} onClick={() => setTrainPage(p => p + 1)} className="px-4 py-2 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-blue-600 disabled:opacity-30 transition-colors">Next →</button>
+          {/* Pagination View (Learning) */}
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 mt-8 bg-slate-50 p-4 rounded-3xl border border-slate-200">
+            <div className="flex items-center gap-3">
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Tampilkan:</span>
+              <select 
+                className="px-3 py-2 rounded-xl border border-slate-200 bg-white outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-bold text-[10px] cursor-pointer"
+                value={trainPerPage}
+                onChange={(e) => setTrainPerPage(Number(e.target.value))}
+              >
+                <option value={10}>10 Baris</option>
+                <option value={20}>20 Baris</option>
+                <option value={50}>50 Baris</option>
+              </select>
+              <span className="text-[10px] font-bold text-slate-400">Total: {filteredTrainings.length} Pelatihan</span>
             </div>
-          )}
+
+            {totalTrainPages > 1 && (
+              <div className="flex items-center gap-1">
+                <button 
+                  disabled={trainPage === 1}
+                  onClick={() => setTrainPage(1)}
+                  className="px-3 h-9 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-600 disabled:opacity-30 hover:bg-slate-50 transition-all font-black text-xs"
+                >
+                  &lt;&lt;
+                </button>
+
+                <div className="flex items-center gap-1 mx-2">
+                  {Array.from({ length: totalTrainPages }).map((_, i) => {
+                    const pageNum = i + 1;
+                    if (totalTrainPages > 7) {
+                      if (pageNum !== 1 && pageNum !== totalTrainPages && (pageNum < trainPage - 1 || pageNum > trainPage + 1)) {
+                        if (pageNum === trainPage - 2 || pageNum === trainPage + 2) return <span key={i} className="text-slate-300">...</span>;
+                        return null;
+                      }
+                    }
+                    return (
+                      <button 
+                        key={i}
+                        onClick={() => setTrainPage(pageNum)}
+                        className={`w-9 h-9 flex items-center justify-center rounded-xl font-black text-xs transition-all ${trainPage === pageNum ? 'bg-slate-900 text-white shadow-lg' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <button 
+                  disabled={trainPage === totalTrainPages}
+                  onClick={() => setTrainPage(totalTrainPages)}
+                  className="px-3 h-9 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-600 disabled:opacity-30 hover:bg-slate-50 transition-all font-black text-xs"
+                >
+                  &gt;&gt;
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
@@ -1136,21 +1185,24 @@ const SkillTracker: React.FC<SkillTrackerProps> = ({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
-                  {paginatedCerts.map(c => {
+                  {paginatedCerts.map((c, index) => {
                     const overdue = isCertOverdue(c);
                     return (
                       <tr key={c.id} className="group hover:bg-slate-50/50 transition-colors">
                         <td className="px-8 py-6">
-                          <div className="flex flex-col">
-                            <div className="flex items-center gap-2">
-                              <span className="font-bold text-slate-800 text-sm truncate">{c.name}</span>
-                              {c.fileLink && (
-                                <button onClick={() => setCertPreviewUrl(c.fileLink)} className="text-indigo-600 hover:scale-110 transition-transform" title="View Certificate">
-                                  📜
-                                </button>
-                              )}
+                          <div className="flex items-center gap-3">
+                            <span className="text-[10px] font-black text-slate-300 w-6">{(certPage - 1) * certPerPage + index + 1}</span>
+                            <div className="flex flex-col">
+                              <div className="flex items-center gap-2">
+                                <span className="font-bold text-slate-800 text-sm truncate">{c.name}</span>
+                                {c.fileLink && (
+                                  <button onClick={() => setCertPreviewUrl(c.fileLink)} className="text-indigo-600 hover:scale-110 transition-transform" title="View Certificate">
+                                    📜
+                                  </button>
+                                )}
+                              </div>
+                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{c.issuer}</span>
                             </div>
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{c.issuer}</span>
                           </div>
                         </td>
                         <td className="px-6 py-6 text-center">
@@ -1232,17 +1284,63 @@ const SkillTracker: React.FC<SkillTrackerProps> = ({
             </div>
           </div>
 
-          {totalCertPages > 1 && (
-            <div className="flex items-center justify-between bg-white px-6 lg:px-5 py-3 md:px-8 md:py-4 rounded-[2rem] border border-slate-100 shadow-sm">
-              <button disabled={certPage === 1} onClick={() => setCertPage(p => p - 1)} className="px-4 py-2 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-blue-600 disabled:opacity-30 transition-colors">← Prev</button>
-              <div className="flex gap-2">
-                {[...Array(totalCertPages)].map((_, i) => (
-                  <button key={i} onClick={() => setCertPage(i + 1)} className={`w-8 h-8 rounded-xl text-[10px] font-black transition-all ${certPage === i + 1 ? 'bg-blue-600 text-white shadow-lg' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}>{i + 1}</button>
-                ))}
-              </div>
-              <button disabled={certPage === totalCertPages} onClick={() => setCertPage(p => p + 1)} className="px-4 py-2 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-blue-600 disabled:opacity-30 transition-colors">Next →</button>
+          {/* Pagination View (Certs) */}
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 mt-8 bg-slate-50 p-4 rounded-3xl border border-slate-200">
+            <div className="flex items-center gap-3">
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Tampilkan:</span>
+              <select 
+                className="px-3 py-2 rounded-xl border border-slate-200 bg-white outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-bold text-[10px] cursor-pointer"
+                value={certPerPage}
+                onChange={(e) => setCertPerPage(Number(e.target.value))}
+              >
+                <option value={10}>10 Baris</option>
+                <option value={20}>20 Baris</option>
+                <option value={50}>50 Baris</option>
+              </select>
+              <span className="text-[10px] font-bold text-slate-400">Total: {filteredCerts.length} Sertifikasi</span>
             </div>
-          )}
+
+            {totalCertPages > 1 && (
+              <div className="flex items-center gap-1">
+                <button 
+                  disabled={certPage === 1}
+                  onClick={() => setCertPage(1)}
+                  className="px-3 h-9 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-600 disabled:opacity-30 hover:bg-slate-50 transition-all font-black text-xs"
+                >
+                  &lt;&lt;
+                </button>
+
+                <div className="flex items-center gap-1 mx-2">
+                  {Array.from({ length: totalCertPages }).map((_, i) => {
+                    const pageNum = i + 1;
+                    if (totalCertPages > 7) {
+                      if (pageNum !== 1 && pageNum !== totalCertPages && (pageNum < certPage - 1 || pageNum > certPage + 1)) {
+                        if (pageNum === certPage - 2 || pageNum === certPage + 2) return <span key={i} className="text-slate-300">...</span>;
+                        return null;
+                      }
+                    }
+                    return (
+                      <button 
+                        key={i}
+                        onClick={() => setCertPage(pageNum)}
+                        className={`w-9 h-9 flex items-center justify-center rounded-xl font-black text-xs transition-all ${certPage === pageNum ? 'bg-slate-900 text-white shadow-lg' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <button 
+                  disabled={certPage === totalCertPages}
+                  onClick={() => setCertPage(totalCertPages)}
+                  className="px-3 h-9 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-600 disabled:opacity-30 hover:bg-slate-50 transition-all font-black text-xs"
+                >
+                  &gt;&gt;
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>

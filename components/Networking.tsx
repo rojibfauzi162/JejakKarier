@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Contact, AppData, SubscriptionPlan } from '../types';
 import { signInWithGoogleContacts } from '../services/firebase';
@@ -51,6 +51,9 @@ const Networking: React.FC<NetworkingProps> = ({
   const [showSearch, setShowSearch] = useState(false);
   const [viewMode, setViewMode] = useState<'table' | 'kanban'>('table');
   
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  
   const [showManageMenu, setShowManageMenu] = useState(false);
   
   // Filters
@@ -81,6 +84,16 @@ const Networking: React.FC<NetworkingProps> = ({
       return matchesSearch && matchesCompany && matchesPosition && matchesFollowUp;
     });
   }, [contacts, searchQuery, filterCompany, filterPosition, filterFollowUp]);
+
+  const totalPages = Math.ceil(filteredContacts.length / itemsPerPage);
+  const paginatedContacts = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredContacts.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredContacts, currentPage, itemsPerPage]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, filterCompany, filterPosition, filterFollowUp, itemsPerPage]);
 
   const openAddForm = () => {
     // VALIDASI LIMIT DATABASE PAKET FREE
@@ -641,7 +654,7 @@ const Networking: React.FC<NetworkingProps> = ({
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-200">
-            {filteredContacts.map((contact, index) => (
+            {paginatedContacts.map((contact, index) => (
               <tr key={contact.id} className={`hover:bg-slate-50 transition-colors group ${selectedLocalIds.has(contact.id) ? 'bg-blue-50/50' : ''}`}>
                 <td className="px-4 py-5 border-r border-slate-200 text-center">
                   <input 
@@ -656,7 +669,7 @@ const Networking: React.FC<NetworkingProps> = ({
                     }}
                   />
                 </td>
-                <td className="px-4 py-5 border-r border-slate-200 text-center bg-blue-50/20 font-black text-blue-600">{index + 1}</td>
+                <td className="px-4 py-5 border-r border-slate-200 text-center bg-blue-50/20 font-black text-blue-600">{(currentPage - 1) * itemsPerPage + index + 1}</td>
                 <td className="px-6 py-5 border-r border-slate-200">
                   <div className="font-black text-slate-800 text-sm">{contact.name}</div>
                   <div className="mt-1">
@@ -687,11 +700,11 @@ const Networking: React.FC<NetworkingProps> = ({
 
       {/* Mobile Contact Cards */}
       <div className="lg:hidden space-y-4">
-        {filteredContacts.map((contact, index) => (
+        {paginatedContacts.map((contact, index) => (
           <div key={contact.id} className="bg-white rounded-[2rem] p-3 md:p-6 border border-slate-100 shadow-sm relative overflow-hidden group">
             <div className="flex justify-between items-start mb-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center font-black text-xs">#{index + 1}</div>
+                <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center font-black text-xs">#{(currentPage - 1) * itemsPerPage + index + 1}</div>
                 <div>
                   <h4 className="font-black text-slate-800 text-base leading-tight">{contact.name}</h4>
                   <span className="px-2 py-0.5 bg-slate-100 text-slate-500 text-[8px] font-black uppercase tracking-widest rounded-md">{contact.relation}</span>
@@ -824,7 +837,65 @@ const Networking: React.FC<NetworkingProps> = ({
         </div>
       )}
 
-      {/* Form Modal */}
+      {/* Pagination View */}
+      {viewMode === 'table' && (
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4 mt-8 bg-slate-50 p-4 rounded-3xl border border-slate-200">
+          <div className="flex items-center gap-3">
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Tampilkan:</span>
+            <select 
+              className="px-3 py-2 rounded-xl border border-slate-200 bg-white outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-bold text-[10px] cursor-pointer"
+              value={itemsPerPage}
+              onChange={(e) => setItemsPerPage(Number(e.target.value))}
+            >
+              <option value={10}>10 Baris</option>
+              <option value={20}>20 Baris</option>
+              <option value={50}>50 Baris</option>
+            </select>
+            <span className="text-[10px] font-bold text-slate-400">Total: {filteredContacts.length} Kontak</span>
+          </div>
+
+          {totalPages > 1 && (
+            <div className="flex items-center gap-1">
+              <button 
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage(1)}
+                className="px-3 h-9 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-600 disabled:opacity-30 hover:bg-slate-50 transition-all font-black text-xs"
+              >
+                &lt;&lt;
+              </button>
+
+              <div className="flex items-center gap-1 mx-2">
+                {Array.from({ length: totalPages }).map((_, i) => {
+                  const pageNum = i + 1;
+                  if (totalPages > 7) {
+                    if (pageNum !== 1 && pageNum !== totalPages && (pageNum < currentPage - 1 || pageNum > currentPage + 1)) {
+                      if (pageNum === currentPage - 2 || pageNum === currentPage + 2) return <span key={i} className="text-slate-300">...</span>;
+                      return null;
+                    }
+                  }
+                  return (
+                    <button 
+                      key={i}
+                      onClick={() => setCurrentPage(pageNum)}
+                      className={`w-9 h-9 flex items-center justify-center rounded-xl font-black text-xs transition-all ${currentPage === pageNum ? 'bg-slate-900 text-white shadow-lg' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <button 
+                disabled={currentPage === totalPages}
+                onClick={() => setCurrentPage(totalPages)}
+                className="px-3 h-9 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-600 disabled:opacity-30 hover:bg-slate-50 transition-all font-black text-xs"
+              >
+                &gt;&gt;
+              </button>
+            </div>
+          )}
+        </div>
+      )}
       {isFormOpen && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[100] p-0 sm:p-4">
           <div className="bg-white w-full max-w-2xl rounded-[1.5rem] md:rounded-[2.5rem] shadow-2xl p-5 md:p-4 md:p-6 lg:p-10 animate-in zoom-in duration-300 max-h-[90vh] overflow-y-auto relative">

@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { JobApplication, JobStatus, CareerEvent, EventType, ImportanceLevel, AppData, SubscriptionPlan } from '../types';
 
 interface JobTrackerProps {
@@ -35,6 +35,10 @@ const JobTracker: React.FC<JobTrackerProps> = ({ applications, careerEvents, onA
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('All');
   const [customStartDate, setCustomStartDate] = useState('');
   const [customEndDate, setCustomEndDate] = useState('');
+  
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const uniqueLocations = useMemo(() => {
     const locations = new Set(applications.map(a => a.location));
@@ -67,6 +71,16 @@ const JobTracker: React.FC<JobTrackerProps> = ({ applications, careerEvents, onA
       return matchesLocation && matchesStatus && matchesTime;
     });
   }, [applications, locationFilter, statusFilter, timeFilter, customStartDate, customEndDate]);
+
+  const totalPages = Math.ceil(filteredApplications.length / itemsPerPage);
+  const paginatedApplications = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredApplications.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredApplications, currentPage, itemsPerPage]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [locationFilter, statusFilter, timeFilter, customStartDate, customEndDate, itemsPerPage]);
 
   const openAddForm = () => {
     // VALIDASI LIMIT DATABASE PAKET FREE
@@ -237,7 +251,7 @@ const JobTracker: React.FC<JobTrackerProps> = ({ applications, careerEvents, onA
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {filteredApplications.map((app, index) => {
+            {paginatedApplications.map((app, index) => {
               // FIX: Verifikasi apakah event kalender benar-benar ada di daftar careerEvents menggunakan relatedId
               const isActuallyScheduled = careerEvents.some(e => e.relatedId === app.id);
               const isSchedulable = (app.status === JobStatus.PERLU_FOLLOW_UP || app.status === JobStatus.WAWANCARA) && !isActuallyScheduled;
@@ -247,7 +261,7 @@ const JobTracker: React.FC<JobTrackerProps> = ({ applications, careerEvents, onA
                   <td className="px-4 py-5 text-center border-r border-slate-100">
                     <input type="checkbox" checked={selectedIds.has(app.id)} onChange={() => toggleSelect(app.id)} className="w-4 h-4 rounded" />
                   </td>
-                  <td className="px-6 py-5 text-center font-bold text-slate-400 bg-slate-50/30 border-r border-slate-100">{index + 1}</td>
+                  <td className="px-6 py-5 text-center font-bold text-slate-400 bg-slate-50/30 border-r border-slate-100">{(currentPage - 1) * itemsPerPage + index + 1}</td>
                   <td className="px-6 py-5 font-black text-slate-800 text-sm border-r border-slate-100 truncate">{app.position}</td>
                   <td className="px-6 py-5 font-bold text-slate-600 text-sm border-r border-slate-100 truncate">{app.company}</td>
                   <td className="px-6 py-5 text-xs text-slate-500 font-medium border-r border-slate-100 truncate">{app.location}</td>
@@ -289,7 +303,7 @@ const JobTracker: React.FC<JobTrackerProps> = ({ applications, careerEvents, onA
 
       {/* Mobile Application Cards */}
       <div className="lg:hidden space-y-4">
-        {filteredApplications.map((app) => {
+        {paginatedApplications.map((app) => {
           const isActuallyScheduled = careerEvents.some(e => e.relatedId === app.id);
           const isSchedulable = (app.status === JobStatus.PERLU_FOLLOW_UP || app.status === JobStatus.WAWANCARA) && !isActuallyScheduled;
           
@@ -338,6 +352,64 @@ const JobTracker: React.FC<JobTrackerProps> = ({ applications, careerEvents, onA
             </div>
           );
         })}
+      </div>
+
+      {/* Pagination View */}
+      <div className="flex flex-col md:flex-row items-center justify-between gap-4 mt-8 bg-slate-50 p-4 rounded-3xl border border-slate-200">
+        <div className="flex items-center gap-3">
+          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Tampilkan:</span>
+          <select 
+            className="px-3 py-2 rounded-xl border border-slate-200 bg-white outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-bold text-[10px] cursor-pointer"
+            value={itemsPerPage}
+            onChange={(e) => setItemsPerPage(Number(e.target.value))}
+          >
+            <option value={10}>10 Baris</option>
+            <option value={20}>20 Baris</option>
+            <option value={50}>50 Baris</option>
+          </select>
+          <span className="text-[10px] font-bold text-slate-400">Total: {filteredApplications.length} Lamaran</span>
+        </div>
+
+        {totalPages > 1 && (
+          <div className="flex items-center gap-1">
+            <button 
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage(1)}
+              className="px-3 h-9 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-600 disabled:opacity-30 hover:bg-slate-50 transition-all font-black text-xs"
+            >
+              &lt;&lt;
+            </button>
+
+            <div className="flex items-center gap-1 mx-2">
+              {Array.from({ length: totalPages }).map((_, i) => {
+                const pageNum = i + 1;
+                if (totalPages > 7) {
+                  if (pageNum !== 1 && pageNum !== totalPages && (pageNum < currentPage - 1 || pageNum > currentPage + 1)) {
+                    if (pageNum === currentPage - 2 || pageNum === currentPage + 2) return <span key={i} className="text-slate-300">...</span>;
+                    return null;
+                  }
+                }
+                return (
+                  <button 
+                    key={i}
+                    onClick={() => setCurrentPage(pageNum)}
+                    className={`w-9 h-9 flex items-center justify-center rounded-xl font-black text-xs transition-all ${currentPage === pageNum ? 'bg-slate-900 text-white shadow-lg' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+                  >
+                    {pageNum}
+                  </button>
+                );
+              })}
+            </div>
+
+            <button 
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage(totalPages)}
+              className="px-3 h-9 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-600 disabled:opacity-30 hover:bg-slate-50 transition-all font-black text-xs"
+            >
+              &gt;&gt;
+            </button>
+          </div>
+        )}
       </div>
 
       {/* SCHEDULE CONFIRMATION MODAL */}

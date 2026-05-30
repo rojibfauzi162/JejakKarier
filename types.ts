@@ -315,6 +315,7 @@ export interface PersonalProject {
   id: string;
   name: string;
   date: string;
+  company?: string;
   skills: string[];
   link: string;
   status: ProjectStatus;

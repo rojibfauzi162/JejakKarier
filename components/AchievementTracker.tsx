@@ -20,9 +20,9 @@ const AchievementTracker: React.FC<AchievementTrackerProps> = ({ achievements, p
     title: '', date: '', category: AchievementCategory.PROFESIONAL, impact: '', scope: 'Perusahaan', companyName: ''
   });
 
-  // Pagination State (khusus mobile)
+  // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   // Local state for datepicker logic
   const [isRange, setIsRange] = useState(false);
@@ -130,7 +130,13 @@ const AchievementTracker: React.FC<AchievementTrackerProps> = ({ achievements, p
   // Logic: Paginated Data (Urutan Terbaru di Atas)
   const sortedAchievements = useMemo(() => [...achievements].reverse(), [achievements]);
   const totalPages = Math.ceil(sortedAchievements.length / itemsPerPage);
-  const paginatedAchievements = sortedAchievements.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const paginatedAchievements = useMemo(() => {
+    return sortedAchievements.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  }, [sortedAchievements, currentPage, itemsPerPage]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [itemsPerPage]);
 
   const FilterIcon = () => (
     <svg className="w-3 h-3 ml-2 opacity-50 inline" fill="currentColor" viewBox="0 0 20 20">
@@ -187,10 +193,13 @@ const AchievementTracker: React.FC<AchievementTrackerProps> = ({ achievements, p
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-50">
-            {sortedAchievements.map(a => (
+            {paginatedAchievements.map((a, index) => (
               <tr key={a.id} className="group hover:bg-slate-50/50 transition-colors">
                 <td className="px-8 py-6">
-                  <span className="font-bold text-slate-800 text-sm leading-tight block max-w-xs">{a.title}</span>
+                  <div className="flex items-center gap-3">
+                    <span className="text-[10px] font-black text-slate-300 w-6">{(currentPage - 1) * itemsPerPage + index + 1}</span>
+                    <span className="font-bold text-slate-800 text-sm leading-tight block max-w-xs">{a.title}</span>
+                  </div>
                 </td>
                 <td className="px-6 py-6">
                   <span className="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-lg text-[9px] font-black uppercase tracking-widest border border-indigo-100">{a.category}</span>
@@ -292,6 +301,64 @@ const AchievementTracker: React.FC<AchievementTrackerProps> = ({ achievements, p
                 Next →
               </button>
            </div>
+        )}
+      </div>
+
+      {/* Pagination View */}
+      <div className="flex flex-col md:flex-row items-center justify-between gap-4 mt-8 bg-slate-50 p-4 rounded-3xl border border-slate-200">
+        <div className="flex items-center gap-3">
+          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Tampilkan:</span>
+          <select 
+            className="px-3 py-2 rounded-xl border border-slate-200 bg-white outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-bold text-[10px] cursor-pointer"
+            value={itemsPerPage}
+            onChange={(e) => setItemsPerPage(Number(e.target.value))}
+          >
+            <option value={10}>10 Baris</option>
+            <option value={20}>20 Baris</option>
+            <option value={50}>50 Baris</option>
+          </select>
+          <span className="text-[10px] font-bold text-slate-400">Total: {achievements.length} Prestasi</span>
+        </div>
+
+        {totalPages > 1 && (
+          <div className="flex items-center gap-1">
+            <button 
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage(1)}
+              className="px-3 h-9 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-600 disabled:opacity-30 hover:bg-slate-50 transition-all font-black text-xs"
+            >
+              &lt;&lt;
+            </button>
+
+            <div className="flex items-center gap-1 mx-2">
+              {Array.from({ length: totalPages }).map((_, i) => {
+                const pageNum = i + 1;
+                if (totalPages > 7) {
+                  if (pageNum !== 1 && pageNum !== totalPages && (pageNum < currentPage - 1 || pageNum > currentPage + 1)) {
+                    if (pageNum === currentPage - 2 || pageNum === currentPage + 2) return <span key={i} className="text-slate-300">...</span>;
+                    return null;
+                  }
+                }
+                return (
+                  <button 
+                    key={i}
+                    onClick={() => setCurrentPage(pageNum)}
+                    className={`w-9 h-9 flex items-center justify-center rounded-xl font-black text-xs transition-all ${currentPage === pageNum ? 'bg-slate-900 text-white shadow-lg' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+                  >
+                    {pageNum}
+                  </button>
+                );
+              })}
+            </div>
+
+            <button 
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage(totalPages)}
+              className="px-3 h-9 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-600 disabled:opacity-30 hover:bg-slate-50 transition-all font-black text-xs"
+            >
+              &gt;&gt;
+            </button>
+          </div>
         )}
       </div>
 
