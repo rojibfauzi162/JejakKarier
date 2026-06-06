@@ -48,8 +48,8 @@ const Billing: React.FC<BillingProps> = ({ data, products, onSelectPlan }) => {
   return (
     <div className="space-y-3 md:space-y-6 md:space-y-10 animate-in fade-in duration-700 pb-20 px-4 lg:px-0">
       <header>
-        <h2 className="text-3xl font-black text-slate-900 tracking-tight uppercase">Billing & Subscription</h2>
-        <p className="text-slate-500 font-medium italic">"Kelola akses dan perbarui paket kualifikasi profesional Anda."</p>
+        <h2 className="text-3xl font-black text-slate-900 tracking-tight uppercase">Tagihan & Langganan</h2>
+        <p className="text-slate-500 font-medium italic">"Atur akses dan perbarui paket kualifikasi profesionalmu di sini."</p>
       </header>
 
       {/* CURRENT SUBSCRIPTION CARD */}
@@ -61,7 +61,7 @@ const Billing: React.FC<BillingProps> = ({ data, products, onSelectPlan }) => {
                      <i className="bi bi-gem"></i>
                   </div>
                   <div>
-                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Paket Aktif Saat Ini</p>
+                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Paket yang lagi aktif</p>
                      <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tighter">{currentProduct?.name || data.plan}</h3>
                   </div>
                </div>
@@ -70,11 +70,11 @@ const Billing: React.FC<BillingProps> = ({ data, products, onSelectPlan }) => {
                   <div className="p-5 bg-slate-50 rounded-[1.75rem] border border-slate-100">
                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Status Akun</p>
                      <span className={`text-sm font-black uppercase ${isExpired ? 'text-rose-500' : 'text-emerald-500'}`}>
-                        {isExpired ? 'Expired' : data.status === AccountStatus.ACTIVE ? 'Active' : data.status}
+                        {isExpired ? 'Kadaluwarsa' : data.status === AccountStatus.ACTIVE ? 'Aktif' : data.status}
                      </span>
                   </div>
                   <div className="p-5 bg-slate-50 rounded-[1.75rem] border border-slate-100">
-                     <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Berakhir Pada</p>
+                     <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Berakhir pada</p>
                      <p className="text-sm font-black text-slate-800 uppercase">
                         {data.expiryDate ? new Date(data.expiryDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : 'Selamanya'}
                      </p>
@@ -102,8 +102,8 @@ const Billing: React.FC<BillingProps> = ({ data, products, onSelectPlan }) => {
       <div className="space-y-4 md:space-y-8">
          <div className="flex flex-col md:flex-row justify-between items-end gap-4 px-2">
             <div>
-               <h3 className="text-xl font-black text-slate-900 uppercase">Pilihan Paket Masa Depan</h3>
-               <p className="text-slate-400 font-medium text-[10px] uppercase tracking-widest">Upgrade untuk membuka lebih banyak fitur AI & limitasi data.</p>
+               <h3 className="text-xl font-black text-slate-900 uppercase">Pilihan Paket Lainnya</h3>
+               <p className="text-slate-400 font-medium text-[10px] uppercase tracking-widest">Upgrade buat ngebuka fitur AI lebih banyak & limitas data lebih lega.</p>
             </div>
             <p className="text-[9px] font-black text-blue-600 uppercase tracking-widest flex items-center gap-2">
                <span className="w-1.5 h-1.5 bg-blue-600 rounded-full animate-pulse"></span>
@@ -127,7 +127,7 @@ const Billing: React.FC<BillingProps> = ({ data, products, onSelectPlan }) => {
                           ) : null}
                           <p className="text-3xl font-black text-slate-900">Rp {p.price.toLocaleString('id-ID')}</p>
                        </div>
-                       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Akses selama {p.durationDays} Hari</p>
+                       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Akses selama {p.durationDays} hari</p>
                     </div>
 
                     <div className="space-y-3">
@@ -194,7 +194,7 @@ const Billing: React.FC<BillingProps> = ({ data, products, onSelectPlan }) => {
                         <th className="px-8 py-5">ID Transaksi</th>
                         <th className="px-6 py-5">Paket</th>
                         <th className="px-6 py-5">Metode</th>
-                        <th className="px-6 py-5">Nominal</th>
+                        <th className="px-6 py-5">Jumlah</th>
                         <th className="px-6 py-5 text-center">Status</th>
                         <th className="px-8 py-5 text-right">Tanggal</th>
                      </tr>

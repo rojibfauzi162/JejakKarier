@@ -131,10 +131,9 @@ const PerformanceReports: React.FC<PerformanceReportsProps> = ({ data }) => {
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-6">
         <div className="px-1">
           <div className="flex items-center gap-4">
-            <h2 className="text-3xl font-black text-slate-900 tracking-tight uppercase">Performance Reports</h2>
-            <span className="bg-blue-600 text-white text-[10px] font-black px-3 py-1 rounded-full shadow-lg animate-pulse">VERSI 2.0</span>
+            <h2 className="text-3xl font-black text-slate-900 tracking-tight uppercase">Laporan Performa</h2>
           </div>
-          <p className="text-slate-500 font-medium">Analisis produktivitas dan pencapaian metrik kerja.</p>
+          <p className="text-slate-500 font-medium">Melihat produktivitas dan pencapaian metrik kerjamu.</p>
         </div>
         <div className="flex flex-wrap gap-3 px-1">
           <button onClick={() => setShowShareModal(true)} className="flex-1 md:flex-none px-5 py-3 bg-indigo-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all flex items-center justify-center gap-2">
@@ -144,7 +143,7 @@ const PerformanceReports: React.FC<PerformanceReportsProps> = ({ data }) => {
           {/* CONSOLIDATED EXPORT DROPDOWN */}
           <div className="relative group flex-1 md:flex-none">
             <button className="w-full md:w-auto px-5 py-3 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl flex items-center justify-center gap-2 hover:bg-black transition-all">
-               <span>📥</span> Export Data {isExporting ? '...' : '▼'}
+               <span>📥</span> Ekspor Data {isExporting ? '...' : '▼'}
             </button>
             <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-2xl shadow-2xl border border-slate-100 p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
                <button onClick={() => handleExport('pdf')} className="w-full text-left px-4 py-3 text-[10px] font-black uppercase text-slate-600 hover:bg-rose-50 hover:text-rose-600 rounded-xl transition-colors flex items-center gap-3">
@@ -159,7 +158,7 @@ const PerformanceReports: React.FC<PerformanceReportsProps> = ({ data }) => {
             </div>
           </div>
 
-          <button onClick={handleSync} className="flex-1 md:flex-none px-5 py-3 bg-blue-50 text-blue-600 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-blue-100 hover:bg-blue-100 transition-all">Sync Sheets</button>
+          <button onClick={handleSync} className="flex-1 md:flex-none px-5 py-3 bg-blue-50 text-blue-600 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-blue-100 hover:bg-blue-100 transition-all">Sinkronisasi Sheets</button>
         </div>
       </header>
 

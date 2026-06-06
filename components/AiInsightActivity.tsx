@@ -258,8 +258,8 @@ const AiInsightActivity: React.FC<AiInsightActivityProps> = ({ data, onUpdateIns
     <div className="space-y-4 md:space-y-8 animate-in fade-in duration-700 pb-20 relative">
       <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 md:gap-6">
         <div>
-          <h2 className="text-3xl font-black text-slate-900 tracking-tight uppercase">AI Insight Activity</h2>
-          <p className="text-slate-500 font-medium italic">"Resume performa cerdas untuk refleksi diri dan bukti kontribusi."</p>
+          <h2 className="text-3xl font-black text-slate-900 tracking-tight uppercase">Wawasan AI</h2>
+          <p className="text-slate-500 font-medium italic">"Rangkuman performa cerdas untuk refleksi diri dan bukti kontribusimu."</p>
         </div>
         <div className="flex flex-col items-center md:items-end gap-2 w-full md:w-auto">
           <button 
@@ -423,7 +423,7 @@ const AiInsightActivity: React.FC<AiInsightActivityProps> = ({ data, onUpdateIns
                     <div className="flex items-center justify-between">
                       <h4 className="text-[10px] font-black text-emerald-600 uppercase tracking-[0.3em] flex items-center gap-3">
                         <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
-                        Detected Potential Achievements
+                        Pencapaian Baru Terdeteksi
                       </h4>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6">
@@ -443,7 +443,7 @@ const AiInsightActivity: React.FC<AiInsightActivityProps> = ({ data, onUpdateIns
                               disabled={addedAchievementIds.has(i)}
                               className={`px-6 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${addedAchievementIds.has(i) ? 'bg-emerald-600 text-white' : 'bg-white text-emerald-600 border border-emerald-200 hover:bg-emerald-600 hover:text-white shadow-sm'}`}
                             >
-                              {addedAchievementIds.has(i) ? '✓ Added to Records' : '+ Add to Achievements'}
+                              {addedAchievementIds.has(i) ? '✓ Sudah Ditambahkan' : '+ Tambahkan ke Pencapaian'}
                             </button>
                           </div>
                         </div>
@@ -457,7 +457,7 @@ const AiInsightActivity: React.FC<AiInsightActivityProps> = ({ data, onUpdateIns
                   <div className="relative z-10 space-y-3 md:space-y-6">
                     <div className="flex items-center gap-4">
                       <span className="text-3xl">💡</span>
-                      <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">AI Strategic Reflection</h4>
+                      <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">Refleksi Strategis AI</h4>
                     </div>
                     <p className="text-lg lg:text-xl font-medium leading-relaxed italic opacity-90 border-l-4 border-indigo-500 pl-8">
                       "{insightResult.aiReflection}"
@@ -471,7 +471,7 @@ const AiInsightActivity: React.FC<AiInsightActivityProps> = ({ data, onUpdateIns
                     onClick={() => window.print()} 
                     className="px-10 py-4 bg-white border-2 border-slate-900 text-slate-900 font-black rounded-2xl uppercase tracking-[0.2em] text-[10px] shadow-xl hover:bg-slate-50 transition-all active:scale-95"
                   >
-                    Download Report (.PDF)
+                    Download Laporan (.PDF)
                   </button>
                 </div>
               </div>
