@@ -344,7 +344,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenOnboardin
                  {data.profile.photoUrl ? <img src={data.profile.photoUrl} alt="User" className="w-full h-full object-cover" /> : <div className="w-full h-full bg-slate-100 flex items-center justify-center text-xl"><i className="bi bi-person"></i></div>}
               </div>
               <div>
-                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1.5">Good Morning 👋</p>
+                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1.5">Halo, Selamat Pagi 👋</p>
                  <h2 className="text-xl font-black text-slate-900 tracking-tight leading-none">{(data.profile.name || '').split(' ')[0]}</h2>
               </div>
            </div>
@@ -397,7 +397,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenOnboardin
            {/* Skill Readiness Card */}
            <div className="bg-gradient-to-br from-indigo-600 to-blue-500 p-4 md:p-8 rounded-[2.5rem] shadow-2xl shadow-indigo-200 text-white relative overflow-hidden group">
               <div className="relative z-10">
-                 <p className="text-4xl font-black tracking-tighter mb-2">{progressPercent}% <span className="text-sm font-bold uppercase tracking-widest opacity-80 block">Skill Readiness Score</span></p>
+                 <p className="text-4xl font-black tracking-tighter mb-2">{progressPercent}% <span className="text-sm font-bold uppercase tracking-widest opacity-80 block">Skor Kesiapan Skill</span></p>
                  <p className="text-xs font-medium opacity-90 leading-relaxed max-w-[200px]">"{currentAffirmation}"</p>
               </div>
               <div className="absolute right-6 top-1/2 -translate-y-1/2 text-7xl opacity-20 transform rotate-12 group-hover:scale-110 transition-transform duration-700"><i className="bi bi-gem"></i></div>
@@ -408,7 +408,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenOnboardin
               <div className="flex items-center gap-4">
                  <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center text-xl"><i className="bi bi-person-check"></i></div>
                  <div>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Account Readiness</p>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Kesiapan Akun</p>
                     <p className="text-lg font-black text-slate-800 leading-none">{accountReadiness}% Profil Lengkap</p>
                  </div>
               </div>
@@ -418,7 +418,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenOnboardin
 
         <div className="px-6 space-y-3 md:space-y-6 pb-6">
            <div className="flex justify-between items-center px-1">
-              <h3 className="text-base font-black text-slate-900 uppercase tracking-tight">Main Hub</h3>
+              <h3 className="text-base font-black text-slate-900 uppercase tracking-tight">Pusat Aktivitas</h3>
               <div className="flex gap-2">
                 <button onClick={() => setIsEditMode(!isEditMode)} className={`text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-lg border transition-all ${isEditMode ? 'bg-indigo-600 border-indigo-600 text-white' : 'text-slate-400 border-slate-100'}`}>{isEditMode ? 'Selesai' : 'Kelola Widget'}</button>
               </div>
@@ -448,8 +448,8 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenOnboardin
         {/* Recent Activity List */}
         <div className="px-6 space-y-4 pb-12">
            <div className="flex justify-between items-center px-1">
-              <h3 className="text-base font-black text-slate-900 uppercase tracking-tight">Recent Activity</h3>
-              <button className="text-[10px] font-black text-indigo-600 uppercase tracking-widest" onClick={() => onNavigate?.('daily')}>View All Logs</button>
+              <h3 className="text-base font-black text-slate-900 uppercase tracking-tight">Aktivitas Terbaru</h3>
+              <button className="text-[10px] font-black text-indigo-600 uppercase tracking-widest" onClick={() => onNavigate?.('daily')}>Lihat Semua</button>
            </div>
            <div className="space-y-3">
               {data.dailyReports.slice(-3).reverse().map((log, i) => (
@@ -477,7 +477,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenOnboardin
       <div className="hidden lg:block space-y-4 md:space-y-8 animate-in fade-in duration-700 pb-20">
         <header className="flex items-center justify-between">
           <div>
-            <h2 className="text-3xl font-black text-slate-900 tracking-tight">Dashboard Overview</h2>
+            <h2 className="text-3xl font-black text-slate-900 tracking-tight">Ringkasan Dashboard</h2>
             <div className="flex items-center gap-3 mt-1">
                 <p className="text-slate-500 font-medium">Pantau progres karir dan pengembangan diri Anda.</p>
                 <div className="h-4 w-[1px] bg-slate-300"></div>
@@ -520,7 +520,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenOnboardin
            <MetricCard 
              title="Total Aktivitas" 
              value={filteredReports.length} 
-             subtitle={dashboardFilter === 'all' ? "Total Work Logs" : "Filtered Logs"} 
+             subtitle={dashboardFilter === 'all' ? "Total Log Kerja" : "Log Terfilter"} 
              icon={<i className="bi bi-journal-text"></i>} 
              color="indigo" 
            />
@@ -591,7 +591,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenOnboardin
 
            {/* 5. Skill Gap Radar */}
            <div className="bg-white p-4 md:p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
-              <h3 className="text-lg font-black text-slate-800 mb-6">Skill Radar (Current)</h3>
+              <h3 className="text-lg font-black text-slate-800 mb-6">Radar Skill</h3>
               <div className="h-64">
                  <ResponsiveContainer width="100%" height="100%">
                     <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarData}>
@@ -628,7 +628,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenOnboardin
 
            {/* 9. Pending Todos */}
            <div className="bg-white p-4 md:p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
-              <h3 className="text-lg font-black text-slate-800 mb-6">To-Do Pending</h3>
+              <h3 className="text-lg font-black text-slate-800 mb-6">Tugas Perlu Selesai</h3>
               <div className="space-y-4">
                  {pendingTodos.map((todo, i) => (
                     <div key={i} className="flex items-center gap-3 pb-3 border-b border-slate-50 last:border-0 last:pb-0">
