@@ -16,20 +16,20 @@ interface WorkReflectionProps {
 }
 
 const MICRO_WINS = [
-  "Menyelesaikan tugas sulit",
-  "Belajar hal baru",
-  "Membantu rekan kerja",
-  "Mengambil inisiatif",
-  "Lebih cepat dari target"
+  "Nuntasin tugas yang lumayan berat",
+  "Dapat hal baru hari ini",
+  "Bantu-bantu temen kerja",
+  "Inisiatif sendiri buat beresin sesuatu",
+  "Kelarin kerjaan lebih cepet dari target"
 ];
 
 const ROTATING_QUESTIONS = [
-  "Apa yang kamu pelajari hari ini?",
-  "Hal kecil apa yang membuat harimu lebih baik?",
-  "Tantangan apa yang berhasil kamu hadapi hari ini?",
-  "Di bagian mana kamu merasa paling berkembang hari ini?",
-  "Apa hal yang paling menguras energimu hari ini?",
-  "Apa satu hal yang paling kamu syukuri dari pekerjaanmu hari ini?"
+  "Apa hal menarik yang kamu pelajari hari ini?",
+  "Cerita dong, hal kecil apa yang bikin harimu lebih enak?",
+  "Tantangan apa saja yang berhasil kamu taklukkan hari ini?",
+  "Di bagian mana kamu ngerasa paling berkembang hari ini?",
+  "Apa, sih, hal yang paling nguras energimu hari ini?",
+  "Apa satu hal yang paling bikin kamu bersyukur di kerjaan hari ini?"
 ];
 
 const WorkReflectionView: React.FC<WorkReflectionProps> = ({ reflections, skills, onAdd, onUpdateSkill, onAddTodo, onAddAchievement, appData, targetDate }) => {
@@ -390,15 +390,15 @@ const WorkReflectionView: React.FC<WorkReflectionProps> = ({ reflections, skills
           {/* BARU: SECTION MOTIVASI & PENJELASAN */}
           <div className="bg-indigo-50 border-2 border-indigo-100 p-4 md:p-8 lg:p-12 rounded-[3.5rem] flex flex-col lg:flex-row items-center gap-5 md:gap-10 animate-in fade-in duration-1000">
              <div className="w-24 h-24 lg:w-32 lg:h-32 bg-white rounded-[2.5rem] flex items-center justify-center text-4xl lg:text-5xl shadow-xl shadow-indigo-100 shrink-0">📈</div>
-             <div className="space-y-4 text-center lg:text-left flex-1">
+                        <div className="space-y-4 text-center lg:text-left flex-1">
                 <h3 className="text-xl lg:text-2xl font-black text-indigo-900 uppercase tracking-tighter">Kenapa Harus Refleksi?</h3>
                 <p className="text-sm lg:text-base text-indigo-700/80 font-medium leading-relaxed italic">
-                   "Refleksi harian bukan sekadar catatan, tapi investasi kesadaran. Dengan mencatat kontribusi dan emosi, Anda membangun data karir yang tak terbantahkan saat evaluasi nanti. Teruslah melangkah, satu refleksi hari ini adalah satu batu bata untuk istana karir Anda besok!"
+                   "Refleksi itu bukan sekadar nulis catatan, tapi investasi kesadaran buat diri sendiri. Dengan mencatat apa yang sudah kamu kerjakan dan rasakan, kamu sebenarnya lagi membangun data karir yang sangat berharga buat evaluasi nanti. Teruslah semangat ya, satu refleksi hari ini tuh satu langkah buat masa depan karir kamu yang lebih cerah!"
                 </p>
                 <div className="flex flex-wrap gap-3 justify-center lg:justify-start pt-2">
-                   <span className="px-3 py-1 bg-white text-indigo-600 text-[9px] font-black uppercase rounded-lg border border-indigo-100">Bahan Performance Review</span>
-                   <span className="px-3 py-1 bg-white text-indigo-600 text-[9px] font-black uppercase rounded-lg border border-indigo-100">Deteksi Burnout Dini</span>
-                   <span className="px-3 py-1 bg-white text-indigo-600 text-[9px] font-black uppercase rounded-lg border border-indigo-100">Validasi Kualifikasi AI</span>
+                   <span className="px-3 py-1 bg-white text-indigo-600 text-[9px] font-black uppercase rounded-lg border border-indigo-100">Bahan Pas Review</span>
+                   <span className="px-3 py-1 bg-white text-indigo-600 text-[9px] font-black uppercase rounded-lg border border-indigo-100">Deteksi Burnout Sedini Mungkin</span>
+                   <span className="px-3 py-1 bg-white text-indigo-600 text-[9px] font-black uppercase rounded-lg border border-indigo-100">AI Teman Validasi</span>
                 </div>
              </div>
           </div>
@@ -422,7 +422,7 @@ const WorkReflectionView: React.FC<WorkReflectionProps> = ({ reflections, skills
                           </div>
                        </div>
                     </div>
-                    <p className="text-sm italic font-medium opacity-80 max-w-xl">"Istirahat sejenak untuk melihat seberapa jauh Anda melangkah. Refleksi ini membantu Anda tetap waras dan produktif."</p>
+                                         <p className="text-sm italic font-medium opacity-80 max-w-xl">"Istirahat sejenak untuk liat seberapa jauh kamu udah melangkah. Refleksi ini bantu kamu tetap waras dan terjaga fokus produktifnya."</p>
                  </div>
                  <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-600/10 rounded-full blur-[100px] -mr-32 -mt-32"></div>
               </div>
@@ -520,7 +520,7 @@ const WorkReflectionView: React.FC<WorkReflectionProps> = ({ reflections, skills
             <div className="bg-white p-4 md:p-10 lg:p-14 rounded-[3.5rem] shadow-sm border border-slate-100 text-center animate-in zoom-in duration-500">
                <div className="text-6xl mb-6">✅</div>
                <h3 className="text-3xl font-black text-slate-900 uppercase tracking-tighter mb-4">Refleksi Hari Ini Selesai</h3>
-               <p className="text-slate-500 font-medium max-w-md mx-auto leading-relaxed italic">"Terima kasih telah meluangkan waktu sejenak untuk menghargai usaha Anda hari ini. Data Anda aman dan tersimpan untuk analisis karier."</p>
+                            <p className="text-slate-500 font-medium max-w-md mx-auto leading-relaxed italic">"Makasih ya udah luangin waktu buat hargain usaha kamu hari ini. Datamu aman dan tersimpan rapi untuk analisis karier kamu nantinya."</p>
                <div className="mt-6 md:mt-10 flex justify-center gap-4">
                    <div className="bg-indigo-50 px-4 py-3 md:px-6 md:py-4 rounded-3xl border border-indigo-100"><p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1">STREAK</p><p className="text-2xl font-black text-indigo-600">{streak} Hari 🔥</p></div>
                    <div className="bg-emerald-50 px-4 py-3 md:px-6 md:py-4 rounded-3xl border border-emerald-100"><p className="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-1">MOOD</p><p className="text-2xl font-black text-emerald-600">{getMoodEmoji(todayReflection.mood)}</p></div>

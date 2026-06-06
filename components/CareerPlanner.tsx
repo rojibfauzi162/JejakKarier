@@ -113,9 +113,9 @@ const CareerPlanner: React.FC<CareerPlannerProps> = ({ paths, appData, onAddPath
     <div className="space-y-4 md:space-y-8 animate-in slide-in-from-right duration-500 pb-20">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">Career Path Planner</h2>
+          <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">Rencana Karir Kamu</h2>
           <p className="text-slate-500 mt-2 italic font-medium">
-            "Tentukan posisi impian, skill yang harus di-upgrade, dan target waktu pencahaianmu."
+            "Mau jadi apa nanti? Yuk, susun posisi impian, skill yang harus dipelajari, dan target waktu pencapaianmu di sini."
           </p>
         </div>
         <button 

@@ -40,26 +40,26 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout, is
       id: 'aktivitas',
       label: 'Aktivitas Harian',
       items: [
-        { id: 'daily_root', label: 'Daily Work', icon: <i className="bi bi-pencil-square"></i>, hasSub: true, type: 'daily' },
-        { id: 'todo_list', label: 'To Do List', icon: <i className="bi bi-check2-square"></i> },
-        { id: 'calendar', label: 'Career Calendar', icon: <i className="bi bi-calendar3"></i> }, 
+        { id: 'daily_root', label: 'Jurnal Harian', icon: <i className="bi bi-pencil-square"></i>, hasSub: true, type: 'daily' },
+        { id: 'todo_list', label: 'Daftar Tugas', icon: <i className="bi bi-check2-square"></i> },
+        { id: 'calendar', label: 'Kalender Karir', icon: <i className="bi bi-calendar3"></i> }, 
       ]
     },
     {
       id: 'pengembangan',
       label: 'Pengembangan Diri',
       items: [
-        { id: 'skills', label: 'Skills & Learning', icon: <i className="bi bi-mortarboard"></i> },
-        { id: 'projects', label: 'Personal Project', icon: <i className="bi bi-tools"></i> },
-        { id: 'career', label: 'Career Path', icon: <i className="bi bi-rocket-takeoff"></i> },
-        { id: 'achievements', label: 'Achievements', icon: <i className="bi bi-trophy"></i> },
+        { id: 'skills', label: 'Skill & Belajar', icon: <i className="bi bi-mortarboard"></i> },
+        { id: 'projects', label: 'Proyek Pribadi', icon: <i className="bi bi-tools"></i> },
+        { id: 'career', label: 'Jalur Karir', icon: <i className="bi bi-rocket-takeoff"></i> },
+        { id: 'achievements', label: 'Pencapaian', icon: <i className="bi bi-trophy"></i> },
       ]
     },
     {
       id: 'karir',
       label: 'Lowongan & Karir',
       items: [
-        { id: 'loker', label: 'Loker Tracker', icon: <i className="bi bi-briefcase"></i> },
+        { id: 'loker', label: 'Info Loker', icon: <i className="bi bi-briefcase"></i> },
         { id: 'cv_root', label: 'CV Generator', icon: <i className="bi bi-file-earmark-pdf"></i>, hasSub: true, type: 'cv' },
         { id: 'interview_script', label: 'Interview Script', icon: <i className="bi bi-mic"></i> },
         { id: 'networking', label: 'Networking', icon: <i className="bi bi-people"></i> },
@@ -238,16 +238,16 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout, is
                           
                           {item.hasSub && item.type === 'daily' && dailyDropdownOpen && (
                             <div className="pl-6 space-y-1 mt-1 animate-in slide-in-from-top-1 duration-300 border-l border-white/5 ml-4">
-                              <SubMenuButton id="tour-sidebar-daily" active={activeTab === 'daily'} onClick={() => setActiveTab('daily')} label="Tugas Harian" icon="bi bi-card-text" />
-                              <SubMenuButton id="tour-sidebar-work_reflection" active={activeTab === 'work_reflection'} onClick={() => setActiveTab('work_reflection')} label="Refleksi kerja" icon="bi bi-chat-quote" />
-                              <SubMenuButton active={activeTab === 'reports'} onClick={() => setActiveTab('reports')} label="Laporan pekerjaan" icon="bi bi-graph-up" />
-                              <SubMenuButton active={activeTab === 'ai_insights'} onClick={() => setActiveTab('ai_insights')} label="AI Insight activity" icon="bi bi-cpu" />
+                              <SubMenuButton id="tour-sidebar-daily" active={activeTab === 'daily'} onClick={() => setActiveTab('daily')} label="Jurnal Harian" icon="bi bi-card-text" />
+                              <SubMenuButton id="tour-sidebar-work_reflection" active={activeTab === 'work_reflection'} onClick={() => setActiveTab('work_reflection')} label="Refleksi Diri" icon="bi bi-chat-quote" />
+                              <SubMenuButton active={activeTab === 'reports'} onClick={() => setActiveTab('reports')} label="Laporan Progres" icon="bi bi-graph-up" />
+                              <SubMenuButton active={activeTab === 'ai_insights'} onClick={() => setActiveTab('ai_insights')} label="Wawasan AI" icon="bi bi-cpu" />
                             </div>
                           )}
 
                           {item.hasSub && item.type === 'cv' && cvDropdownOpen && (
                             <div className="pl-6 space-y-1 mt-1 animate-in slide-in-from-top-1 duration-300 border-l border-white/5 ml-4">
-                              <SubMenuButton active={activeTab === 'cv_generator'} onClick={() => setActiveTab('cv_generator')} label="PDF Export" icon="bi bi-file-pdf" />
+                              <SubMenuButton active={activeTab === 'cv_generator'} onClick={() => setActiveTab('cv_generator')} label="Export PDF" icon="bi bi-file-pdf" />
                               <SubMenuButton active={activeTab === 'online_cv'} onClick={() => setActiveTab('online_cv')} label="Digital Page" icon="bi bi-globe" />
                             </div>
                           )}

@@ -37,15 +37,15 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenOnboardin
     if (!isTrialUser) return null;
 
     if (daysSinceJoined >= 7) return {
-      title: "Masa Trial Berakhir",
-      desc: "Data Anda sudah mulai membentuk pola perkembangan yang kuat. Lanjutkan analisis mendalam dengan Paket Pro?",
+      title: "Uji Coba Selesai",
+      desc: "Data kamu udah nunjukin progres yang keren. Mau lanjut analisis lebih dalam bareng paket Pro?",
       cta: "Buka Analisis Pro →",
       type: "urgent"
     };
 
     if (daysSinceJoined === 1 && logCount === 0) return {
-      title: "Selamat Datang!",
-      desc: "Trial Premium 7 Hari Anda sudah aktif. Mulai hari Anda dengan mencatat 1 aktivitas kerja pertama.",
+      title: "Hai, Selamat Datang!",
+      desc: "Uji coba 7 hari kamu udah aktif. Ayo semangat mulai hari ini dengan nyatet aktivitas kerja pertama kamu.",
       cta: "Isi Aktivitas Pertama →",
       type: "guide",
       target: "daily"
@@ -53,23 +53,23 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenOnboardin
 
     if (daysSinceJoined <= 3 && logCount >= 3) return {
       title: "Pola Karir Terdeteksi",
-      desc: "Kami mulai melihat pola aktivitas Anda. Lihat rangkuman awal di tab Insight.",
-      cta: "Lihat Insight Awal →",
+      desc: "Kami udah lihat pola aktivitasmu. Coba cek rangkumannya yuk di tab Insight.",
+      cta: "Lihat Insight →",
       type: "insight",
       target: "ai_insights"
     };
 
     if (daysSinceJoined <= 5 && logCount >= 5) return {
-      title: "Analisis Siap",
-      desc: "Data Anda sudah cukup untuk analisis awal kualifikasi. AI Strategist sudah bisa digunakan.",
+      title: "Saran Siap Dibuat",
+      desc: "Datamu udah cukup buat kita kasih analisis awal. AI Strategist udah siap bantu.",
       cta: "Jalankan AI Strategist →",
       type: "insight",
       target: "skills"
     };
 
     if (daysSinceJoined === 6) return {
-      title: "Akses Terakhir",
-      desc: "Akses insight lanjutan akan terkunci besok. Amankan rekam jejak Anda sekarang.",
+      title: "Hari Terakhir Uji Coba",
+      desc: "Besok akses insight lanjutan bakal terkunci. Amankan rekam jejak progresmu sekarang ya.",
       cta: "Amankan Akses Pro →",
       type: "warning",
       target: "billing"
@@ -112,13 +112,13 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenOnboardin
     // 1. Check Daily Work (Hanya Hari Ini)
     const hasWorkLogs = data.dailyReports.some(l => l.date === today);
     if (!hasWorkLogs && currentTime >= data.reminderConfig.dailyLogReminderTime) {
-      alerts.push({ id: 'log', text: "Kamu belum mengisi Aktivitas Kerja hari ini!", target: 'daily', date: today, icon: '📝', color: 'indigo', actionLabel: 'ISI SEKARANG →' });
+      alerts.push({ id: 'log', text: "Hayo, kamu belum isi Aktivitas Kerja hari ini!", target: 'daily', date: today, icon: '📝', color: 'indigo', actionLabel: 'ISI SEKARANG →' });
     }
 
     // 2. Check Reflection (Hanya Hari Ini)
     const hasReflection = data.dailyReflections.some(r => r.date === today);
     if (!hasReflection && currentTime >= data.reminderConfig.reflectionReminderTime) {
-      alerts.push({ id: 'ref', text: "Jangan lupa isi Refleksi Kerja hari ini!", target: 'work_reflection', date: today, icon: '🧘', color: 'rose', actionLabel: 'ISI SEKARANG →' });
+      alerts.push({ id: 'ref', text: "Jangan lupa isi Refleksi Diri dulu ya biar tenang!", target: 'work_reflection', date: today, icon: '🧘', color: 'rose', actionLabel: 'ISI SEKARANG →' });
     }
 
     return alerts;
@@ -180,7 +180,9 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenOnboardin
     // Total 9 poin (7 field profil + work exp + education)
     return Math.round(((filledFields + hasWork + hasEdu) / 9) * 100);
   };
-  const accountReadiness = calculateAccountReadiness();
+  const [accountReadiness, setAccountReadiness] = useState(calculateAccountReadiness());
+  // Need to update it when data changes, maybe just call it
+  const readynessPercent = accountReadiness; 
 
   // Simple chart data from daily reports
   const chartData = data.dailyReports.slice(-7).map(report => ({
@@ -189,24 +191,24 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenOnboardin
   }));
 
   const allMenuItems = [
-    { id: 'daily', label: 'Daily Work', icon: 'bi-pencil-square' },
-    { id: 'work_reflection', label: 'Refleksi Kerja', icon: 'bi-chat-quote' },
-    { id: 'reports', label: 'Laporan pekerjaan', icon: 'bi-graph-up' },
-    { id: 'mobile_stats', label: 'Data Statistik', icon: 'bi-bar-chart-line' },
-    { id: 'todo_list', label: 'To Do List', icon: 'bi-check2-square' },
-    { id: 'skills', label: 'Skills & Learning', icon: 'bi-mortarboard' },
-    { id: 'career', label: 'Career Path', icon: 'bi-rocket-takeoff' },
-    { id: 'achievements', label: 'Achievements', icon: 'bi-trophy' },
-    { id: 'cv_generator', label: 'PDF Export', icon: 'bi-file-earmark-pdf' },
-    { id: 'projects', label: 'Personal Project', icon: 'bi-tools' },
+    { id: 'daily', label: 'Jurnal Harian', icon: 'bi-pencil-square' },
+    { id: 'work_reflection', label: 'Refleksi Diri', icon: 'bi-chat-quote' },
+    { id: 'reports', label: 'Laporan Progres', icon: 'bi-graph-up' },
+    { id: 'mobile_stats', label: 'Statistik', icon: 'bi-bar-chart-line' },
+    { id: 'todo_list', label: 'Daftar Tugas', icon: 'bi-check2-square' },
+    { id: 'skills', label: 'Skill & Belajar', icon: 'bi-mortarboard' },
+    { id: 'career', label: 'Jalur Karir', icon: 'bi-rocket-takeoff' },
+    { id: 'achievements', label: 'Pencapaian', icon: 'bi-trophy' },
+    { id: 'cv_generator', label: 'Export PDF', icon: 'bi-file-earmark-pdf' },
+    { id: 'projects', label: 'Proyek Pribadi', icon: 'bi-tools' },
     { id: 'networking', label: 'Networking', icon: 'bi-people' },
-    { id: 'ai_insights', label: 'AI Insight activity', icon: 'bi-cpu' },
-    { id: 'loker', label: 'Loker Tracker', icon: 'bi-briefcase' },
-    { id: 'online_cv', label: 'Digital Page', icon: 'bi-globe' },
-    { id: 'reviews', label: 'Monthly Review', icon: 'bi-calendar-check' },
-    { id: 'billing', label: 'Billing & Plan', icon: 'bi-credit-card' },
+    { id: 'ai_insights', label: 'Wawasan AI', icon: 'bi-cpu' },
+    { id: 'loker', label: 'Info Loker', icon: 'bi-briefcase' },
+    { id: 'online_cv', label: 'CV Digital', icon: 'bi-globe' },
+    { id: 'reviews', label: 'Ulasan Bulanan', icon: 'bi-calendar-check' },
+    { id: 'billing', label: 'Paket & Tagihan', icon: 'bi-credit-card' },
     { id: 'settings', label: 'Pengaturan', icon: 'bi-gear' },
-    { id: 'calendar', label: 'Career Calendar', icon: 'bi-calendar3' },
+    { id: 'calendar', label: 'Kalender Karir', icon: 'bi-calendar3' },
   ];
 
   // --- DESKTOP DASHBOARD LOGIC ---
