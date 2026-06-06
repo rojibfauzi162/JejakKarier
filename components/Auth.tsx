@@ -153,7 +153,7 @@ const Auth: React.FC<AuthProps> = ({ onBack, logoUrl, logoDarkUrl }) => {
         <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-emerald-600/20 rounded-full blur-[120px]"></div>
       </div>
 
-      <div className="w-full max-w-md bg-white/10 backdrop-blur-xl border border-white/10 p-4 sm:p-6 md:p-8 lg:p-12 rounded-[2rem] md:rounded-[3rem] shadow-2xl relative z-10 animate-in zoom-in duration-500">
+      <div className="w-full max-w-md bg-white/10 backdrop-blur-xl border border-white/10 p-4 sm:p-6 md:p-8 lg:p-12 rounded-xl shadow-2xl relative z-10 animate-in zoom-in duration-500">
         
         {onBack && !isForgotPassword && !isStandalone && (
           <button 
@@ -188,9 +188,9 @@ const Auth: React.FC<AuthProps> = ({ onBack, logoUrl, logoDarkUrl }) => {
         </div>
 
         {!isForgotPassword && (
-          <div className="flex bg-white/5 p-1 rounded-2xl mb-4 md:mb-8">
-            <button onClick={() => { setIsLogin(true); setError(''); setSuccessMsg(''); }} className={`flex-1 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${isLogin ? 'bg-white text-slate-900 shadow-lg' : 'text-slate-400 hover:text-white'}`}>Login</button>
-            <button onClick={() => { setIsLogin(false); setError(''); setSuccessMsg(''); }} className={`flex-1 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${!isLogin ? 'bg-white text-slate-900 shadow-lg' : 'text-slate-400 hover:text-white'}`}>Register</button>
+          <div className="flex bg-white/5 p-1 rounded-lg mb-4 md:mb-8">
+            <button onClick={() => { setIsLogin(true); setError(''); setSuccessMsg(''); }} className={`flex-1 py-3 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${isLogin ? 'bg-white text-slate-900 shadow-lg' : 'text-slate-400 hover:text-white'}`}>Login</button>
+            <button onClick={() => { setIsLogin(false); setError(''); setSuccessMsg(''); }} className={`flex-1 py-3 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${!isLogin ? 'bg-white text-slate-900 shadow-lg' : 'text-slate-400 hover:text-white'}`}>Register</button>
           </div>
         )}
 
@@ -256,9 +256,9 @@ const Auth: React.FC<AuthProps> = ({ onBack, logoUrl, logoDarkUrl }) => {
           <form onSubmit={handleForgotPassword} className="space-y-3 md:space-y-6">
             <div className="space-y-1.5">
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Email Address</label>
-              <input type="email" required className="w-full px-5 py-4 rounded-2xl bg-white/5 border border-white/10 text-white outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-bold placeholder:text-slate-600" placeholder="alex@fokuskarir.com" value={email || ''} onChange={(e) => setEmail(e.target.value)} />
+              <input type="email" required className="w-full px-5 py-4 rounded-xl bg-white/5 border border-white/10 text-white outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-bold placeholder:text-slate-600" placeholder="alex@fokuskarir.com" value={email || ''} onChange={(e) => setEmail(e.target.value)} />
             </div>
-            <button disabled={loading} className="w-full py-5 bg-blue-600 hover:bg-blue-700 text-white font-black uppercase tracking-widest rounded-2xl shadow-xl shadow-blue-500/20 transition-all active:scale-[0.98] disabled:opacity-50 mt-4">
+            <button disabled={loading} className="w-full py-5 bg-blue-600 hover:bg-blue-700 text-white font-black uppercase tracking-widest rounded-lg shadow-xl shadow-blue-500/20 transition-all active:scale-[0.98] disabled:opacity-50 mt-4">
               {loading ? 'Sending...' : 'Kirim Link Pemulihan'}
             </button>
           </form>

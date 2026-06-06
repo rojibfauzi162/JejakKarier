@@ -128,9 +128,9 @@ const CareerPlanner: React.FC<CareerPlannerProps> = ({ paths, appData, onAddPath
 
       {/* INFO KUOTA (QUOTA BANNER) - HIDDEN FOR PRO USERS */}
       {appData?.plan === SubscriptionPlan.FREE && (
-        <div className="bg-indigo-50 border border-indigo-100 p-5 rounded-[2rem] flex flex-col sm:flex-row justify-between items-center gap-3 md:gap-6 shadow-sm mx-1">
+        <div className="bg-indigo-50 border border-indigo-100 p-5 rounded-xl flex flex-col sm:flex-row justify-between items-center gap-3 md:gap-6 shadow-sm mx-1">
            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-indigo-600 text-white rounded-2xl flex items-center justify-center text-xl shadow-lg shadow-indigo-200">
+              <div className="w-12 h-12 bg-indigo-600 text-white rounded-lg flex items-center justify-center text-xl shadow-lg shadow-indigo-200">
                  <i className="bi bi-rocket-takeoff-fill"></i>
               </div>
               <div>
@@ -142,7 +142,7 @@ const CareerPlanner: React.FC<CareerPlannerProps> = ({ paths, appData, onAddPath
            </div>
            <button 
               onClick={onUpgrade}
-              className="w-full sm:w-auto px-8 py-3 bg-white text-indigo-600 font-black rounded-xl text-[10px] uppercase tracking-widest shadow-sm border border-indigo-100 hover:bg-indigo-50 transition-all active:scale-95"
+              className="w-full sm:w-auto px-8 py-3 bg-white text-indigo-600 font-black rounded-lg text-[10px] uppercase tracking-widest shadow-sm border border-indigo-100 hover:bg-indigo-50 transition-all active:scale-95"
            >
               🚀 Upgrade Plan
            </button>
@@ -150,7 +150,7 @@ const CareerPlanner: React.FC<CareerPlannerProps> = ({ paths, appData, onAddPath
       )}
 
       {/* Desktop Spreadsheet Table */}
-      <div className="hidden lg:block bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-x-auto">
+      <div className="hidden lg:block bg-white rounded-xl shadow-sm border border-slate-100 overflow-x-auto">
         <table className="w-full text-left border-collapse min-w-[1200px]">
           <thead>
             <tr className="bg-emerald-500 text-white select-none">
@@ -182,7 +182,7 @@ const CareerPlanner: React.FC<CareerPlannerProps> = ({ paths, appData, onAddPath
                     {path.targetPosition}
                   </td>
                   <td className="px-6 py-5 border-r border-slate-100 text-center">
-                    <span className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest ${
+                    <span className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest ${
                       shouldStrike ? 'bg-slate-100 text-slate-300' :
                       path.type === CareerType.UTAMA ? 'bg-purple-100 text-purple-700' : 'bg-cyan-100 text-cyan-700'
                     }`}>
@@ -201,7 +201,7 @@ const CareerPlanner: React.FC<CareerPlannerProps> = ({ paths, appData, onAddPath
                   <td className={`px-6 py-5 border-r border-slate-100 text-xs font-semibold ${shouldStrike ? 'text-slate-300' : 'text-slate-500'} ${contentClass}`}>
                     <div className="flex flex-wrap gap-1">
                       {path.requiredSkills.map((req, i) => (
-                        <span key={i} className="bg-slate-100 px-2 py-1 rounded-md text-[10px] font-bold">
+                        <span key={i} className="bg-slate-100 px-2 py-1 rounded-lg text-[10px] font-bold">
                           {req.name} (Lvl {req.level})
                         </span>
                       ))}

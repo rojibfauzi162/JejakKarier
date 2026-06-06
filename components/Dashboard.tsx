@@ -353,18 +353,18 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenOnboardin
         {/* TRIAL JOURNEY WIDGET (NEW) */}
         {trialMessage && (
           <div className="px-6">
-            <div className={`p-3 md:p-6 rounded-[2.5rem] shadow-xl animate-in slide-in-from-top-4 duration-700 ${
+            <div className={`p-3 md:p-6 rounded-xl md:rounded-[2.5rem] shadow-xl animate-in slide-in-from-top-4 duration-700 ${
               trialMessage.type === 'urgent' ? 'bg-rose-600 text-white' : 
               trialMessage.type === 'warning' ? 'bg-amber-500 text-white' : 'bg-slate-900 text-white'
             }`}>
                <div className="flex gap-4">
-                  <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center text-2xl shrink-0 italic">!</div>
+                  <div className="w-12 h-12 bg-white/10 rounded-lg md:rounded-2xl flex items-center justify-center text-2xl shrink-0 italic">!</div>
                   <div className="space-y-3">
                      <p className="text-[9px] font-black uppercase tracking-widest opacity-60">{trialMessage.title}</p>
                      <p className="text-sm font-bold leading-tight">{trialMessage.desc}</p>
                      <button 
                       onClick={() => onNavigate?.(trialMessage.target || 'billing')}
-                      className="px-6 py-2.5 bg-white text-slate-900 rounded-xl text-[9px] font-black uppercase tracking-widest shadow-lg active:scale-95 transition-all"
+                      className="px-6 py-2.5 bg-white text-slate-900 rounded-lg md:rounded-xl text-[9px] font-black uppercase tracking-widest shadow-lg active:scale-95 transition-all"
                      >
                         {trialMessage.cta}
                      </button>
@@ -376,9 +376,9 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenOnboardin
 
         {/* SUBSCRIPTION & EXPIRY INFO BAR (MOBILE) */}
         <div className="px-6">
-           <div className="bg-slate-50 p-5 rounded-[2rem] border border-slate-100 flex items-center justify-between shadow-sm">
+           <div className="bg-slate-50 p-5 rounded-xl md:rounded-[2rem] border border-slate-100 flex items-center justify-between shadow-sm">
               <div className="flex items-center gap-3">
-                 <div className="w-10 h-10 bg-indigo-600 text-white rounded-xl flex items-center justify-center text-sm shadow-lg"><i className="bi bi-patch-check-fill"></i></div>
+                 <div className="w-10 h-10 bg-indigo-600 text-white rounded-lg flex items-center justify-center text-sm shadow-lg"><i className="bi bi-patch-check-fill"></i></div>
                  <div>
                     <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Paket Aktif</p>
                     <p className="text-sm font-black text-indigo-600 uppercase">{data.plan}</p>
@@ -395,7 +395,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenOnboardin
 
         <div className="px-6 space-y-4">
            {/* Skill Readiness Card */}
-           <div className="bg-gradient-to-br from-indigo-600 to-blue-500 p-4 md:p-8 rounded-[2.5rem] shadow-2xl shadow-indigo-200 text-white relative overflow-hidden group">
+           <div className="bg-gradient-to-br from-indigo-600 to-blue-500 p-4 md:p-8 rounded-xl md:rounded-[2.5rem] shadow-2xl shadow-indigo-200 text-white relative overflow-hidden group">
               <div className="relative z-10">
                  <p className="text-4xl font-black tracking-tighter mb-2">{progressPercent}% <span className="text-sm font-bold uppercase tracking-widest opacity-80 block">Skor Kesiapan Skill</span></p>
                  <p className="text-xs font-medium opacity-90 leading-relaxed max-w-[200px]">"{currentAffirmation}"</p>
@@ -404,9 +404,9 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenOnboardin
            </div>
            
            {/* Account Completion Card */}
-           <div className="bg-white p-3 md:p-6 rounded-[2rem] border border-slate-100 shadow-sm flex items-center justify-between">
+           <div className="bg-white p-3 md:p-6 rounded-xl md:rounded-[2rem] border border-slate-100 shadow-sm flex items-center justify-between">
               <div className="flex items-center gap-4">
-                 <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center text-xl"><i className="bi bi-person-check"></i></div>
+                 <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-lg md:rounded-2xl flex items-center justify-center text-xl"><i className="bi bi-person-check"></i></div>
                  <div>
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Kesiapan Akun</p>
                     <p className="text-lg font-black text-slate-800 leading-none">{accountReadiness}% Profil Lengkap</p>
@@ -428,17 +428,17 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenOnboardin
               {visibleItems.map(item => (
                 <div key={item.id} className="relative group">
                   <button id={`tour-mobile-${item.id}`} onClick={() => !isEditMode && onNavigate?.(item.id)} className={`w-full flex flex-col items-center gap-3 transition-transform ${!isEditMode ? 'active:scale-90' : ''}`}>
-                    <div className={`w-16 h-16 rounded-[1.75rem] flex items-center justify-center border border-indigo-500/20 bg-indigo-600/5 text-indigo-600 text-2xl transition-all shadow-sm ${isEditMode ? 'opacity-40 grayscale' : ''}`}>
+                    <div className={`w-16 h-16 rounded-xl md:rounded-[1.75rem] flex items-center justify-center border border-indigo-500/20 bg-indigo-600/5 text-indigo-600 text-2xl transition-all shadow-sm ${isEditMode ? 'opacity-40 grayscale' : ''}`}>
                        <i className={`bi ${item.icon}`}></i>
                     </div>
                     <span className="text-[9px] font-black text-slate-700 uppercase tracking-tighter text-center leading-tight">{item.label}</span>
                   </button>
-                  {isEditMode && <button onClick={() => togglePin(item.id)} className={`absolute -top-2 -right-2 w-8 h-8 rounded-full border-2 flex items-center justify-center text-xs shadow-lg transition-all ${pinnedMenuIds.includes(item.id) ? 'bg-rose-50 border-white text-white' : 'bg-emerald-50 border-white text-white'}`}><i className={`bi ${pinnedMenuIds.includes(item.id) ? 'bi-dash-lg' : 'bi-plus-lg'}`}></i></button>}
+                  {isEditMode && <button onClick={() => togglePin(item.id)} className={`absolute -top-2 -right-2 w-8 h-8 rounded-lg flex items-center justify-center text-xs shadow-lg transition-all ${pinnedMenuIds.includes(item.id) ? 'bg-rose-50 border-white text-white' : 'bg-emerald-50 border-white text-white'}`}><i className={`bi ${pinnedMenuIds.includes(item.id) ? 'bi-dash-lg' : 'bi-plus-lg'}`}></i></button>}
                 </div>
               ))}
               {!isMenuExpanded && !isEditMode && otherItems.length > 0 && (
                 <button onClick={() => setIsMenuExpanded(true)} className="flex flex-col items-center gap-3 active:scale-90 transition-transform group">
-                  <div className="w-16 h-16 rounded-[1.75rem] flex items-center justify-center border border-slate-200 bg-slate-50 text-slate-400 text-2xl"><i className="bi bi-plus-lg"></i></div>
+                  <div className="w-16 h-16 rounded-xl md:rounded-[1.75rem] flex items-center justify-center border border-slate-200 bg-slate-50 text-slate-400 text-2xl"><i className="bi bi-plus-lg"></i></div>
                   <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter text-center leading-tight">Menu Lainnya</span>
                 </button>
               )}
@@ -453,8 +453,8 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenOnboardin
            </div>
            <div className="space-y-3">
               {data.dailyReports.slice(-3).reverse().map((log, i) => (
-                <div key={i} className="flex items-center gap-4 p-4 bg-slate-50/50 rounded-[2rem] border border-slate-100 animate-in slide-in-from-right duration-500" style={{ animationDelay: `${i * 100}ms` }}>
-                   <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-xl shadow-sm border border-slate-100 text-indigo-600"><i className="bi bi-file-earmark-text"></i></div>
+                <div key={i} className="flex items-center gap-4 p-4 bg-slate-50/50 rounded-xl md:rounded-[2rem] border border-slate-100 animate-in slide-in-from-right duration-500" style={{ animationDelay: `${i * 100}ms` }}>
+                   <div className="w-12 h-12 bg-white rounded-lg md:rounded-2xl flex items-center justify-center text-xl shadow-sm border border-slate-100 text-indigo-600"><i className="bi bi-file-earmark-text"></i></div>
                    <div className="flex-1 overflow-hidden">
                       <p className="text-xs font-black text-slate-900 leading-tight mb-1 truncate">{log.activity}</p>
                       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{log.category} • {new Date(log.date).toLocaleDateString('id-ID', {day: '2-digit', month: 'short'})}</p>
@@ -465,12 +465,13 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onNavigate, onOpenOnboardin
                 </div>
               ))}
               {data.dailyReports.length === 0 && (
-                <div className="py-10 text-center bg-slate-50 rounded-[2rem] border-2 border-dashed border-slate-200">
+                <div className="py-10 text-center bg-slate-50 rounded-xl md:rounded-[2rem] border-2 border-dashed border-slate-200">
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Belum ada aktivitas hari ini</p>
                 </div>
               )}
            </div>
         </div>
+      </div>
       </div>
 
       {/* DESKTOP ANALYTICAL DASHBOARD */}

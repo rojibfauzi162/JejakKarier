@@ -53,11 +53,11 @@ const Billing: React.FC<BillingProps> = ({ data, products, onSelectPlan }) => {
       </header>
 
       {/* CURRENT SUBSCRIPTION CARD */}
-      <div className="bg-white p-4 md:p-8 lg:p-12 rounded-[3.5rem] shadow-sm border border-slate-100 relative overflow-hidden">
+      <div className="bg-white p-4 md:p-8 lg:p-12 rounded-xl md:rounded-[3.5rem] shadow-sm border border-slate-100 relative overflow-hidden">
          <div className="relative z-10 flex flex-col md:flex-row justify-between gap-4 md:gap-8">
             <div className="space-y-3 md:space-y-6">
                <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 bg-indigo-600 text-white rounded-2xl flex items-center justify-center text-2xl shadow-xl shadow-indigo-100">
+                  <div className="w-14 h-14 bg-indigo-600 text-white rounded-lg md:rounded-2xl flex items-center justify-center text-2xl shadow-xl shadow-indigo-100">
                      <i className="bi bi-gem"></i>
                   </div>
                   <div>
@@ -67,13 +67,13 @@ const Billing: React.FC<BillingProps> = ({ data, products, onSelectPlan }) => {
                </div>
 
                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-5 bg-slate-50 rounded-[1.75rem] border border-slate-100">
+                  <div className="p-5 bg-slate-50 rounded-lg md:rounded-[1.75rem] border border-slate-100">
                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Status Akun</p>
                      <span className={`text-sm font-black uppercase ${isExpired ? 'text-rose-500' : 'text-emerald-500'}`}>
                         {isExpired ? 'Kadaluwarsa' : data.status === AccountStatus.ACTIVE ? 'Aktif' : data.status}
                      </span>
                   </div>
-                  <div className="p-5 bg-slate-50 rounded-[1.75rem] border border-slate-100">
+                  <div className="p-5 bg-slate-50 rounded-lg md:rounded-[1.75rem] border border-slate-100">
                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Berakhir pada</p>
                      <p className="text-sm font-black text-slate-800 uppercase">
                         {data.expiryDate ? new Date(data.expiryDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : 'Selamanya'}
@@ -82,14 +82,14 @@ const Billing: React.FC<BillingProps> = ({ data, products, onSelectPlan }) => {
                </div>
             </div>
 
-            <div className="md:w-72 bg-indigo-50 p-4 md:p-8 rounded-[2.5rem] border border-indigo-100 flex flex-col justify-center items-center text-center">
+            <div className="md:w-72 bg-indigo-50 p-4 md:p-8 rounded-xl md:rounded-[2.5rem] border border-indigo-100 flex flex-col justify-center items-center text-center">
                <p className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em] mb-4">Sisa Masa Aktif</p>
                <p className="text-5xl font-black text-indigo-600 tracking-tighter">
                   {daysRemaining === Infinity ? '∞' : Math.max(0, daysRemaining)}
                </p>
                <p className="text-[10px] font-bold text-indigo-400 uppercase mt-2">Hari Tersisa</p>
                {isExpired && (
-                 <div className="mt-6 px-4 py-2 bg-rose-500 text-white rounded-xl text-[9px] font-black uppercase tracking-widest shadow-lg animate-bounce">
+                 <div className="mt-6 px-4 py-2 bg-rose-500 text-white rounded-lg md:rounded-xl text-[9px] font-black uppercase tracking-widest shadow-lg animate-bounce">
                     Akses Terbatas
                  </div>
                )}

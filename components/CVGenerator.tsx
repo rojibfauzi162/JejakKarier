@@ -286,7 +286,7 @@ const CVGenerator: React.FC<CVGeneratorProps> = ({ data }) => {
         {/* Left Action Area */}
         <div className="xl:col-span-4 space-y-3 md:space-y-6">
           {step === 1 && (
-            <section className="bg-white p-4 md:p-8 rounded-[2.5rem] shadow-sm border border-slate-100 animate-in slide-in-from-left-4 duration-500">
+            <section className="bg-white p-4 md:p-8 rounded-xl shadow-sm border border-slate-100 animate-in slide-in-from-left-4 duration-500">
               <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-6 flex items-center gap-2">
                 <span className="w-6 h-6 bg-slate-900 text-white rounded-lg flex items-center justify-center text-[10px]">1</span>
                 Pilih Template Modern
@@ -309,7 +309,7 @@ const CVGenerator: React.FC<CVGeneratorProps> = ({ data }) => {
           )}
 
           {step === 2 && (
-            <section className="bg-white p-4 md:p-8 rounded-[2.5rem] shadow-sm border border-slate-100 animate-in slide-in-from-left-4 duration-500">
+            <section className="bg-white p-4 md:p-8 rounded-xl shadow-sm border border-slate-100 animate-in slide-in-from-left-4 duration-500">
               <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-6 flex items-center gap-2">
                 <span className="w-6 h-6 bg-slate-900 text-white rounded-lg flex items-center justify-center text-[10px]">2</span>
                 Filter Data Experience
@@ -324,7 +324,7 @@ const CVGenerator: React.FC<CVGeneratorProps> = ({ data }) => {
           )}
 
           {step === 3 && (
-            <section className="bg-slate-900 p-4 md:p-8 rounded-[2.5rem] shadow-xl text-white animate-in slide-in-from-left-4 duration-500">
+            <section className="bg-slate-900 p-4 md:p-8 rounded-xl shadow-xl text-white animate-in slide-in-from-left-4 duration-500">
                <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-2xl mb-6">🚀</div>
                <h3 className="text-xl font-black tracking-tight mb-2">Siap untuk Dilamar?</h3>
                <p className="text-slate-400 text-sm leading-relaxed mb-4 md:mb-8">Tinjau kembali data Anda di pratinjau samping. Jika sudah sesuai, klik download untuk mendapatkan file PDF profesional Anda.</p>
@@ -346,7 +346,7 @@ const CVGenerator: React.FC<CVGeneratorProps> = ({ data }) => {
             {step > 1 && (
               <button 
                 onClick={() => setStep(s => s - 1)}
-                className="flex-1 py-4 bg-slate-100 text-slate-500 font-black rounded-2xl text-[10px] uppercase tracking-widest hover:bg-slate-200 transition-all"
+                className="flex-1 py-4 bg-slate-100 text-slate-500 font-black rounded-lg text-[10px] uppercase tracking-widest hover:bg-slate-200 transition-all"
               >
                 ← Kembali
               </button>
@@ -354,14 +354,14 @@ const CVGenerator: React.FC<CVGeneratorProps> = ({ data }) => {
             {step < 3 ? (
               <button 
                 onClick={() => setStep(s => s + 1)}
-                className="flex-[2] py-4 bg-blue-600 text-white font-black rounded-2xl text-[10px] uppercase tracking-widest shadow-xl shadow-blue-500/20 hover:bg-blue-700 transition-all"
+                className="flex-[2] py-4 bg-blue-600 text-white font-black rounded-lg text-[10px] uppercase tracking-widest shadow-xl shadow-blue-500/20 hover:bg-blue-700 transition-all"
               >
                 Lanjut Ke Step {step + 1} →
               </button>
             ) : (
               <button 
                 onClick={() => setStep(1)}
-                className="flex-1 py-4 bg-white border border-slate-200 text-slate-900 font-black rounded-2xl text-[10px] uppercase tracking-widest hover:bg-slate-50 transition-all"
+                className="flex-1 py-4 bg-white border border-slate-200 text-slate-900 font-black rounded-lg text-[10px] uppercase tracking-widest hover:bg-slate-50 transition-all"
               >
                 Ulangi
               </button>

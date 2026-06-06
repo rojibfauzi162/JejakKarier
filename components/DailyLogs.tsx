@@ -451,7 +451,7 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
   return (
     <div className="space-y-4 md:space-y-8 animate-in slide-in-from-bottom duration-500 pb-20">
       {/* Banner Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-3 md:p-6 lg:p-8 rounded-[2rem] lg:rounded-[2.5rem] text-white relative overflow-hidden shadow-xl shadow-blue-500/10">
+      <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-3 md:p-6 lg:p-8 rounded-xl md:rounded-[2.5rem] text-white relative overflow-hidden shadow-xl shadow-blue-500/10">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-6">
           <div>
             <h2 className="text-2xl lg:text-3xl font-black tracking-tight uppercase">Aktivitas Harian</h2>
@@ -461,14 +461,14 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
             <button 
               type="button"
               onClick={() => setIsManageCatsOpen(true)}
-              className="flex-1 lg:flex-none px-4 lg:px-6 py-3 lg:py-4 bg-white/10 backdrop-blur-md text-white border border-white/20 font-black rounded-xl lg:rounded-2xl hover:bg-white/20 transition-all active:scale-95 text-[10px] lg:text-xs uppercase tracking-widest flex items-center justify-center gap-2"
+              className="flex-1 lg:flex-none px-4 lg:px-6 py-3 lg:py-4 bg-white/10 backdrop-blur-md text-white border border-white/20 font-black rounded-lg lg:rounded-2xl hover:bg-white/20 transition-all active:scale-95 text-[10px] lg:text-xs uppercase tracking-widest flex items-center justify-center gap-2"
             >
               ⚙️ Kategori
             </button>
             <button 
               type="button"
               onClick={() => handleOpenModal()}
-              className="flex-1 lg:flex-none px-4 lg:px-8 py-3 lg:py-4 bg-white text-blue-600 font-black rounded-xl lg:rounded-2xl shadow-lg hover:bg-slate-50 transition-all active:scale-95 whitespace-nowrap uppercase tracking-widest text-[10px] lg:text-xs"
+              className="flex-1 lg:flex-none px-4 lg:px-8 py-3 lg:py-4 bg-white text-blue-600 font-black rounded-lg lg:rounded-2xl shadow-lg hover:bg-slate-50 transition-all active:scale-95 whitespace-nowrap uppercase tracking-widest text-[10px] lg:text-xs"
             >
               🚀 + Tambah Rencana
             </button>
@@ -479,9 +479,9 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
 
       {/* INFO KUOTA - HIDDEN FOR PRO */}
       {appData?.plan === SubscriptionPlan.FREE && (
-        <div className="bg-indigo-50 border border-indigo-100 p-5 rounded-[2rem] flex flex-col sm:flex-row justify-between items-center gap-3 md:gap-6 mx-1 shadow-sm">
+        <div className="bg-indigo-50 border border-indigo-100 p-5 rounded-xl md:rounded-[2rem] flex flex-col sm:flex-row justify-between items-center gap-3 md:gap-6 mx-1 shadow-sm">
            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-indigo-600 text-white rounded-2xl flex items-center justify-center text-xl shadow-lg shadow-indigo-200">
+              <div className="w-12 h-12 bg-indigo-600 text-white rounded-lg md:rounded-2xl flex items-center justify-center text-xl shadow-lg shadow-indigo-200">
                  <i className="bi bi-database-fill"></i>
               </div>
               <div>
@@ -494,7 +494,7 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
            <button 
               type="button"
               onClick={onUpgrade}
-              className="w-full sm:w-auto px-8 py-3 bg-white text-indigo-600 font-black rounded-xl text-[10px] uppercase tracking-widest shadow-sm border border-indigo-100 hover:bg-indigo-50 transition-all active:scale-95"
+              className="w-full sm:w-auto px-8 py-3 bg-white text-indigo-600 font-black rounded-lg text-[10px] uppercase tracking-widest shadow-sm border border-indigo-100 hover:bg-indigo-50 transition-all active:scale-95"
            >
               🚀 Upgrade Kuota
            </button>
@@ -502,7 +502,7 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
       )}
 
       {/* Primary Filters */}
-      <div className="bg-white p-4 md:p-6 lg:p-10 rounded-[3rem] shadow-sm border border-slate-100 space-y-4 md:space-y-8">
+      <div className="bg-white p-4 md:p-6 lg:p-10 rounded-xl md:rounded-[3rem] shadow-sm border border-slate-100 space-y-4 md:space-y-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 md:gap-6 items-end">
             <div className="lg:col-span-6 space-y-2">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Pencarian Aktivitas</label>
@@ -511,7 +511,7 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
                     <input 
                         type="text" 
                         placeholder="Apa yang Anda cari hari ini?" 
-                        className="w-full pl-14 pr-6 py-4 rounded-[1.5rem] border border-slate-200 bg-slate-50/50 text-sm font-bold outline-none focus:ring-4 focus:ring-blue-500/5 transition-all"
+                        className="w-full pl-14 pr-6 py-4 rounded-xl md:rounded-[1.5rem] border border-slate-200 bg-slate-50/50 text-sm font-bold outline-none focus:ring-4 focus:ring-blue-500/5 transition-all"
                         value={searchQuery}
                         onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
                     />
@@ -520,7 +520,7 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
             <div className="lg:col-span-3 space-y-2">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Kategori</label>
                 <select 
-                    className="w-full px-4 py-3 md:px-6 md:py-4 rounded-[1.5rem] border border-slate-200 bg-slate-50/50 text-sm font-bold outline-none cursor-pointer"
+                    className="w-full px-4 py-3 md:px-6 md:py-4 rounded-xl md:rounded-[1.5rem] border border-slate-200 bg-slate-50/50 text-sm font-bold outline-none cursor-pointer"
                     value={filterCat}
                     onChange={(e) => { setFilterCat(e.target.value); setCurrentPage(1); }}
                 >
@@ -531,7 +531,7 @@ const DailyLogs: React.FC<DailyLogsProps> = ({ logs, categories, currentCompany,
             <div className="lg:col-span-3 space-y-2">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Navigasi Waktu</label>
                 <select 
-                    className="w-full px-4 py-3 md:px-6 md:py-4 rounded-[1.5rem] border border-slate-200 bg-slate-50/50 text-sm font-bold outline-none cursor-pointer"
+                    className="w-full px-4 py-3 md:px-6 md:py-4 rounded-xl md:rounded-[1.5rem] border border-slate-200 bg-slate-50/50 text-sm font-bold outline-none cursor-pointer"
                     value={filterTime}
                     onChange={(e) => handleSetTimeFilter(e.target.value as TimeFilter)}
                 >
